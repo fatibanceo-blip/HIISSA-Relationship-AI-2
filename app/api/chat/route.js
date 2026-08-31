@@ -4,6 +4,8 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const MAX_USER_MESSAGE_CHARS = 6000;
+
 const systemPrompt = `You are HIISSA RELATIONSHIP AI, a warm, thoughtful, emotionally intelligent AI companion for relationship, grief, and life questions.
 
 YOUR PURPOSE
@@ -228,6 +230,23 @@ export async function POST(req) {
     }
 
     const { messages = [] } = await req.json();
+
+    const oversizedUserMessage = messages.some(
+      (message) =>
+        message?.role === "user" &&
+        typeof message.content === "string" &&
+        message.content.length > MAX_USER_MESSAGE_CHARS
+    );
+
+    if (oversizedUserMessage) {
+      return Response.json(
+        {
+          error:
+            "Your message is too long. Please shorten it to 6,000 characters or fewer.",
+        },
+        { status: 413 }
+      );
+    }
 
     const response = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-5.6",
