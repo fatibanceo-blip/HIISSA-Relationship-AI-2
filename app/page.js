@@ -44,6 +44,18 @@ export default function Home() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 413) {
+          setMessages((current) => [
+            ...current,
+            {
+              role: "assistant",
+              content:
+                "Your message is a little too long. ❤️ Please shorten it to 6,000 characters or fewer and try again.",
+            },
+          ]);
+          return;
+        }
+
         throw new Error("Request failed");
       }
 
