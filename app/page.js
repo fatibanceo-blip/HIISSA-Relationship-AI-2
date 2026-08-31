@@ -20,6 +20,7 @@ export default function Home() {
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
 
   async function sendMessage(text = input) {
     const clean = text.trim();
@@ -75,6 +76,55 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function startListening() {
+    if (listening || loading) return;
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content:
+            "Voice input isn't supported in this browser yet. ❤️ You can still type your message below.",
+        },
+      ]);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-GB";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      setListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || "";
+
+      if (transcript.trim()) {
+        setInput((current) =>
+          current.trim() ? `${current.trim()} ${transcript}` : transcript
+        );
+      }
+    };
+
+    recognition.onerror = () => {
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognition.start();
   }
 
   return (
@@ -170,6 +220,32 @@ export default function Home() {
             🔒 Please avoid sharing identifying or highly sensitive personal
             information such as your full name, address, phone number,
             passwords, financial details, or private account information.
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "0 15px 10px",
+            }}
+          >
+            <button
+              type="button"
+              onClick={startListening}
+              disabled={listening || loading}
+              aria-label="Speak your message to HIISSA"
+              style={{
+                border: "1px solid rgba(80, 102, 93, 0.18)",
+                background: listening ? "#e8f0ec" : "#fffdf8",
+                color: "#466f67",
+                borderRadius: "999px",
+                padding: "10px 16px",
+                fontWeight: "800",
+                cursor: listening || loading ? "default" : "pointer",
+              }}
+            >
+              {listening ? "🎤 Listening…" : "🎤 Speak to HIISSA"}
+            </button>
           </div>
 
           <form
