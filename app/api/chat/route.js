@@ -5,6 +5,7 @@ const client = new OpenAI({
 });
 
 const MAX_USER_MESSAGE_CHARS = 6000;
+const MAX_CONVERSATION_CHARS = 24000;
 
 const systemPrompt = `You are HIISSA RELATIONSHIP AI, a warm, thoughtful, emotionally intelligent AI companion for relationship, grief, and life questions.
 
@@ -220,6 +221,33 @@ Respectful enough to leave the final decision with the user.
 
 Always remember: Healing is transformation, not erasure.`;
 
+function getRecentConversation(messages) {
+  let totalChars = 0;
+  const recentMessages = [];
+
+  for (let index = messages.length - 1; index >= 0; index--) {
+    const message = messages[index];
+
+    if (!message || typeof message.content !== "string") {
+      continue;
+    }
+
+    const messageChars = message.content.length;
+
+    if (
+      recentMessages.length > 0 &&
+      totalChars + messageChars > MAX_CONVERSATION_CHARS
+    ) {
+      break;
+    }
+
+    recentMessages.unshift(message);
+    totalChars += messageChars;
+  }
+
+  return recentMessages;
+}
+
 export async function POST(req) {
   try {
     if (!process.env.OPENAI_API_KEY) {
@@ -231,7 +259,9 @@ export async function POST(req) {
 
     const { messages = [] } = await req.json();
 
-    const oversizedUserMessage = messages.some(
+    const safeMessages = Array.isArray(messages) ? messages : [];
+
+    const oversizedUserMessage = safeMessages.some(
       (message) =>
         message?.role === "user" &&
         typeof message.content === "string" &&
@@ -248,6 +278,8 @@ export async function POST(req) {
       );
     }
 
+    const recentMessages = getRecentConversation(safeMessages);
+
     const response = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-5.6",
       messages: [
@@ -255,7 +287,7 @@ export async function POST(req) {
           role: "system",
           content: systemPrompt,
         },
-        ...messages,
+        ...recentMessages,
       ],
     });
 
