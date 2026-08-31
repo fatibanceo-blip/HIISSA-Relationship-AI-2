@@ -154,6 +154,12 @@ export default function Home() {
             </div>
           )}
 
+          <div className="privacy">
+            🔒 Please avoid sharing identifying or highly sensitive personal
+            information such as your full name, address, phone number,
+            passwords, financial details, or private account information.
+          </div>
+
           <form
             className="composer"
             onSubmit={(event) => {
