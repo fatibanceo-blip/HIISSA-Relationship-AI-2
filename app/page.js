@@ -199,6 +199,8 @@ export default function Home() {
 
         <footer>
           <b>HIISSA</b> · Healing is transformation, not erasure.
+          <br />
+          <a href="/privacy">Privacy</a>
         </footer>
       </section>
     </main>
