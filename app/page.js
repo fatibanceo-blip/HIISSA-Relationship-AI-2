@@ -202,7 +202,18 @@ export default function Home() {
         /Hi,\s*I'm\s+HIISSA\s+Relationship\s+AI\.?/gi,
         "Hi. I'm Hee-sah. Relationship AI."
       )
-      .replace(/\bHIISSA\b/gi, "Hee-sah");
+      .replace(/\bHIISSA\b/gi, "Hee-sah")
+      .replace(/\*\*(.*?)\*\*/g, "$1")
+      .replace(/__(.*?)__/g, "$1")
+      .replace(/\*(.*?)\*/g, "$1")
+      .replace(/_(.*?)_/g, "$1")
+      .replace(/^\s*#{1,6}\s*/gm, "")
+      .replace(/^\s*[-*+]\s+/gm, "")
+      .replace(/^\s*\d+\.\s+/gm, "")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   function speakMessage(text, index) {
