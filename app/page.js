@@ -22,6 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [voiceHelp, setVoiceHelp] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   async function sendMessage(text = input) {
     const clean = text.trim();
@@ -79,22 +80,17 @@ export default function Home() {
     }
   }
 
-  function openInBrowser() {
-    const url = window.location.href;
-    const isAndroid = /Android/i.test(navigator.userAgent);
+  async function copyHiissaLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setLinkCopied(true);
 
-    if (isAndroid) {
-      const cleanUrl = url.replace(/^https?:\/\//, "");
-
-      window.location.href =
-        "intent://" +
-        cleanUrl +
-        "#Intent;scheme=https;package=com.android.chrome;end";
-
-      return;
+      window.setTimeout(() => {
+        setLinkCopied(false);
+      }, 3000);
+    } catch {
+      setLinkCopied(false);
     }
-
-    window.open(url, "_blank");
   }
 
   function startListening() {
@@ -289,14 +285,15 @@ export default function Home() {
               <br />
 
               Voice isn't available in this browser. If you opened HIISSA
-              inside TikTok, open it in your phone browser to use Speak to
-              HIISSA. You can still type your message here.
+              inside TikTok, copy the HIISSA link below, open Chrome or your
+              phone browser, and paste the link there to use Speak to HIISSA.
+              You can still type your message here.
 
               <br />
 
               <button
                 type="button"
-                onClick={openInBrowser}
+                onClick={copyHiissaLink}
                 style={{
                   marginTop: "12px",
                   border: "0",
@@ -308,7 +305,7 @@ export default function Home() {
                   cursor: "pointer",
                 }}
               >
-                🌐 Open HIISSA in browser
+                {linkCopied ? "✓ Link copied" : "📋 Copy HIISSA link"}
               </button>
             </div>
           )}
