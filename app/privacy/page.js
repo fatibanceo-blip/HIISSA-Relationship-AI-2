@@ -66,7 +66,8 @@ export default function PrivacyPage() {
 
           <p style={introStyle}>
             Your privacy matters when using HIISSA Relationship AI. Please read
-            this information before sharing personal experiences or questions.
+            this information before sharing personal experiences, questions, or
+            feedback.
           </p>
 
           <PrivacySection title="What you should avoid sharing">
@@ -85,6 +86,33 @@ export default function PrivacyPage() {
             Because HIISSA uses third-party technology to provide AI responses,
             information you submit may be processed by service providers
             involved in operating the service.
+          </PrivacySection>
+
+          <PrivacySection title="Feedback">
+            HIISSA may invite you to provide optional feedback about your
+            experience. You do not need to provide feedback to continue using
+            HIISSA.
+            <br />
+            <br />
+            Feedback may include your rating, whether you found HIISSA helpful,
+            any optional written feedback you choose to provide, the date and
+            time of the submission, and an internal database identifier.
+            Feedback is stored and processed using Supabase, a service provider
+            used to operate the feedback system.
+            <br />
+            <br />
+            Please do not include names, contact details, or other identifying
+            or highly sensitive personal information in written feedback.
+            Your conversation is not automatically copied into your feedback
+            submission.
+          </PrivacySection>
+
+          <PrivacySection title="Public reviews and permission">
+            Feedback submitted through HIISSA is not automatically displayed
+            publicly. If HIISSA offers an option in the future to share
+            feedback publicly as a review or testimonial, separate explicit
+            permission will be requested before that feedback is used
+            publicly.
           </PrivacySection>
 
           <PrivacySection title="Share only what is necessary">
