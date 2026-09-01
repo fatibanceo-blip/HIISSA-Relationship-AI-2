@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 
 const starters = [
   ["💔", "I'm struggling to let someone go."],
@@ -8,6 +9,28 @@ const starters = [
   ["🧩", "I don't understand their behavior."],
   ["🌱", "I want to heal and move forward."],
 ];
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabasePublishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+const supabase =
+  supabaseUrl && supabasePublishableKey
+    ? createClient(supabaseUrl, supabasePublishableKey)
+    : null;
+
+function isSafetyContext(messages) {
+  const recentText = messages
+    .slice(-4)
+    .map((message) => message.content)
+    .join(" ")
+    .toLowerCase();
+
+  const safetyTerms =
+    /suicid|self-harm|self harm|kill myself|end my life|hurt myself|immediate danger|emergency services|call 999|samaritans|domestic violence|being abused|physical abuse|threatened|unsafe right now/;
+
+  return safetyTerms.test(recentText);
+}
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -24,6 +47,49 @@ export default function Home() {
   const [voiceHelp, setVoiceHelp] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [speakingIndex, setSpeakingIndex] = useState(null);
+
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackEligibleAfter, setFeedbackEligibleAfter] = useState(3);
+  const [feedbackFormOpen, setFeedbackFormOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [helpful, setHelpful] = useState(null);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackSending, setFeedbackSending] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
+  const [feedbackThanks, setFeedbackThanks] = useState(false);
+
+  useEffect(() => {
+    try {
+      const submitted =
+        window.sessionStorage.getItem("hiissa_feedback_submitted") === "1";
+
+      const deferredUntil = Number(
+        window.sessionStorage.getItem("hiissa_feedback_defer_until") || "3"
+      );
+
+      if (submitted) {
+        setFeedbackSubmitted(true);
+      }
+
+      if (Number.isFinite(deferredUntil) && deferredUntil >= 3) {
+        setFeedbackEligibleAfter(deferredUntil);
+      }
+    } catch {
+      // Session storage is optional. HIISSA still works without it.
+    }
+  }, []);
+
+  const substantiveAssistantAnswers = Math.max(
+    0,
+    messages.filter((message) => message.role === "assistant").length - 1
+  );
+
+  const showFeedbackCard =
+    !loading &&
+    !feedbackSubmitted &&
+    !feedbackThanks &&
+    substantiveAssistantAnswers >= feedbackEligibleAfter &&
+    !isSafetyContext(messages);
 
   async function sendMessage(text = input) {
     const clean = text.trim();
@@ -257,6 +323,77 @@ export default function Home() {
     window.speechSynthesis.speak(speech);
   }
 
+  function maybeLater() {
+    const nextEligibleAt = substantiveAssistantAnswers + 5;
+
+    setFeedbackEligibleAfter(nextEligibleAt);
+    setFeedbackFormOpen(false);
+    setRating(0);
+    setHelpful(null);
+    setFeedbackText("");
+    setFeedbackError("");
+
+    try {
+      window.sessionStorage.setItem(
+        "hiissa_feedback_defer_until",
+        String(nextEligibleAt)
+      );
+    } catch {
+      // HIISSA still works if session storage is unavailable.
+    }
+  }
+
+  async function submitFeedback() {
+    if (!rating || helpful === null || feedbackSending) return;
+
+    setFeedbackSending(true);
+    setFeedbackError("");
+
+    if (!supabase) {
+      setFeedbackError(
+        "Feedback couldn't be sent right now. Please try again later."
+      );
+      setFeedbackSending(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("feedback").insert([
+        {
+          rating,
+          helpful,
+          feedback_text: feedbackText.trim() || null,
+          suggestion_text: null,
+          public_permission: false,
+        },
+      ]);
+
+      if (error) {
+        throw error;
+      }
+
+      setFeedbackSubmitted(true);
+      setFeedbackThanks(true);
+      setFeedbackFormOpen(false);
+
+      try {
+        window.sessionStorage.setItem("hiissa_feedback_submitted", "1");
+      } catch {
+        // HIISSA still works if session storage is unavailable.
+      }
+
+      window.setTimeout(() => {
+        setFeedbackThanks(false);
+      }, 7000);
+    } catch {
+      setFeedbackError(
+        "Feedback couldn't be sent right now. Please try again."
+      );
+    } finally {
+      setFeedbackSending(false);
+    }
+  }
+
   return (
     <main className="page">
       <div className="orb one" />
@@ -373,6 +510,312 @@ export default function Home() {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {showFeedbackCard && (
+            <div
+              style={{
+                margin: "6px 20px 18px",
+                padding: "18px",
+                borderRadius: "20px",
+                background: "#fffdf8",
+                border: "1px solid rgba(80, 102, 93, 0.18)",
+                boxShadow: "0 10px 30px rgba(74, 92, 84, 0.08)",
+              }}
+            >
+              {!feedbackFormOpen ? (
+                <>
+                  <div
+                    style={{
+                      textAlign: "center",
+                      color: "#3f5f58",
+                      fontWeight: "800",
+                      fontSize: "16px",
+                    }}
+                  >
+                    Has HIISSA been helpful so far? ❤️
+                  </div>
+
+                  <p
+                    style={{
+                      textAlign: "center",
+                      color: "#66706c",
+                      fontSize: "13px",
+                      lineHeight: "1.5",
+                      margin: "7px 0 14px",
+                    }}
+                  >
+                    Your feedback helps us improve HIISSA.
+                  </p>
+
+                  <div
+                    aria-label="Rate HIISSA"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: "5px",
+                      marginBottom: "14px",
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(star)}
+                        aria-label={`${star} star${star === 1 ? "" : "s"}`}
+                        style={{
+                          border: "0",
+                          background: "transparent",
+                          fontSize: "30px",
+                          lineHeight: "1",
+                          padding: "2px",
+                          cursor: "pointer",
+                          color: star <= rating ? "#b79a5b" : "#d8d8d2",
+                        }}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                      marginBottom: "15px",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setHelpful(true)}
+                      style={{
+                        border:
+                          helpful === true
+                            ? "1px solid #466f67"
+                            : "1px solid rgba(80, 102, 93, 0.18)",
+                        background:
+                          helpful === true ? "#e8f0ec" : "#ffffff",
+                        color: "#466f67",
+                        borderRadius: "999px",
+                        padding: "8px 13px",
+                        fontWeight: "800",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Yes, helpful ❤️
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setHelpful(false)}
+                      style={{
+                        border:
+                          helpful === false
+                            ? "1px solid #466f67"
+                            : "1px solid rgba(80, 102, 93, 0.18)",
+                        background:
+                          helpful === false ? "#e8f0ec" : "#ffffff",
+                        color: "#466f67",
+                        borderRadius: "999px",
+                        padding: "8px 13px",
+                        fontWeight: "800",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Not yet
+                    </button>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: "9px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      disabled={!rating || helpful === null}
+                      onClick={() => setFeedbackFormOpen(true)}
+                      style={{
+                        border: "0",
+                        borderRadius: "999px",
+                        padding: "10px 16px",
+                        background:
+                          rating && helpful !== null ? "#466f67" : "#c8cfcb",
+                        color: "#fff",
+                        fontWeight: "800",
+                        cursor:
+                          rating && helpful !== null
+                            ? "pointer"
+                            : "default",
+                      }}
+                    >
+                      Share feedback
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={maybeLater}
+                      style={{
+                        border: "0",
+                        background: "transparent",
+                        color: "#68736f",
+                        padding: "10px 12px",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Maybe later
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      color: "#3f5f58",
+                      fontWeight: "800",
+                      textAlign: "center",
+                      fontSize: "16px",
+                    }}
+                  >
+                    Thank you for helping HIISSA grow ❤️
+                  </div>
+
+                  <p
+                    style={{
+                      textAlign: "center",
+                      color: "#66706c",
+                      fontSize: "13px",
+                      lineHeight: "1.5",
+                      margin: "7px 0 12px",
+                    }}
+                  >
+                    What helped you, or what could HIISSA do better?
+                    <br />
+                    <span style={{ fontSize: "12px" }}>(Optional)</span>
+                  </p>
+
+                  <textarea
+                    value={feedbackText}
+                    onChange={(event) =>
+                      setFeedbackText(event.target.value.slice(0, 1500))
+                    }
+                    placeholder="Write your feedback here…"
+                    rows={4}
+                    style={{
+                      width: "100%",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                      borderRadius: "14px",
+                      border: "1px solid rgba(80, 102, 93, 0.2)",
+                      padding: "12px",
+                      fontFamily: "inherit",
+                      fontSize: "14px",
+                      lineHeight: "1.5",
+                      outline: "none",
+                      background: "#ffffff",
+                      color: "#35443f",
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      color: "#77807c",
+                      fontSize: "11px",
+                      lineHeight: "1.5",
+                      margin: "8px 2px 12px",
+                    }}
+                  >
+                    🔒 Please don't include names or identifying personal
+                    information.
+                  </div>
+
+                  {feedbackError && (
+                    <div
+                      role="alert"
+                      style={{
+                        color: "#8a4f4f",
+                        background: "#fff6f4",
+                        borderRadius: "12px",
+                        padding: "9px 11px",
+                        fontSize: "12px",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      {feedbackError}
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: "9px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={submitFeedback}
+                      disabled={feedbackSending}
+                      style={{
+                        border: "0",
+                        borderRadius: "999px",
+                        padding: "10px 16px",
+                        background: "#466f67",
+                        color: "#fff",
+                        fontWeight: "800",
+                        cursor: feedbackSending ? "default" : "pointer",
+                      }}
+                    >
+                      {feedbackSending ? "Sending…" : "Send feedback"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFeedbackFormOpen(false);
+                        setFeedbackError("");
+                      }}
+                      disabled={feedbackSending}
+                      style={{
+                        border: "0",
+                        background: "transparent",
+                        color: "#68736f",
+                        padding: "10px 12px",
+                        fontWeight: "700",
+                        cursor: feedbackSending ? "default" : "pointer",
+                      }}
+                    >
+                      Back
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {feedbackThanks && (
+            <div
+              role="status"
+              style={{
+                margin: "6px 20px 18px",
+                padding: "16px",
+                borderRadius: "18px",
+                background: "#f1f6f2",
+                border: "1px solid rgba(80, 102, 93, 0.18)",
+                color: "#466f67",
+                fontWeight: "800",
+                textAlign: "center",
+              }}
+            >
+              Thank you ❤️ Your feedback has been received.
             </div>
           )}
 
