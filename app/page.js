@@ -196,6 +196,15 @@ export default function Home() {
     );
   }
 
+  function prepareSpokenText(text) {
+    return text
+      .replace(
+        /Hi,\s*I'm\s+HIISSA\s+Relationship\s+AI\.?/gi,
+        "Hi. I'm Hee-sah. Relationship AI."
+      )
+      .replace(/\bHIISSA\b/gi, "Hee-sah");
+  }
+
   function speakMessage(text, index) {
     if (
       typeof window === "undefined" ||
@@ -212,7 +221,7 @@ export default function Home() {
       return;
     }
 
-    const spokenText = text.replace(/\bHIISSA\b/gi, "Heesa");
+    const spokenText = prepareSpokenText(text);
 
     const speech = new SpeechSynthesisUtterance(spokenText);
     const preferredVoice = chooseHiissaVoice();
