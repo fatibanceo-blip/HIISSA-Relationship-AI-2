@@ -21,6 +21,7 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [voiceHelp, setVoiceHelp] = useState(false);
 
   async function sendMessage(text = input) {
     const clean = text.trim();
@@ -85,14 +86,7 @@ export default function Home() {
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          content:
-            "Voice input isn't supported in this browser yet. ❤️ You can still type your message below.",
-        },
-      ]);
+      setVoiceHelp(true);
       return;
     }
 
@@ -103,6 +97,7 @@ export default function Home() {
     recognition.continuous = false;
 
     recognition.onstart = () => {
+      setVoiceHelp(false);
       setListening(true);
     };
 
@@ -118,13 +113,19 @@ export default function Home() {
 
     recognition.onerror = () => {
       setListening(false);
+      setVoiceHelp(true);
     };
 
     recognition.onend = () => {
       setListening(false);
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch {
+      setListening(false);
+      setVoiceHelp(true);
+    }
   }
 
   return (
@@ -247,6 +248,31 @@ export default function Home() {
               {listening ? "🎤 Listening…" : "🎤 Speak to HIISSA"}
             </button>
           </div>
+
+          {voiceHelp && (
+            <div
+              role="alert"
+              style={{
+                margin: "0 20px 14px",
+                padding: "14px 16px",
+                borderRadius: "16px",
+                background: "#f4f7f3",
+                border: "1px solid rgba(80, 102, 93, 0.18)",
+                color: "#4e5954",
+                fontSize: "13px",
+                lineHeight: "1.6",
+                textAlign: "center",
+              }}
+            >
+              <strong style={{ color: "#466f67" }}>
+                🎤 Want to speak to HIISSA?
+              </strong>
+              <br />
+              Voice isn't available in this browser. If you opened HIISSA
+              inside TikTok, open this page in Chrome or your phone's browser
+              to use Speak to HIISSA. You can still type your message here.
+            </div>
+          )}
 
           <form
             className="composer"
