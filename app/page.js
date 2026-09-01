@@ -79,6 +79,24 @@ export default function Home() {
     }
   }
 
+  function openInBrowser() {
+    const url = window.location.href;
+    const isAndroid = /Android/i.test(navigator.userAgent);
+
+    if (isAndroid) {
+      const cleanUrl = url.replace(/^https?:\/\//, "");
+
+      window.location.href =
+        "intent://" +
+        cleanUrl +
+        "#Intent;scheme=https;package=com.android.chrome;end";
+
+      return;
+    }
+
+    window.open(url, "_blank");
+  }
+
   function startListening() {
     if (listening || loading) return;
 
@@ -267,10 +285,31 @@ export default function Home() {
               <strong style={{ color: "#466f67" }}>
                 🎤 Want to speak to HIISSA?
               </strong>
+
               <br />
+
               Voice isn't available in this browser. If you opened HIISSA
-              inside TikTok, open this page in Chrome or your phone's browser
-              to use Speak to HIISSA. You can still type your message here.
+              inside TikTok, open it in your phone browser to use Speak to
+              HIISSA. You can still type your message here.
+
+              <br />
+
+              <button
+                type="button"
+                onClick={openInBrowser}
+                style={{
+                  marginTop: "12px",
+                  border: "0",
+                  borderRadius: "999px",
+                  padding: "10px 16px",
+                  background: "#466f67",
+                  color: "#fff",
+                  fontWeight: "800",
+                  cursor: "pointer",
+                }}
+              >
+                🌐 Open HIISSA in browser
+              </button>
             </div>
           )}
 
