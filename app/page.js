@@ -23,6 +23,7 @@ export default function Home() {
   const [listening, setListening] = useState(false);
   const [voiceHelp, setVoiceHelp] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [speakingIndex, setSpeakingIndex] = useState(null);
 
   async function sendMessage(text = input) {
     const clean = text.trim();
@@ -142,6 +143,40 @@ export default function Home() {
     }
   }
 
+  function speakMessage(text, index) {
+    if (
+      typeof window === "undefined" ||
+      !("speechSynthesis" in window) ||
+      typeof SpeechSynthesisUtterance === "undefined"
+    ) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    if (speakingIndex === index) {
+      setSpeakingIndex(null);
+      return;
+    }
+
+    const speech = new SpeechSynthesisUtterance(text);
+
+    speech.lang = "en-GB";
+    speech.rate = 0.95;
+    speech.pitch = 1;
+
+    speech.onend = () => {
+      setSpeakingIndex(null);
+    };
+
+    speech.onerror = () => {
+      setSpeakingIndex(null);
+    };
+
+    setSpeakingIndex(index);
+    window.speechSynthesis.speak(speech);
+  }
+
   return (
     <main className="page">
       <div className="orb one" />
@@ -198,8 +233,38 @@ export default function Home() {
           <div className="messages">
             {messages.map((message, index) => (
               <div key={index} className={"row " + message.role}>
-                <div className={"bubble " + message.role}>
-                  {message.content}
+                <div>
+                  <div className={"bubble " + message.role}>
+                    {message.content}
+                  </div>
+
+                  {message.role === "assistant" && (
+                    <button
+                      type="button"
+                      onClick={() => speakMessage(message.content, index)}
+                      aria-label={
+                        speakingIndex === index
+                          ? "Stop listening to HIISSA"
+                          : "Listen to HIISSA"
+                      }
+                      style={{
+                        marginTop: "6px",
+                        marginLeft: "4px",
+                        border: "1px solid rgba(80, 102, 93, 0.18)",
+                        background: "#fffdf8",
+                        color: "#466f67",
+                        borderRadius: "999px",
+                        padding: "7px 11px",
+                        fontSize: "12px",
+                        fontWeight: "800",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {speakingIndex === index
+                        ? "■ Stop listening"
+                        : "🔊 Listen to HIISSA"}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
