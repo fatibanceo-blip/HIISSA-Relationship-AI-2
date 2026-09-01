@@ -13,6 +13,7 @@ export default function AdminPage() {
   const [signedIn, setSignedIn] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [stats, setStats] = useState(null);
+  const [distribution, setDistribution] = useState([]);
   const [statsError, setStatsError] = useState("");
 
   useEffect(() => {
@@ -38,11 +39,11 @@ export default function AdminPage() {
 
       setSignedIn(true);
 
-      const { data, error } = await supabase.rpc(
+      const { data: statsData, error: statsLoadError } = await supabase.rpc(
         "get_hiissa_feedback_stats"
       );
 
-      if (error) {
+      if (statsLoadError) {
         setStatsError(
           "Your secure admin access is working, but the feedback statistics could not be loaded."
         );
@@ -50,8 +51,21 @@ export default function AdminPage() {
         return;
       }
 
-      if (data && data.length > 0) {
-        setStats(data[0]);
+      if (statsData && statsData.length > 0) {
+        setStats(statsData[0]);
+      }
+
+      const {
+        data: distributionData,
+        error: distributionError,
+      } = await supabase.rpc("get_hiissa_rating_distribution");
+
+      if (distributionError) {
+        setStatsError(
+          "Your main feedback statistics loaded, but the rating breakdown could not be loaded."
+        );
+      } else {
+        setDistribution(distributionData || []);
       }
 
       setChecking(false);
@@ -81,87 +95,29 @@ export default function AdminPage() {
   return (
     <main style={pageStyle}>
       <section style={cardStyle}>
-        <div
-          style={{
-            color: "#607d73",
-            fontSize: "11px",
-            letterSpacing: "0.17em",
-            fontWeight: "850",
-            marginBottom: "8px",
-          }}
-        >
-          HIISSA • PRIVATE ADMIN
-        </div>
+        <div style={eyebrowStyle}>HIISSA • PRIVATE ADMIN</div>
 
-        <h1
-          style={{
-            margin: "0 0 12px",
-            color: "#29332f",
-            fontSize: "clamp(30px, 7vw, 42px)",
-            lineHeight: "1.08",
-          }}
-        >
-          Admin dashboard
-        </h1>
+        <h1 style={headingStyle}>Admin dashboard</h1>
 
-        <p
-          style={{
-            margin: "0 0 26px",
-            color: "#66706b",
-            fontSize: "15px",
-            lineHeight: "1.7",
-          }}
-        >
+        <p style={introStyle}>
           Private feedback insights for HIISSA RELATIONSHIP AI.
         </p>
 
-        <div
-          style={{
-            padding: "18px",
-            borderRadius: "16px",
-            background: "rgba(85, 120, 109, 0.08)",
-            border: "1px solid rgba(85, 120, 109, 0.14)",
-          }}
-        >
+        <div style={secureNoticeStyle}>
           <strong style={{ color: "#466f67" }}>
             Secure owner access confirmed ✓
           </strong>
 
-          <p
-            style={{
-              margin: "8px 0 0",
-              color: "#66706b",
-              fontSize: "14px",
-              lineHeight: "1.6",
-            }}
-          >
+          <p style={noticeTextStyle}>
             These figures are calculated from feedback currently stored in
             HIISSA's private feedback system.
           </p>
         </div>
 
-        {statsError ? (
-          <p
-            style={{
-              margin: "22px 0 0",
-              color: "#7a5d55",
-              fontSize: "14px",
-              lineHeight: "1.6",
-            }}
-          >
-            {statsError}
-          </p>
-        ) : null}
+        {statsError ? <p style={errorStyle}>{statsError}</p> : null}
 
         {stats ? (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))",
-              gap: "14px",
-              marginTop: "22px",
-            }}
-          >
+          <div style={statsGridStyle}>
             <StatCard
               label="Total feedback"
               value={stats.total_feedback ?? 0}
@@ -187,6 +143,34 @@ export default function AdminPage() {
           </div>
         ) : null}
 
+        {distribution.length > 0 ? (
+          <div style={distributionSectionStyle}>
+            <h2 style={sectionHeadingStyle}>Rating breakdown</h2>
+
+            <p style={sectionIntroStyle}>
+              See how your genuine HIISSA feedback is distributed across each
+              star rating.
+            </p>
+
+            <div style={ratingListStyle}>
+              {distribution.map((item) => (
+                <div key={item.rating} style={ratingRowStyle}>
+                  <div style={starsStyle}>
+                    {renderStars(Number(item.rating))}
+                  </div>
+
+                  <div style={ratingCountStyle}>
+                    {Number(item.rating_count)}{" "}
+                    {Number(item.rating_count) === 1
+                      ? "response"
+                      : "responses"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <button
           type="button"
           onClick={handleSignOut}
@@ -207,16 +191,7 @@ export default function AdminPage() {
           {signingOut ? "Signing out…" : "Sign out"}
         </button>
 
-        <div
-          style={{
-            marginTop: "30px",
-            paddingTop: "20px",
-            borderTop: "1px solid rgba(80, 102, 93, 0.14)",
-            color: "#747d78",
-            fontSize: "12px",
-            lineHeight: "1.7",
-          }}
-        >
+        <div style={footerStyle}>
           HIISSA RELATIONSHIP AI
           <br />
           Healing is transformation, not erasure.
@@ -228,37 +203,17 @@ export default function AdminPage() {
 
 function StatCard({ label, value }) {
   return (
-    <div
-      style={{
-        padding: "18px",
-        borderRadius: "16px",
-        background: "#fffdf8",
-        border: "1px solid rgba(80, 102, 93, 0.16)",
-      }}
-    >
-      <div
-        style={{
-          color: "#747d78",
-          fontSize: "12px",
-          fontWeight: "700",
-          marginBottom: "7px",
-        }}
-      >
-        {label}
-      </div>
-
-      <div
-        style={{
-          color: "#466f67",
-          fontSize: "24px",
-          fontWeight: "850",
-          lineHeight: "1.2",
-        }}
-      >
-        {value}
-      </div>
+    <div style={statCardStyle}>
+      <div style={statLabelStyle}>{label}</div>
+      <div style={statValueStyle}>{value}</div>
     </div>
   );
+}
+
+function renderStars(rating) {
+  return Array.from({ length: 5 }, (_, index) =>
+    index < rating ? "★" : "☆"
+  ).join(" ");
 }
 
 const pageStyle = {
@@ -277,4 +232,133 @@ const cardStyle = {
   borderRadius: "26px",
   padding: "clamp(24px, 5vw, 42px)",
   boxShadow: "0 24px 70px rgba(64, 86, 76, 0.14)",
+};
+
+const eyebrowStyle = {
+  color: "#607d73",
+  fontSize: "11px",
+  letterSpacing: "0.17em",
+  fontWeight: "850",
+  marginBottom: "8px",
+};
+
+const headingStyle = {
+  margin: "0 0 12px",
+  color: "#29332f",
+  fontSize: "clamp(30px, 7vw, 42px)",
+  lineHeight: "1.08",
+};
+
+const introStyle = {
+  margin: "0 0 26px",
+  color: "#66706b",
+  fontSize: "15px",
+  lineHeight: "1.7",
+};
+
+const secureNoticeStyle = {
+  padding: "18px",
+  borderRadius: "16px",
+  background: "rgba(85, 120, 109, 0.08)",
+  border: "1px solid rgba(85, 120, 109, 0.14)",
+};
+
+const noticeTextStyle = {
+  margin: "8px 0 0",
+  color: "#66706b",
+  fontSize: "14px",
+  lineHeight: "1.6",
+};
+
+const errorStyle = {
+  margin: "22px 0 0",
+  color: "#7a5d55",
+  fontSize: "14px",
+  lineHeight: "1.6",
+};
+
+const statsGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))",
+  gap: "14px",
+  marginTop: "22px",
+};
+
+const statCardStyle = {
+  padding: "18px",
+  borderRadius: "16px",
+  background: "#fffdf8",
+  border: "1px solid rgba(80, 102, 93, 0.16)",
+};
+
+const statLabelStyle = {
+  color: "#747d78",
+  fontSize: "12px",
+  fontWeight: "700",
+  marginBottom: "7px",
+};
+
+const statValueStyle = {
+  color: "#466f67",
+  fontSize: "24px",
+  fontWeight: "850",
+  lineHeight: "1.2",
+};
+
+const distributionSectionStyle = {
+  marginTop: "28px",
+  paddingTop: "26px",
+  borderTop: "1px solid rgba(80, 102, 93, 0.14)",
+};
+
+const sectionHeadingStyle = {
+  margin: "0 0 8px",
+  color: "#29332f",
+  fontSize: "21px",
+};
+
+const sectionIntroStyle = {
+  margin: "0 0 18px",
+  color: "#66706b",
+  fontSize: "14px",
+  lineHeight: "1.6",
+};
+
+const ratingListStyle = {
+  display: "grid",
+  gap: "10px",
+};
+
+const ratingRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "16px",
+  padding: "13px 15px",
+  borderRadius: "14px",
+  background: "rgba(85, 120, 109, 0.055)",
+  border: "1px solid rgba(85, 120, 109, 0.11)",
+};
+
+const starsStyle = {
+  color: "#8a7446",
+  fontSize: "18px",
+  letterSpacing: "2px",
+  whiteSpace: "nowrap",
+};
+
+const ratingCountStyle = {
+  color: "#66706b",
+  fontSize: "13px",
+  fontWeight: "700",
+  textAlign: "right",
+};
+
+const footerStyle = {
+  marginTop: "30px",
+  paddingTop: "20px",
+  borderTop: "1px solid rgba(80, 102, 93, 0.14)",
+  color: "#747d78",
+  fontSize: "12px",
+  lineHeight: "1.7",
 };
