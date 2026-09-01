@@ -143,6 +143,59 @@ export default function Home() {
     }
   }
 
+  function chooseHiissaVoice() {
+    const voices = window.speechSynthesis.getVoices();
+
+    if (!voices.length) return null;
+
+    const britishVoices = voices.filter((voice) =>
+      voice.lang?.toLowerCase().startsWith("en-gb")
+    );
+
+    const femaleVoiceNames = [
+      "female",
+      "samantha",
+      "serena",
+      "victoria",
+      "karen",
+      "moira",
+      "fiona",
+      "susan",
+      "hazel",
+      "libby",
+      "sonia",
+      "aria",
+      "jenny",
+      "zira",
+    ];
+
+    const britishFemaleVoice = britishVoices.find((voice) =>
+      femaleVoiceNames.some((name) =>
+        voice.name.toLowerCase().includes(name)
+      )
+    );
+
+    if (britishFemaleVoice) return britishFemaleVoice;
+
+    if (britishVoices.length) return britishVoices[0];
+
+    const englishFemaleVoice = voices.find(
+      (voice) =>
+        voice.lang?.toLowerCase().startsWith("en") &&
+        femaleVoiceNames.some((name) =>
+          voice.name.toLowerCase().includes(name)
+        )
+    );
+
+    if (englishFemaleVoice) return englishFemaleVoice;
+
+    return (
+      voices.find((voice) =>
+        voice.lang?.toLowerCase().startsWith("en")
+      ) || null
+    );
+  }
+
   function speakMessage(text, index) {
     if (
       typeof window === "undefined" ||
@@ -159,11 +212,18 @@ export default function Home() {
       return;
     }
 
-    const speech = new SpeechSynthesisUtterance(text);
+    const spokenText = text.replace(/\bHIISSA\b/gi, "Heesa");
+
+    const speech = new SpeechSynthesisUtterance(spokenText);
+    const preferredVoice = chooseHiissaVoice();
 
     speech.lang = "en-GB";
-    speech.rate = 0.95;
+    speech.rate = 0.92;
     speech.pitch = 1;
+
+    if (preferredVoice) {
+      speech.voice = preferredVoice;
+    }
 
     speech.onend = () => {
       setSpeakingIndex(null);
