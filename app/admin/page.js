@@ -12,9 +12,11 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [statsError, setStatsError] = useState("");
 
   useEffect(() => {
-    async function checkSession() {
+    async function loadAdminDashboard() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -24,11 +26,38 @@ export default function AdminPage() {
         return;
       }
 
+      const { data: isAdmin, error: adminError } = await supabase.rpc(
+        "is_hiissa_admin"
+      );
+
+      if (adminError || !isAdmin) {
+        await supabase.auth.signOut();
+        window.location.replace("/admin/login");
+        return;
+      }
+
       setSignedIn(true);
+
+      const { data, error } = await supabase.rpc(
+        "get_hiissa_feedback_stats"
+      );
+
+      if (error) {
+        setStatsError(
+          "Your secure admin access is working, but the feedback statistics could not be loaded."
+        );
+        setChecking(false);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setStats(data[0]);
+      }
+
       setChecking(false);
     }
 
-    checkSession();
+    loadAdminDashboard();
   }, []);
 
   async function handleSignOut() {
@@ -83,7 +112,7 @@ export default function AdminPage() {
             lineHeight: "1.7",
           }}
         >
-          Your secure HIISSA administrator session is working.
+          Private feedback insights for HIISSA RELATIONSHIP AI.
         </p>
 
         <div
@@ -94,7 +123,9 @@ export default function AdminPage() {
             border: "1px solid rgba(85, 120, 109, 0.14)",
           }}
         >
-          <strong style={{ color: "#466f67" }}>Secure access confirmed ✓</strong>
+          <strong style={{ color: "#466f67" }}>
+            Secure owner access confirmed ✓
+          </strong>
 
           <p
             style={{
@@ -104,17 +135,64 @@ export default function AdminPage() {
               lineHeight: "1.6",
             }}
           >
-            Your private feedback statistics will appear here once owner-only
-            database access is connected.
+            These figures are calculated from feedback currently stored in
+            HIISSA's private feedback system.
           </p>
         </div>
+
+        {statsError ? (
+          <p
+            style={{
+              margin: "22px 0 0",
+              color: "#7a5d55",
+              fontSize: "14px",
+              lineHeight: "1.6",
+            }}
+          >
+            {statsError}
+          </p>
+        ) : null}
+
+        {stats ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))",
+              gap: "14px",
+              marginTop: "22px",
+            }}
+          >
+            <StatCard
+              label="Total feedback"
+              value={stats.total_feedback ?? 0}
+            />
+
+            <StatCard
+              label="Average rating"
+              value={
+                stats.average_rating == null
+                  ? "—"
+                  : `${Number(stats.average_rating).toFixed(2)} / 5`
+              }
+            />
+
+            <StatCard
+              label="Helpful"
+              value={
+                stats.helpful_percentage == null
+                  ? "—"
+                  : `${Number(stats.helpful_percentage).toFixed(1)}%`
+              }
+            />
+          </div>
+        ) : null}
 
         <button
           type="button"
           onClick={handleSignOut}
           disabled={signingOut}
           style={{
-            marginTop: "24px",
+            marginTop: "26px",
             border: 0,
             borderRadius: "14px",
             padding: "12px 18px",
@@ -148,6 +226,41 @@ export default function AdminPage() {
   );
 }
 
+function StatCard({ label, value }) {
+  return (
+    <div
+      style={{
+        padding: "18px",
+        borderRadius: "16px",
+        background: "#fffdf8",
+        border: "1px solid rgba(80, 102, 93, 0.16)",
+      }}
+    >
+      <div
+        style={{
+          color: "#747d78",
+          fontSize: "12px",
+          fontWeight: "700",
+          marginBottom: "7px",
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          color: "#466f67",
+          fontSize: "24px",
+          fontWeight: "850",
+          lineHeight: "1.2",
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
 const pageStyle = {
   minHeight: "100vh",
   padding: "32px 16px 48px",
@@ -158,7 +271,7 @@ const pageStyle = {
 
 const cardStyle = {
   width: "100%",
-  maxWidth: "620px",
+  maxWidth: "720px",
   background: "rgba(255, 253, 248, 0.94)",
   border: "1px solid rgba(80, 102, 93, 0.14)",
   borderRadius: "26px",
