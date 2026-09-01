@@ -358,15 +358,11 @@ export default function Home() {
     }
 
     try {
-      const { error } = await supabase.from("feedback").insert([
-        {
-          rating,
-          helpful,
-          feedback_text: feedbackText.trim() || null,
-          suggestion_text: null,
-          public_permission: false,
-        },
-      ]);
+      const { error } = await supabase.rpc("submit_feedback", {
+        p_rating: rating,
+        p_helpful: helpful,
+        p_feedback_text: feedbackText.trim() || null,
+      });
 
       if (error) {
         throw error;
