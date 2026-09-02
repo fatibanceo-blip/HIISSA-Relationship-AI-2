@@ -14,7 +14,9 @@ export default function AdminPage() {
   const [signingOut, setSigningOut] = useState(false);
   const [stats, setStats] = useState(null);
   const [distribution, setDistribution] = useState([]);
+  const [writtenFeedback, setWrittenFeedback] = useState([]);
   const [statsError, setStatsError] = useState("");
+  const [feedbackError, setFeedbackError] = useState("");
 
   useEffect(() => {
     async function loadAdminDashboard() {
@@ -47,11 +49,7 @@ export default function AdminPage() {
         setStatsError(
           "Your secure admin access is working, but the feedback statistics could not be loaded."
         );
-        setChecking(false);
-        return;
-      }
-
-      if (statsData && statsData.length > 0) {
+      } else if (statsData && statsData.length > 0) {
         setStats(statsData[0]);
       }
 
@@ -66,6 +64,19 @@ export default function AdminPage() {
         );
       } else {
         setDistribution(distributionData || []);
+      }
+
+      const {
+        data: writtenFeedbackData,
+        error: writtenFeedbackError,
+      } = await supabase.rpc("get_hiissa_written_feedback");
+
+      if (writtenFeedbackError) {
+        setFeedbackError(
+          "Your written feedback could not be loaded."
+        );
+      } else {
+        setWrittenFeedback(writtenFeedbackData || []);
       }
 
       setChecking(false);
@@ -110,7 +121,7 @@ export default function AdminPage() {
 
           <p style={noticeTextStyle}>
             These figures are calculated from feedback currently stored in
-            HIISSA's private feedback system.
+            HIISSA&apos;s private feedback system.
           </p>
         </div>
 
@@ -144,7 +155,7 @@ export default function AdminPage() {
         ) : null}
 
         {distribution.length > 0 ? (
-          <div style={distributionSectionStyle}>
+          <div style={sectionStyle}>
             <h2 style={sectionHeadingStyle}>Rating breakdown</h2>
 
             <p style={sectionIntroStyle}>
@@ -170,6 +181,55 @@ export default function AdminPage() {
             </div>
           </div>
         ) : null}
+
+        <div style={sectionStyle}>
+          <h2 style={sectionHeadingStyle}>Written feedback</h2>
+
+          <p style={sectionIntroStyle}>
+            Private comments voluntarily submitted through HIISSA.
+          </p>
+
+          {feedbackError ? (
+            <p style={errorStyle}>{feedbackError}</p>
+          ) : writtenFeedback.length === 0 ? (
+            <div style={emptyFeedbackStyle}>
+              No written feedback has been submitted yet.
+            </div>
+          ) : (
+            <div style={feedbackListStyle}>
+              {writtenFeedback.map((item) => (
+                <div key={item.id} style={feedbackCardStyle}>
+                  <div style={feedbackTopStyle}>
+                    <div style={starsStyle}>
+                      {renderStars(Number(item.rating))}
+                    </div>
+
+                    <span style={helpfulBadgeStyle}>
+                      {item.helpful ? "Helpful ✓" : "Not helpful"}
+                    </span>
+                  </div>
+
+                  <div style={dateStyle}>
+                    {formatFeedbackDate(item.created_at)}
+                  </div>
+
+                  {item.feedback_text ? (
+                    <div style={feedbackTextStyle}>
+                      {item.feedback_text}
+                    </div>
+                  ) : null}
+
+                  {item.suggestion_text ? (
+                    <div style={suggestionStyle}>
+                      <strong>Suggestion:</strong>{" "}
+                      {item.suggestion_text}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <button
           type="button"
@@ -214,6 +274,18 @@ function renderStars(rating) {
   return Array.from({ length: 5 }, (_, index) =>
     index < rating ? "★" : "☆"
   ).join(" ");
+}
+
+function formatFeedbackDate(value) {
+  if (!value) return "";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 const pageStyle = {
@@ -271,7 +343,7 @@ const noticeTextStyle = {
 };
 
 const errorStyle = {
-  margin: "22px 0 0",
+  margin: "18px 0 0",
   color: "#7a5d55",
   fontSize: "14px",
   lineHeight: "1.6",
@@ -305,7 +377,7 @@ const statValueStyle = {
   lineHeight: "1.2",
 };
 
-const distributionSectionStyle = {
+const sectionStyle = {
   marginTop: "28px",
   paddingTop: "26px",
   borderTop: "1px solid rgba(80, 102, 93, 0.14)",
@@ -352,6 +424,70 @@ const ratingCountStyle = {
   fontSize: "13px",
   fontWeight: "700",
   textAlign: "right",
+};
+
+const emptyFeedbackStyle = {
+  padding: "16px",
+  borderRadius: "14px",
+  background: "rgba(85, 120, 109, 0.055)",
+  border: "1px solid rgba(85, 120, 109, 0.11)",
+  color: "#66706b",
+  fontSize: "14px",
+};
+
+const feedbackListStyle = {
+  display: "grid",
+  gap: "14px",
+};
+
+const feedbackCardStyle = {
+  padding: "17px",
+  borderRadius: "16px",
+  background: "#fffdf8",
+  border: "1px solid rgba(80, 102, 93, 0.16)",
+};
+
+const feedbackTopStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  flexWrap: "wrap",
+};
+
+const helpfulBadgeStyle = {
+  color: "#466f67",
+  fontSize: "12px",
+  fontWeight: "800",
+  padding: "6px 9px",
+  borderRadius: "999px",
+  background: "rgba(85, 120, 109, 0.09)",
+};
+
+const dateStyle = {
+  marginTop: "9px",
+  color: "#8a918d",
+  fontSize: "11px",
+};
+
+const feedbackTextStyle = {
+  marginTop: "14px",
+  color: "#414b47",
+  fontSize: "14px",
+  lineHeight: "1.7",
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+};
+
+const suggestionStyle = {
+  marginTop: "12px",
+  paddingTop: "12px",
+  borderTop: "1px solid rgba(80, 102, 93, 0.1)",
+  color: "#66706b",
+  fontSize: "13px",
+  lineHeight: "1.6",
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
 };
 
 const footerStyle = {
