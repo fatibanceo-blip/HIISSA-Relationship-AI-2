@@ -32,6 +32,51 @@ function isSafetyContext(messages) {
   return safetyTerms.test(recentText);
 }
 
+function createPermissionToken() {
+  if (
+    typeof window === "undefined" ||
+    !window.crypto ||
+    !window.crypto.getRandomValues
+  ) {
+    return null;
+  }
+
+  const bytes = new Uint8Array(32);
+  window.crypto.getRandomValues(bytes);
+
+  return Array.from(bytes, (byte) =>
+    byte.toString(16).padStart(2, "0")
+  ).join("");
+}
+
+function storePendingPermissionToken(token) {
+  if (!token || typeof window === "undefined") return;
+
+  try {
+    const storageKey = "hiissa_pending_review_permission_tokens";
+
+    const existing = JSON.parse(
+      window.localStorage.getItem(storageKey) || "[]"
+    );
+
+    const tokens = Array.isArray(existing)
+      ? existing.filter((value) => typeof value === "string")
+      : [];
+
+    const updatedTokens = [
+      ...tokens.filter((value) => value !== token),
+      token,
+    ].slice(-5);
+
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify(updatedTokens)
+    );
+  } catch {
+    // Public-review permission remains optional if local storage is unavailable.
+  }
+}
+
 export default function Home() {
   const [messages, setMessages] = useState([
     {
@@ -387,15 +432,20 @@ export default function Home() {
     }
 
     try {
+      const permissionToken = createPermissionToken();
+
       const { error } = await supabase.rpc("submit_feedback", {
         p_rating: rating,
         p_helpful: helpful,
         p_feedback_text: feedbackText.trim() || null,
+        p_permission_token: permissionToken,
       });
 
       if (error) {
         throw error;
       }
+
+      storePendingPermissionToken(permissionToken);
 
       setFeedbackSubmitted(true);
       setFeedbackThanks(true);
