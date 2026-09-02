@@ -58,6 +58,8 @@ export default function Home() {
   const [feedbackError, setFeedbackError] = useState("");
   const [feedbackThanks, setFeedbackThanks] = useState(false);
 
+  const [showAdminShortcut, setShowAdminShortcut] = useState(false);
+
   useEffect(() => {
     try {
       const submitted =
@@ -77,6 +79,33 @@ export default function Home() {
     } catch {
       // Session storage is optional. HIISSA still works without it.
     }
+  }, []);
+
+  useEffect(() => {
+    async function checkAdminAccess() {
+      if (!supabase) return;
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        setShowAdminShortcut(false);
+        return;
+      }
+
+      const { data: isAdmin, error } = await supabase.rpc(
+        "is_hiissa_admin"
+      );
+
+      if (!error && isAdmin === true) {
+        setShowAdminShortcut(true);
+      } else {
+        setShowAdminShortcut(false);
+      }
+    }
+
+    checkAdminAccess();
   }, []);
 
   const substantiveAssistantAnswers = Math.max(
@@ -398,6 +427,36 @@ export default function Home() {
       <div className="spark s2">♡</div>
 
       <section className="wrap">
+        {showAdminShortcut && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "14px",
+            }}
+          >
+            <a
+              href="/admin"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "7px",
+                textDecoration: "none",
+                border: "1px solid rgba(80, 102, 93, 0.18)",
+                background: "rgba(255, 253, 248, 0.92)",
+                color: "#466f67",
+                borderRadius: "999px",
+                padding: "9px 13px",
+                fontSize: "12px",
+                fontWeight: "800",
+                boxShadow: "0 8px 24px rgba(64, 86, 76, 0.08)",
+              }}
+            >
+              ⚙ Admin Dashboard
+            </a>
+          </div>
+        )}
+
         <header className="hero">
           <div className="logo">H</div>
 
