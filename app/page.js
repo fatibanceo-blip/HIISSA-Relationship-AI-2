@@ -77,6 +77,43 @@ function storePendingPermissionToken(token) {
   }
 }
 
+function getPendingPermissionTokens() {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const storageKey = "hiissa_pending_review_permission_tokens";
+    const existing = JSON.parse(
+      window.localStorage.getItem(storageKey) || "[]"
+    );
+
+    return Array.isArray(existing)
+      ? existing.filter(
+          (value) => typeof value === "string" && value.length >= 32
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function removePendingPermissionToken(token) {
+  if (!token || typeof window === "undefined") return;
+
+  try {
+    const storageKey = "hiissa_pending_review_permission_tokens";
+    const remainingTokens = getPendingPermissionTokens().filter(
+      (value) => value !== token
+    );
+
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify(remainingTokens)
+    );
+  } catch {
+    // Public-review permission remains optional if local storage is unavailable.
+  }
+}
+
 export default function Home() {
   const [messages, setMessages] = useState([
     {
@@ -103,6 +140,14 @@ export default function Home() {
   const [feedbackError, setFeedbackError] = useState("");
   const [feedbackThanks, setFeedbackThanks] = useState(false);
 
+  const [pendingReviewToken, setPendingReviewToken] = useState(null);
+  const [publicReviewText, setPublicReviewText] = useState("");
+  const [reviewPermissionSending, setReviewPermissionSending] = useState(false);
+  const [reviewPermissionError, setReviewPermissionError] = useState("");
+  const [reviewPermissionThanks, setReviewPermissionThanks] = useState(false);
+  const [reviewPermissionDismissed, setReviewPermissionDismissed] =
+    useState(false);
+
   const [showAdminShortcut, setShowAdminShortcut] = useState(false);
 
   useEffect(() => {
@@ -116,6 +161,12 @@ export default function Home() {
 
       if (submitted) {
         setFeedbackSubmitted(true);
+      } else {
+        const pendingTokens = getPendingPermissionTokens();
+
+        if (pendingTokens.length > 0) {
+          setPendingReviewToken(pendingTokens[0]);
+        }
       }
 
       if (Number.isFinite(deferredUntil) && deferredUntil >= 3) {
@@ -163,6 +214,14 @@ export default function Home() {
     !feedbackSubmitted &&
     !feedbackThanks &&
     substantiveAssistantAnswers >= feedbackEligibleAfter &&
+    !isSafetyContext(messages);
+
+  const showReviewPermissionCard =
+    !loading &&
+    pendingReviewToken &&
+    !reviewPermissionDismissed &&
+    !reviewPermissionThanks &&
+    substantiveAssistantAnswers >= 1 &&
     !isSafetyContext(messages);
 
   async function sendMessage(text = input) {
@@ -469,6 +528,71 @@ export default function Home() {
     }
   }
 
+  async function allowPublicReview() {
+    const cleanReview = publicReviewText.trim();
+
+    if (!pendingReviewToken || !cleanReview || reviewPermissionSending) return;
+
+    setReviewPermissionSending(true);
+    setReviewPermissionError("");
+
+    if (!supabase) {
+      setReviewPermissionError(
+        "Public-review permission couldn't be saved right now. Please try again later."
+      );
+      setReviewPermissionSending(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc(
+        "give_feedback_public_permission",
+        {
+          p_permission_token: pendingReviewToken,
+          p_public_display_text: cleanReview,
+        }
+      );
+
+      if (error) throw error;
+
+      if (data !== true) {
+        removePendingPermissionToken(pendingReviewToken);
+        setPendingReviewToken(null);
+        setReviewPermissionDismissed(true);
+        setReviewPermissionError(
+          "This permission request is no longer available."
+        );
+        return;
+      }
+
+      removePendingPermissionToken(pendingReviewToken);
+      setPendingReviewToken(null);
+      setPublicReviewText("");
+      setReviewPermissionThanks(true);
+
+      window.setTimeout(() => {
+        setReviewPermissionThanks(false);
+      }, 7000);
+    } catch {
+      setReviewPermissionError(
+        "Public-review permission couldn't be saved right now. Please try again."
+      );
+    } finally {
+      setReviewPermissionSending(false);
+    }
+  }
+
+  function keepReviewPrivate() {
+    if (pendingReviewToken) {
+      removePendingPermissionToken(pendingReviewToken);
+    }
+
+    setPendingReviewToken(null);
+    setPublicReviewText("");
+    setReviewPermissionError("");
+    setReviewPermissionDismissed(true);
+  }
+
   return (
     <main className="page">
       <div className="orb one" />
@@ -615,6 +739,166 @@ export default function Home() {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {showReviewPermissionCard && (
+            <div
+              style={{
+                margin: "6px 20px 18px",
+                padding: "18px",
+                borderRadius: "20px",
+                background: "#f4f7f3",
+                border: "1px solid rgba(80, 102, 93, 0.18)",
+                boxShadow: "0 10px 30px rgba(74, 92, 84, 0.08)",
+              }}
+            >
+              <div
+                style={{
+                  textAlign: "center",
+                  color: "#3f5f58",
+                  fontWeight: "800",
+                  fontSize: "16px",
+                }}
+              >
+                Would you like to share a review publicly? ❤️
+              </div>
+
+              <p
+                style={{
+                  textAlign: "center",
+                  color: "#66706c",
+                  fontSize: "13px",
+                  lineHeight: "1.6",
+                  margin: "7px 0 12px",
+                }}
+              >
+                This is completely optional. Your private feedback is not
+                published automatically.
+                <br />
+                Only the review text you enter below may be shared publicly.
+                Your conversation and private feedback are not automatically
+                included.
+              </p>
+
+              <textarea
+                value={publicReviewText}
+                onChange={(event) =>
+                  setPublicReviewText(event.target.value.slice(0, 1500))
+                }
+                placeholder="Write the exact words you are comfortable sharing publicly…"
+                rows={4}
+                style={{
+                  width: "100%",
+                  resize: "vertical",
+                  boxSizing: "border-box",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(80, 102, 93, 0.2)",
+                  padding: "12px",
+                  fontFamily: "inherit",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  outline: "none",
+                  background: "#ffffff",
+                  color: "#35443f",
+                }}
+              />
+
+              <div
+                style={{
+                  color: "#77807c",
+                  fontSize: "11px",
+                  lineHeight: "1.5",
+                  margin: "8px 2px 12px",
+                }}
+              >
+                🔒 Please don't include names, contact details, or identifying
+                personal information.
+              </div>
+
+              {reviewPermissionError && (
+                <div
+                  role="alert"
+                  style={{
+                    color: "#8a4f4f",
+                    background: "#fff6f4",
+                    borderRadius: "12px",
+                    padding: "9px 11px",
+                    fontSize: "12px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {reviewPermissionError}
+                </div>
+              )}
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "9px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={allowPublicReview}
+                  disabled={!publicReviewText.trim() || reviewPermissionSending}
+                  style={{
+                    border: "0",
+                    borderRadius: "999px",
+                    padding: "10px 16px",
+                    background: publicReviewText.trim()
+                      ? "#466f67"
+                      : "#c8cfcb",
+                    color: "#fff",
+                    fontWeight: "800",
+                    cursor:
+                      publicReviewText.trim() && !reviewPermissionSending
+                        ? "pointer"
+                        : "default",
+                  }}
+                >
+                  {reviewPermissionSending
+                    ? "Saving permission…"
+                    : "Allow public sharing"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={keepReviewPrivate}
+                  disabled={reviewPermissionSending}
+                  style={{
+                    border: "0",
+                    background: "transparent",
+                    color: "#68736f",
+                    padding: "10px 12px",
+                    fontWeight: "700",
+                    cursor: reviewPermissionSending ? "default" : "pointer",
+                  }}
+                >
+                  Keep private
+                </button>
+              </div>
+            </div>
+          )}
+
+          {reviewPermissionThanks && (
+            <div
+              role="status"
+              style={{
+                margin: "6px 20px 18px",
+                padding: "16px",
+                borderRadius: "18px",
+                background: "#f1f6f2",
+                border: "1px solid rgba(80, 102, 93, 0.18)",
+                color: "#466f67",
+                fontWeight: "800",
+                textAlign: "center",
+              }}
+            >
+              Thank you ❤️ You've given HIISSA permission to use this review
+              publicly.
             </div>
           )}
 
