@@ -149,6 +149,7 @@ export default function Home() {
     useState(false);
 
   const [showAdminShortcut, setShowAdminShortcut] = useState(false);
+  const [publicReviews, setPublicReviews] = useState([]);
 
   useEffect(() => {
     try {
@@ -202,6 +203,22 @@ export default function Home() {
     }
 
     checkAdminAccess();
+  }, []);
+
+  useEffect(() => {
+    async function loadPublicReviews() {
+      if (!supabase) return;
+
+      const { data, error } = await supabase.rpc(
+        "get_hiissa_public_reviews"
+      );
+
+      if (!error && Array.isArray(data)) {
+        setPublicReviews(data);
+      }
+    }
+
+    loadPublicReviews();
   }, []);
 
   const substantiveAssistantAnswers = Math.max(
@@ -1311,6 +1328,100 @@ export default function Home() {
             legal, or professional mental-health care.
           </p>
         </section>
+
+        {publicReviews.length > 0 && (
+          <section
+            aria-label="Public reviews"
+            style={{
+              marginTop: "22px",
+              padding: "24px 20px",
+              borderRadius: "24px",
+              background: "rgba(255, 253, 248, 0.92)",
+              border: "1px solid rgba(80, 102, 93, 0.16)",
+              boxShadow: "0 14px 40px rgba(64, 86, 76, 0.08)",
+            }}
+          >
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+              <div
+                style={{
+                  color: "#466f67",
+                  fontSize: "12px",
+                  fontWeight: "800",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  marginBottom: "6px",
+                }}
+              >
+                Shared with permission
+              </div>
+
+              <h2
+                style={{
+                  margin: 0,
+                  color: "#32453f",
+                  fontSize: "24px",
+                  lineHeight: "1.25",
+                }}
+              >
+                What people are saying about HIISSA
+              </h2>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: "12px",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              }}
+            >
+              {publicReviews.map((review, index) => {
+                const safeRating = Math.max(
+                  0,
+                  Math.min(5, Number(review.rating) || 0)
+                );
+
+                return (
+                  <article
+                    key={`${review.permission_date || "review"}-${index}`}
+                    style={{
+                      padding: "17px",
+                      borderRadius: "18px",
+                      background: "#ffffff",
+                      border: "1px solid rgba(80, 102, 93, 0.14)",
+                    }}
+                  >
+                    <div
+                      aria-label={`${safeRating} out of 5 stars`}
+                      style={{
+                        color: "#b79a5b",
+                        fontSize: "17px",
+                        letterSpacing: "2px",
+                        marginBottom: "9px",
+                      }}
+                    >
+                      {"★".repeat(safeRating)}
+                      <span style={{ color: "#dddcd6" }}>
+                        {"★".repeat(5 - safeRating)}
+                      </span>
+                    </div>
+
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "#4f5b56",
+                        fontSize: "14px",
+                        lineHeight: "1.65",
+                        whiteSpace: "pre-wrap",
+                      }}
+                    >
+                      “{review.public_display_text}”
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <footer>
           <b>HIISSA</b> · Healing is transformation, not erasure.
