@@ -109,10 +109,21 @@ export default function PrivacyPage() {
 
           <PrivacySection title="Public reviews and permission">
             Feedback submitted through HIISSA is not automatically displayed
-            publicly. If HIISSA offers an option in the future to share
-            feedback publicly as a review or testimonial, separate explicit
-            permission will be requested before that feedback is used
-            publicly.
+            publicly. If HIISSA offers you a separate option to allow a review
+            to be shared publicly, you will be asked for explicit permission
+            before that review is used publicly.
+            <br />
+            <br />
+            When feedback is submitted, HIISSA may create a random technical
+            permission token and store that token in your browser. A hashed
+            version of the token may be stored with the feedback in Supabase.
+            This helps HIISSA recognise the same browser later if it offers you
+            a separate choice about public sharing.
+            <br />
+            <br />
+            The permission token does not contain your name, contact details,
+            conversation, or the text of your feedback. Only the review text
+            you separately approve for public sharing may be used publicly.
           </PrivacySection>
 
           <PrivacySection title="Share only what is necessary">
