@@ -15,8 +15,10 @@ export default function AdminPage() {
   const [stats, setStats] = useState(null);
   const [distribution, setDistribution] = useState([]);
   const [writtenFeedback, setWrittenFeedback] = useState([]);
+  const [publicReviews, setPublicReviews] = useState([]);
   const [statsError, setStatsError] = useState("");
   const [feedbackError, setFeedbackError] = useState("");
+  const [publicReviewsError, setPublicReviewsError] = useState("");
 
   useEffect(() => {
     async function loadAdminDashboard() {
@@ -77,6 +79,19 @@ export default function AdminPage() {
         );
       } else {
         setWrittenFeedback(writtenFeedbackData || []);
+      }
+
+      const {
+        data: publicReviewsData,
+        error: publicReviewsLoadError,
+      } = await supabase.rpc("get_hiissa_admin_public_reviews");
+
+      if (publicReviewsLoadError) {
+        setPublicReviewsError(
+          "Your authorised public reviews could not be loaded."
+        );
+      } else {
+        setPublicReviews(publicReviewsData || []);
       }
 
       setChecking(false);
@@ -225,6 +240,48 @@ export default function AdminPage() {
                       {item.suggestion_text}
                     </div>
                   ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div style={sectionStyle}>
+          <h2 style={sectionHeadingStyle}>Public reviews</h2>
+
+          <p style={sectionIntroStyle}>
+            Reviews that have received separate permission for public sharing.
+            Only the approved public wording is shown here.
+          </p>
+
+          {publicReviewsError ? (
+            <p style={errorStyle}>{publicReviewsError}</p>
+          ) : publicReviews.length === 0 ? (
+            <div style={emptyFeedbackStyle}>
+              No reviews currently have permission for public display.
+            </div>
+          ) : (
+            <div style={feedbackListStyle}>
+              {publicReviews.map((item) => (
+                <div key={item.id} style={feedbackCardStyle}>
+                  <div style={feedbackTopStyle}>
+                    <div style={starsStyle}>
+                      {renderStars(Number(item.rating))}
+                    </div>
+
+                    <span style={publicBadgeStyle}>
+                      Public permission ✓
+                    </span>
+                  </div>
+
+                  <div style={dateStyle}>
+                    Permission given:{" "}
+                    {formatFeedbackDate(item.permission_date)}
+                  </div>
+
+                  <div style={feedbackTextStyle}>
+                    “{item.public_display_text}”
+                  </div>
                 </div>
               ))}
             </div>
@@ -456,6 +513,15 @@ const feedbackTopStyle = {
 };
 
 const helpfulBadgeStyle = {
+  color: "#466f67",
+  fontSize: "12px",
+  fontWeight: "800",
+  padding: "6px 9px",
+  borderRadius: "999px",
+  background: "rgba(85, 120, 109, 0.09)",
+};
+
+const publicBadgeStyle = {
   color: "#466f67",
   fontSize: "12px",
   fontWeight: "800",
