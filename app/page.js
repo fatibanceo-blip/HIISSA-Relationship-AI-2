@@ -1316,6 +1316,9 @@ export default function Home() {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Tell me what's on your heart…"
               rows={1}
+               spellCheck={true} 
+              autoCorrect="on"
+              autoCapitalize="sentences"
             />
 
             <button type="submit" disabled={!input.trim() || loading}>
