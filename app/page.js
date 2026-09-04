@@ -129,7 +129,11 @@ export default function Home() {
   const [voiceHelp, setVoiceHelp] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [speakingIndex, setSpeakingIndex] = useState(null);
-
+  const [wordingLoading, setWordingLoading] = useState(false);
+const [wordingSuggestion, setWordingSuggestion] = useState("");
+const [wordingOriginal, setWordingOriginal] = useState("");
+const [wordingError, setWordingError] = useState("");
+const [wordingUndo, setWordingUndo] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [feedbackEligibleAfter, setFeedbackEligibleAfter] = useState(3);
   const [feedbackFormOpen, setFeedbackFormOpen] = useState(false);
@@ -244,12 +248,16 @@ export default function Home() {
   async function sendMessage(text = input) {
     const clean = text.trim();
 
-    if (!clean || loading) return;
+    if (!clean || loading || wordingLoading) return;
 
     const next = [...messages, { role: "user", content: clean }];
 
     setMessages(next);
     setInput("");
+    setWordingSuggestion("");
+setWordingOriginal("");
+setWordingError("");
+setWordingUndo("");
     setLoading(true);
 
     try {
@@ -296,8 +304,80 @@ export default function Home() {
       setLoading(false);
     }
   }
+async function helpMeWordThis() {
+  const clean = input.trim();
 
+  if (!clean || loading || wordingLoading) return;
+
+  setWordingLoading(true);
+  setWordingError("");
+  setWordingSuggestion("");
+  setWordingOriginal(input);
+  setWordingUndo("");
+
+  try {
+    const res = await fetch("/api/wording", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text: clean }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 413) {
+        setWordingError(
+          "Your message is a little too long. ❤️ Please shorten it to 6,000 characters or fewer and try again."
+        );
+        return;
+      }
+
+      throw new Error("Wording request failed");
+    }
+
+    if (!data.rewritten?.trim()) {
+      throw new Error("No rewritten wording returned");
+    }
+
+    setWordingSuggestion(data.rewritten.trim());
+  } catch {
+    setWordingError(
+      "HIISSA couldn't help with the wording right now. Please try again. 💛"
+    );
+  } finally {
+    setWordingLoading(false);
+  }
+}
+
+function useWordingSuggestion() {
+  if (!wordingSuggestion) return;
+
+  setWordingUndo(wordingOriginal);
+  setInput(wordingSuggestion);
+  setWordingSuggestion("");
+  setWordingOriginal("");
+  setWordingError("");
+}
+
+function keepOriginalWording() {
+  setWordingSuggestion("");
+  setWordingOriginal("");
+  setWordingError("");
+}
+
+function undoWordingChange() {
+  if (!wordingUndo) return;
+
+  setInput(wordingUndo);
+  setWordingUndo("");
+  setWordingSuggestion("");
+  setWordingOriginal("");
+  setWordingError("");
+}
   async function copyHiissaLink() {
+    
     try {
       await navigator.clipboard.writeText(window.location.href);
       setLinkCopied(true);
@@ -334,6 +414,9 @@ export default function Home() {
 
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
+      setWordingSuggestion("");
+setWordingOriginal("");
+setWordingError("");
 
       if (transcript.trim()) {
         setInput((current) =>
@@ -1304,7 +1387,146 @@ export default function Home() {
             </div>
           )}
 
-          <form
+<div
+  style={{
+    padding: "0 20px 12px",
+  }}
+>
+  <button
+    type="button"
+    onClick={helpMeWordThis}
+    disabled={!input.trim() || loading || wordingLoading}
+    style={{
+      border: "1px solid rgba(80, 102, 93, 0.18)",
+      background: "#fffdf8",
+      color: "#466f67",
+      borderRadius: "999px",
+      padding: "9px 14px",
+      fontSize: "12px",
+      fontWeight: "800",
+      cursor:
+        !input.trim() || loading || wordingLoading
+          ? "default"
+          : "pointer",
+      opacity:
+        !input.trim() || loading || wordingLoading ? 0.6 : 1,
+    }}
+  >
+    {wordingLoading ? "✨ Helping you word it…" : "✨ Help me word this"}
+  </button>
+
+  {wordingError && (
+    <div
+      role="alert"
+      style={{
+        marginTop: "10px",
+        padding: "11px 13px",
+        borderRadius: "14px",
+        background: "#fff6f4",
+        color: "#8a4f4f",
+        fontSize: "12px",
+        lineHeight: "1.5",
+      }}
+    >
+      {wordingError}
+    </div>
+  )}
+
+  {wordingSuggestion && (
+    <div
+      role="status"
+      style={{
+        marginTop: "10px",
+        padding: "15px",
+        borderRadius: "18px",
+        background: "#f4f7f3",
+        border: "1px solid rgba(80, 102, 93, 0.18)",
+      }}
+    >
+      <div
+        style={{
+          color: "#3f5f58",
+          fontWeight: "800",
+          fontSize: "14px",
+          marginBottom: "8px",
+        }}
+      >
+        ✨ A clearer way to say it
+      </div>
+
+      <div
+        style={{
+          color: "#4f5b56",
+          fontSize: "14px",
+          lineHeight: "1.6",
+          whiteSpace: "pre-wrap",
+        }}
+      >
+        {wordingSuggestion}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          flexWrap: "wrap",
+          marginTop: "13px",
+        }}
+      >
+        <button
+          type="button"
+          onClick={useWordingSuggestion}
+          style={{
+            border: "0",
+            borderRadius: "999px",
+            padding: "9px 14px",
+            background: "#466f67",
+            color: "#fff",
+            fontWeight: "800",
+            cursor: "pointer",
+          }}
+        >
+          Use this version
+        </button>
+
+        <button
+          type="button"
+          onClick={keepOriginalWording}
+          style={{
+            border: "0",
+            background: "transparent",
+            color: "#68736f",
+            padding: "9px 12px",
+            fontWeight: "700",
+            cursor: "pointer",
+          }}
+        >
+          Keep my original
+        </button>
+      </div>
+    </div>
+  )}
+
+  {wordingUndo && !wordingSuggestion && (
+    <button
+      type="button"
+      onClick={undoWordingChange}
+      style={{
+        marginTop: "8px",
+        border: "0",
+        background: "transparent",
+        color: "#68736f",
+        padding: "5px 2px",
+        fontSize: "12px",
+        fontWeight: "700",
+        cursor: "pointer",
+      }}
+    >
+      ↩ Undo wording change
+    </button>
+  )}
+</div>         
+<form
             className="composer"
             onSubmit={(event) => {
               event.preventDefault();
@@ -1313,7 +1535,12 @@ export default function Home() {
           >
             <textarea
               value={input}
-              onChange={(event) => setInput(event.target.value)}
+              onChange={(event) => {
+  setInput(event.target.value);
+  setWordingSuggestion("");
+  setWordingOriginal("");
+  setWordingError("");
+}}
               placeholder="Tell me what's on your heart…"
               rows={1}
                spellCheck={true} 
@@ -1321,7 +1548,10 @@ export default function Home() {
               autoCapitalize="sentences"
             />
 
-            <button type="submit" disabled={!input.trim() || loading}>
+            <button
+  type="submit"
+  disabled={!input.trim() || loading || wordingLoading}
+>
               Send ↑
             </button>
           </form>
