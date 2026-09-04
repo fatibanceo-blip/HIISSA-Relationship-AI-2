@@ -9,7 +9,26 @@ const starters = [
   ["🧩", "I don't understand their behavior."],
   ["🌱", "I want to heal and move forward."],
 ];
-
+const conversationIntents = [
+  {
+    value: "listen",
+    emoji: "❤️",
+    label: "Just listen",
+    description: "I need somewhere to talk.",
+  },
+  {
+    value: "understand",
+    emoji: "🧭",
+    label: "Help me understand",
+    description: "Help me make sense of what's happening.",
+  },
+  {
+    value: "move_forward",
+    emoji: "🌱",
+    label: "Help me move forward",
+    description: "Help me think about what I can do next.",
+  },
+];
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -124,6 +143,8 @@ export default function Home() {
   ]);
 
   const [input, setInput] = useState("");
+  const [conversationIntent, setConversationIntent] = useState(null);
+  const [showIntentChoices, setShowIntentChoices] = useState(false);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [voiceHelp, setVoiceHelp] = useState(false);
@@ -266,7 +287,10 @@ setWordingUndo("");
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({
+  messages: next,
+  conversationIntent,
+}),
       });
 
       const data = await res.json();
@@ -841,7 +865,91 @@ setWordingError("");
               </div>
             </div>
           )}
+{(messages.length === 1 || showIntentChoices) && (
+  <div
+    style={{
+      margin: "6px 20px 18px",
+      padding: "16px",
+      borderRadius: "18px",
+      background: "#f8faf9",
+      border: "1px solid rgba(80, 102, 93, 0.14)",
+    }}
+  >
+    <div
+      style={{
+        textAlign: "center",
+        fontWeight: "800",
+        color: "#3f5f58",
+        marginBottom: "4px",
+      }}
+    >
+      What would help most right now?
+    </div>
 
+    <div
+      style={{
+        textAlign: "center",
+        fontSize: "13px",
+        color: "#6f7f79",
+        marginBottom: "12px",
+      }}
+    >
+      Choose if you want to — or just start talking.
+    </div>
+
+    <div
+      style={{
+        display: "grid",
+        gap: "8px",
+      }}
+    >
+      {conversationIntents.map((intent) => (
+        <button
+          key={intent.value}
+          type="button"
+         onClick={() => {
+  setConversationIntent(intent.value);
+  setShowIntentChoices(false);
+}}
+          style={{
+            width: "100%",
+            textAlign: "left",
+            padding: "11px 12px",
+            borderRadius: "14px",
+            border:
+              conversationIntent === intent.value
+                ? "2px solid #587a70"
+                : "1px solid rgba(80, 102, 93, 0.18)",
+            background:
+              conversationIntent === intent.value ? "#eef5f2" : "#ffffff",
+            cursor: "pointer",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "800",
+              color: "#3f5f58",
+              fontSize: "14px",
+            }}
+          >
+            {intent.emoji} {intent.label}
+          </div>
+
+          <div
+            style={{
+              marginTop: "2px",
+              color: "#6f7f79",
+              fontSize: "12px",
+              lineHeight: "1.4",
+            }}
+          >
+            {intent.description}
+          </div>
+        </button>
+      ))}
+    </div>
+  </div>
+)}
           {showReviewPermissionCard && (
             <div
               style={{
@@ -1547,7 +1655,23 @@ setWordingError("");
               autoCorrect="on"
               autoCapitalize="sentences"
             />
-
+{conversationIntent && !showIntentChoices && (
+  <button
+    type="button"
+    onClick={() => setShowIntentChoices(true)}
+    style={{
+      background: "transparent",
+      border: "none",
+      padding: "4px 0",
+      color: "#587a70",
+      fontSize: "12px",
+      cursor: "pointer",
+      textAlign: "left",
+    }}
+  >
+    Change what I need from HIISSA
+  </button>
+)}
             <button
   type="submit"
   disabled={!input.trim() || loading || wordingLoading}
