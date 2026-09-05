@@ -1649,28 +1649,48 @@ setWordingError("");
   setWordingOriginal("");
   setWordingError("");
 }}
-              placeholder="Tell me what's on your heart…"
+              placeholder="Tell HIISSA what's on your heart…"
               rows={1}
                spellCheck={true} 
               autoCorrect="on"
               autoCapitalize="sentences"
             />
 {conversationIntent && !showIntentChoices && (
-  <button
-    type="button"
-    onClick={() => setShowIntentChoices(true)}
+  <div
     style={{
-      background: "transparent",
-      border: "none",
-      padding: "4px 0",
+      margin: "0 0 8px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "10px",
       color: "#587a70",
       fontSize: "12px",
-      cursor: "pointer",
-      textAlign: "left",
+      fontWeight: "700",
+      width: "100%",
     }}
   >
-    Change what I need from HIISSA
-  </button>
+    <span>
+      {conversationIntent === "listen" && "❤️ Just listen"}
+      {conversationIntent === "understand" && "🧭 Help me understand"}
+      {conversationIntent === "move_forward" && "🌱 Help me move forward"}
+    </span>
+
+    <button
+      type="button"
+      onClick={() => setShowIntentChoices(true)}
+      style={{
+        background: "transparent",
+        border: "none",
+        padding: "4px 0",
+        color: "#587a70",
+        fontSize: "12px",
+        fontWeight: "700",
+        cursor: "pointer",
+      }}
+    >
+      Change
+    </button>
+  </div>
 )}
             <button
   type="submit"
