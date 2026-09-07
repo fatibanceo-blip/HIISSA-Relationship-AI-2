@@ -1634,31 +1634,10 @@ setWordingError("");
     </button>
   )}
 </div>         
-<form
-            className="composer"
-            onSubmit={(event) => {
-              event.preventDefault();
-              sendMessage();
-            }}
-          >
-            <textarea
-              value={input}
-              onChange={(event) => {
-  setInput(event.target.value);
-  setWordingSuggestion("");
-  setWordingOriginal("");
-  setWordingError("");
-}}
-              placeholder="Tell HIISSA what's on your heart…"
-              rows={1}
-               spellCheck={true} 
-              autoCorrect="on"
-              autoCapitalize="sentences"
-            />
 {conversationIntent && !showIntentChoices && (
   <div
     style={{
-      margin: "0 0 8px",
+      margin: "0 0 10px",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
@@ -1692,6 +1671,34 @@ setWordingError("");
     </button>
   </div>
 )}
+<form
+            className="composer"
+            onSubmit={(event) => {
+              event.preventDefault();
+              sendMessage();
+            }}
+          >
+            <textarea
+              value={input}
+              onChange={(event) => {
+  setInput(event.target.value);
+  setWordingSuggestion("");
+  setWordingOriginal("");
+  setWordingError("");
+}}
+              placeholder={
+  conversationIntent === "understand"
+    ? "Tell me what you're trying to understand…"
+    : conversationIntent === "move_forward"
+    ? "Tell me what you'd like help moving forward with…"
+    : "Tell me what's on your heart…"
+}
+              rows={1}
+               spellCheck={true} 
+              autoCorrect="on"
+              autoCapitalize="sentences"
+            />
+
             <button
   type="submit"
   disabled={!input.trim() || loading || wordingLoading}
