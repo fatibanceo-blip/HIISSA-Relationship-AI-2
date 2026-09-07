@@ -798,7 +798,41 @@ setWordingError("");
               <strong>HIISSA Relationship AI</strong>
               <small>● Here with you</small>
             </div>
-          </div>
+         <button
+  type="button"
+  onClick={() => {
+    setMessages([
+      {
+        role: "assistant",
+        content:
+          "Hi, I’m HIISSA Relationship AI. Tell me what’s happening, and I’ll help you look at it with empathy, balance, and self-respect.",
+      },
+    ]);
+    setInput("");
+    setConversationIntent("");
+    setShowIntentChoices(false);
+    setWordingSuggestion("");
+    setWordingOriginal("");
+    setWordingError("");
+  }}
+  aria-label="Start a new chat"
+  title="New Chat"
+  style={{
+    marginLeft: "auto",
+    background: "transparent",
+    border: "1px solid rgba(47, 63, 59, 0.16)",
+    borderRadius: "999px",
+    padding: "7px 11px",
+    color: "#587a70",
+    fontSize: "12px",
+    fontWeight: "700",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  }}
+>
+  ＋ New Chat
+</button>
+              </div>
 
           <div className="messages">
             {messages.map((message, index) => (
