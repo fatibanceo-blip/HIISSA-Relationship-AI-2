@@ -142,6 +142,8 @@ export default function Home() {
     },
   ]);
 
+ const [previousChats, setPreviousChats] = useState([]); 
+  const [showPreviousChats, setShowPreviousChats] = useState(false);
   const [input, setInput] = useState("");
   const [conversationIntent, setConversationIntent] = useState(null);
   const [showIntentChoices, setShowIntentChoices] = useState(false);
@@ -203,6 +205,19 @@ const [wordingUndo, setWordingUndo] = useState("");
     }
   }, []);
 
+  useEffect(() => {
+  try {
+    const savedChats = JSON.parse(
+      window.localStorage.getItem("hiissa_previous_chats") || "[]"
+    );
+
+    if (Array.isArray(savedChats)) {
+      setPreviousChats(savedChats);
+    }
+  } catch {
+    setPreviousChats([]);
+  }
+}, []);
   useEffect(() => {
     async function checkAdminAccess() {
       if (!supabase) return;
@@ -801,6 +816,35 @@ setWordingError("");
          <button
   type="button"
   onClick={() => {
+   if (messages.length > 1) {
+  const firstUserMessage =
+    messages.find((message) => message.role === "user")?.content ||
+    "Previous conversation";
+
+  const savedChat = {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    title:
+      firstUserMessage.length > 48
+        ? `${firstUserMessage.slice(0, 48)}…`
+        : firstUserMessage,
+    createdAt: new Date().toISOString(),
+    conversationIntent,
+    messages,
+  };
+
+  const updatedChats = [savedChat, ...previousChats].slice(0, 20);
+
+  setPreviousChats(updatedChats);
+
+  try {
+    window.localStorage.setItem(
+      "hiissa_previous_chats",
+      JSON.stringify(updatedChats)
+    );
+  } catch {
+    // Previous Chats remains optional if browser storage is unavailable.
+  }
+} 
     setMessages([
       {
         role: "assistant",
@@ -832,8 +876,131 @@ setWordingError("");
 >
   ＋ New Chat
 </button>
-              </div>
+<button
+  type="button"
+  onClick={() => setShowPreviousChats((current) => !current)}
+  aria-label="View previous chats"
+  title="Previous Chats"
+  style={{
+    background: "transparent",
+    border: "1px solid rgba(47, 63, 59, 0.16)",
+    borderRadius: "999px",
+    padding: "7px 11px",
+    color: "#587a70",
+    fontSize: "12px",
+    fontWeight: "700",
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+  }}
+>
+  🕘 Chats
+</button>
+    </div>
+{showPreviousChats && (
+  <div
+    style={{
+      margin: "14px 18px 6px",
+      padding: "16px",
+      borderRadius: "18px",
+      border: "1px solid rgba(47, 63, 59, 0.12)",
+      background: "rgba(255, 253, 248, 0.96)",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "12px",
+        marginBottom: "12px",
+      }}
+    >
+      <strong style={{ color: "#365d54" }}>Previous Chats</strong>
 
+      <button
+        type="button"
+        onClick={() => setShowPreviousChats(false)}
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "#587a70",
+          fontSize: "12px",
+          fontWeight: "700",
+          cursor: "pointer",
+        }}
+      >
+        Close
+      </button>
+    </div>
+
+    {previousChats.length === 0 ? (
+      <p
+        style={{
+          margin: 0,
+          color: "#71817c",
+          fontSize: "13px",
+          lineHeight: "1.5",
+        }}
+      >
+        Your previous conversations will appear here after you start a new chat.
+      </p>
+    ) : (
+      <div
+        style={{
+          display: "grid",
+          gap: "8px",
+        }}
+      >
+        {previousChats.map((chat) => (
+          <button
+            key={chat.id}
+            type="button"
+            onClick={() => {
+              setMessages(chat.messages);
+              setConversationIntent(chat.conversationIntent || "");
+              setShowIntentChoices(false);
+              setInput("");
+              setWordingSuggestion("");
+              setWordingOriginal("");
+              setWordingError("");
+              setShowPreviousChats(false);
+            }}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "12px 14px",
+              borderRadius: "14px",
+              border: "1px solid rgba(47, 63, 59, 0.12)",
+              background: "#fff",
+              color: "#365d54",
+              cursor: "pointer",
+            }}
+          >
+            <strong
+              style={{
+                display: "block",
+                fontSize: "13px",
+                marginBottom: "4px",
+              }}
+            >
+              {chat.title}
+            </strong>
+
+            <span
+              style={{
+                display: "block",
+                fontSize: "11px",
+                color: "#7a8984",
+              }}
+            >
+              {new Date(chat.createdAt).toLocaleDateString()}
+            </span>
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+)}
           <div className="messages">
             {messages.map((message, index) => (
               <div key={index} className={"row " + message.role}>
