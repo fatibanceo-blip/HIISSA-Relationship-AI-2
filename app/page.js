@@ -143,6 +143,7 @@ export default function Home() {
   ]);
 
  const [previousChats, setPreviousChats] = useState([]); 
+ const [activePreviousChatId, setActivePreviousChatId] = useState(null); 
   const [showPreviousChats, setShowPreviousChats] = useState(false);
   const [activeChatLoaded, setActiveChatLoaded] = useState(false);
   const [input, setInput] = useState("");
@@ -233,6 +234,7 @@ const [wordingUndo, setWordingUndo] = useState("");
       setMessages(savedActiveChat.messages);
       setInput(savedActiveChat.input || "");
       setConversationIntent(savedActiveChat.conversationIntent || null);
+      setActivePreviousChatId(savedActiveChat.activePreviousChatId || null);
       setShowIntentChoices(false);
     }
   } catch {
@@ -251,12 +253,40 @@ const [wordingUndo, setWordingUndo] = useState("");
         messages,
         input,
         conversationIntent,
+       activePreviousChatId, 
       })
     );
   } catch {
     // Active chat saving remains optional if browser storage is unavailable.
   }
-}, [messages, input, conversationIntent, activeChatLoaded]); 
+}, [messages, input, conversationIntent, activePreviousChatId, activeChatLoaded]); 
+
+ useEffect(() => {
+  if (!activeChatLoaded || !activePreviousChatId) return;
+
+  setPreviousChats((currentChats) => {
+    const updatedChats = currentChats.map((chat) =>
+      chat.id === activePreviousChatId
+        ? {
+            ...chat,
+            messages,
+            conversationIntent,
+          }
+        : chat
+    );
+
+    try {
+      window.localStorage.setItem(
+        "hiissa_previous_chats",
+        JSON.stringify(updatedChats)
+      );
+    } catch {
+      // Previous Chats remains optional if browser storage is unavailable.
+    }
+
+    return updatedChats;
+  });
+}, [messages, conversationIntent, activePreviousChatId, activeChatLoaded]); 
   useEffect(() => {
     async function checkAdminAccess() {
       if (!supabase) return;
@@ -898,6 +928,7 @@ setWordingError("");
     ]);
     setInput("");
     setConversationIntent("");
+    setActivePreviousChatId(null);
     setShowIntentChoices(false);
     setWordingSuggestion("");
     setWordingOriginal("");
@@ -1001,6 +1032,7 @@ setWordingError("");
             type="button"
             onClick={() => {
               setMessages(chat.messages);
+              setActivePreviousChatId(chat.id);
               setConversationIntent(chat.conversationIntent || "");
               setShowIntentChoices(false);
               setInput("");
