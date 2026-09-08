@@ -901,7 +901,9 @@ setWordingError("");
     messages,
   };
 
-  const updatedChats = [savedChat, ...previousChats].slice(0, 20);
+  const updatedChats = activePreviousChatId
+  ? previousChats
+  : [savedChat, ...previousChats].slice(0, 20);
 
   setPreviousChats(updatedChats);
 
