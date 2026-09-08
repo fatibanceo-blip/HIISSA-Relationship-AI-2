@@ -144,6 +144,7 @@ export default function Home() {
 
  const [previousChats, setPreviousChats] = useState([]); 
   const [showPreviousChats, setShowPreviousChats] = useState(false);
+  const [activeChatLoaded, setActiveChatLoaded] = useState(false);
   const [input, setInput] = useState("");
   const [conversationIntent, setConversationIntent] = useState(null);
   const [showIntentChoices, setShowIntentChoices] = useState(false);
@@ -218,6 +219,44 @@ const [wordingUndo, setWordingUndo] = useState("");
     setPreviousChats([]);
   }
 }, []);
+ useEffect(() => {
+  try {
+    const savedActiveChat = JSON.parse(
+      window.localStorage.getItem("hiissa_active_chat") || "null"
+    );
+
+    if (
+      savedActiveChat &&
+      Array.isArray(savedActiveChat.messages) &&
+      savedActiveChat.messages.length > 0
+    ) {
+      setMessages(savedActiveChat.messages);
+      setInput(savedActiveChat.input || "");
+      setConversationIntent(savedActiveChat.conversationIntent || null);
+      setShowIntentChoices(false);
+    }
+  } catch {
+    // HIISSA starts fresh if the active chat cannot be restored.
+  } finally {
+    setActiveChatLoaded(true);
+  }
+}, []); 
+ useEffect(() => {
+  if (!activeChatLoaded) return;
+
+  try {
+    window.localStorage.setItem(
+      "hiissa_active_chat",
+      JSON.stringify({
+        messages,
+        input,
+        conversationIntent,
+      })
+    );
+  } catch {
+    // Active chat saving remains optional if browser storage is unavailable.
+  }
+}, [messages, input, conversationIntent, activeChatLoaded]); 
   useEffect(() => {
     async function checkAdminAccess() {
       if (!supabase) return;
@@ -845,6 +884,11 @@ setWordingError("");
     // Previous Chats remains optional if browser storage is unavailable.
   }
 } 
+ try {
+  window.localStorage.removeItem("hiissa_active_chat");
+} catch {
+  // HIISSA still starts a new chat if browser storage is unavailable.
+}   
     setMessages([
       {
         role: "assistant",
