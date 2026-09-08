@@ -136,15 +136,82 @@ function removePendingPermissionToken(token) {
 function renderMessageContent(content) {
   if (!content) return null;
 
-  const parts = content.split(/(\*\*.*?\*\*)/g);
+  const renderInline = (text, keyPrefix) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
 
-  return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>;
-    }
+    return parts.map((part, index) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <strong key={`${keyPrefix}-${index}`}>
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
 
-    return <span key={index}>{part}</span>;
-  });
+      return <span key={`${keyPrefix}-${index}`}>{part}</span>;
+    });
+  };
+
+  const lines = content.split("\n");
+
+  return (
+    <>
+      {lines.map((line, index) => {
+        const trimmed = line.trim();
+
+        if (!trimmed) {
+          return <div key={`space-${index}`} style={{ height: "10px" }} />;
+        }
+
+        if (trimmed.startsWith(">")) {
+          return (
+            <div
+              key={`quote-${index}`}
+              style={{
+                borderLeft: "3px solid rgba(88, 122, 112, 0.35)",
+                paddingLeft: "12px",
+                margin: "8px 0",
+                color: "#466f67",
+                fontStyle: "italic",
+              }}
+            >
+              {renderInline(
+                trimmed.replace(/^>\s?/, ""),
+                `quote-${index}`
+              )}
+            </div>
+          );
+        }
+
+        if (/^[-*]\s+/.test(trimmed)) {
+          return (
+            <div
+              key={`bullet-${index}`}
+              style={{
+                display: "flex",
+                gap: "8px",
+                margin: "4px 0",
+              }}
+            >
+              <span aria-hidden="true">•</span>
+              <span>
+                {renderInline(
+                  trimmed.replace(/^[-*]\s+/, ""),
+                  `bullet-${index}`
+                )}
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <div key={`line-${index}`}>
+            {renderInline(line, `line-${index}`)}
+          </div>
+        );
+      })}
+    </>
+  );
 }
 
 export default function Home() {
