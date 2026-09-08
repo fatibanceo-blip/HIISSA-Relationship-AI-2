@@ -133,6 +133,20 @@ function removePendingPermissionToken(token) {
   }
 }
 
+function renderMessageContent(content) {
+  if (!content) return null;
+
+  const parts = content.split(/(\*\*.*?\*\*)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index}>{part.slice(2, -2)}</strong>;
+    }
+
+    return <span key={index}>{part}</span>;
+  });
+}
+
 export default function Home() {
   const [messages, setMessages] = useState([
     {
@@ -1135,7 +1149,7 @@ setWordingError("");
               <div key={index} className={"row " + message.role}>
                 <div>
                   <div className={"bubble " + message.role}>
-                    {message.content}
+                   {renderMessageContent(message.content)}
                   </div>
 
                   {message.role === "assistant" && (
