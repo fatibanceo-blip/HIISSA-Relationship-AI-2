@@ -174,7 +174,25 @@ function renderMessageContent(content) {
         if (!trimmed) {
           return <div key={`space-${index}`} style={{ height: "10px" }} />;
         }
-
+if (trimmed.startsWith("### ")) {
+  return (
+    <div
+      key={`heading-${index}`}
+      style={{
+        fontWeight: "800",
+        fontSize: "16px",
+        lineHeight: "1.45",
+        margin: "12px 0 6px",
+        color: "#2f3f3b",
+      }}
+    >
+      {renderInline(
+        trimmed.replace(/^###\s+/, ""),
+        `heading-${index}`
+      )}
+    </div>
+  );
+}
         if (trimmed.startsWith(">")) {
           return (
             <div
