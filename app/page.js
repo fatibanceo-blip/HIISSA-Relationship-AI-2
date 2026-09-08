@@ -266,6 +266,7 @@ export default function Home() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [speakingIndex, setSpeakingIndex] = useState(null);
   const [wordingLoading, setWordingLoading] = useState(false);
+  const [wordingModeActive, setWordingModeActive] = useState(false);
 const [wordingSuggestion, setWordingSuggestion] = useState("");
 const [wordingOriginal, setWordingOriginal] = useState("");
 const [wordingError, setWordingError] = useState("");
@@ -1076,6 +1077,7 @@ setWordingError("");
     ]);
     setInput("");
     setConversationIntent("");
+    setWordingModeActive(false);
     setActivePreviousChatId(null);
     setShowIntentChoices(false);
     setWordingSuggestion("");
@@ -1943,22 +1945,33 @@ setWordingError("");
 >
   <button
     type="button"
-    onClick={helpMeWordThis}
-    disabled={!input.trim() || loading || wordingLoading}
+   onClick={() => {
+  if (!input.trim()) {
+    setWordingModeActive(true);
+    setConversationIntent(null);
+    setShowIntentChoices(false);
+    return;
+  }
+
+  helpMeWordThis();
+}}
+    disabled={loading || wordingLoading}
     style={{
-      border: "1px solid rgba(80, 102, 93, 0.18)",
-      background: "#fffdf8",
+     border: wordingModeActive
+  ? "2px solid #587a70"
+  : "1px solid rgba(80, 102, 93, 0.18)",
+background: wordingModeActive ? "#eef5f2" : "#fffdf8",
       color: "#466f67",
       borderRadius: "999px",
       padding: "9px 14px",
       fontSize: "12px",
       fontWeight: "800",
-      cursor:
-        !input.trim() || loading || wordingLoading
-          ? "default"
-          : "pointer",
-      opacity:
-        !input.trim() || loading || wordingLoading ? 0.6 : 1,
+    cursor:
+  loading || wordingLoading
+    ? "default"
+    : "pointer",
+opacity:
+  loading || wordingLoading ? 0.6 : 1,
     }}
   >
     {wordingLoading ? "✨ Helping you word it…" : "✨ Help me word this"}
@@ -2075,7 +2088,7 @@ setWordingError("");
     </button>
   )}
 </div>         
-{conversationIntent && !showIntentChoices && (
+{(conversationIntent || wordingModeActive) && !showIntentChoices && (
   <div
     style={{
       margin: "0 0 10px",
@@ -2093,11 +2106,15 @@ setWordingError("");
       {conversationIntent === "listen" && "❤️ Just listen"}
       {conversationIntent === "understand" && "🧭 Help me understand"}
       {conversationIntent === "move_forward" && "🌱 Help me move forward"}
+{wordingModeActive && "✨ Help me word this"}
     </span>
 
     <button
       type="button"
-      onClick={() => setShowIntentChoices(true)}
+      onClick={() => {
+  setWordingModeActive(false);
+  setShowIntentChoices(true);
+}}
       style={{
         background: "transparent",
         border: "none",
@@ -2127,8 +2144,10 @@ setWordingError("");
   setWordingOriginal("");
   setWordingError("");
 }}
-              placeholder={
-  conversationIntent === "understand"
+            placeholder={
+  wordingModeActive
+    ? "Tell me what you'd like help putting into words…"
+    : conversationIntent === "understand"
     ? "Tell me what you're trying to understand…"
     : conversationIntent === "move_forward"
     ? "Tell me what you'd like help moving forward with…"
