@@ -137,20 +137,32 @@ function renderMessageContent(content) {
   if (!content) return null;
 
   const renderInline = (text, keyPrefix) => {
-    const parts = text.split(/(\*\*.*?\*\*)/g);
+  const parts = text.split(/(\*\*.*?\*\*|\*(?!\*)[^*\n]+?\*(?!\*))/g);
 
-    return parts.map((part, index) => {
-      if (part.startsWith("**") && part.endsWith("**")) {
-        return (
-          <strong key={`${keyPrefix}-${index}`}>
-            {part.slice(2, -2)}
-          </strong>
-        );
-      }
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={`${keyPrefix}-${index}`}>
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
 
-      return <span key={`${keyPrefix}-${index}`}>{part}</span>;
-    });
-  };
+    if (
+      part.startsWith("*") &&
+      part.endsWith("*") &&
+      !part.startsWith("**")
+    ) {
+      return (
+        <em key={`${keyPrefix}-${index}`}>
+          {part.slice(1, -1)}
+        </em>
+      );
+    }
+
+    return <span key={`${keyPrefix}-${index}`}>{part}</span>;
+  });
+};
 
   const lines = content.split("\n");
 
