@@ -287,6 +287,41 @@ const [wordingUndo, setWordingUndo] = useState("");
     return updatedChats;
   });
 }, [messages, conversationIntent, activePreviousChatId, activeChatLoaded]); 
+function deletePreviousChat(chatId) {
+  const shouldDelete = window.confirm(
+    "Delete this chat? This cannot be undone."
+  );
+
+  if (!shouldDelete) return;
+
+  setPreviousChats((currentChats) => {
+    const updatedChats = currentChats.filter(
+      (chat) => chat.id !== chatId
+    );
+
+    try {
+      window.localStorage.setItem(
+        "hiissa_previous_chats",
+        JSON.stringify(updatedChats)
+      );
+    } catch {
+      // Previous Chats deletion still works if browser storage is unavailable.
+    }
+
+    return updatedChats;
+  });
+
+  if (activePreviousChatId === chatId) {
+    setActivePreviousChatId(null);
+
+    try {
+      window.localStorage.removeItem("hiissa_active_chat");
+    } catch {
+      // Active chat cleanup remains optional if browser storage is unavailable.
+    }
+  }
+}  
+  
   useEffect(() => {
     async function checkAdminAccess() {
       if (!supabase) return;
@@ -1073,7 +1108,23 @@ setWordingError("");
             >
               {new Date(chat.createdAt).toLocaleDateString()}
             </span>
-          </button>
+         <span
+  onClick={(event) => {
+    event.stopPropagation();
+    deletePreviousChat(chat.id);
+  }}
+  style={{
+    display: "inline-block",
+    marginTop: "8px",
+    fontSize: "11px",
+    fontWeight: "700",
+    color: "#8a5a5a",
+    cursor: "pointer",
+  }}
+>
+  Delete
+</span>
+              </button>
         ))}
       </div>
     )}
