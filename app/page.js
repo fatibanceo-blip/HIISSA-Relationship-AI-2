@@ -1555,7 +1555,7 @@ setWordingError("");
             <div
               style={{
                 margin: "6px 20px 18px",
-                padding: "18px",
+                padding: "14px",
                 borderRadius: "20px",
                 background: "#fffdf8",
                 border: "1px solid rgba(80, 102, 93, 0.18)",
@@ -1581,7 +1581,7 @@ setWordingError("");
                       color: "#66706c",
                       fontSize: "13px",
                       lineHeight: "1.5",
-                      margin: "7px 0 14px",
+                      margin: "7px 0 10px",
                     }}
                   >
                     Your feedback helps us improve HIISSA.
@@ -1593,7 +1593,7 @@ setWordingError("");
                       display: "flex",
                       justifyContent: "center",
                       gap: "5px",
-                      marginBottom: "14px",
+                      marginBottom: "10px",
                     }}
                   >
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -1623,7 +1623,7 @@ setWordingError("");
                       justifyContent: "center",
                       gap: "8px",
                       flexWrap: "wrap",
-                      marginBottom: "15px",
+                      marginBottom: "10px",
                     }}
                   >
                     <button
