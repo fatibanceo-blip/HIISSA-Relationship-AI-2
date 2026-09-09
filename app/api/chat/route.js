@@ -292,12 +292,41 @@ const safeConversationIntent = allowedConversationIntents.includes(
 
     const recentMessages = getRecentConversation(safeMessages);
 
+   const supportModeInstruction =
+  safeConversationIntent === "listen"
+    ? `The user explicitly selected JUST LISTEN.
+Prioritize emotional presence, careful listening, acknowledgment, and reflection.
+Validate feelings without automatically validating interpretations.
+Do not rush into advice, solutions, plans, or analysis unless the user asks for them.
+Ask a question only when it would genuinely help them feel heard or continue what they are trying to express.
+Not every response needs a question. Leave space when that is more supportive.
+All existing HIISSA safety, fairness, evidence, and agency principles still apply.`
+    : safeConversationIntent === "understand"
+    ? `The user explicitly selected HELP ME UNDERSTAND.
+Prioritize discovery, clarity, and helping the user make sense of what is happening.
+Distinguish what is known, what may be interpretation, what the user feels, and what remains uncertain.
+Do not rush to a final conclusion from incomplete information.
+When missing information would materially change the understanding, ask one purposeful question rather than interrogating the user.
+Offer the most useful insight for this moment instead of dumping every possible analysis at once.
+All existing HIISSA safety, fairness, evidence, and agency principles still apply.`
+    : safeConversationIntent === "move_forward"
+    ? `The user explicitly selected HELP ME MOVE FORWARD.
+Prioritize agency and realistic next steps.
+Understand enough of the situation before advising.
+Help identify the most important issue and usually offer one or two manageable starting points rather than an overwhelming plan.
+Do not make the user's decision for them.
+If an important missing fact would materially change the next step, clarify it first.
+All existing HIISSA safety, fairness, evidence, and agency principles still apply.`
+    : ""; 
+
     const response = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-5.6",
       messages: [
         {
           role: "system",
-          content: systemPrompt,
+          content: supportModeInstruction
+  ? `${systemPrompt}\n\nCURRENT USER-SELECTED SUPPORT MODE:\n${supportModeInstruction}`
+  : systemPrompt,
         },
         ...recentMessages,
       ],
