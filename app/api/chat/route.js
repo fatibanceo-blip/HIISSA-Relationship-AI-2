@@ -257,7 +257,19 @@ export async function POST(req) {
       );
     }
 
-    const { messages = [] } = await req.json();
+  const { messages = [], conversationIntent = null } = await req.json();
+
+const allowedConversationIntents = [
+  "listen",
+  "understand",
+  "move_forward",
+];
+
+const safeConversationIntent = allowedConversationIntents.includes(
+  conversationIntent
+)
+  ? conversationIntent
+  : null;  
 
     const safeMessages = Array.isArray(messages) ? messages : [];
 
