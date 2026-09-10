@@ -554,6 +554,73 @@ const generationGovernanceRegistry = {
 
 const getGenerationGovernance = (experienceId) =>
   generationGovernanceRegistry[experienceId] || null;
+
+const QUALITY_GATE_STATUS = {
+  PASS: "pass",
+  REGENERATE: "regenerate",
+  BLOCK: "block",
+  REVIEW: "review",
+};
+
+const QUALITY_CHECK_STATUS = {
+  PASS: "pass",
+  FAIL: "fail",
+  FLAG: "flag",
+  NOT_APPLICABLE: "not_applicable",
+};
+
+const createQualityCheck = ({
+  specificationId,
+  specificationVersion = 1,
+  status = QUALITY_CHECK_STATUS.PASS,
+  reason = null,
+}) => ({
+  specificationId,
+  specificationVersion,
+  status,
+  reason,
+});
+
+const createQualityGateResult = ({
+  id,
+  experienceId,
+  contentId = null,
+  checks = [],
+  status = QUALITY_GATE_STATUS.PASS,
+  reason = null,
+  recommendedAction = null,
+  createdAt = new Date().toISOString(),
+}) => ({
+  id,
+  experienceId,
+  contentId,
+  governance: getGenerationGovernance(experienceId),
+  checks,
+  status,
+  reason,
+  recommendedAction,
+  createdAt,
+});
+
+const getQualityGateAction = (checks = []) => {
+  const hasFailure = checks.some(
+    (check) => check.status === QUALITY_CHECK_STATUS.FAIL
+  );
+
+  const hasFlag = checks.some(
+    (check) => check.status === QUALITY_CHECK_STATUS.FLAG
+  );
+
+  if (hasFailure) {
+    return QUALITY_GATE_STATUS.REGENERATE;
+  }
+
+  if (hasFlag) {
+    return QUALITY_GATE_STATUS.REVIEW;
+  }
+
+  return QUALITY_GATE_STATUS.PASS;
+};
 const conversationIntents = [
   {
     value: "listen",
