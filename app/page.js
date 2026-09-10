@@ -880,6 +880,34 @@ const createQualityAuditFromGateResult = ({
     regenerationAttempts,
     requiresEditorialApproval,
   });
+// STEP 3M — HIISSA Privacy-Safe Audit Payload
+
+const createPrivacySafeQualityAuditPayload = (auditRecord) => {
+  if (!auditRecord) return null;
+
+  const safeChecks = Array.isArray(auditRecord.checks)
+    ? auditRecord.checks.map((check) => ({
+        specificationId: check?.specificationId || null,
+        status: check?.status || null,
+        reason: check?.reason || null,
+      }))
+    : [];
+
+  return {
+    id: auditRecord.id || null,
+    eventType: auditRecord.eventType || null,
+    experienceId: auditRecord.experienceId || null,
+    contentId: auditRecord.contentId || null,
+    decision: auditRecord.decision || null,
+    recommendedAction: auditRecord.recommendedAction || null,
+    checks: safeChecks,
+    regenerationAttempts: Number(auditRecord.regenerationAttempts || 0),
+    requiresEditorialApproval: Boolean(
+      auditRecord.requiresEditorialApproval
+    ),
+    createdAt: auditRecord.createdAt || new Date().toISOString(),
+  };
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
