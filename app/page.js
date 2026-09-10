@@ -206,6 +206,36 @@ const freshnessRules = {
   allowIntentionalRevisits: true,
   relaxOldestExposureFirst: true,
 };
+const CONTEXT_PRIVACY_LEVELS = {
+  EDITORIAL: "editorial",
+  USER_SELECTED: "user_selected",
+  PRIVATE: "private",
+};
+
+const createExperienceHandoff = ({
+  id,
+  sourceExperience,
+  destinationExperience,
+  sourceContentId = null,
+  selectedText = null,
+  userReflection = null,
+  actionIntent = null,
+  privacyLevel = CONTEXT_PRIVACY_LEVELS.USER_SELECTED,
+  returnContext = null,
+  createdAt = new Date().toISOString(),
+}) => ({
+  id,
+  sourceExperience,
+  destinationExperience,
+  sourceContentId,
+  selectedText,
+  userReflection,
+  actionIntent,
+  privacyLevel,
+  returnContext,
+  createdAt,
+});
+
 const conversationIntents = [
   {
     value: "listen",
