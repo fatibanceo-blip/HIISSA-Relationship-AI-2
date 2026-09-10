@@ -933,6 +933,26 @@ const createQualityAuditPersistenceRecord = (auditRecord) => {
     createdAt: payload.createdAt || new Date().toISOString(),
   };
 };
+
+// STEP 3O - HIISSA Audit Persistence Action
+
+const persistQualityAuditRecord = async (auditRecord) => {
+  const record = createQualityAuditPersistenceRecord(auditRecord);
+
+  if (!record || !supabase) {
+    return {
+      success: false,
+      persisted: false,
+      record,
+    };
+  }
+
+  return {
+    success: true,
+    persisted: false,
+    record,
+  };
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
