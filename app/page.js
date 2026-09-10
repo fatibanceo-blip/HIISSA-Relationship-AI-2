@@ -172,7 +172,40 @@ const createAudioItem = ({
     spokenInstructions: Boolean(accessibility.spokenInstructions),
   },
 });
+const CONTENT_EXPOSURE_TYPES = {
+  SHOWN: "shown",
+  PLAYED: "played",
+  SKIPPED: "skipped",
+  COMPLETED: "completed",
+  SAVED: "saved",
+  REVISITED: "revisited",
+};
 
+const createContentExposure = ({
+  id,
+  sourceExperience,
+  contentId,
+  exposureType = CONTENT_EXPOSURE_TYPES.SHOWN,
+  themes = [],
+  semanticTags = [],
+  occurredAt = new Date().toISOString(),
+}) => ({
+  id,
+  sourceExperience,
+  contentId,
+  exposureType,
+  themes,
+  semanticTags,
+  occurredAt,
+});
+
+const freshnessRules = {
+  relevanceFirst: true,
+  avoidImmediateRepeats: true,
+  avoidSemanticRepeats: true,
+  allowIntentionalRevisits: true,
+  relaxOldestExposureFirst: true,
+};
 const conversationIntents = [
   {
     value: "listen",
