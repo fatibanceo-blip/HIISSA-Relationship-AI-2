@@ -953,6 +953,26 @@ const persistQualityAuditRecord = async (auditRecord) => {
     record,
   };
 };
+// STEP 3P - HIISSA Audit Persistence Result Normalisation
+
+const normalizeQualityAuditPersistenceResult = (result, auditRecord) => {
+  const record =
+    result?.record ||
+    createQualityAuditPersistenceRecord(auditRecord);
+
+  return {
+    success: Boolean(result?.success),
+    persisted: Boolean(result?.persisted),
+    auditId: record?.auditId || null,
+    decision: record?.decision || null,
+    regenerationAttempts: Number(record?.regenerationAttempts || 0),
+    requiresEditorialApproval: Boolean(
+      record?.requiresEditorialApproval
+    ),
+    timestamp: new Date().toISOString(),
+  };
+};
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
