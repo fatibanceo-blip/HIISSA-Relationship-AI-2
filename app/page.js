@@ -77,6 +77,15 @@ const experienceRegistry = [
     },
   },
 ];
+
+const getExperience = (id) =>
+  experienceRegistry.find((experience) => experience.id === id);
+
+const isExperienceLive = (id) =>
+  getExperience(id)?.status === "live";
+
+const getExperienceCapabilities = (id) =>
+  getExperience(id)?.capabilities ?? {};
 const conversationIntents = [
   {
     value: "listen",
