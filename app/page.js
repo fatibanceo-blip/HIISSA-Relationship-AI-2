@@ -832,6 +832,54 @@ const evaluateQualityGate = ({
     recommendedAction: decision,
   });
 };
+// STEP 3L — HIISSA Quality Gate Audit Layer
+
+const QUALITY_AUDIT_EVENT_TYPES = {
+  EVALUATED: "evaluated",
+  REGENERATED: "regenerated",
+  BLOCKED: "blocked",
+  SENT_TO_REVIEW: "sent_to_review",
+  APPROVED: "approved",
+  REJECTED: "rejected",
+};
+
+const createQualityAuditRecord = ({
+  id,
+  eventType = QUALITY_AUDIT_EVENT_TYPES.EVALUATED,
+  experienceId,
+  contentId = null,
+  gateResult = null,
+  regenerationAttempts = 0,
+  requiresEditorialApproval = false,
+  createdAt = new Date().toISOString(),
+}) => ({
+  id,
+  eventType,
+  experienceId,
+  contentId,
+  decision: gateResult?.status || null,
+  recommendedAction: gateResult?.recommendedAction || null,
+  checks: gateResult?.checks || [],
+  governance: gateResult?.governance || getGenerationGovernance(experienceId),
+  regenerationAttempts,
+  requiresEditorialApproval: Boolean(requiresEditorialApproval),
+  createdAt,
+});
+
+const createQualityAuditFromGateResult = ({
+  id,
+  gateResult,
+  regenerationAttempts = 0,
+  requiresEditorialApproval = false,
+}) =>
+  createQualityAuditRecord({
+    id,
+    experienceId: gateResult?.experienceId || null,
+    contentId: gateResult?.contentId || null,
+    gateResult,
+    regenerationAttempts,
+    requiresEditorialApproval,
+  });
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
