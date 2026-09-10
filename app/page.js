@@ -771,7 +771,67 @@ const createQualityCheckReason = ({
   expected,
   recommendedAction,
 });
+// STEP 3K — HIISSA Quality Check Evaluator
 
+const evaluateQualityFinding = ({
+  category,
+  isCompliant = true,
+  needsReview = false,
+  reason = null,
+  expected = null,
+  recommendedAction = null,
+}) => {
+  let status = QUALITY_CHECK_STATUS.PASS;
+
+  if (!isCompliant) {
+    status = QUALITY_CHECK_STATUS.FAIL;
+  } else if (needsReview) {
+    status = QUALITY_CHECK_STATUS.FLAG;
+  }
+
+  return {
+    ...createQualityCheck({
+      specificationId: category,
+      status,
+      reason,
+    }),
+
+    details: createQualityCheckReason({
+      category,
+      reason,
+      expected,
+      recommendedAction,
+    }),
+  };
+};
+
+const evaluateQualityGate = ({
+  id,
+  experienceId,
+  contentId = null,
+  findings = [],
+  regenerationAttempts = 0,
+  requiresEditorialApproval = false,
+}) => {
+  const checks = findings.map((finding) =>
+    evaluateQualityFinding(finding)
+  );
+
+  const decision = getQualityGateDecision({
+    checks,
+    regenerationAttempts,
+    requiresEditorialApproval,
+  });
+
+  return createQualityGateResult({
+    id,
+    experienceId,
+    contentId,
+    checks,
+    status: decision,
+    recommendedAction: decision,
+  });
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
