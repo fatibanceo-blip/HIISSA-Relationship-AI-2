@@ -135,6 +135,44 @@ const SAVED_ITEM_TYPES = {
   WHOLE_ITEM: "saved",
   STAYED_WITH_ME: "stayed_with_me",
 };
+const AUDIO_PLAYBACK_STATES = {
+  IDLE: "idle",
+  PLAYING: "playing",
+  PAUSED: "paused",
+  STOPPED: "stopped",
+};
+
+const createAudioItem = ({
+  id,
+  sourceExperience,
+  sourceContentId = null,
+  text = null,
+  audioSource = null,
+  title = null,
+  duration = null,
+  playbackState = AUDIO_PLAYBACK_STATES.IDLE,
+  currentTime = 0,
+  playbackRate = 1,
+  captionsAvailable = false,
+  accessibility = {},
+}) => ({
+  id,
+  sourceExperience,
+  sourceContentId,
+  text,
+  audioSource,
+  title,
+  duration,
+  playbackState,
+  currentTime,
+  playbackRate,
+  captionsAvailable,
+  accessibility: {
+    screenReaderFriendly: Boolean(accessibility.screenReaderFriendly),
+    spokenInstructions: Boolean(accessibility.spokenInstructions),
+  },
+});
+
 const conversationIntents = [
   {
     value: "listen",
