@@ -707,6 +707,71 @@ const conversationIntents = [
     description: "Help me think about what I can do next.",
   },
 ];
+// STEP 3J — HIISSA Quality Gate Check Categories & Review Reasons
+
+const QUALITY_CHECK_CATEGORIES = {
+  VOICE: "voice",
+  SAFETY: "safety",
+  PRIVACY: "privacy",
+  FRESHNESS: "freshness",
+  REPETITION: "repetition",
+  SPECIFICATION: "specification",
+  EDITORIAL: "editorial",
+};
+
+const QUALITY_CHECK_REASONS = {
+  VOICE: {
+    TOO_DIRECTIVE: "too_directive",
+    TOO_COLD: "too_cold",
+    TOO_GENERIC: "too_generic",
+    NOT_HIISSA_VOICE: "not_hiissa_voice",
+  },
+
+  SAFETY: {
+    UNSUPPORTED_CERTAINTY: "unsupported_certainty",
+    DIAGNOSIS_LIKE_WORDING: "diagnosis_like_wording",
+    COERCIVE_ADVICE: "coercive_advice",
+    INAPPROPRIATE_REASSURANCE: "inappropriate_reassurance",
+  },
+
+  PRIVACY: {
+    PRIVATE_CONTENT_REUSE: "private_content_reuse",
+    OWNER_ONLY_BOUNDARY: "owner_only_boundary",
+  },
+
+  FRESHNESS: {
+    RECENTLY_SHOWN: "recently_shown",
+  },
+
+  REPETITION: {
+    EXACT_REPEAT: "exact_repeat",
+    SEMANTIC_REPEAT: "semantic_repeat",
+  },
+
+  SPECIFICATION: {
+    SPECIFICATION_MISMATCH: "specification_mismatch",
+    REQUIRED_ELEMENT_MISSING: "required_element_missing",
+  },
+
+  EDITORIAL: {
+    PERMANENT_CONTENT_APPROVAL: "permanent_content_approval",
+    SENSITIVE_UNCERTAINTY: "sensitive_uncertainty",
+    CULTURAL_CONTENT_REVIEW: "cultural_content_review",
+  },
+};
+
+const createQualityCheckReason = ({
+  category,
+  reason,
+  expected = null,
+  recommendedAction = null,
+}) => ({
+  category,
+  reason,
+  expected,
+  recommendedAction,
+});
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
