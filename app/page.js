@@ -60,6 +60,23 @@ const explorePathways = [
     status: "hidden",
   },
 ];
+
+const experienceRegistry = [
+  {
+    id: "talk",
+    pathway: "talk",
+    name: "Talk",
+    status: "live",
+    destination: "conversation",
+    capabilities: {
+      save: false,
+      audio: true,
+      share: false,
+      receiveContext: true,
+      persistence: true,
+    },
+  },
+];
 const conversationIntents = [
   {
     value: "listen",
