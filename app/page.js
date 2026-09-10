@@ -86,6 +86,30 @@ const isExperienceLive = (id) =>
 
 const getExperienceCapabilities = (id) =>
   getExperience(id)?.capabilities ?? {};
+const createContentItem = ({
+  id,
+  sourceExperience,
+  type,
+  themes = [],
+  format = "text",
+  capabilities = {},
+  privacyLevel = "editorial",
+  status = "live",
+}) => ({
+  id,
+  sourceExperience,
+  type,
+  themes,
+  format,
+  capabilities: {
+    save: Boolean(capabilities.save),
+    audio: Boolean(capabilities.audio),
+    share: Boolean(capabilities.share),
+  },
+  privacyLevel,
+  status,
+});
+
 const conversationIntents = [
   {
     value: "listen",
