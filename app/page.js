@@ -109,7 +109,32 @@ const createContentItem = ({
   privacyLevel,
   status,
 });
+const createSavedItem = ({
+  id,
+  saveType,
+  sourceExperience,
+  sourceContentId = null,
+  snapshot,
+  selectedText = null,
+  userNote = null,
+  privacyLevel = "private",
+  createdAt = new Date().toISOString(),
+}) => ({
+  id,
+  saveType,
+  sourceExperience,
+  sourceContentId,
+  snapshot,
+  selectedText,
+  userNote,
+  privacyLevel,
+  createdAt,
+});
 
+const SAVED_ITEM_TYPES = {
+  WHOLE_ITEM: "saved",
+  STAYED_WITH_ME: "stayed_with_me",
+};
 const conversationIntents = [
   {
     value: "listen",
