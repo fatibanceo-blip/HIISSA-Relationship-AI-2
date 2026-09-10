@@ -908,6 +908,31 @@ const createPrivacySafeQualityAuditPayload = (auditRecord) => {
     createdAt: auditRecord.createdAt || new Date().toISOString(),
   };
 };
+
+// STEP 3N — HIISSA Audit Persistence Preparation
+
+const createQualityAuditPersistenceRecord = (auditRecord) => {
+  const payload = createPrivacySafeQualityAuditPayload(auditRecord);
+
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    auditId: payload.id || null,
+    eventType: payload.eventType || null,
+    experienceId: payload.experienceId || null,
+    contentId: payload.contentId || null,
+    decision: payload.decision || null,
+    recommendedAction: payload.recommendedAction || null,
+    checks: payload.checks || [],
+    regenerationAttempts: Number(payload.regenerationAttempts || 0),
+    requiresEditorialApproval: Boolean(
+      payload.requiresEditorialApproval
+    ),
+    createdAt: payload.createdAt || new Date().toISOString(),
+  };
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
