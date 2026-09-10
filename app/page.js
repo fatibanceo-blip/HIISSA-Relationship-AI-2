@@ -621,6 +621,72 @@ const getQualityGateAction = (checks = []) => {
 
   return QUALITY_GATE_STATUS.PASS;
 };
+// STEP 3I — HIISSA Quality Gate Decision Rules
+
+const QUALITY_GATE_RULES = {
+  MAX_REGENERATION_ATTEMPTS: 3,
+
+  FAILURE_ACTIONS: {
+    privacy: QUALITY_GATE_STATUS.BLOCK,
+    safety: QUALITY_GATE_STATUS.BLOCK,
+    voice: QUALITY_GATE_STATUS.REGENERATE,
+    freshness: QUALITY_GATE_STATUS.REGENERATE,
+    repetition: QUALITY_GATE_STATUS.REGENERATE,
+    specification: QUALITY_GATE_STATUS.REGENERATE,
+  },
+
+  FLAG_ACTIONS: {
+    sensitive_uncertainty: QUALITY_GATE_STATUS.REVIEW,
+    editorial_uncertainty: QUALITY_GATE_STATUS.REVIEW,
+    permanent_content: QUALITY_GATE_STATUS.REVIEW,
+  },
+};
+
+const getQualityGateDecision = ({
+  checks = [],
+  regenerationAttempts = 0,
+  requiresEditorialApproval = false,
+} = {}) => {
+  if (requiresEditorialApproval) {
+    return QUALITY_GATE_STATUS.REVIEW;
+  }
+
+  const failedChecks = checks.filter(
+    (check) => check.status === QUALITY_CHECK_STATUS.FAIL
+  );
+
+  const flaggedChecks = checks.filter(
+    (check) => check.status === QUALITY_CHECK_STATUS.FLAG
+  );
+
+  const hasBlockingFailure = failedChecks.some(
+    (check) =>
+      QUALITY_GATE_RULES.FAILURE_ACTIONS[check.specificationId] ===
+      QUALITY_GATE_STATUS.BLOCK
+  );
+
+  if (hasBlockingFailure) {
+    return QUALITY_GATE_STATUS.BLOCK;
+  }
+
+  if (flaggedChecks.length > 0) {
+    return QUALITY_GATE_STATUS.REVIEW;
+  }
+
+  if (failedChecks.length > 0) {
+    if (
+      regenerationAttempts >=
+      QUALITY_GATE_RULES.MAX_REGENERATION_ATTEMPTS
+    ) {
+      return QUALITY_GATE_STATUS.REVIEW;
+    }
+
+    return QUALITY_GATE_STATUS.REGENERATE;
+  }
+
+  return QUALITY_GATE_STATUS.PASS;
+};
+
 const conversationIntents = [
   {
     value: "listen",
