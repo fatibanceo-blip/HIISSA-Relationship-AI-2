@@ -260,6 +260,300 @@ const createDataBoundary = ({
   allowSharing: Boolean(allowSharing),
   allowContentTraining: Boolean(allowContentTraining),
 });
+
+const GENERATION_PERMISSION_LEVELS = {
+  A: "controlled_dynamic",
+  B: "enhanced_safeguards",
+  C: "editorial_approval_required",
+};
+
+const HIISSA_SPECIFICATIONS = {
+  VOICE: {
+    id: "hiissa_voice",
+    name: "HIISSA Voice Standard",
+    version: 1,
+  },
+  SAFETY: {
+    id: "hiissa_safety",
+    name: "HIISSA Safety Standard",
+    version: 1,
+  },
+  PRIVACY: {
+    id: "hiissa_privacy",
+    name: "HIISSA Privacy Standard",
+    version: 1,
+  },
+  FRESHNESS: {
+    id: "hiissa_freshness",
+    name: "HIISSA Freshness Standard",
+    version: 1,
+  },
+  DAILY: {
+    id: "daily_with_hiissa",
+    name: "Daily With HIISSA Specification",
+    version: 1,
+  },
+  WORDS_I_NEEDED: {
+    id: "words_i_needed",
+    name: "Words I Needed Specification",
+    version: 1,
+  },
+  THE_SPACE_BETWEEN: {
+    id: "the_space_between",
+    name: "The Space Between Specification",
+    version: 1,
+  },
+  QUIET_ROOM: {
+    id: "quiet_room",
+    name: "The Quiet Room Specification",
+    version: 1,
+  },
+  RELEASE: {
+    id: "things_im_ready_to_release",
+    name: "Things I'm Ready to Release Specification",
+    version: 1,
+  },
+  MOS_SPACE: {
+    id: "mos_space",
+    name: "Mo’s Space Specification",
+    version: 1,
+  },
+  MIRROR: {
+    id: "the_mirror",
+    name: "The Mirror Specification",
+    version: 1,
+  },
+  WHERE_I_AM_NOW: {
+    id: "where_i_am_now",
+    name: "Where I Am Now Specification",
+    version: 1,
+  },
+  PUZZLE_OF_LIFE: {
+    id: "puzzle_of_life",
+    name: "The Puzzle of Life Specification",
+    version: 1,
+  },
+  GROW: {
+    id: "grow_with_hiissa",
+    name: "Grow With HIISSA Specification",
+    version: 1,
+  },
+  BEYOND_WHAT_WE_WERE_TOLD: {
+    id: "beyond_what_we_were_told",
+    name: "Beyond What We Were Told Specification",
+    version: 1,
+  },
+  DISCOVER: {
+    id: "discover_with_hiissa",
+    name: "Discover With HIISSA Specification",
+    version: 1,
+  },
+  HIISSA_BOOK: {
+    id: "my_hiissa_book",
+    name: "My HIISSA Book Specification",
+    version: 1,
+  },
+};
+
+const generationGovernanceRegistry = {
+  daily_with_hiissa: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.A,
+    specifications: [
+      HIISSA_SPECIFICATIONS.DAILY,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+      HIISSA_SPECIFICATIONS.FRESHNESS,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+  },
+
+  words_i_needed: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.A,
+    sensitiveLevel: GENERATION_PERMISSION_LEVELS.B,
+    permanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.WORDS_I_NEEDED,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+      HIISSA_SPECIFICATIONS.FRESHNESS,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+  },
+
+  the_space_between: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.C,
+    sensitiveLevel: GENERATION_PERMISSION_LEVELS.B,
+    specifications: [
+      HIISSA_SPECIFICATIONS.THE_SPACE_BETWEEN,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+    ],
+    allowDynamicDelivery: false,
+    permanentLibraryRequiresApproval: true,
+  },
+
+  quiet_room: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.B,
+    permanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.QUIET_ROOM,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+      HIISSA_SPECIFICATIONS.FRESHNESS,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+  },
+
+  things_im_ready_to_release: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.B,
+    permanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.RELEASE,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+    privateUserContent: true,
+  },
+
+  mos_space: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.A,
+    spokenAccompanimentLevel: GENERATION_PERMISSION_LEVELS.B,
+    newPermanentWorldLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.MOS_SPACE,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+  },
+
+  the_mirror: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.B,
+    permanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.MIRROR,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+    privateUserContent: true,
+  },
+
+  where_i_am_now: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.B,
+    permanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.WHERE_I_AM_NOW,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+    privateUserContent: true,
+    prohibitArtificialProgressScoring: true,
+  },
+
+  puzzle_of_life: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.B,
+    permanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.PUZZLE_OF_LIFE,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+    privateUserContent: true,
+  },
+
+  grow_with_hiissa: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.A,
+    sensitiveLevel: GENERATION_PERMISSION_LEVELS.B,
+    permanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.GROW,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+      HIISSA_SPECIFICATIONS.FRESHNESS,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+  },
+
+  beyond_what_we_were_told: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.B,
+    researchedPermanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.BEYOND_WHAT_WE_WERE_TOLD,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+  },
+
+  a_little_something_for_you: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.A,
+    sensitiveLevel: GENERATION_PERMISSION_LEVELS.B,
+    specifications: [
+      HIISSA_SPECIFICATIONS.DISCOVER,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.FRESHNESS,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: false,
+  },
+
+  surprise_me: {
+    defaultLevel: GENERATION_PERMISSION_LEVELS.A,
+    specifications: [
+      HIISSA_SPECIFICATIONS.DISCOVER,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.FRESHNESS,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: false,
+    restrictUnexpectedSensitiveContent: true,
+  },
+
+  my_hiissa_book: {
+    reflectionLevel: GENERATION_PERMISSION_LEVELS.B,
+    permanentLevel: GENERATION_PERMISSION_LEVELS.C,
+    specifications: [
+      HIISSA_SPECIFICATIONS.HIISSA_BOOK,
+      HIISSA_SPECIFICATIONS.VOICE,
+      HIISSA_SPECIFICATIONS.SAFETY,
+      HIISSA_SPECIFICATIONS.PRIVACY,
+    ],
+    allowDynamicDelivery: true,
+    permanentLibraryRequiresApproval: true,
+    privateUserContent: true,
+    analyzeOnlyWhenRequested: true,
+  },
+};
+
+const getGenerationGovernance = (experienceId) =>
+  generationGovernanceRegistry[experienceId] || null;
 const conversationIntents = [
   {
     value: "listen",
