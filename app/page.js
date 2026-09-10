@@ -235,7 +235,31 @@ const createExperienceHandoff = ({
   returnContext,
   createdAt,
 });
+const DATA_OWNERSHIP_TYPES = {
+  HIISSA_EDITORIAL: "hiissa_editorial",
+  USER_AUTHORED: "user_authored",
+  USER_SELECTED: "user_selected",
+};
 
+const DATA_ACCESS_LEVELS = {
+  PUBLIC: "public",
+  PRIVATE: "private",
+  OWNER_ONLY: "owner_only",
+};
+
+const createDataBoundary = ({
+  ownership,
+  accessLevel = DATA_ACCESS_LEVELS.PRIVATE,
+  allowAnalysis = false,
+  allowSharing = false,
+  allowContentTraining = false,
+}) => ({
+  ownership,
+  accessLevel,
+  allowAnalysis: Boolean(allowAnalysis),
+  allowSharing: Boolean(allowSharing),
+  allowContentTraining: Boolean(allowContentTraining),
+});
 const conversationIntents = [
   {
     value: "listen",
