@@ -9,6 +9,57 @@ const starters = [
   ["🧩", "I don't understand their behavior."],
   ["🌱", "I want to heal and move forward."],
 ];
+const explorePathways = [
+  {
+    id: "talk",
+    emoji: "💬",
+    name: "Talk",
+    description: "I need somewhere to talk.",
+    status: "live",
+  },
+  {
+    id: "listen",
+    emoji: "🎧",
+    name: "Listen",
+    description: "I'd rather listen for a while.",
+    status: "hidden",
+  },
+  {
+    id: "read",
+    emoji: "💌",
+    name: "Read",
+    description: "Give me words for what I'm carrying.",
+    status: "hidden",
+  },
+  {
+    id: "reflect",
+    emoji: "🪞",
+    name: "Reflect",
+    description: "Help me understand myself more clearly.",
+    status: "hidden",
+  },
+  {
+    id: "reset",
+    emoji: "🌙",
+    name: "Reset",
+    description: "I need a quieter moment.",
+    status: "hidden",
+  },
+  {
+    id: "grow",
+    emoji: "🌱",
+    name: "Grow",
+    description: "I'm ready to heal, learn or move forward.",
+    status: "hidden",
+  },
+  {
+    id: "discover",
+    emoji: "✨",
+    name: "Discover",
+    description: "Show me something I haven't considered.",
+    status: "hidden",
+  },
+];
 const conversationIntents = [
   {
     value: "listen",
@@ -260,6 +311,7 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [conversationIntent, setConversationIntent] = useState(null);
   const [showIntentChoices, setShowIntentChoices] = useState(false);
+  const [showExplore, setShowExplore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [voiceHelp, setVoiceHelp] = useState(false);
@@ -1020,7 +1072,18 @@ setWordingError("");
           <span>✦ Self-respecting</span>
           <span>◌ Non-judgmental</span>
         </div>
-
+<button
+  type="button"
+  onClick={() => setShowExplore(true)}
+  className="exploreEntry"
+>
+  <span className="exploreEntryIcon">✦</span>
+  <span className="exploreEntryText">
+    <strong>Explore HIISSA</strong>
+    <small>More ways to talk, listen, reflect and grow.</small>
+  </span>
+  <span className="exploreEntryArrow">›</span>
+</button>
         <section className="chat">
           <div className="chatHead">
             <div className="mini">H</div>
@@ -2273,6 +2336,69 @@ opacity:
           <a href="/privacy">Privacy</a>
         </footer>
       </section>
+    {showExplore && (
+  <div className="exploreOverlay">
+    <div
+      className="explorePanel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="explore-title"
+    >
+      <div className="explorePanelHead">
+        <div>
+          <strong id="explore-title">✦ Explore HIISSA</strong>
+          <p>What would feel right for you today?</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowExplore(false)}
+          className="exploreClose"
+          aria-label="Close Explore HIISSA"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="explorePathwayList">
+        {explorePathways.map((pathway) => (
+          <button
+            key={pathway.id}
+            type="button"
+            className="explorePathway"
+            disabled={pathway.status !== "live"}
+            onClick={() => {
+              if (pathway.id === "talk") {
+                setShowExplore(false);
+              }
+            }}
+          >
+            <span className="explorePathwayEmoji">{pathway.emoji}</span>
+
+            <span className="explorePathwayText">
+              <strong>{pathway.name}</strong>
+              <small>{pathway.description}</small>
+            </span>
+
+            {pathway.status === "live" && (
+              <span className="explorePathwayArrow">›</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="exploreUnsure">
+        <strong>Not sure what you need?</strong>
+        <button
+          type="button"
+          onClick={() => setShowExplore(false)}
+        >
+          Tell HIISSA how you're feeling →
+        </button>
+      </div>
+    </div>
+  </div>
+)}      
     </main>
   );
 }
