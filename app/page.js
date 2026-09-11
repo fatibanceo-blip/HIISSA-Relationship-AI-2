@@ -1099,7 +1099,37 @@ const createQualityAuditPersistenceReceipt = async (auditRecord) => {
     },
   };
 };
+// STEP 3W - HIISSA Audit Persistence Receipt Verification Gate
 
+const verifyQualityAuditPersistenceReceipt = async (auditRecord) => {
+  const receiptResult =
+    await createQualityAuditPersistenceReceipt(auditRecord);
+
+  const receipt = receiptResult?.persistenceReceipt;
+
+  const receiptVerified =
+    receiptResult?.success === true &&
+    receiptResult?.persistenceFinalized === true &&
+    receiptResult?.persistenceStatus === "completed" &&
+    receipt?.completed === true &&
+    receipt?.status === "completed";
+
+  if (!receiptVerified) {
+    return {
+      ...(receiptResult || {}),
+      receiptVerified: false,
+      persistenceVerified: false,
+      persistenceBlocked: true,
+    };
+  }
+
+  return {
+    ...receiptResult,
+    receiptVerified: true,
+    persistenceVerified: true,
+    persistenceBlocked: false,
+  };
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
