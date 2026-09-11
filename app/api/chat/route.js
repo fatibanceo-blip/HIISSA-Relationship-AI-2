@@ -234,12 +234,9 @@ function getRecentConversation(messages) {
 
     const messageChars = message.content.length;
 
-    if (
-      recentMessages.length > 0 &&
-      totalChars + messageChars > MAX_CONVERSATION_CHARS
-    ) {
-      break;
-    }
+   if (totalChars + messageChars > MAX_CONVERSATION_CHARS) {
+  break;
+}
 
     recentMessages.unshift(message);
     totalChars += messageChars;
@@ -430,7 +427,19 @@ const safeConversationIntent = allowedConversationIntents.includes(
   ? conversationIntent
   : null;  
 
-    const safeMessages = Array.isArray(messages) ? messages : [];
+    const safeMessages = Array.isArray(messages)
+  ? messages
+      .filter(
+        (message) =>
+          message &&
+          ["user", "assistant"].includes(message.role) &&
+          typeof message.content === "string"
+      )
+      .map((message) => ({
+        role: message.role,
+        content: message.content,
+      }))
+  : [];
 
     const oversizedUserMessage = safeMessages.some(
       (message) =>
