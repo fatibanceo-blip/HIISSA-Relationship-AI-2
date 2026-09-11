@@ -381,6 +381,32 @@ return {
   }
 }
 
+function decideHiissaQualityAction(qualityObservation) {
+  if (!qualityObservation?.success) {
+    return "observe";
+  }
+
+  const failedChecks = qualityObservation.checks.filter(
+    (check) => check.status === "fail"
+  );
+
+  if (failedChecks.length === 0) {
+    return "pass";
+  }
+
+  const failedCategories = new Set(
+    failedChecks.map((check) => check.category)
+  );
+
+  if (
+    failedCategories.has(HIISSA_QUALITY_CATEGORIES.SAFETY) ||
+    failedCategories.has(HIISSA_QUALITY_CATEGORIES.PRIVACY)
+  ) {
+    return "block";
+  }
+
+  return "regenerate";
+}
 export async function POST(req) {
   try {
     if (!process.env.OPENAI_API_KEY) {
@@ -539,15 +565,18 @@ Never rush someone's story simply because you can generate an answer.
 
 try {
   const qualityObservation = await evaluateHiissaReply({
-    conversation: recentMessages,
-    reply,
-    conversationIntent: safeConversationIntent,
-  });
+  conversation: recentMessages,
+  reply,
+  conversationIntent: safeConversationIntent,
+});
 
-  console.log("HIISSA quality observation:", {
-    success: qualityObservation.success,
-    checks: qualityObservation.checks,
-  });
+const qualityAction = decideHiissaQualityAction(qualityObservation);
+
+console.log("HIISSA quality observation:", {
+  success: qualityObservation.success,
+  action: qualityAction,
+  checks: qualityObservation.checks,
+});
 } catch (qualityError) {
   console.error("HIISSA quality observation failed:", qualityError);
 }
