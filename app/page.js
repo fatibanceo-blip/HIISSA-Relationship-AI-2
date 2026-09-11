@@ -993,6 +993,20 @@ const validateQualityAuditPersistenceResult = (result) => {
     reason: valid ? null : "invalid_persistence_result_shape",
   };
 };
+// STEP 3R - HIISSA Audit Persistence Validation Gate
+
+const validateAndNormalizeQualityAuditPersistence = (result, auditRecord) => {
+  const normalized = normalizeQualityAuditPersistenceResult(result, auditRecord);
+  const validation = validateQualityAuditPersistenceResult(normalized);
+
+  return {
+    ...normalized,
+    validation,
+    valid: validation.valid,
+    validationReason: validation.reason,
+  };
+};
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
