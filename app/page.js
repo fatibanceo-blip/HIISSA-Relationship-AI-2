@@ -1130,6 +1130,33 @@ const verifyQualityAuditPersistenceReceipt = async (auditRecord) => {
     persistenceBlocked: false,
   };
 };
+// STEP 3X - HIISSA Audit Persistence Verification Result Gate
+
+const enforceQualityAuditPersistenceVerification = async (auditRecord) => {
+  const verificationResult =
+    await verifyQualityAuditPersistenceReceipt(auditRecord);
+
+  const persistenceAccepted =
+    verificationResult?.receiptVerified === true &&
+    verificationResult?.persistenceVerified === true &&
+    verificationResult?.persistenceBlocked === false;
+
+  if (!persistenceAccepted) {
+    return {
+      ...(verificationResult || {}),
+      success: false,
+      persistenceAccepted: false,
+      persistenceStatus: "blocked",
+    };
+  }
+
+  return {
+    ...verificationResult,
+    success: true,
+    persistenceAccepted: true,
+    persistenceStatus: "verified",
+  };
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
