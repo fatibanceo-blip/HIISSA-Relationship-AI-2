@@ -647,7 +647,7 @@ try {
 });
 
 const qualityAction = decideHiissaQualityAction(qualityObservation);
-const forceRegenerationTest = true;  
+const forceRegenerationTest = false; 
 if (forceRegenerationTest || qualityAction === "regenerate") {
 console.log("HIISSA regeneration path triggered");
 finalReply = await regenerateHiissaReply({
