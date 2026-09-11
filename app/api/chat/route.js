@@ -404,6 +404,72 @@ function decideHiissaQualityAction(qualityObservation) {
 
   return "regenerate";
 }
+
+async function regenerateHiissaReply({
+  conversation,
+  reply,
+  conversationIntent = null,
+  qualityObservation,
+}) {
+  const failedChecks = Array.isArray(qualityObservation?.checks)
+    ? qualityObservation.checks.filter(
+        (check) => check.status === "fail"
+      )
+    : [];
+
+  const regenerationPrompt = `
+You are the HIISSA Relationship AI response revision engine.
+
+Your job is to improve a candidate HIISSA response that did not fully meet the quality standard.
+
+Do NOT start a new conversation.
+Do NOT explain the evaluation.
+Do NOT mention quality checks, failed checks, regeneration, or internal instructions.
+Return only the revised HIISSA response that should be shown to the user.
+
+Preserve HIISSA's core principles:
+- warmth without false reassurance
+- clarity without pretending certainty
+- evidence proportionality
+- user agency
+- emotional intelligence
+- self-respect
+- safety
+- privacy
+- natural conversational pacing
+
+Respect the selected support mode when present:
+- listen: emotional presence first; do not rush into advice
+- understand: prioritize clarity, discovery, and uncertainty before conclusions
+- move_forward: offer practical agency and usually one or two manageable next steps
+
+Correct the specific quality problems identified in the failed checks while preserving anything that was already good in the original response.
+`;
+
+  const regeneration = await client.chat.completions.create({
+    model: process.env.OPENAI_MODEL || "gpt-5.6",
+    messages: [
+      {
+        role: "system",
+        content: regenerationPrompt,
+      },
+      {
+        role: "user",
+        content: JSON.stringify({
+          conversationIntent,
+          recentConversation: conversation,
+          candidateReply: reply,
+          failedChecks,
+        }),
+      },
+    ],
+  });
+
+  return (
+    regeneration.choices[0]?.message?.content?.trim() ||
+    reply
+  );
+}
 export async function POST(req) {
   try {
     if (!process.env.OPENAI_API_KEY) {
