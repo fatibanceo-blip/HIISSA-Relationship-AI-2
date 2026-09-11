@@ -638,7 +638,7 @@ Never rush someone's story simply because you can generate an answer.
     const reply =
   response.choices[0]?.message?.content ||
   "I'm here with you. Tell me a little more.";
-
+let finalReply = reply;
 try {
   const qualityObservation = await evaluateHiissaReply({
   conversation: recentMessages,
@@ -647,8 +647,15 @@ try {
 });
 
 const qualityAction = decideHiissaQualityAction(qualityObservation);
-
-console.log("HIISSA quality observation:", {
+if (qualityAction === "regenerate") {
+finalReply = await regenerateHiissaReply({
+conversation: recentMessages,  
+reply,  
+conversationIntent: safeConversationIntent,
+qualityObservation, 
+});
+} 
+  console.log("HIISSA quality observation:", {
   success: qualityObservation.success,
   action: qualityAction,
   checks: qualityObservation.checks,
@@ -657,7 +664,7 @@ console.log("HIISSA quality observation:", {
   console.error("HIISSA quality observation failed:", qualityError);
 }
 
-return Response.json({ reply });
+return Response.json({ reply: finalReply });
   } catch (error) {
     console.error("HIISSA chat error:", error);
 
