@@ -1077,6 +1077,29 @@ const finalizeQualityAuditPersistence = async (auditRecord) => {
     persistenceStatus: "completed",
   };
 };
+// STEP 3V - HIISSA Audit Persistence Completion Receipt
+
+const createQualityAuditPersistenceReceipt = async (auditRecord) => {
+  const finalResult =
+    await finalizeQualityAuditPersistence(auditRecord);
+
+  const completed =
+    finalResult?.success === true &&
+    finalResult?.persistenceFinalized === true &&
+    finalResult?.persistenceStatus === "completed";
+
+  return {
+    ...finalResult,
+    persistenceReceipt: {
+      completed,
+      status: completed ? "completed" : "blocked",
+      auditId: finalResult?.auditId || null,
+      decision: finalResult?.decision || null,
+      timestamp: new Date().toISOString(),
+    },
+  };
+};
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
