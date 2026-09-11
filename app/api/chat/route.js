@@ -647,7 +647,8 @@ try {
 });
 
 const qualityAction = decideHiissaQualityAction(qualityObservation);
-if (qualityAction === "regenerate") {
+const forceRegenerationTest = true;  
+if (forceRegenerationTest || qualityAction === "regenerate") {
 finalReply = await regenerateHiissaReply({
 conversation: recentMessages,  
 reply,  
