@@ -1006,6 +1006,30 @@ const validateAndNormalizeQualityAuditPersistence = (result, auditRecord) => {
     validationReason: validation.reason,
   };
 };
+// STEP 3S - HIISSA Audit Persistence Execution Gate
+
+const executeValidatedQualityAuditPersistence = async (auditRecord) => {
+  const persistenceResult = await persistQualityAuditRecord(auditRecord);
+
+  const checkedResult = validateAndNormalizeQualityAuditPersistence(
+    persistenceResult,
+    auditRecord
+  );
+
+  if (!checkedResult.valid) {
+    return {
+      ...checkedResult,
+      success: false,
+      persisted: false,
+      persistenceBlocked: true,
+    };
+  }
+
+  return {
+    ...checkedResult,
+    persistenceBlocked: false,
+  };
+};
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
