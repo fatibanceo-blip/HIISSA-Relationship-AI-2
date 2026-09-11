@@ -1030,7 +1030,28 @@ const executeValidatedQualityAuditPersistence = async (auditRecord) => {
     persistenceBlocked: false,
   };
 };
+// STEP 3T - HIISSA Audit Persistence Enforcement Gate
 
+const enforceQualityAuditPersistence = async (auditRecord) => {
+  const executionResult =
+    await executeValidatedQualityAuditPersistence(auditRecord);
+
+  if (!executionResult || executionResult.persistenceBlocked) {
+    return {
+      ...(executionResult || {}),
+      success: false,
+      persisted: false,
+      persistenceEnforced: true,
+      persistenceAllowed: false,
+    };
+  }
+
+  return {
+    ...executionResult,
+    persistenceEnforced: true,
+    persistenceAllowed: true,
+  };
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
