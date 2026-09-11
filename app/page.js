@@ -972,7 +972,27 @@ const normalizeQualityAuditPersistenceResult = (result, auditRecord) => {
     timestamp: new Date().toISOString(),
   };
 };
+// STEP 3Q - HIISSA Audit Persistence Result Validation
 
+const validateQualityAuditPersistenceResult = (result) => {
+  if (!result || typeof result !== "object") {
+    return {
+      valid: false,
+      reason: "missing_or_invalid_result",
+    };
+  }
+
+  const valid =
+    typeof result.success === "boolean" &&
+    typeof result.persisted === "boolean" &&
+    typeof result.regenerationAttempts === "number" &&
+    typeof result.requiresEditorialApproval === "boolean";
+
+  return {
+    valid,
+    reason: valid ? null : "invalid_persistence_result_shape",
+  };
+};
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
