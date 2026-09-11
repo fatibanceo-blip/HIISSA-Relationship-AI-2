@@ -522,10 +522,25 @@ Never rush someone's story simply because you can generate an answer.
     });
 
     const reply =
-      response.choices[0]?.message?.content ||
-      "I'm here with you. Tell me a little more.";
+  response.choices[0]?.message?.content ||
+  "I'm here with you. Tell me a little more.";
 
-    return Response.json({ reply });
+try {
+  const qualityObservation = await evaluateHiissaReply({
+    conversation: recentMessages,
+    reply,
+    conversationIntent: safeConversationIntent,
+  });
+
+  console.log("HIISSA quality observation:", {
+    success: qualityObservation.success,
+    checks: qualityObservation.checks,
+  });
+} catch (qualityError) {
+  console.error("HIISSA quality observation failed:", qualityError);
+}
+
+return Response.json({ reply });
   } catch (error) {
     console.error("HIISSA chat error:", error);
 
