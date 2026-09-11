@@ -355,11 +355,23 @@ Use a short reason only when status is "fail".
           }))
       : [];
 
-    return {
-      success: checks.length === 5,
-      checks,
-      rawEvaluation,
-    };
+   const requiredCategories = Object.values(HIISSA_QUALITY_CATEGORIES);
+
+const receivedCategories = new Set(
+  checks.map((check) => check.category)
+);
+
+const hasAllRequiredCategories =
+  checks.length === requiredCategories.length &&
+  requiredCategories.every((category) =>
+    receivedCategories.has(category)
+  );
+
+return {
+  success: hasAllRequiredCategories,
+  checks,
+  rawEvaluation,
+};
   } catch {
     return {
       success: false,
