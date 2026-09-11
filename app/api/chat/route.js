@@ -405,6 +405,7 @@ function decideHiissaQualityAction(qualityObservation) {
   return "regenerate";
 }
 
+// Regeneration helper foundation
 async function regenerateHiissaReply({
   conversation,
   reply,
