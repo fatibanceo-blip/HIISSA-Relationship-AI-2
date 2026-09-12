@@ -576,8 +576,116 @@ const sensitiveAccessTriggered = sensitiveAccessSignals.some((signal) =>
 );
 
 if (sensitiveAccessTriggered) {
-  console.log("HIISSA sensitive-access boundary detected");
-}    
+  const fallbackBoundaryReply =
+    "I can’t help you obtain or check someone else’s private information without their permission. But if something has made you suspicious, I can help you work through what you’ve noticed, what you actually know, and how you might address it safely and directly.";
+
+  let boundaryReply = fallbackBoundaryReply;
+  let modelAttempted = false;
+  let modelSucceeded = false;
+
+  try {
+    modelAttempted = true;
+
+    const boundaryResponse = await client.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-5.6",
+      messages: [
+        {
+          role: "system",
+          content: `You are HIISSA Relationship AI.
+
+A privacy-boundary event has already been detected before this request reached you.
+
+The user's original sensitive wording has deliberately not been provided.
+
+Respond warmly, calmly, and briefly.
+
+Explain clearly that HIISSA cannot help someone obtain another person's private information without permission.
+
+Do not shame the user.
+
+Do not provide methods or instructions for crossing another person's privacy.
+
+Redirect toward the underlying relationship concern: trust, suspicion, what the user actually knows, what they may be assuming, and how they can address the concern safely and directly.
+
+Preserve the user's agency and HIISSA's warm, grounded voice.`,
+        },
+        {
+          role: "user",
+          content:
+            "The user is worried about trust in a relationship and considered crossing another person's privacy. Give a brief HIISSA privacy-boundary response and redirect toward safe relationship support.",
+        },
+      ],
+    });
+
+    const generatedBoundaryReply =
+      boundaryResponse.choices[0]?.message?.content?.trim();
+
+    if (generatedBoundaryReply) {
+      boundaryReply = generatedBoundaryReply;
+      modelSucceeded = true;
+    }
+  } catch (boundaryModelError) {
+    console.error(
+      "HIISSA boundary support generation failed:",
+      boundaryModelError
+    );
+  }
+
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+
+    if (supabaseUrl && supabaseSecretKey) {
+      const boundaryLogResponse = await fetch(
+        `${supabaseUrl}/rest/v1/boundary_events`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: supabaseSecretKey,
+            Authorization: `Bearer ${supabaseSecretKey}`,
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({
+            event_type: "boundary_triggered",
+            boundary_type: "sensitive_private_access",
+            response_status: modelSucceeded
+              ? "completed"
+              : "completed_with_fallback",
+            action_taken: "safe_redirect",
+            metadata: {
+              source: "chat",
+              model_attempted: modelAttempted,
+              model_succeeded: modelSucceeded,
+              raw_user_content_sent_to_model: false,
+              user_content_stored: false,
+              support_mode: safeConversationIntent,
+            },
+          }),
+        }
+      );
+
+      if (!boundaryLogResponse.ok) {
+        console.error(
+          "HIISSA boundary event persistence failed:",
+          boundaryLogResponse.status,
+          await boundaryLogResponse.text()
+        );
+      } else {
+        console.log(
+          "HIISSA boundary event persisted successfully."
+        );
+      }
+    }
+  } catch (boundaryLogError) {
+    console.error(
+      "HIISSA boundary event logging failed:",
+      boundaryLogError
+    );
+  }
+
+  return Response.json({ reply: boundaryReply });
+}
    const supportModeInstruction =
   safeConversationIntent === "listen"
     ? `The user explicitly selected JUST LISTEN.
@@ -672,14 +780,7 @@ Clarify before advising when clarification would materially change the response.
 Never rush someone's story simply because you can generate an answer.
 `;
 
-const boundaryInstruction = sensitiveAccessTriggered
-  ? `PRIVACY AND ACCESS BOUNDARY:
-The user appears to be asking for access to another person's private account, messages, credentials, or information without clear permission.
-Do not provide instructions for secretly accessing, monitoring, investigating, bypassing security, obtaining passwords, or entering another person's private account.
-Do not assume malicious intent or shame the user.
-Briefly explain the privacy boundary, then redirect toward safe alternatives such as direct communication, consent, account-security steps for their own account, or relationship-focused support.
-Continue to respect the user's selected HIISSA support mode.`
-  : "";    
+
     const response = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-5.6",
       messages: [
@@ -691,7 +792,7 @@ Continue to respect the user's selected HIISSA support mode.`
   supportModeInstruction
     ? `CURRENT USER-SELECTED SUPPORT MODE:\n${supportModeInstruction}`
     : "",
-  boundaryInstruction,
+ 
 ]
   .filter(Boolean)
   .join("\n\n"),
