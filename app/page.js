@@ -1651,11 +1651,51 @@ function deletePreviousChat(chatId) {
     !reviewPermissionThanks &&
     substantiveAssistantAnswers >= 1 &&
     !isSafetyContext(messages);
+function detectExplicitConversationIntent(text) {
+  const normalized = String(text || "")
+    .toLowerCase()
+    .replace(/[’]/g, "'");
 
+  if (
+    /\b(?:please\s+)?just\s+listen\b/.test(normalized) ||
+    /\b(?:i\s+)?(?:just|only)\s+(?:need|want)\s+(?:you\s+)?to\s+listen\b/.test(normalized) ||
+    (/\bi\s+don'?t\s+want\s+(?:advice|analysis|to\s+analyse|to\s+analyze|solutions?)\b/.test(normalized) &&
+      /\b(?:listen|hear me|be here)\b/.test(normalized))
+  ) {
+    return "listen";
+  }
+
+  if (
+    /\bhelp me understand\b/.test(normalized) ||
+    /\bi\s+(?:need|want)\s+to\s+understand\b/.test(normalized) ||
+    /\bi'?m\s+trying\s+to\s+understand\b/.test(normalized)
+  ) {
+    return "understand";
+  }
+
+  if (
+    /\bhelp me move forward\b/.test(normalized) ||
+    /\bhow do i move forward\b/.test(normalized) ||
+    /\bwhat (?:should|can) i do next\b/.test(normalized)
+  ) {
+    return "move_forward";
+  }
+
+  return null;
+}
   async function sendMessage(text = input) {
     const clean = text.trim();
 
     if (!clean || loading || wordingLoading) return;
+
+const detectedIntent = detectExplicitConversationIntent(clean);
+const effectiveIntent = detectedIntent || conversationIntent;
+
+if (detectedIntent && detectedIntent !== conversationIntent) {
+  setConversationIntent(detectedIntent);
+  setWordingModeActive(false);
+  setShowIntentChoices(false);
+}    
 
     const next = [...messages, { role: "user", content: clean }];
 
@@ -1675,7 +1715,7 @@ setWordingUndo("");
         },
         body: JSON.stringify({
   messages: next,
-  conversationIntent,
+conversationIntent: effectiveIntent, 
 }),
       });
 
