@@ -2474,7 +2474,7 @@ setWordingError("");
               </div>
             </div>
           )}
-{(messages.length === 1 || showIntentChoices) && (
+{(
   <div
     style={{
       margin: "6px 20px 18px",
