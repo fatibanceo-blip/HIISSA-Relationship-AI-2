@@ -404,7 +404,31 @@ function decideHiissaQualityAction(qualityObservation) {
 
   return "regenerate";
 }
+// Privacy-safe quality audit record foundation
+function buildHiissaQualityAuditRecord({
+  qualityObservation,
+  qualityAction,
+  conversationIntent = null,
+  regenerationTriggered = false,
+}) {
+  const safeChecks = Array.isArray(qualityObservation?.checks)
+    ? qualityObservation.checks.map((check) => ({
+        category: check.category,
+        status: check.status,
+      }))
+    : [];
 
+  return {
+    event: "hiissa_quality_audit",
+    version: 1,
+    timestamp: new Date().toISOString(),
+    evaluatorSuccess: Boolean(qualityObservation?.success),
+    action: qualityAction,
+    supportMode: conversationIntent,
+    regenerationTriggered: Boolean(regenerationTriggered),
+    checks: safeChecks,
+  };
+}
 // Regeneration helper foundation
 async function regenerateHiissaReply({
   conversation,
