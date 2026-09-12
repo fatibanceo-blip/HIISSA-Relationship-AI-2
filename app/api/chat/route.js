@@ -686,6 +686,15 @@ qualityObservation,
   action: qualityAction,
   checks: qualityObservation.checks,
 });
+const qualityAuditRecord = buildHiissaQualityAuditRecord({
+  qualityObservation,
+  qualityAction,
+  conversationIntent,
+  regenerationTriggered: qualityAction === "regenerate",
+});
+
+console.log("HIISSA privacy-safe quality audit:", qualityAuditRecord);
+  
 } catch (qualityError) {
   console.error("HIISSA quality observation failed:", qualityError);
 }
