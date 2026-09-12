@@ -550,7 +550,34 @@ const safeConversationIntent = allowedConversationIntents.includes(
     }
 
     const recentMessages = getRecentConversation(safeMessages);
+const latestUserMessage =
+  [...recentMessages]
+    .reverse()
+    .find((message) => message.role === "user")
+    ?.content?.toLowerCase() || "";
 
+const sensitiveAccessSignals = [
+  "password",
+  "bank details",
+  "bank account",
+  "login",
+  "private messages",
+  "access his account",
+  "access her account",
+  "without him knowing",
+  "without her knowing",
+  "secretly check",
+  "investigate him",
+  "investigate her",
+];
+
+const sensitiveAccessTriggered = sensitiveAccessSignals.some((signal) =>
+  latestUserMessage.includes(signal)
+);
+
+if (sensitiveAccessTriggered) {
+  console.log("HIISSA sensitive-access boundary detected");
+}    
    const supportModeInstruction =
   safeConversationIntent === "listen"
     ? `The user explicitly selected JUST LISTEN.
@@ -645,15 +672,29 @@ Clarify before advising when clarification would materially change the response.
 Never rush someone's story simply because you can generate an answer.
 `;
 
-    
+const boundaryInstruction = sensitiveAccessTriggered
+  ? `PRIVACY AND ACCESS BOUNDARY:
+The user appears to be asking for access to another person's private account, messages, credentials, or information without clear permission.
+Do not provide instructions for secretly accessing, monitoring, investigating, bypassing security, obtaining passwords, or entering another person's private account.
+Do not assume malicious intent or shame the user.
+Briefly explain the privacy boundary, then redirect toward safe alternatives such as direct communication, consent, account-security steps for their own account, or relationship-focused support.
+Continue to respect the user's selected HIISSA support mode.`
+  : "";    
     const response = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-5.6",
       messages: [
         {
           role: "system",
-        content: supportModeInstruction
-  ? `${systemPrompt}\n\nHIISSA CONVERSATIONAL INTELLIGENCE:\n${conversationalIntelligenceInstruction}\n\nCURRENT USER-SELECTED SUPPORT MODE:\n${supportModeInstruction}`
-  : `${systemPrompt}\n\nHIISSA CONVERSATIONAL INTELLIGENCE:\n${conversationalIntelligenceInstruction}`,
+        content: [
+  systemPrompt,
+  `HIISSA CONVERSATIONAL INTELLIGENCE:\n${conversationalIntelligenceInstruction}`,
+  supportModeInstruction
+    ? `CURRENT USER-SELECTED SUPPORT MODE:\n${supportModeInstruction}`
+    : "",
+  boundaryInstruction,
+]
+  .filter(Boolean)
+  .join("\n\n"),
         },
         ...recentMessages,
       ],
