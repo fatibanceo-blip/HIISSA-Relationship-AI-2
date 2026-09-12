@@ -947,11 +947,37 @@ const persistQualityAuditRecord = async (auditRecord) => {
     };
   }
 
-  return {
-    success: true,
-    persisted: false,
-    record,
-  };
+  try {
+    const { error } = await supabase
+      .from("quality_audit_records")
+      .insert({
+        audit_record: record,
+      });
+
+    if (error) {
+      console.error("HIISSA quality audit persistence failed:", error);
+
+      return {
+        success: false,
+        persisted: false,
+        record,
+      };
+    }
+
+    return {
+      success: true,
+      persisted: true,
+      record,
+    };
+  } catch (error) {
+    console.error("HIISSA quality audit persistence error:", error);
+
+    return {
+      success: false,
+      persisted: false,
+      record,
+    };
+  }
 };
 // STEP 3P - HIISSA Audit Persistence Result Normalisation
 
