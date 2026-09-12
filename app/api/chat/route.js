@@ -694,6 +694,49 @@ const qualityAuditRecord = buildHiissaQualityAuditRecord({
 });
 
 console.log("HIISSA privacy-safe quality audit:", qualityAuditRecord);
+try {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+
+  if (supabaseUrl && supabaseSecretKey) {
+    const auditResponse = await fetch(
+      `${supabaseUrl}/rest/v1/quality_audit_records`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: supabaseSecretKey,
+          Authorization: `Bearer ${supabaseSecretKey}`,
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          audit_record: qualityAuditRecord,
+        }),
+      }
+    );
+
+    if (!auditResponse.ok) {
+      const auditErrorText = await auditResponse.text();
+      console.error(
+        "HIISSA quality audit persistence failed:",
+        auditResponse.status,
+        auditErrorText
+      );
+    } else {
+      console.log("HIISSA quality audit persisted successfully.");
+    }
+  } else {
+    console.error(
+      "HIISSA quality audit persistence skipped: Supabase environment variables are missing."
+    );
+  }
+} catch (auditPersistenceError) {
+  console.error(
+    "HIISSA quality audit persistence error:",
+    auditPersistenceError
+  );
+}
+  
   
 } catch (qualityError) {
   console.error("HIISSA quality observation failed:", qualityError);
