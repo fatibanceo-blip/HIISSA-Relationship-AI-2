@@ -307,6 +307,8 @@ Return VALID JSON ONLY in exactly this shape:
 Every category must appear exactly once.
 Allowed status values are "pass" and "fail".
 Use a short reason only when status is "fail".
+For any failure reason, use generic quality language only.
+Do not include names, identifying details, private information, or quote/repeat the user's wording.
 `;
 
   const evaluation = await client.chat.completions.create({
@@ -415,6 +417,10 @@ function buildHiissaQualityAuditRecord({
     ? qualityObservation.checks.map((check) => ({
         category: check.category,
         status: check.status,
+reason:
+  check.status === "fail" && typeof check.reason === "string"
+    ? check.reason
+    : null,      
       }))
     : [];
 
