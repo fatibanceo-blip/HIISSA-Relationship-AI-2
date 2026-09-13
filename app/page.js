@@ -1443,7 +1443,10 @@ const [wordingUndo, setWordingUndo] = useState("");
   const [reviewPermissionThanks, setReviewPermissionThanks] = useState(false);
   const [reviewPermissionDismissed, setReviewPermissionDismissed] =
     useState(false);
-
+const [openingCheckInVisible, setOpeningCheckInVisible] = useState(false);
+const [openingCheckInCompleted, setOpeningCheckInCompleted] = useState(false);
+const [openingCheckInSkipped, setOpeningCheckInSkipped] = useState(false);
+const [openingFeeling, setOpeningFeeling] = useState(null);
   const [showAdminShortcut, setShowAdminShortcut] = useState(false);
   const [publicReviews, setPublicReviews] = useState([]);
 
@@ -1651,6 +1654,28 @@ function deletePreviousChat(chatId) {
     !reviewPermissionThanks &&
     substantiveAssistantAnswers >= 1 &&
     !isSafetyContext(messages);
+useEffect(() => {
+  if (
+    loading ||
+    openingCheckInCompleted ||
+    openingCheckInSkipped ||
+    openingCheckInVisible ||
+    substantiveAssistantAnswers < 1 ||
+    isSafetyContext(messages)
+  ) {
+    return;
+  }
+
+  setOpeningCheckInVisible(true);
+}, [
+  loading,
+  openingCheckInCompleted,
+  openingCheckInSkipped,
+  openingCheckInVisible,
+  substantiveAssistantAnswers,
+  messages,
+]);
+  
 function detectExplicitConversationIntent(text) {
   const normalized = String(text || "")
     .toLowerCase()
@@ -2514,7 +2539,7 @@ setWordingError("");
               </div>
             </div>
           )}
-{(
+{(messages.length === 1 || showIntentChoices) && (
   <div
     style={{
       margin: "6px 20px 18px",
