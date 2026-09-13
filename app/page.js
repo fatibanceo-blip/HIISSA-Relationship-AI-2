@@ -1556,11 +1556,13 @@ const [pendingReturnCheckIn, setPendingReturnCheckIn] = useState(false);
       setConversationIntent(savedActiveChat.conversationIntent || null);
       setActivePreviousChatId(savedActiveChat.activePreviousChatId || null);
       setShowIntentChoices(false);
-     const savedLastActiveAt = Number(savedActiveChat.lastActiveAt || 0);
+const awaySince = Number(
+  window.localStorage.getItem("hiissa_away_since") || "0"
+);
 
 const awayLongEnough =
-  savedLastActiveAt > 0 &&
-  Date.now() - savedLastActiveAt >= 15 * 60 * 1000;
+  awaySince > 0 &&
+  Date.now() - awaySince >= 15 * 60 * 1000;
 
 if (
   savedActiveChat.returnCheckInEligible === true &&
@@ -1571,7 +1573,9 @@ if (
 } else {
   setPendingReturnCheckIn(false);
   setReturnCheckInVisible(false);
-} 
+}
+
+window.localStorage.removeItem("hiissa_away_since");
     }
   } catch {
     // HIISSA starts fresh if the active chat cannot be restored.
@@ -1607,6 +1611,63 @@ lastActiveAt: Date.now(),
     // Active chat saving remains optional if browser storage is unavailable.
   }
 }, [messages, input, conversationIntent, activePreviousChatId, activeChatLoaded,closingCheckInCompleted]); 
+useEffect(() => {
+  function handleVisibilityChange() {
+    if (document.visibilityState === "hidden") {
+      try {
+        const savedActiveChat = JSON.parse(
+          window.localStorage.getItem("hiissa_active_chat") || "null"
+        );
+
+        if (savedActiveChat?.returnCheckInEligible === true) {
+          window.localStorage.setItem(
+            "hiissa_away_since",
+            String(Date.now())
+          );
+        }
+      } catch {
+        // HIISSA can continue even if browser storage is unavailable.
+      }
+
+      return;
+    }
+
+    if (document.visibilityState === "visible") {
+      try {
+        const awaySince = Number(
+          window.localStorage.getItem("hiissa_away_since") || "0"
+        );
+
+        const savedActiveChat = JSON.parse(
+          window.localStorage.getItem("hiissa_active_chat") || "null"
+        );
+
+        const awayLongEnough =
+          awaySince > 0 &&
+          Date.now() - awaySince >= 15 * 60 * 1000;
+
+        if (
+          savedActiveChat?.returnCheckInEligible === true &&
+          awayLongEnough
+        ) {
+          setPendingReturnCheckIn(true);
+          setReturnCheckInVisible(true);
+        }
+
+        window.localStorage.removeItem("hiissa_away_since");
+      } catch {
+        // HIISSA can continue even if browser storage is unavailable.
+      }
+    }
+  }
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  return () => {
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+  };
+}, []);
+  
 
  useEffect(() => {
   if (!activeChatLoaded || !activePreviousChatId) return;
@@ -2414,7 +2475,11 @@ setOpeningCheckInSkipped(false);
 setOpeningFeeling(null); 
 setClosingCheckInVisible(false);
 setClosingCheckInCompleted(false);
-setClosingFeeling(null);    
+setClosingFeeling(null); 
+setPendingReturnCheckIn(false);
+setReturnCheckInVisible(false);
+setReturnCheckInCompleted(false);
+window.localStorage.removeItem("hiissa_away_since");    
     setActivePreviousChatId(null);
     setShowIntentChoices(false);
     setWordingSuggestion("");
@@ -2876,6 +2941,8 @@ setClosingFeeling(null);
       onClick={() => {
         setPendingReturnCheckIn(false);
         setReturnCheckInVisible(false);
+      setReturnCheckInCompleted(true);
+window.localStorage.removeItem("hiissa_away_since");  
       }}
       style={{
         border: "0",
