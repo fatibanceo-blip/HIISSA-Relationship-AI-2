@@ -1613,8 +1613,8 @@ lastActiveAt: Date.now(),
 }, [messages, input, conversationIntent, activePreviousChatId, activeChatLoaded,closingCheckInCompleted]); 
 useEffect(() => {
   function handleVisibilityChange() {
-    if (document.visibilityState === "hidden") {
-      try {
+    try {
+      if (document.visibilityState === "hidden") {
         const savedActiveChat = JSON.parse(
           window.localStorage.getItem("hiissa_active_chat") || "null"
         );
@@ -1625,15 +1625,11 @@ useEffect(() => {
             String(Date.now())
           );
         }
-      } catch {
-        // HIISSA can continue even if browser storage is unavailable.
+
+        return;
       }
 
-      return;
-    }
-
-    if (document.visibilityState === "visible") {
-      try {
+      if (document.visibilityState === "visible") {
         const awaySince = Number(
           window.localStorage.getItem("hiissa_away_since") || "0"
         );
@@ -1655,16 +1651,19 @@ useEffect(() => {
         }
 
         window.localStorage.removeItem("hiissa_away_since");
-      } catch {
-        // HIISSA can continue even if browser storage is unavailable.
       }
+    } catch {
+      // HIISSA continues even if browser storage is unavailable.
     }
   }
 
   document.addEventListener("visibilitychange", handleVisibilityChange);
 
   return () => {
-    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    document.removeEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
   };
 }, []);
   
