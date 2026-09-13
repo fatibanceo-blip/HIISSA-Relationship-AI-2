@@ -1220,7 +1220,34 @@ function hasMeaningfulPersonalSharing(messages) {
 
   return personalOrEmotionalSignal.test(latestUserMessage);
 }
+function hasNaturalConversationClosing(messages) {
+  const latestUserMessage =
+    [...messages]
+      .reverse()
+      .find((message) => message.role === "user")
+      ?.content?.trim() || "";
 
+  if (!latestUserMessage) {
+    return false;
+  }
+
+  const normalized = latestUserMessage
+    .toLowerCase()
+    .replace(/[’]/g, "'");
+
+  const closingSignals = [
+    /\bready to leave it here\b/,
+    /\bleave it here for (today|now)\b/,
+    /\bi think i know what i need to do now\b/,
+    /\bthat(?:'s| is) enough for (today|now)\b/,
+    /\bi(?:'m| am) ready to (stop|finish|end)\b/,
+    /\bi feel (clearer|better|calmer|lighter|more settled)\b/,
+    /\bthis has helped\b/,
+    /\btalking about it has helped\b/,
+  ];
+
+  return closingSignals.some((pattern) => pattern.test(normalized));
+}
 
 function createPermissionToken() {
   if (
@@ -1464,6 +1491,9 @@ const [openingCheckInVisible, setOpeningCheckInVisible] = useState(false);
 const [openingCheckInCompleted, setOpeningCheckInCompleted] = useState(false);
 const [openingCheckInSkipped, setOpeningCheckInSkipped] = useState(false);
 const [openingFeeling, setOpeningFeeling] = useState(null);
+const [closingCheckInVisible, setClosingCheckInVisible] = useState(false);
+const [closingCheckInCompleted, setClosingCheckInCompleted] = useState(false);
+const [closingFeeling, setClosingFeeling] = useState(null);  
   const [showAdminShortcut, setShowAdminShortcut] = useState(false);
   const [publicReviews, setPublicReviews] = useState([]);
 
@@ -1693,7 +1723,28 @@ useEffect(() => {
   substantiveAssistantAnswers,
   messages,
 ]);
-  
+useEffect(() => {
+  if (
+    loading ||
+    closingCheckInCompleted ||
+    closingCheckInVisible ||
+    openingCheckInVisible ||
+    substantiveAssistantAnswers < 2 ||
+    !hasNaturalConversationClosing(messages) ||
+    isSafetyContext(messages)
+  ) {
+    return;
+  }
+
+  setClosingCheckInVisible(true);
+}, [
+  loading,
+  closingCheckInCompleted,
+  closingCheckInVisible,
+  openingCheckInVisible,
+  substantiveAssistantAnswers,
+  messages,
+]);  
 function detectExplicitConversationIntent(text) {
   const normalized = String(text || "")
     .toLowerCase()
@@ -2331,6 +2382,9 @@ setWordingError("");
 setOpeningCheckInCompleted(false);
 setOpeningCheckInSkipped(false);
 setOpeningFeeling(null); 
+setClosingCheckInVisible(false);
+setClosingCheckInCompleted(false);
+setClosingFeeling(null);    
     setActivePreviousChatId(null);
     setShowIntentChoices(false);
     setWordingSuggestion("");
@@ -2658,6 +2712,103 @@ setOpeningFeeling(null);
     </button>
   </div>
 )}
+{closingCheckInVisible && (
+  <div
+    style={{
+      margin: "6px 20px 18px",
+      padding: "18px",
+      borderRadius: "20px",
+      background: "#fffdf8",
+      border: "1px solid rgba(80, 102, 93, 0.16)",
+      boxShadow: "0 10px 30px rgba(74, 92, 84, 0.06)",
+    }}
+  >
+    <div
+      style={{
+        textAlign: "center",
+        color: "#3f5f58",
+        fontWeight: "800",
+        fontSize: "16px",
+        marginBottom: "6px",
+      }}
+    >
+      🤍 Before you go, how are you feeling now?
+    </div>
+
+    <div
+      style={{
+        textAlign: "center",
+        color: "#6f7f79",
+        fontSize: "13px",
+        lineHeight: "1.5",
+        marginBottom: "14px",
+      }}
+    >
+      Choose what feels closest right now — or skip if you’d rather leave it here.
+    </div>
+
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: "8px",
+      }}
+    >
+      {[
+        "Clearer",
+        "Calmer",
+        "Lighter",
+        "Still hurt",
+        "Still overwhelmed",
+        "Unsure",
+      ].map((feeling) => (
+        <button
+          key={feeling}
+          type="button"
+          onClick={() => {
+            setClosingFeeling(feeling);
+            setClosingCheckInCompleted(true);
+            setClosingCheckInVisible(false);
+          }}
+          style={{
+            border: "1px solid rgba(80, 102, 93, 0.18)",
+            background: "#ffffff",
+            color: "#466f67",
+            borderRadius: "999px",
+            padding: "9px 13px",
+            fontSize: "12px",
+            fontWeight: "700",
+            cursor: "pointer",
+          }}
+        >
+          {feeling}
+        </button>
+      ))}
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setClosingCheckInCompleted(true);
+        setClosingCheckInVisible(false);
+      }}
+      style={{
+        display: "block",
+        margin: "12px auto 0",
+        border: "0",
+        background: "transparent",
+        color: "#7a8984",
+        fontSize: "12px",
+        fontWeight: "700",
+        cursor: "pointer",
+      }}
+    >
+      Skip for now
+    </button>
+  </div>
+)}
+
 
 {(messages.length === 1 || showIntentChoices) && (
   <div
