@@ -1493,7 +1493,10 @@ const [openingCheckInSkipped, setOpeningCheckInSkipped] = useState(false);
 const [openingFeeling, setOpeningFeeling] = useState(null);
 const [closingCheckInVisible, setClosingCheckInVisible] = useState(false);
 const [closingCheckInCompleted, setClosingCheckInCompleted] = useState(false);
-const [closingFeeling, setClosingFeeling] = useState(null);  
+const [closingFeeling, setClosingFeeling] = useState(null); 
+const [returnCheckInVisible, setReturnCheckInVisible] = useState(false);
+const [returnCheckInCompleted, setReturnCheckInCompleted] = useState(false);
+const [pendingReturnCheckIn, setPendingReturnCheckIn] = useState(false);  
   const [showAdminShortcut, setShowAdminShortcut] = useState(false);
   const [publicReviews, setPublicReviews] = useState([]);
 
@@ -1553,6 +1556,22 @@ const [closingFeeling, setClosingFeeling] = useState(null);
       setConversationIntent(savedActiveChat.conversationIntent || null);
       setActivePreviousChatId(savedActiveChat.activePreviousChatId || null);
       setShowIntentChoices(false);
+     const savedLastActiveAt = Number(savedActiveChat.lastActiveAt || 0);
+
+const awayLongEnough =
+  savedLastActiveAt > 0 &&
+  Date.now() - savedLastActiveAt >= 15 * 60 * 1000;
+
+if (
+  savedActiveChat.returnCheckInEligible === true &&
+  awayLongEnough
+) {
+  setPendingReturnCheckIn(true);
+  setReturnCheckInVisible(true);
+} else {
+  setPendingReturnCheckIn(false);
+  setReturnCheckInVisible(false);
+} 
     }
   } catch {
     // HIISSA starts fresh if the active chat cannot be restored.
@@ -1571,12 +1590,23 @@ const [closingFeeling, setClosingFeeling] = useState(null);
         input,
         conversationIntent,
        activePreviousChatId, 
+      returnCheckInEligible:
+  messages.filter((message) => message.role === "assistant").length >= 3 &&
+  messages.some(
+    (message) =>
+      message.role === "user" &&
+      typeof message.content === "string" &&
+      message.content.trim().length >= 35
+  ) &&
+  !closingCheckInCompleted &&
+  !isSafetyContext(messages),
+lastActiveAt: Date.now(),  
       })
     );
   } catch {
     // Active chat saving remains optional if browser storage is unavailable.
   }
-}, [messages, input, conversationIntent, activePreviousChatId, activeChatLoaded]); 
+}, [messages, input, conversationIntent, activePreviousChatId, activeChatLoaded,closingCheckInCompleted]); 
 
  useEffect(() => {
   if (!activeChatLoaded || !activePreviousChatId) return;
@@ -2808,6 +2838,59 @@ setClosingFeeling(null);
     </button>
   </div>
 )}
+{pendingReturnCheckIn && returnCheckInVisible && (
+  <div
+    style={{
+      margin: "8px 20px 14px",
+      padding: "14px",
+      borderRadius: "16px",
+      background: "#FFF8F9",
+      border: "1px solid rgba(90, 102, 93, 0.14)",
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        fontSize: "14px",
+        fontWeight: "700",
+        color: "#6F7779",
+        marginBottom: "6px",
+      }}
+    >
+      Welcome back 🤍
+    </div>
+
+    <div
+      style={{
+        fontSize: "13px",
+        lineHeight: "1.5",
+        color: "#6F7779",
+        marginBottom: "12px",
+      }}
+    >
+      Before we continue, how are you feeling now?
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setPendingReturnCheckIn(false);
+        setReturnCheckInVisible(false);
+      }}
+      style={{
+        border: "0",
+        background: "transparent",
+        color: "#7A898A",
+        fontSize: "12px",
+        fontWeight: "700",
+        cursor: "pointer",
+      }}
+    >
+      Continue
+    </button>
+  </div>
+)}
+
 
 
 {(messages.length === 1 || showIntentChoices) && (
