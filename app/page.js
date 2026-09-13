@@ -1204,6 +1204,23 @@ function isSafetyContext(messages) {
 
   return safetyTerms.test(recentText);
 }
+function hasMeaningfulPersonalSharing(messages) {
+  const latestUserMessage =
+    [...messages]
+      .reverse()
+      .find((message) => message.role === "user")
+      ?.content?.trim() || "";
+
+  if (!latestUserMessage || latestUserMessage.length < 35) {
+    return false;
+  }
+
+  const personalOrEmotionalSignal =
+    /\b(i|i'm|im|me|my|we|our|feel|feeling|felt|hurt|hurting|upset|angry|confused|worried|anxious|sad|relationship|partner|husband|wife|boyfriend|girlfriend|ex|family)\b/i;
+
+  return personalOrEmotionalSignal.test(latestUserMessage);
+}
+
 
 function createPermissionToken() {
   if (
@@ -1661,6 +1678,7 @@ useEffect(() => {
     openingCheckInSkipped ||
     openingCheckInVisible ||
     substantiveAssistantAnswers < 1 ||
+   !hasMeaningfulPersonalSharing(messages) || 
     isSafetyContext(messages)
   ) {
     return;
@@ -2539,6 +2557,104 @@ setWordingError("");
               </div>
             </div>
           )}
+{openingCheckInVisible && (
+  <div
+    style={{
+      margin: "6px 20px 18px",
+      padding: "18px",
+      borderRadius: "20px",
+      background: "#fffdf8",
+      border: "1px solid rgba(80, 102, 93, 0.16)",
+      boxShadow: "0 10px 30px rgba(74, 92, 84, 0.06)",
+    }}
+  >
+    <div
+      style={{
+        textAlign: "center",
+        color: "#3f5f58",
+        fontWeight: "800",
+        fontSize: "16px",
+        marginBottom: "6px",
+      }}
+    >
+      🤍 Before we go further, how are you feeling right now?
+    </div>
+
+    <div
+      style={{
+        textAlign: "center",
+        color: "#6f7f79",
+        fontSize: "13px",
+        lineHeight: "1.5",
+        marginBottom: "14px",
+      }}
+    >
+      You’ve shared a little of what’s happening. Choose what feels closest — or
+      skip for now.
+    </div>
+
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: "8px",
+      }}
+    >
+      {[
+        "Overwhelmed",
+        "Hurt",
+        "Confused",
+        "Angry",
+        "Anxious",
+        "Numb / unsure",
+      ].map((feeling) => (
+        <button
+          key={feeling}
+          type="button"
+          onClick={() => {
+            setOpeningFeeling(feeling);
+            setOpeningCheckInCompleted(true);
+            setOpeningCheckInVisible(false);
+          }}
+          style={{
+            border: "1px solid rgba(80, 102, 93, 0.18)",
+            background: "#ffffff",
+            color: "#466f67",
+            borderRadius: "999px",
+            padding: "9px 13px",
+            fontSize: "12px",
+            fontWeight: "700",
+            cursor: "pointer",
+          }}
+        >
+          {feeling}
+        </button>
+      ))}
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setOpeningCheckInSkipped(true);
+        setOpeningCheckInVisible(false);
+      }}
+      style={{
+        display: "block",
+        margin: "12px auto 0",
+        border: "0",
+        background: "transparent",
+        color: "#7a8984",
+        fontSize: "12px",
+        fontWeight: "700",
+        cursor: "pointer",
+      }}
+    >
+      Skip for now
+    </button>
+  </div>
+)}
+
 {(messages.length === 1 || showIntentChoices) && (
   <div
     style={{
