@@ -1496,10 +1496,111 @@ const [closingCheckInCompleted, setClosingCheckInCompleted] = useState(false);
 const [closingFeeling, setClosingFeeling] = useState(null); 
 const [returnCheckInVisible, setReturnCheckInVisible] = useState(false);
 const [returnCheckInCompleted, setReturnCheckInCompleted] = useState(false);
-const [pendingReturnCheckIn, setPendingReturnCheckIn] = useState(false);  
+const [pendingReturnCheckIn, setPendingReturnCheckIn] = useState(false); 
+function recordUserActivity() {
+  try {
+    window.localStorage.setItem(
+      "hiissa_last_user_activity_at",
+      String(Date.now())
+    );
+  } catch {
+    // HIISSA continues if browser storage is unavailable.
+  }
+}
+
+function checkForReturnAfterInactivity() {
+  try {
+    const lastUserActivityAt = Number(
+      window.localStorage.getItem("hiissa_last_user_activity_at") || "0"
+    );
+
+    if (lastUserActivityAt <= 0) return false;
+
+    const inactiveLongEnough =
+      Date.now() - lastUserActivityAt >= 15 * 60 * 1000;
+
+    if (!inactiveLongEnough) return false;
+
+    const savedActiveChat = JSON.parse(
+      window.localStorage.getItem("hiissa_active_chat") || "null"
+    );
+
+    const sourceMessages =
+      activeChatLoaded &&
+      Array.isArray(messages) &&
+      messages.length > 0
+        ? messages
+        : Array.isArray(savedActiveChat?.messages)
+          ? savedActiveChat.messages
+          : [];
+
+    const liveEligible =
+      sourceMessages.filter(
+        (message) => message.role === "assistant"
+      ).length >= 3 &&
+      sourceMessages.some(
+        (message) =>
+          message.role === "user" &&
+          typeof message.content === "string" &&
+          message.content.trim().length >= 35
+      ) &&
+      !closingCheckInCompleted &&
+      !isSafetyContext(sourceMessages);
+
+    const eligible =
+      activeChatLoaded
+        ? liveEligible
+        : savedActiveChat?.returnCheckInEligible === true;
+
+    if (!eligible || returnCheckInCompleted) return false;
+
+    setPendingReturnCheckIn(true);
+    setReturnCheckInVisible(true);
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+  
   const [showAdminShortcut, setShowAdminShortcut] = useState(false);
   const [publicReviews, setPublicReviews] = useState([]);
+useEffect(() => {
+  function handleVisibilityReturn() {
+    if (document.visibilityState === "visible") {
+      checkForReturnAfterInactivity();
+    }
+  }
 
+  function handleFocusReturn() {
+    checkForReturnAfterInactivity();
+  }
+
+  function handlePageShowReturn() {
+    checkForReturnAfterInactivity();
+  }
+
+  // Check once when this page/component becomes active.
+  checkForReturnAfterInactivity();
+
+  document.addEventListener(
+    "visibilitychange",
+    handleVisibilityReturn
+  );
+
+  window.addEventListener("focus", handleFocusReturn);
+  window.addEventListener("pageshow", handlePageShowReturn);
+
+  return () => {
+    document.removeEventListener(
+      "visibilitychange",
+      handleVisibilityReturn
+    );
+
+    window.removeEventListener("focus", handleFocusReturn);
+    window.removeEventListener("pageshow", handlePageShowReturn);
+  };
+}, []);
   useEffect(() => {
     try {
       const submitted =
@@ -1556,26 +1657,9 @@ const [pendingReturnCheckIn, setPendingReturnCheckIn] = useState(false);
       setConversationIntent(savedActiveChat.conversationIntent || null);
       setActivePreviousChatId(savedActiveChat.activePreviousChatId || null);
       setShowIntentChoices(false);
-const awaySince = Number(
-  window.localStorage.getItem("hiissa_away_since") || "0"
-);
+checkForReturnAfterInactivity();
 
-const awayLongEnough =
-  awaySince > 0 &&
-  Date.now() - awaySince >= 15 * 60 * 1000;
 
-if (
-  savedActiveChat.returnCheckInEligible === true &&
-  awayLongEnough
-) {
-  setPendingReturnCheckIn(true);
-  setReturnCheckInVisible(true);
-} else {
-  setPendingReturnCheckIn(false);
-  setReturnCheckInVisible(false);
-}
-
-window.localStorage.removeItem("hiissa_away_since");
     }
   } catch {
     // HIISSA starts fresh if the active chat cannot be restored.
@@ -1604,68 +1688,14 @@ window.localStorage.removeItem("hiissa_away_since");
   ) &&
   !closingCheckInCompleted &&
   !isSafetyContext(messages),
-lastActiveAt: Date.now(),  
+ 
       })
     );
   } catch {
     // Active chat saving remains optional if browser storage is unavailable.
   }
 }, [messages, input, conversationIntent, activePreviousChatId, activeChatLoaded,closingCheckInCompleted]); 
-useEffect(() => {
-  function handleVisibilityChange() {
-    try {
-      if (document.visibilityState === "hidden") {
-        const savedActiveChat = JSON.parse(
-          window.localStorage.getItem("hiissa_active_chat") || "null"
-        );
 
-        if (savedActiveChat?.returnCheckInEligible === true) {
-          window.localStorage.setItem(
-            "hiissa_away_since",
-            String(Date.now())
-          );
-        }
-
-        return;
-      }
-
-      if (document.visibilityState === "visible") {
-        const awaySince = Number(
-          window.localStorage.getItem("hiissa_away_since") || "0"
-        );
-
-        const savedActiveChat = JSON.parse(
-          window.localStorage.getItem("hiissa_active_chat") || "null"
-        );
-
-        const awayLongEnough =
-          awaySince > 0 &&
-          Date.now() - awaySince >= 15 * 60 * 1000;
-
-        if (
-          savedActiveChat?.returnCheckInEligible === true &&
-          awayLongEnough
-        ) {
-          setPendingReturnCheckIn(true);
-          setReturnCheckInVisible(true);
-        }
-
-        window.localStorage.removeItem("hiissa_away_since");
-      }
-    } catch {
-      // HIISSA continues even if browser storage is unavailable.
-    }
-  }
-
-  document.addEventListener("visibilitychange", handleVisibilityChange);
-
-  return () => {
-    document.removeEventListener(
-      "visibilitychange",
-      handleVisibilityChange
-    );
-  };
-}, []);
   
 
  useEffect(() => {
@@ -1871,6 +1901,9 @@ function detectExplicitConversationIntent(text) {
     const clean = text.trim();
 
     if (!clean || loading || wordingLoading) return;
+checkForReturnAfterInactivity();
+recordUserActivity();
+    
 
 const detectedIntent = detectExplicitConversationIntent(clean);
 const effectiveIntent = detectedIntent || conversationIntent;
@@ -2011,6 +2044,7 @@ function undoWordingChange() {
   setWordingError("");
 }
   async function copyHiissaLink() {
+  recordUserActivity();
     
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -2025,6 +2059,7 @@ function undoWordingChange() {
   }
 
   function startListening() {
+   recordUserActivity(); 
     if (listening || loading) return;
 
     const SpeechRecognition =
@@ -2150,6 +2185,7 @@ setWordingError("");
   }
 
   function speakMessage(text, index) {
+ 
     if (
       typeof window === "undefined" ||
       !("speechSynthesis" in window) ||
@@ -2211,6 +2247,7 @@ setWordingError("");
   }
 
   async function submitFeedback() {
+  recordUserActivity();  
     if (!rating || helpful === null || feedbackSending) return;
 
     setFeedbackSending(true);
@@ -2263,6 +2300,7 @@ setWordingError("");
   }
 
   async function allowPublicReview() {
+   recordUserActivity(); 
     const cleanReview = publicReviewText.trim();
 
     if (!pendingReviewToken || !cleanReview || reviewPermissionSending) return;
@@ -2317,7 +2355,8 @@ setWordingError("");
   }
 
   function keepReviewPrivate() {
-    if (pendingReviewToken) {
+  recordUserActivity();
+  if (pendingReviewToken) {
       removePendingPermissionToken(pendingReviewToken);
     }
 
@@ -2401,7 +2440,10 @@ setWordingError("");
         </div>
 <button
   type="button"
-  onClick={() => setShowExplore(true)}
+ onClick={() => {
+  recordUserActivity();
+  setShowExplore(true);
+}}
   className="exploreEntry"
 >
   <span className="exploreEntryIcon">✦</span>
@@ -2422,7 +2464,8 @@ setWordingError("");
          <button
   type="button"
   onClick={() => {
-   if (messages.length > 1) {
+  recordUserActivity(); 
+    if (messages.length > 1) {
   const firstUserMessage =
     messages.find((message) => message.role === "user")?.content ||
     "Previous conversation";
@@ -2478,7 +2521,7 @@ setClosingFeeling(null);
 setPendingReturnCheckIn(false);
 setReturnCheckInVisible(false);
 setReturnCheckInCompleted(false);
-window.localStorage.removeItem("hiissa_away_since");    
+ 
     setActivePreviousChatId(null);
     setShowIntentChoices(false);
     setWordingSuggestion("");
@@ -2504,7 +2547,10 @@ window.localStorage.removeItem("hiissa_away_since");
 </button>
 <button
   type="button"
-  onClick={() => setShowPreviousChats((current) => !current)}
+ onClick={() => {
+  recordUserActivity();
+  setShowPreviousChats((current) => !current);
+}}
   aria-label="View previous chats"
   title="Previous Chats"
   style={{
@@ -2545,7 +2591,10 @@ window.localStorage.removeItem("hiissa_away_since");
 
       <button
         type="button"
-        onClick={() => setShowPreviousChats(false)}
+       onClick={() => {
+  recordUserActivity();
+  setShowPreviousChats(false);
+}}
         style={{
           background: "transparent",
           border: "none",
@@ -2582,6 +2631,7 @@ window.localStorage.removeItem("hiissa_away_since");
             key={chat.id}
             type="button"
             onClick={() => {
+           recordUserActivity(); 
               setMessages(chat.messages);
               setActivePreviousChatId(chat.id);
               setConversationIntent(chat.conversationIntent || "");
@@ -2624,6 +2674,7 @@ window.localStorage.removeItem("hiissa_away_since");
             </span>
          <span
   onClick={(event) => {
+ recordUserActivity();
     event.stopPropagation();
     deletePreviousChat(chat.id);
   }}
@@ -2655,7 +2706,10 @@ window.localStorage.removeItem("hiissa_away_since");
                   {message.role === "assistant" && (
                     <button
                       type="button"
-                      onClick={() => speakMessage(message.content, index)}
+                      onClick={() => {
+  recordUserActivity();
+  speakMessage(message.content, index);
+}}
                       aria-label={
                         speakingIndex === index
                           ? "Stop listening to HIISSA"
@@ -2699,7 +2753,10 @@ window.localStorage.removeItem("hiissa_away_since");
                   <button
                     key={text}
                     type="button"
-                    onClick={() => sendMessage(text)}
+                   onClick={() => {
+  recordUserActivity();
+  sendMessage(text);
+}}
                   >
                     <i>{emoji}</i>
                     <span>{text}</span>
@@ -2766,6 +2823,7 @@ window.localStorage.removeItem("hiissa_away_since");
           type="button"
           onClick={() => {
             setOpeningFeeling(feeling);
+           recordUserActivity(); 
             setOpeningCheckInCompleted(true);
             setOpeningCheckInVisible(false);
           }}
@@ -2789,6 +2847,7 @@ window.localStorage.removeItem("hiissa_away_since");
       type="button"
       onClick={() => {
         setOpeningCheckInSkipped(true);
+        recordUserActivity();
         setOpeningCheckInVisible(false);
       }}
       style={{
@@ -2862,6 +2921,7 @@ window.localStorage.removeItem("hiissa_away_since");
           type="button"
           onClick={() => {
             setClosingFeeling(feeling);
+            recordUserActivity();
             setClosingCheckInCompleted(true);
             setClosingCheckInVisible(false);
           }}
@@ -2884,6 +2944,7 @@ window.localStorage.removeItem("hiissa_away_since");
     <button
       type="button"
       onClick={() => {
+      recordUserActivity();  
         setClosingCheckInCompleted(true);
         setClosingCheckInVisible(false);
       }}
@@ -2941,7 +3002,7 @@ window.localStorage.removeItem("hiissa_away_since");
         setPendingReturnCheckIn(false);
         setReturnCheckInVisible(false);
       setReturnCheckInCompleted(true);
-window.localStorage.removeItem("hiissa_away_since");  
+ recordUserActivity();
       }}
       style={{
         border: "0",
@@ -3003,6 +3064,7 @@ window.localStorage.removeItem("hiissa_away_since");
           type="button"
          onClick={() => {
   setConversationIntent(intent.value);
+  recordUserActivity();         
   setShowIntentChoices(false);
 }}
           style={{
@@ -3085,9 +3147,10 @@ window.localStorage.removeItem("hiissa_away_since");
 
               <textarea
                 value={publicReviewText}
-                onChange={(event) =>
-                  setPublicReviewText(event.target.value.slice(0, 1500))
-                }
+               onChange={(event) => {
+    recordUserActivity();
+    setPublicReviewText(event.target.value.slice(0, 1500));
+}}
                 placeholder="Write the exact words you are comfortable sharing publicly…"
                 rows={4}
                 style={{
@@ -3253,7 +3316,10 @@ window.localStorage.removeItem("hiissa_away_since");
                       <button
                         key={star}
                         type="button"
-                        onClick={() => setRating(star)}
+                       onClick={() => {
+  recordUserActivity();
+  setRating(star);
+}}
                         aria-label={`${star} star${star === 1 ? "" : "s"}`}
                         style={{
                           border: "0",
@@ -3281,7 +3347,10 @@ window.localStorage.removeItem("hiissa_away_since");
                   >
                     <button
                       type="button"
-                      onClick={() => setHelpful(true)}
+                      onClick={() => {
+  recordUserActivity();
+  setHelpful(true);
+}}
                       style={{
                         border:
                           helpful === true
@@ -3301,7 +3370,10 @@ window.localStorage.removeItem("hiissa_away_since");
 
                     <button
                       type="button"
-                      onClick={() => setHelpful(false)}
+                     onClick={() => {
+  recordUserActivity();
+  setHelpful(false);
+}}
                       style={{
                         border:
                           helpful === false
@@ -3331,7 +3403,10 @@ window.localStorage.removeItem("hiissa_away_since");
                     <button
                       type="button"
                       disabled={!rating || helpful === null}
-                      onClick={() => setFeedbackFormOpen(true)}
+                    onClick={() => {
+  recordUserActivity();
+  setFeedbackFormOpen(true);
+}}
                       style={{
                         border: "0",
                         borderRadius: "999px",
@@ -3471,6 +3546,7 @@ window.localStorage.removeItem("hiissa_away_since");
                     <button
                       type="button"
                       onClick={() => {
+                      recordUserActivity();  
                         setFeedbackFormOpen(false);
                         setFeedbackError("");
                       }}
@@ -3597,6 +3673,7 @@ window.localStorage.removeItem("hiissa_away_since");
   <button
     type="button"
    onClick={() => {
+  recordUserActivity();   
   if (!input.trim()) {
     setWordingModeActive(true);
     setConversationIntent(null);
@@ -3763,6 +3840,7 @@ opacity:
     <button
       type="button"
       onClick={() => {
+   recordUserActivity();     
   setWordingModeActive(false);
   setShowIntentChoices(true);
 }}
@@ -3784,12 +3862,14 @@ opacity:
             className="composer"
             onSubmit={(event) => {
               event.preventDefault();
+             recordUserActivity(); 
               sendMessage();
             }}
           >
             <textarea
               value={input}
               onChange={(event) => {
+  recordUserActivity();              
   setInput(event.target.value);
   setWordingSuggestion("");
   setWordingOriginal("");
@@ -3940,7 +4020,10 @@ opacity:
 
         <button
           type="button"
-          onClick={() => setShowExplore(false)}
+         onClick={() => {
+  recordUserActivity();
+  setShowExplore(false);
+}}
           className="exploreClose"
           aria-label="Close Explore HIISSA"
         >
@@ -3956,6 +4039,7 @@ opacity:
             className="explorePathway"
             disabled={pathway.status !== "live"}
             onClick={() => {
+            recordUserActivity(); 
               if (pathway.id === "talk") {
                 setShowExplore(false);
               }
@@ -3979,7 +4063,10 @@ opacity:
         <strong>Not sure what you need?</strong>
         <button
           type="button"
-          onClick={() => setShowExplore(false)}
+         onClick={() => {
+  recordUserActivity();
+  setShowExplore(false);
+}}
         >
           Tell HIISSA how you're feeling →
         </button>
