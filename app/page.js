@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { getContinuityContext } from "../lib/hiissa/continuity";
 
 const starters = [
   ["💔", "I'm struggling to let someone go."],
