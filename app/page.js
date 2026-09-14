@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { getContinuityContext } from "../lib/hiissa/continuity";
 
@@ -10,6 +10,7 @@ const starters = [
   ["🧩", "I don't understand their behavior."],
   ["🌱", "I want to heal and move forward."],
 ];
+
 const explorePathways = [
   {
     id: "talk",
@@ -87,6 +88,7 @@ const isExperienceLive = (id) =>
 
 const getExperienceCapabilities = (id) =>
   getExperience(id)?.capabilities ?? {};
+
 const createContentItem = ({
   id,
   sourceExperience,
@@ -110,6 +112,7 @@ const createContentItem = ({
   privacyLevel,
   status,
 });
+
 const createSavedItem = ({
   id,
   saveType,
@@ -136,6 +139,7 @@ const SAVED_ITEM_TYPES = {
   WHOLE_ITEM: "saved",
   STAYED_WITH_ME: "stayed_with_me",
 };
+
 const AUDIO_PLAYBACK_STATES = {
   IDLE: "idle",
   PLAYING: "playing",
@@ -173,6 +177,7 @@ const createAudioItem = ({
     spokenInstructions: Boolean(accessibility.spokenInstructions),
   },
 });
+
 const CONTENT_EXPOSURE_TYPES = {
   SHOWN: "shown",
   PLAYED: "played",
@@ -207,6 +212,7 @@ const freshnessRules = {
   allowIntentionalRevisits: true,
   relaxOldestExposureFirst: true,
 };
+
 const CONTEXT_PRIVACY_LEVELS = {
   EDITORIAL: "editorial",
   USER_SELECTED: "user_selected",
@@ -236,6 +242,7 @@ const createExperienceHandoff = ({
   returnContext,
   createdAt,
 });
+
 const DATA_OWNERSHIP_TYPES = {
   HIISSA_EDITORIAL: "hiissa_editorial",
   USER_AUTHORED: "user_authored",
@@ -622,6 +629,7 @@ const getQualityGateAction = (checks = []) => {
 
   return QUALITY_GATE_STATUS.PASS;
 };
+
 // STEP 3I — HIISSA Quality Gate Decision Rules
 
 const QUALITY_GATE_RULES = {
@@ -698,7 +706,7 @@ const conversationIntents = [
   {
     value: "understand",
     emoji: "🧭",
-    label: "Help me understand",
+      label: "Help me understand",
     description: "Help me make sense of what's happening.",
   },
   {
@@ -708,6 +716,7 @@ const conversationIntents = [
     description: "Help me think about what I can do next.",
   },
 ];
+
 // STEP 3J — HIISSA Quality Gate Check Categories & Review Reasons
 
 const QUALITY_CHECK_CATEGORIES = {
@@ -772,6 +781,7 @@ const createQualityCheckReason = ({
   expected,
   recommendedAction,
 });
+
 // STEP 3K — HIISSA Quality Check Evaluator
 
 const evaluateQualityFinding = ({
@@ -833,6 +843,7 @@ const evaluateQualityGate = ({
     recommendedAction: decision,
   });
 };
+
 // STEP 3L — HIISSA Quality Gate Audit Layer
 
 const QUALITY_AUDIT_EVENT_TYPES = {
@@ -861,7 +872,8 @@ const createQualityAuditRecord = ({
   decision: gateResult?.status || null,
   recommendedAction: gateResult?.recommendedAction || null,
   checks: gateResult?.checks || [],
-  governance: gateResult?.governance || getGenerationGovernance(experienceId),
+  governance:
+    gateResult?.governance || getGenerationGovernance(experienceId),
   regenerationAttempts,
   requiresEditorialApproval: Boolean(requiresEditorialApproval),
   createdAt,
@@ -881,6 +893,7 @@ const createQualityAuditFromGateResult = ({
     regenerationAttempts,
     requiresEditorialApproval,
   });
+
 // STEP 3M — HIISSA Privacy-Safe Audit Payload
 
 const createPrivacySafeQualityAuditPayload = (auditRecord) => {
@@ -902,18 +915,22 @@ const createPrivacySafeQualityAuditPayload = (auditRecord) => {
     decision: auditRecord.decision || null,
     recommendedAction: auditRecord.recommendedAction || null,
     checks: safeChecks,
-    regenerationAttempts: Number(auditRecord.regenerationAttempts || 0),
+    regenerationAttempts: Number(
+      auditRecord.regenerationAttempts || 0
+    ),
     requiresEditorialApproval: Boolean(
       auditRecord.requiresEditorialApproval
     ),
-    createdAt: auditRecord.createdAt || new Date().toISOString(),
+    createdAt:
+      auditRecord.createdAt || new Date().toISOString(),
   };
 };
 
 // STEP 3N — HIISSA Audit Persistence Preparation
 
 const createQualityAuditPersistenceRecord = (auditRecord) => {
-  const payload = createPrivacySafeQualityAuditPayload(auditRecord);
+  const payload =
+    createPrivacySafeQualityAuditPayload(auditRecord);
 
   if (!payload) {
     return null;
@@ -927,18 +944,22 @@ const createQualityAuditPersistenceRecord = (auditRecord) => {
     decision: payload.decision || null,
     recommendedAction: payload.recommendedAction || null,
     checks: payload.checks || [],
-    regenerationAttempts: Number(payload.regenerationAttempts || 0),
+    regenerationAttempts: Number(
+      payload.regenerationAttempts || 0
+    ),
     requiresEditorialApproval: Boolean(
       payload.requiresEditorialApproval
     ),
-    createdAt: payload.createdAt || new Date().toISOString(),
+    createdAt:
+      payload.createdAt || new Date().toISOString(),
   };
 };
 
 // STEP 3O - HIISSA Audit Persistence Action
 
 const persistQualityAuditRecord = async (auditRecord) => {
-  const record = createQualityAuditPersistenceRecord(auditRecord);
+  const record =
+    createQualityAuditPersistenceRecord(auditRecord);
 
   if (!record || !supabase) {
     return {
@@ -956,7 +977,10 @@ const persistQualityAuditRecord = async (auditRecord) => {
       });
 
     if (error) {
-      console.error("HIISSA quality audit persistence failed:", error);
+      console.error(
+        "HIISSA quality audit persistence failed:",
+        error
+      );
 
       return {
         success: false,
@@ -971,7 +995,10 @@ const persistQualityAuditRecord = async (auditRecord) => {
       record,
     };
   } catch (error) {
-    console.error("HIISSA quality audit persistence error:", error);
+    console.error(
+      "HIISSA quality audit persistence error:",
+      error
+    );
 
     return {
       success: false,
@@ -980,9 +1007,13 @@ const persistQualityAuditRecord = async (auditRecord) => {
     };
   }
 };
+
 // STEP 3P - HIISSA Audit Persistence Result Normalisation
 
-const normalizeQualityAuditPersistenceResult = (result, auditRecord) => {
+const normalizeQualityAuditPersistenceResult = (
+  result,
+  auditRecord
+) => {
   const record =
     result?.record ||
     createQualityAuditPersistenceRecord(auditRecord);
@@ -992,13 +1023,16 @@ const normalizeQualityAuditPersistenceResult = (result, auditRecord) => {
     persisted: Boolean(result?.persisted),
     auditId: record?.auditId || null,
     decision: record?.decision || null,
-    regenerationAttempts: Number(record?.regenerationAttempts || 0),
+    regenerationAttempts: Number(
+      record?.regenerationAttempts || 0
+    ),
     requiresEditorialApproval: Boolean(
       record?.requiresEditorialApproval
     ),
     timestamp: new Date().toISOString(),
   };
 };
+
 // STEP 3Q - HIISSA Audit Persistence Result Validation
 
 const validateQualityAuditPersistenceResult = (result) => {
@@ -1017,14 +1051,25 @@ const validateQualityAuditPersistenceResult = (result) => {
 
   return {
     valid,
-    reason: valid ? null : "invalid_persistence_result_shape",
+    reason:
+      valid ? null : "invalid_persistence_result_shape",
   };
 };
+
 // STEP 3R - HIISSA Audit Persistence Validation Gate
 
-const validateAndNormalizeQualityAuditPersistence = (result, auditRecord) => {
-  const normalized = normalizeQualityAuditPersistenceResult(result, auditRecord);
-  const validation = validateQualityAuditPersistenceResult(normalized);
+const validateAndNormalizeQualityAuditPersistence = (
+  result,
+  auditRecord
+) => {
+  const normalized =
+    normalizeQualityAuditPersistenceResult(
+      result,
+      auditRecord
+    );
+
+  const validation =
+    validateQualityAuditPersistenceResult(normalized);
 
   return {
     ...normalized,
@@ -1033,15 +1078,20 @@ const validateAndNormalizeQualityAuditPersistence = (result, auditRecord) => {
     validationReason: validation.reason,
   };
 };
+
 // STEP 3S - HIISSA Audit Persistence Execution Gate
 
-const executeValidatedQualityAuditPersistence = async (auditRecord) => {
-  const persistenceResult = await persistQualityAuditRecord(auditRecord);
+const executeValidatedQualityAuditPersistence = async (
+  auditRecord
+) => {
+  const persistenceResult =
+    await persistQualityAuditRecord(auditRecord);
 
-  const checkedResult = validateAndNormalizeQualityAuditPersistence(
-    persistenceResult,
-    auditRecord
-  );
+  const checkedResult =
+    validateAndNormalizeQualityAuditPersistence(
+      persistenceResult,
+      auditRecord
+    );
 
   if (!checkedResult.valid) {
     return {
@@ -1057,13 +1107,21 @@ const executeValidatedQualityAuditPersistence = async (auditRecord) => {
     persistenceBlocked: false,
   };
 };
+
 // STEP 3T - HIISSA Audit Persistence Enforcement Gate
 
-const enforceQualityAuditPersistence = async (auditRecord) => {
+const enforceQualityAuditPersistence = async (
+  auditRecord
+) => {
   const executionResult =
-    await executeValidatedQualityAuditPersistence(auditRecord);
+    await executeValidatedQualityAuditPersistence(
+      auditRecord
+    );
 
-  if (!executionResult || executionResult.persistenceBlocked) {
+  if (
+    !executionResult ||
+    executionResult.persistenceBlocked
+  ) {
     return {
       ...(executionResult || {}),
       success: false,
@@ -1079,9 +1137,12 @@ const enforceQualityAuditPersistence = async (auditRecord) => {
     persistenceAllowed: true,
   };
 };
+
 // STEP 3U - HIISSA Audit Persistence Finalization Gate
 
-const finalizeQualityAuditPersistence = async (auditRecord) => {
+const finalizeQualityAuditPersistence = async (
+  auditRecord
+) => {
   const enforcementResult =
     await enforceQualityAuditPersistence(auditRecord);
 
@@ -1104,9 +1165,12 @@ const finalizeQualityAuditPersistence = async (auditRecord) => {
     persistenceStatus: "completed",
   };
 };
+
 // STEP 3V - HIISSA Audit Persistence Completion Receipt
 
-const createQualityAuditPersistenceReceipt = async (auditRecord) => {
+const createQualityAuditPersistenceReceipt = async (
+  auditRecord
+) => {
   const finalResult =
     await finalizeQualityAuditPersistence(auditRecord);
 
@@ -1126,13 +1190,19 @@ const createQualityAuditPersistenceReceipt = async (auditRecord) => {
     },
   };
 };
+
 // STEP 3W - HIISSA Audit Persistence Receipt Verification Gate
 
-const verifyQualityAuditPersistenceReceipt = async (auditRecord) => {
+const verifyQualityAuditPersistenceReceipt = async (
+  auditRecord
+) => {
   const receiptResult =
-    await createQualityAuditPersistenceReceipt(auditRecord);
+    await createQualityAuditPersistenceReceipt(
+      auditRecord
+    );
 
-  const receipt = receiptResult?.persistenceReceipt;
+  const receipt =
+    receiptResult?.persistenceReceipt;
 
   const receiptVerified =
     receiptResult?.success === true &&
@@ -1157,40 +1227,50 @@ const verifyQualityAuditPersistenceReceipt = async (auditRecord) => {
     persistenceBlocked: false,
   };
 };
+
 // STEP 3X - HIISSA Audit Persistence Verification Result Gate
 
-const enforceQualityAuditPersistenceVerification = async (auditRecord) => {
-  const verificationResult =
-    await verifyQualityAuditPersistenceReceipt(auditRecord);
+const enforceQualityAuditPersistenceVerification =
+  async (auditRecord) => {
+    const verificationResult =
+      await verifyQualityAuditPersistenceReceipt(
+        auditRecord
+      );
 
-  const persistenceAccepted =
-    verificationResult?.receiptVerified === true &&
-    verificationResult?.persistenceVerified === true &&
-    verificationResult?.persistenceBlocked === false;
+    const persistenceAccepted =
+      verificationResult?.receiptVerified === true &&
+      verificationResult?.persistenceVerified === true &&
+      verificationResult?.persistenceBlocked === false;
 
-  if (!persistenceAccepted) {
+    if (!persistenceAccepted) {
+      return {
+        ...(verificationResult || {}),
+        success: false,
+        persistenceAccepted: false,
+        persistenceStatus: "blocked",
+      };
+    }
+
     return {
-      ...(verificationResult || {}),
-      success: false,
-      persistenceAccepted: false,
-      persistenceStatus: "blocked",
+      ...verificationResult,
+      success: true,
+      persistenceAccepted: true,
+      persistenceStatus: "verified",
     };
-  }
-
-  return {
-    ...verificationResult,
-    success: true,
-    persistenceAccepted: true,
-    persistenceStatus: "verified",
   };
-};
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL;
+
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 const supabase =
   supabaseUrl && supabasePublishableKey
-    ? createClient(supabaseUrl, supabasePublishableKey)
+    ? createClient(
+        supabaseUrl,
+        supabasePublishableKey
+      )
     : null;
 
 function isSafetyContext(messages) {
@@ -1205,27 +1285,38 @@ function isSafetyContext(messages) {
 
   return safetyTerms.test(recentText);
 }
+
 function hasMeaningfulPersonalSharing(messages) {
   const latestUserMessage =
     [...messages]
       .reverse()
-      .find((message) => message.role === "user")
+      .find(
+        (message) => message.role === "user"
+      )
       ?.content?.trim() || "";
 
-  if (!latestUserMessage || latestUserMessage.length < 35) {
+  if (
+    !latestUserMessage ||
+    latestUserMessage.length < 35
+  ) {
     return false;
   }
 
   const personalOrEmotionalSignal =
     /\b(i|i'm|im|me|my|we|our|feel|feeling|felt|hurt|hurting|upset|angry|confused|worried|anxious|sad|relationship|partner|husband|wife|boyfriend|girlfriend|ex|family)\b/i;
 
-  return personalOrEmotionalSignal.test(latestUserMessage);
+  return personalOrEmotionalSignal.test(
+    latestUserMessage
+  );
 }
+
 function hasNaturalConversationClosing(messages) {
   const latestUserMessage =
     [...messages]
       .reverse()
-      .find((message) => message.role === "user")
+      .find(
+        (message) => message.role === "user"
+      )
       ?.content?.trim() || "";
 
   if (!latestUserMessage) {
@@ -1247,7 +1338,9 @@ function hasNaturalConversationClosing(messages) {
     /\btalking about it has helped\b/,
   ];
 
-  return closingSignals.some((pattern) => pattern.test(normalized));
+  return closingSignals.some((pattern) =>
+    pattern.test(normalized)
+  );
 }
 
 function createPermissionToken() {
@@ -1260,6 +1353,7 @@ function createPermissionToken() {
   }
 
   const bytes = new Uint8Array(32);
+
   window.crypto.getRandomValues(bytes);
 
   return Array.from(bytes, (byte) =>
@@ -1268,21 +1362,32 @@ function createPermissionToken() {
 }
 
 function storePendingPermissionToken(token) {
-  if (!token || typeof window === "undefined") return;
+  if (
+    !token ||
+    typeof window === "undefined"
+  )
+    return;
 
   try {
-    const storageKey = "hiissa_pending_review_permission_tokens";
+    const storageKey =
+      "hiissa_pending_review_permission_tokens";
 
     const existing = JSON.parse(
-      window.localStorage.getItem(storageKey) || "[]"
+      window.localStorage.getItem(storageKey) ||
+        "[]"
     );
 
     const tokens = Array.isArray(existing)
-      ? existing.filter((value) => typeof value === "string")
+      ? existing.filter(
+          (value) =>
+            typeof value === "string"
+        )
       : [];
 
     const updatedTokens = [
-      ...tokens.filter((value) => value !== token),
+      ...tokens.filter(
+        (value) => value !== token
+      ),
       token,
     ].slice(-5);
 
@@ -1299,14 +1404,19 @@ function getPendingPermissionTokens() {
   if (typeof window === "undefined") return [];
 
   try {
-    const storageKey = "hiissa_pending_review_permission_tokens";
+    const storageKey =
+      "hiissa_pending_review_permission_tokens";
+
     const existing = JSON.parse(
-      window.localStorage.getItem(storageKey) || "[]"
+      window.localStorage.getItem(storageKey) ||
+        "[]"
     );
 
     return Array.isArray(existing)
       ? existing.filter(
-          (value) => typeof value === "string" && value.length >= 32
+          (value) =>
+            typeof value === "string" &&
+            value.length >= 32
         )
       : [];
   } catch {
@@ -1315,13 +1425,20 @@ function getPendingPermissionTokens() {
 }
 
 function removePendingPermissionToken(token) {
-  if (!token || typeof window === "undefined") return;
+  if (
+    !token ||
+    typeof window === "undefined"
+  )
+    return;
 
   try {
-    const storageKey = "hiissa_pending_review_permission_tokens";
-    const remainingTokens = getPendingPermissionTokens().filter(
-      (value) => value !== token
-    );
+    const storageKey =
+      "hiissa_pending_review_permission_tokens";
+
+    const remainingTokens =
+      getPendingPermissionTokens().filter(
+        (value) => value !== token
+      );
 
     window.localStorage.setItem(
       storageKey,
@@ -1335,33 +1452,51 @@ function removePendingPermissionToken(token) {
 function renderMessageContent(content) {
   if (!content) return null;
 
-  const renderInline = (text, keyPrefix) => {
-  const parts = text.split(/(\*\*.*?\*\*|\*(?!\*)[^*\n]+?\*(?!\*))/g);
+  const renderInline = (
+    text,
+    keyPrefix
+  ) => {
+    const parts = text.split(
+      /(\*\*.*?\*\*|\*(?!\*)[^*\n]+?\*(?!\*))/g
+    );
 
-  return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
+    return parts.map((part, index) => {
+      if (
+        part.startsWith("**") &&
+        part.endsWith("**")
+      ) {
+        return (
+          <strong
+            key={`${keyPrefix}-${index}`}
+          >
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+
+      if (
+        part.startsWith("*") &&
+        part.endsWith("*") &&
+        !part.startsWith("**")
+      ) {
+        return (
+          <em
+            key={`${keyPrefix}-${index}`}
+          >
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+
       return (
-        <strong key={`${keyPrefix}-${index}`}>
-          {part.slice(2, -2)}
-        </strong>
+        <span
+          key={`${keyPrefix}-${index}`}
+        >
+          {part}
+        </span>
       );
-    }
-
-    if (
-      part.startsWith("*") &&
-      part.endsWith("*") &&
-      !part.startsWith("**")
-    ) {
-      return (
-        <em key={`${keyPrefix}-${index}`}>
-          {part.slice(1, -1)}
-        </em>
-      );
-    }
-
-    return <span key={`${keyPrefix}-${index}`}>{part}</span>;
-  });
-};
+    });
+  };
 
   const lines = content.split("\n");
 
@@ -1371,33 +1506,46 @@ function renderMessageContent(content) {
         const trimmed = line.trim();
 
         if (!trimmed) {
-          return <div key={`space-${index}`} style={{ height: "10px" }} />;
+          return (
+            <div
+              key={`space-${index}`}
+              style={{ height: "10px" }}
+            />
+          );
         }
-if (trimmed.startsWith("### ")) {
-  return (
-    <div
-      key={`heading-${index}`}
-      style={{
-        fontWeight: "800",
-        fontSize: "16px",
-        lineHeight: "1.45",
-        margin: "12px 0 6px",
-        color: "#2f3f3b",
-      }}
-    >
-      {renderInline(
-        trimmed.replace(/^###\s+/, ""),
-        `heading-${index}`
-      )}
-    </div>
-  );
-}
+
+        if (
+          trimmed.startsWith("### ")
+        ) {
+          return (
+            <div
+              key={`heading-${index}`}
+              style={{
+                fontWeight: "800",
+                fontSize: "16px",
+                lineHeight: "1.45",
+                margin: "12px 0 6px",
+                color: "#2f3f3b",
+              }}
+            >
+              {renderInline(
+                trimmed.replace(
+                  /^###\s+/,
+                  ""
+                ),
+                `heading-${index}`
+              )}
+            </div>
+          );
+        }
+
         if (trimmed.startsWith(">")) {
           return (
             <div
               key={`quote-${index}`}
               style={{
-                borderLeft: "3px solid rgba(88, 122, 112, 0.35)",
+                borderLeft:
+                  "3px solid rgba(88, 122, 112, 0.35)",
                 paddingLeft: "12px",
                 margin: "8px 0",
                 color: "#466f67",
@@ -1405,13 +1553,15 @@ if (trimmed.startsWith("### ")) {
               }}
             >
               {renderInline(
-                trimmed.replace(/^>\s?/, ""),
+                trimmed.replace(
+                  /^>\s?/,
+                  ""
+                ),
                 `quote-${index}`
               )}
             </div>
           );
-        }
-
+        }  
         if (/^[-*]\s+/.test(trimmed)) {
           return (
             <div
@@ -1422,10 +1572,16 @@ if (trimmed.startsWith("### ")) {
                 margin: "4px 0",
               }}
             >
-              <span aria-hidden="true">•</span>
+              <span aria-hidden="true">
+                •
+              </span>
+
               <span>
                 {renderInline(
-                  trimmed.replace(/^[-*]\s+/, ""),
+                  trimmed.replace(
+                    /^[-*]\s+/,
+                    ""
+                  ),
                   `bullet-${index}`
                 )}
               </span>
@@ -1435,7 +1591,10 @@ if (trimmed.startsWith("### ")) {
 
         return (
           <div key={`line-${index}`}>
-            {renderInline(line, `line-${index}`)}
+            {renderInline(
+              line,
+              `line-${index}`
+            )}
           </div>
         );
       })}
@@ -1444,343 +1603,873 @@ if (trimmed.startsWith("### ")) {
 }
 
 export default function Home() {
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        "Hi, I'm HIISSA Relationship AI. Tell me what's happening, and I'll help you look at it with empathy, balance, and self-respect.",
-    },
-  ]);
+  const [messages, setMessages] =
+    useState([
+      {
+        role: "assistant",
+        content:
+          "Hi, I'm HIISSA Relationship AI. Tell me what's happening, and I'll help you look at it with empathy, balance, and self-respect.",
+      },
+    ]);
 
- const [previousChats, setPreviousChats] = useState([]); 
- const [activePreviousChatId, setActivePreviousChatId] = useState(null); 
-  const [showPreviousChats, setShowPreviousChats] = useState(false);
-  const [activeChatLoaded, setActiveChatLoaded] = useState(false);
-  const [input, setInput] = useState("");
-  const [conversationIntent, setConversationIntent] = useState(null);
-  const [showIntentChoices, setShowIntentChoices] = useState(false);
-  const [showExplore, setShowExplore] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [voiceHelp, setVoiceHelp] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [speakingIndex, setSpeakingIndex] = useState(null);
-  const [wordingLoading, setWordingLoading] = useState(false);
-  const [wordingModeActive, setWordingModeActive] = useState(false);
-const [wordingSuggestion, setWordingSuggestion] = useState("");
-const [wordingOriginal, setWordingOriginal] = useState("");
-const [wordingError, setWordingError] = useState("");
-const [wordingUndo, setWordingUndo] = useState("");
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const [feedbackEligibleAfter, setFeedbackEligibleAfter] = useState(3);
-  const [feedbackFormOpen, setFeedbackFormOpen] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [helpful, setHelpful] = useState(null);
-  const [feedbackText, setFeedbackText] = useState("");
-  const [feedbackSending, setFeedbackSending] = useState(false);
-  const [feedbackError, setFeedbackError] = useState("");
-  const [feedbackThanks, setFeedbackThanks] = useState(false);
+  const [
+    previousChats,
+    setPreviousChats,
+  ] = useState([]);
 
-  const [pendingReviewToken, setPendingReviewToken] = useState(null);
-  const [publicReviewText, setPublicReviewText] = useState("");
-  const [reviewPermissionSending, setReviewPermissionSending] = useState(false);
-  const [reviewPermissionError, setReviewPermissionError] = useState("");
-  const [reviewPermissionThanks, setReviewPermissionThanks] = useState(false);
-  const [reviewPermissionDismissed, setReviewPermissionDismissed] =
+  const [
+    activePreviousChatId,
+    setActivePreviousChatId,
+  ] = useState(null);
+
+  const [
+    showPreviousChats,
+    setShowPreviousChats,
+  ] = useState(false);
+
+  const [
+    activeChatLoaded,
+    setActiveChatLoaded,
+  ] = useState(false);
+
+  const [input, setInput] =
+    useState("");
+
+  const [
+    conversationIntent,
+    setConversationIntent,
+  ] = useState(null);
+
+  const [
+    showIntentChoices,
+    setShowIntentChoices,
+  ] = useState(false);
+
+  const [showExplore, setShowExplore] =
     useState(false);
-const [openingCheckInVisible, setOpeningCheckInVisible] = useState(false);
-const [openingCheckInCompleted, setOpeningCheckInCompleted] = useState(false);
-const [openingCheckInSkipped, setOpeningCheckInSkipped] = useState(false);
-const [openingFeeling, setOpeningFeeling] = useState(null);
-const [closingCheckInVisible, setClosingCheckInVisible] = useState(false);
-const [closingCheckInCompleted, setClosingCheckInCompleted] = useState(false);
-const [closingFeeling, setClosingFeeling] = useState(null); 
-const [returnCheckInVisible, setReturnCheckInVisible] = useState(false);
-const [returnCheckInCompleted, setReturnCheckInCompleted] = useState(false);
-const [pendingReturnCheckIn, setPendingReturnCheckIn] = useState(false); 
-function recordUserActivity() {
-  try {
-    window.localStorage.setItem(
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [listening, setListening] =
+    useState(false);
+
+  const [voiceHelp, setVoiceHelp] =
+    useState(false);
+
+  const [linkCopied, setLinkCopied] =
+    useState(false);
+
+  const [
+    speakingIndex,
+    setSpeakingIndex,
+  ] = useState(null);
+
+  const [
+    wordingLoading,
+    setWordingLoading,
+  ] = useState(false);
+
+  const [
+    wordingModeActive,
+    setWordingModeActive,
+  ] = useState(false);
+
+  const [
+    wordingSuggestion,
+    setWordingSuggestion,
+  ] = useState("");
+
+  const [
+    wordingOriginal,
+    setWordingOriginal,
+  ] = useState("");
+
+  const [
+    wordingError,
+    setWordingError,
+  ] = useState("");
+
+  const [
+    wordingUndo,
+    setWordingUndo,
+  ] = useState("");
+
+  const [
+    feedbackSubmitted,
+    setFeedbackSubmitted,
+  ] = useState(false);
+
+  const [
+    feedbackEligibleAfter,
+    setFeedbackEligibleAfter,
+  ] = useState(3);
+
+  const [
+    feedbackFormOpen,
+    setFeedbackFormOpen,
+  ] = useState(false);
+
+  const [rating, setRating] =
+    useState(0);
+
+  const [helpful, setHelpful] =
+    useState(null);
+
+  const [
+    feedbackText,
+    setFeedbackText,
+  ] = useState("");
+
+  const [
+    feedbackSending,
+    setFeedbackSending,
+  ] = useState(false);
+
+  const [
+    feedbackError,
+    setFeedbackError,
+  ] = useState("");
+
+  const [
+    feedbackThanks,
+    setFeedbackThanks,
+  ] = useState(false);
+
+  const [
+    pendingReviewToken,
+    setPendingReviewToken,
+  ] = useState(null);
+
+  const [
+    publicReviewText,
+    setPublicReviewText,
+  ] = useState("");
+
+  const [
+    reviewPermissionSending,
+    setReviewPermissionSending,
+  ] = useState(false);
+
+  const [
+    reviewPermissionError,
+    setReviewPermissionError,
+  ] = useState("");
+
+  const [
+    reviewPermissionThanks,
+    setReviewPermissionThanks,
+  ] = useState(false);
+
+  const [
+    reviewPermissionDismissed,
+    setReviewPermissionDismissed,
+  ] = useState(false);
+
+  const [
+    openingCheckInVisible,
+    setOpeningCheckInVisible,
+  ] = useState(false);
+
+  const [
+    openingCheckInCompleted,
+    setOpeningCheckInCompleted,
+  ] = useState(false);
+
+  const [
+    openingCheckInSkipped,
+    setOpeningCheckInSkipped,
+  ] = useState(false);
+
+  const [
+    openingFeeling,
+    setOpeningFeeling,
+  ] = useState(null);
+
+  const [
+    closingCheckInVisible,
+    setClosingCheckInVisible,
+  ] = useState(false);
+
+  const [
+    closingCheckInCompleted,
+    setClosingCheckInCompleted,
+  ] = useState(false);
+
+  const [
+    closingFeeling,
+    setClosingFeeling,
+  ] = useState(null);
+
+  const [
+    returnCheckInVisible,
+    setReturnCheckInVisible,
+  ] = useState(false);
+
+  const [
+    returnCheckInCompleted,
+    setReturnCheckInCompleted,
+  ] = useState(false);
+
+  const [
+    pendingReturnCheckIn,
+    setPendingReturnCheckIn,
+  ] = useState(false);
+
+  const [
+    returnCheckInCopy,
+    setReturnCheckInCopy,
+  ] = useState({
+    title: "Welcome back 🤍",
+    message:
+      "Before we continue, how are you feeling now?",
+  });
+
+  const continuitySnapshotRef =
+    useRef(null);
+
+  continuitySnapshotRef.current = {
+    activeChatLoaded,
+    messages,
+    closingCheckInCompleted,
+    returnCheckInCompleted,
+  };
+
+  const CONTINUITY_KEYS = {
+    meaningful:
+      "hiissa_last_meaningful_conversation_at",
+    legacyActivity:
       "hiissa_last_user_activity_at",
-      String(Date.now())
-    );
-  } catch {
-    // HIISSA continues if browser storage is unavailable.
-  }
-}
+    legacyMigrated:
+      "hiissa_meaningful_activity_migration_v1",
+  };
 
-function checkForReturnAfterInactivity() {
-  try {
-    const lastUserActivityAt = Number(
-      window.localStorage.getItem("hiissa_last_user_activity_at") || "0"
-    );
+  function getLastMeaningfulConversationAt() {
+    try {
+      const storedMeaningful = Number(
+        window.localStorage.getItem(
+          CONTINUITY_KEYS.meaningful
+        ) || "0"
+      );
 
-    if (lastUserActivityAt <= 0) return false;
+      if (storedMeaningful > 0) {
+        return storedMeaningful;
+      }
 
-    const inactiveLongEnough =
-      Date.now() - lastUserActivityAt >= 15 * 60 * 1000;
+      const migrationAlreadyHandled =
+        window.localStorage.getItem(
+          CONTINUITY_KEYS.legacyMigrated
+        ) === "1";
 
-    if (!inactiveLongEnough) return false;
+      if (migrationAlreadyHandled) {
+        return 0;
+      }
 
-    const savedActiveChat = JSON.parse(
-      window.localStorage.getItem("hiissa_active_chat") || "null"
-    );
+      const legacyActivity = Number(
+        window.localStorage.getItem(
+          CONTINUITY_KEYS.legacyActivity
+        ) || "0"
+      );
 
-    const sourceMessages =
-      activeChatLoaded &&
-      Array.isArray(messages) &&
-      messages.length > 0
-        ? messages
-        : Array.isArray(savedActiveChat?.messages)
-          ? savedActiveChat.messages
-          : [];
+      window.localStorage.setItem(
+        CONTINUITY_KEYS.legacyMigrated,
+        "1"
+      );
 
-    const liveEligible =
-      sourceMessages.filter(
-        (message) => message.role === "assistant"
-      ).length >= 3 &&
-      sourceMessages.some(
-        (message) =>
-          message.role === "user" &&
-          typeof message.content === "string" &&
-          message.content.trim().length >= 35
-      ) &&
-      !closingCheckInCompleted &&
-      !isSafetyContext(sourceMessages);
+      if (legacyActivity > 0) {
+        window.localStorage.setItem(
+          CONTINUITY_KEYS.meaningful,
+          String(legacyActivity)
+        );
 
-    const eligible =
-      activeChatLoaded
-        ? liveEligible
-        : savedActiveChat?.returnCheckInEligible === true;
+        return legacyActivity;
+      }
 
-    if (!eligible || returnCheckInCompleted) return false;
-
-    setPendingReturnCheckIn(true);
-    setReturnCheckInVisible(true);
-
-    return true;
-  } catch {
-    return false;
-  }
-}
-  
-  const [showAdminShortcut, setShowAdminShortcut] = useState(false);
-  const [publicReviews, setPublicReviews] = useState([]);
-useEffect(() => {
-  function handleVisibilityReturn() {
-    if (document.visibilityState === "visible") {
-      checkForReturnAfterInactivity();
+      return 0;
+    } catch {
+      return 0;
     }
   }
 
-  function handleFocusReturn() {
-    checkForReturnAfterInactivity();
+  function recordMeaningfulConversationActivity(
+    timestamp = Date.now()
+  ) {
+    try {
+      window.localStorage.setItem(
+        CONTINUITY_KEYS.meaningful,
+        String(timestamp)
+      );
+
+      window.localStorage.setItem(
+        CONTINUITY_KEYS.legacyMigrated,
+        "1"
+      );
+    } catch {
+      // HIISSA continues if browser storage is unavailable.
+    }
   }
 
-  function handlePageShowReturn() {
-    checkForReturnAfterInactivity();
+  function getReturnWindow(
+    lastMeaningfulAt,
+    now = Date.now()
+  ) {
+    if (
+      !lastMeaningfulAt ||
+      lastMeaningfulAt >= now
+    ) {
+      return null;
+    }
+
+    const gap =
+      now - lastMeaningfulAt;
+
+    const MINUTE =
+      60 * 1000;
+
+    const HOUR =
+      60 * MINUTE;
+
+    const MIN_RETURN_GAP =
+      45 * MINUTE;
+
+    if (gap < MIN_RETURN_GAP) {
+      return null;
+    }
+
+    const previous =
+      new Date(lastMeaningfulAt);
+
+    const current =
+      new Date(now);
+
+    const sameLocalDay =
+      previous.getFullYear() ===
+        current.getFullYear() &&
+      previous.getMonth() ===
+        current.getMonth() &&
+      previous.getDate() ===
+        current.getDate();
+
+    if (
+      sameLocalDay &&
+      gap < 4 * HOUR
+    ) {
+      return {
+        id: "shorter_absence",
+        title: "Welcome back 🤍",
+        message:
+          "You were away for a little while. Before we continue, how are you feeling now?",
+      };
+    }
+
+    if (sameLocalDay) {
+      return {
+        id: "later_same_day",
+        title: "Welcome back 🤍",
+        message:
+          "It’s been a few hours. Before we pick this up again, how are you feeling now?",
+      };
+    }
+
+    const previousDayUtc =
+      Date.UTC(
+        previous.getFullYear(),
+        previous.getMonth(),
+        previous.getDate()
+      );
+
+    const currentDayUtc =
+      Date.UTC(
+        current.getFullYear(),
+        current.getMonth(),
+        current.getDate()
+      );
+
+    const calendarDaysApart =
+      Math.round(
+        (currentDayUtc -
+          previousDayUtc) /
+          (24 * HOUR)
+      );
+
+    if (calendarDaysApart === 1) {
+      return {
+        id: "next_day",
+        title:
+          "It’s good to see you again 🤍",
+        message:
+          "You’re returning to this today. Before we continue, how are you feeling now?",
+      };
+    }
+
+    if (calendarDaysApart <= 7) {
+      return {
+        id: "several_days",
+        title:
+          "Welcome back — there’s no rush 🤍",
+        message:
+          "A few days have passed. We can continue gently from where you left things. How are you feeling now?",
+      };
+    }
+
+    if (calendarDaysApart <= 30) {
+      return {
+        id: "longer_absence",
+        title: "Welcome back 🤍",
+        message:
+          "It’s been a little while. You don’t have to remember every detail — we can find our way back in. How are you feeling now?",
+      };
+    }
+
+    return {
+      id: "extended_absence",
+      title:
+        "I’m glad you came back 🤍",
+      message:
+        "It’s been some time. We can begin from where you are now, not where you were then. How are you feeling today?",
+    };
   }
 
-  // Check once when this page/component becomes active.
-  checkForReturnAfterInactivity();
+  function checkForMeaningfulReturn() {
+    try {
+      const lastMeaningfulAt =
+        getLastMeaningfulConversationAt();
 
-  document.addEventListener(
-    "visibilitychange",
-    handleVisibilityReturn
-  );
+      const returnWindow =
+        getReturnWindow(
+          lastMeaningfulAt
+        );
 
-  window.addEventListener("focus", handleFocusReturn);
-  window.addEventListener("pageshow", handlePageShowReturn);
+      if (!returnWindow) {
+        return false;
+      }
 
-  return () => {
-    document.removeEventListener(
+      const savedActiveChat =
+        JSON.parse(
+          window.localStorage.getItem(
+            "hiissa_active_chat"
+          ) || "null"
+        );
+
+      const snapshot =
+        continuitySnapshotRef.current ||
+        {};
+
+      const sourceMessages =
+        snapshot.activeChatLoaded &&
+        Array.isArray(
+          snapshot.messages
+        ) &&
+        snapshot.messages.length > 0
+          ? snapshot.messages
+          : Array.isArray(
+                savedActiveChat?.messages
+              )
+            ? savedActiveChat.messages
+            : [];
+
+      const liveEligible =
+        sourceMessages.filter(
+          (message) =>
+            message.role ===
+            "assistant"
+        ).length >= 3 &&
+        sourceMessages.some(
+          (message) =>
+            message.role === "user" &&
+            typeof message.content ===
+              "string" &&
+            message.content
+              .trim()
+              .length >= 35
+        ) &&
+        !snapshot.closingCheckInCompleted &&
+        !isSafetyContext(
+          sourceMessages
+        );
+
+      const eligible =
+        snapshot.activeChatLoaded
+          ? liveEligible
+          : savedActiveChat
+              ?.returnCheckInEligible ===
+            true;
+
+      if (
+        !eligible ||
+        snapshot.returnCheckInCompleted
+      ) {
+        return false;
+      }
+
+      setReturnCheckInCopy({
+        title: returnWindow.title,
+        message:
+          returnWindow.message,
+      });
+
+      setPendingReturnCheckIn(true);
+      setReturnCheckInVisible(true);
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  const [
+    showAdminShortcut,
+    setShowAdminShortcut,
+  ] = useState(false);
+
+  const [
+    publicReviews,
+    setPublicReviews,
+  ] = useState([]);
+
+  useEffect(() => {
+    function handleVisibilityReturn() {
+      if (
+        document.visibilityState ===
+        "visible"
+      ) {
+        checkForMeaningfulReturn();
+      }
+    }
+
+    function handleFocusReturn() {
+      checkForMeaningfulReturn();
+    }
+
+    function handlePageShowReturn() {
+      checkForMeaningfulReturn();
+    }
+
+    checkForMeaningfulReturn();
+
+    document.addEventListener(
       "visibilitychange",
       handleVisibilityReturn
     );
 
-    window.removeEventListener("focus", handleFocusReturn);
-    window.removeEventListener("pageshow", handlePageShowReturn);
-  };
-}, []);
+    window.addEventListener(
+      "focus",
+      handleFocusReturn
+    );
+
+    window.addEventListener(
+      "pageshow",
+      handlePageShowReturn
+    );
+
+    return () => {
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityReturn
+      );
+
+      window.removeEventListener(
+        "focus",
+        handleFocusReturn
+      );
+
+      window.removeEventListener(
+        "pageshow",
+        handlePageShowReturn
+      );
+    };
+  }, []);
+
   useEffect(() => {
     try {
       const submitted =
-        window.sessionStorage.getItem("hiissa_feedback_submitted") === "1";
+        window.sessionStorage.getItem(
+          "hiissa_feedback_submitted"
+        ) === "1";
 
-      const deferredUntil = Number(
-        window.sessionStorage.getItem("hiissa_feedback_defer_until") || "3"
-      );
+      const deferredUntil =
+        Number(
+          window.sessionStorage.getItem(
+            "hiissa_feedback_defer_until"
+          ) || "3"
+        );
 
       if (submitted) {
         setFeedbackSubmitted(true);
       } else {
-        const pendingTokens = getPendingPermissionTokens();
+        const pendingTokens =
+          getPendingPermissionTokens();
 
-        if (pendingTokens.length > 0) {
-          setPendingReviewToken(pendingTokens[0]);
+        if (
+          pendingTokens.length > 0
+        ) {
+          setPendingReviewToken(
+            pendingTokens[0]
+          );
         }
       }
 
-      if (Number.isFinite(deferredUntil) && deferredUntil >= 3) {
-        setFeedbackEligibleAfter(deferredUntil);
+      if (
+        Number.isFinite(
+          deferredUntil
+        ) &&
+        deferredUntil >= 3
+      ) {
+        setFeedbackEligibleAfter(
+          deferredUntil
+        );
       }
     } catch {
-      // Session storage is optional. HIISSA still works without it.
+      // Session storage is optional.
     }
   }, []);
 
   useEffect(() => {
-  try {
-    const savedChats = JSON.parse(
-      window.localStorage.getItem("hiissa_previous_chats") || "[]"
-    );
+    try {
+      const savedChats =
+        JSON.parse(
+          window.localStorage.getItem(
+            "hiissa_previous_chats"
+          ) || "[]"
+        );
 
-    if (Array.isArray(savedChats)) {
-      setPreviousChats(savedChats);
+      if (
+        Array.isArray(savedChats)
+      ) {
+        setPreviousChats(
+          savedChats
+        );
+      }
+    } catch {
+      setPreviousChats([]);
     }
-  } catch {
-    setPreviousChats([]);
-  }
-}, []);
- useEffect(() => {
-  try {
-    const savedActiveChat = JSON.parse(
-      window.localStorage.getItem("hiissa_active_chat") || "null"
+  }, []);
+
+  useEffect(() => {
+    try {
+      const savedActiveChat =
+        JSON.parse(
+          window.localStorage.getItem(
+            "hiissa_active_chat"
+          ) || "null"
+        );
+
+      if (
+        savedActiveChat &&
+        Array.isArray(
+          savedActiveChat.messages
+        ) &&
+        savedActiveChat.messages
+          .length > 0
+      ) {
+        setMessages(
+          savedActiveChat.messages
+        );
+
+        setInput(
+          savedActiveChat.input ||
+            ""
+        );
+
+        setConversationIntent(
+          savedActiveChat.conversationIntent ||
+            null
+        );
+
+        setActivePreviousChatId(
+          savedActiveChat.activePreviousChatId ||
+            null
+        );
+
+        setShowIntentChoices(
+          false
+        );
+
+        checkForMeaningfulReturn();
+      }
+    } catch {
+      // HIISSA starts fresh if the active chat cannot be restored.
+    } finally {
+      setActiveChatLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!activeChatLoaded) {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(
+        "hiissa_active_chat",
+        JSON.stringify({
+          messages,
+          input,
+          conversationIntent,
+          activePreviousChatId,
+
+          returnCheckInEligible:
+            messages.filter(
+              (message) =>
+                message.role ===
+                "assistant"
+            ).length >= 3 &&
+            messages.some(
+              (message) =>
+                message.role ===
+                  "user" &&
+                typeof message.content ===
+                  "string" &&
+                message.content
+                  .trim()
+                  .length >= 35
+            ) &&
+            !closingCheckInCompleted &&
+            !isSafetyContext(
+              messages
+            ),
+        })
+      );
+    } catch {
+      // Active chat saving remains optional if browser storage is unavailable.
+    }
+  }, [
+    messages,
+    input,
+    conversationIntent,
+    activePreviousChatId,
+    activeChatLoaded,
+    closingCheckInCompleted,
+  ]);
+
+  useEffect(() => {
+    if (
+      !activeChatLoaded ||
+      !activePreviousChatId
+    ) {
+      return;
+    }
+
+    setPreviousChats(
+      (currentChats) => {
+        const updatedChats =
+          currentChats.map(
+            (chat) =>
+              chat.id ===
+              activePreviousChatId
+                ? {
+                    ...chat,
+                    messages,
+                    conversationIntent,
+                  }
+                : chat
+          );
+
+        try {
+          window.localStorage.setItem(
+            "hiissa_previous_chats",
+            JSON.stringify(
+              updatedChats
+            )
+          );
+        } catch {
+          // Previous Chats remains optional.
+        }
+
+        return updatedChats;
+      }
+    );
+  }, [
+    messages,
+    conversationIntent,
+    activePreviousChatId,
+    activeChatLoaded,
+  ]);
+
+  function deletePreviousChat(
+    chatId
+  ) {
+    const shouldDelete =
+      window.confirm(
+        "Delete this chat? This cannot be undone."
+      );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setPreviousChats(
+      (currentChats) => {
+        const updatedChats =
+          currentChats.filter(
+            (chat) =>
+              chat.id !== chatId
+          );
+
+        try {
+          window.localStorage.setItem(
+            "hiissa_previous_chats",
+            JSON.stringify(
+              updatedChats
+            )
+          );
+        } catch {
+          // Previous Chats deletion still works if storage is unavailable.
+        }
+
+        return updatedChats;
+      }
     );
 
     if (
-      savedActiveChat &&
-      Array.isArray(savedActiveChat.messages) &&
-      savedActiveChat.messages.length > 0
+      activePreviousChatId ===
+      chatId
     ) {
-      setMessages(savedActiveChat.messages);
-      setInput(savedActiveChat.input || "");
-      setConversationIntent(savedActiveChat.conversationIntent || null);
-      setActivePreviousChatId(savedActiveChat.activePreviousChatId || null);
-      setShowIntentChoices(false);
-checkForReturnAfterInactivity();
-
-
-    }
-  } catch {
-    // HIISSA starts fresh if the active chat cannot be restored.
-  } finally {
-    setActiveChatLoaded(true);
-  }
-}, []); 
- useEffect(() => {
-  if (!activeChatLoaded) return;
-
-  try {
-    window.localStorage.setItem(
-      "hiissa_active_chat",
-      JSON.stringify({
-        messages,
-        input,
-        conversationIntent,
-       activePreviousChatId, 
-      returnCheckInEligible:
-  messages.filter((message) => message.role === "assistant").length >= 3 &&
-  messages.some(
-    (message) =>
-      message.role === "user" &&
-      typeof message.content === "string" &&
-      message.content.trim().length >= 35
-  ) &&
-  !closingCheckInCompleted &&
-  !isSafetyContext(messages),
- 
-      })
-    );
-  } catch {
-    // Active chat saving remains optional if browser storage is unavailable.
-  }
-}, [messages, input, conversationIntent, activePreviousChatId, activeChatLoaded,closingCheckInCompleted]); 
-
-  
-
- useEffect(() => {
-  if (!activeChatLoaded || !activePreviousChatId) return;
-
-  setPreviousChats((currentChats) => {
-    const updatedChats = currentChats.map((chat) =>
-      chat.id === activePreviousChatId
-        ? {
-            ...chat,
-            messages,
-            conversationIntent,
-          }
-        : chat
-    );
-
-    try {
-      window.localStorage.setItem(
-        "hiissa_previous_chats",
-        JSON.stringify(updatedChats)
+      setActivePreviousChatId(
+        null
       );
-    } catch {
-      // Previous Chats remains optional if browser storage is unavailable.
-    }
 
-    return updatedChats;
-  });
-}, [messages, conversationIntent, activePreviousChatId, activeChatLoaded]); 
-function deletePreviousChat(chatId) {
-  const shouldDelete = window.confirm(
-    "Delete this chat? This cannot be undone."
-  );
-
-  if (!shouldDelete) return;
-
-  setPreviousChats((currentChats) => {
-    const updatedChats = currentChats.filter(
-      (chat) => chat.id !== chatId
-    );
-
-    try {
-      window.localStorage.setItem(
-        "hiissa_previous_chats",
-        JSON.stringify(updatedChats)
-      );
-    } catch {
-      // Previous Chats deletion still works if browser storage is unavailable.
-    }
-
-    return updatedChats;
-  });
-
-  if (activePreviousChatId === chatId) {
-    setActivePreviousChatId(null);
-
-    try {
-      window.localStorage.removeItem("hiissa_active_chat");
-    } catch {
-      // Active chat cleanup remains optional if browser storage is unavailable.
+      try {
+        window.localStorage.removeItem(
+          "hiissa_active_chat"
+        );
+      } catch {
+        // Optional cleanup.
+      }
     }
   }
-}  
-  
-  useEffect(() => {
+    useEffect(() => {
     async function checkAdminAccess() {
       if (!supabase) return;
 
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } =
+        await supabase.auth.getSession();
 
       if (!session) {
         setShowAdminShortcut(false);
         return;
       }
 
-      const { data: isAdmin, error } = await supabase.rpc(
+      const {
+        data: isAdmin,
+        error,
+      } = await supabase.rpc(
         "is_hiissa_admin"
       );
 
-      if (!error && isAdmin === true) {
-        setShowAdminShortcut(true);
+      if (
+        !error &&
+        isAdmin === true
+      ) {
+        setShowAdminShortcut(
+          true
+        );
       } else {
-        setShowAdminShortcut(false);
+        setShowAdminShortcut(
+          false
+        );
       }
     }
 
@@ -1791,11 +2480,15 @@ function deletePreviousChat(chatId) {
     async function loadPublicReviews() {
       if (!supabase) return;
 
-      const { data, error } = await supabase.rpc(
-        "get_hiissa_public_reviews"
-      );
+      const { data, error } =
+        await supabase.rpc(
+          "get_hiissa_public_reviews"
+        );
 
-      if (!error && Array.isArray(data)) {
+      if (
+        !error &&
+        Array.isArray(data)
+      ) {
         setPublicReviews(data);
       }
     }
@@ -1803,16 +2496,22 @@ function deletePreviousChat(chatId) {
     loadPublicReviews();
   }, []);
 
-  const substantiveAssistantAnswers = Math.max(
-    0,
-    messages.filter((message) => message.role === "assistant").length - 1
-  );
+  const substantiveAssistantAnswers =
+    Math.max(
+      0,
+      messages.filter(
+        (message) =>
+          message.role ===
+          "assistant"
+      ).length - 1
+    );
 
   const showFeedbackCard =
     !loading &&
     !feedbackSubmitted &&
     !feedbackThanks &&
-    substantiveAssistantAnswers >= feedbackEligibleAfter &&
+    substantiveAssistantAnswers >=
+      feedbackEligibleAfter &&
     !isSafetyContext(messages);
 
   const showReviewPermissionCard =
@@ -1820,238 +2519,426 @@ function deletePreviousChat(chatId) {
     pendingReviewToken &&
     !reviewPermissionDismissed &&
     !reviewPermissionThanks &&
-    substantiveAssistantAnswers >= 1 &&
+    substantiveAssistantAnswers >=
+      1 &&
     !isSafetyContext(messages);
-useEffect(() => {
-  if (
-    loading ||
-    openingCheckInCompleted ||
-    openingCheckInSkipped ||
-    openingCheckInVisible ||
-    substantiveAssistantAnswers < 1 ||
-   !hasMeaningfulPersonalSharing(messages) || 
-    isSafetyContext(messages)
+
+  useEffect(() => {
+    if (
+      loading ||
+      openingCheckInCompleted ||
+      openingCheckInSkipped ||
+      openingCheckInVisible ||
+      substantiveAssistantAnswers <
+        1 ||
+      !hasMeaningfulPersonalSharing(
+        messages
+      ) ||
+      isSafetyContext(messages)
+    ) {
+      return;
+    }
+
+    setOpeningCheckInVisible(
+      true
+    );
+  }, [
+    loading,
+    openingCheckInCompleted,
+    openingCheckInSkipped,
+    openingCheckInVisible,
+    substantiveAssistantAnswers,
+    messages,
+  ]);
+
+  useEffect(() => {
+    if (
+      loading ||
+      closingCheckInCompleted ||
+      closingCheckInVisible ||
+      openingCheckInVisible ||
+      substantiveAssistantAnswers <
+        2 ||
+      !hasNaturalConversationClosing(
+        messages
+      ) ||
+      isSafetyContext(messages)
+    ) {
+      return;
+    }
+
+    setClosingCheckInVisible(
+      true
+    );
+  }, [
+    loading,
+    closingCheckInCompleted,
+    closingCheckInVisible,
+    openingCheckInVisible,
+    substantiveAssistantAnswers,
+    messages,
+  ]);
+
+  function detectExplicitConversationIntent(
+    text
   ) {
-    return;
+    const normalized = String(
+      text || ""
+    )
+      .toLowerCase()
+      .replace(/[’]/g, "'");
+
+    if (
+      /\b(?:please\s+)?just\s+listen\b/.test(
+        normalized
+      ) ||
+      /\b(?:i\s+)?(?:just|only)\s+(?:need|want)\s+(?:you\s+)?to\s+listen\b/.test(
+        normalized
+      ) ||
+      (/\bi\s+don'?t\s+want\s+(?:advice|analysis|to\s+analyse|to\s+analyze|solutions?)\b/.test(
+        normalized
+      ) &&
+        /\b(?:listen|hear me|be here)\b/.test(
+          normalized
+        ))
+    ) {
+      return "listen";
+    }
+
+    if (
+      /\bhelp me understand\b/.test(
+        normalized
+      ) ||
+      /\bi\s+(?:need|want)\s+to\s+understand\b/.test(
+        normalized
+      ) ||
+      /\bi'?m\s+trying\s+to\s+understand\b/.test(
+        normalized
+      )
+    ) {
+      return "understand";
+    }
+
+    if (
+      /\bhelp me move forward\b/.test(
+        normalized
+      ) ||
+      /\bhow do i move forward\b/.test(
+        normalized
+      ) ||
+      /\bwhat (?:should|can) i do next\b/.test(
+        normalized
+      )
+    ) {
+      return "move_forward";
+    }
+
+    return null;
   }
 
-  setOpeningCheckInVisible(true);
-}, [
-  loading,
-  openingCheckInCompleted,
-  openingCheckInSkipped,
-  openingCheckInVisible,
-  substantiveAssistantAnswers,
-  messages,
-]);
-useEffect(() => {
-  if (
-    loading ||
-    closingCheckInCompleted ||
-    closingCheckInVisible ||
-    openingCheckInVisible ||
-    substantiveAssistantAnswers < 2 ||
-    !hasNaturalConversationClosing(messages) ||
-    isSafetyContext(messages)
+  async function sendMessage(
+    text = input
   ) {
-    return;
-  }
-
-  setClosingCheckInVisible(true);
-}, [
-  loading,
-  closingCheckInCompleted,
-  closingCheckInVisible,
-  openingCheckInVisible,
-  substantiveAssistantAnswers,
-  messages,
-]);  
-function detectExplicitConversationIntent(text) {
-  const normalized = String(text || "")
-    .toLowerCase()
-    .replace(/[’]/g, "'");
-
-  if (
-    /\b(?:please\s+)?just\s+listen\b/.test(normalized) ||
-    /\b(?:i\s+)?(?:just|only)\s+(?:need|want)\s+(?:you\s+)?to\s+listen\b/.test(normalized) ||
-    (/\bi\s+don'?t\s+want\s+(?:advice|analysis|to\s+analyse|to\s+analyze|solutions?)\b/.test(normalized) &&
-      /\b(?:listen|hear me|be here)\b/.test(normalized))
-  ) {
-    return "listen";
-  }
-
-  if (
-    /\bhelp me understand\b/.test(normalized) ||
-    /\bi\s+(?:need|want)\s+to\s+understand\b/.test(normalized) ||
-    /\bi'?m\s+trying\s+to\s+understand\b/.test(normalized)
-  ) {
-    return "understand";
-  }
-
-  if (
-    /\bhelp me move forward\b/.test(normalized) ||
-    /\bhow do i move forward\b/.test(normalized) ||
-    /\bwhat (?:should|can) i do next\b/.test(normalized)
-  ) {
-    return "move_forward";
-  }
-
-  return null;
-}
-  async function sendMessage(text = input) {
     const clean = text.trim();
 
-    if (!clean || loading || wordingLoading) return;
-checkForReturnAfterInactivity();
-recordUserActivity();
-    
+    if (
+      !clean ||
+      loading ||
+      wordingLoading
+    ) {
+      return;
+    }
 
-const detectedIntent = detectExplicitConversationIntent(clean);
-const effectiveIntent = detectedIntent || conversationIntent;
+    // IMPORTANT:
+    // Evaluate whether the person is returning
+    // BEFORE writing the new meaningful timestamp.
+    checkForMeaningfulReturn();
 
-if (detectedIntent && detectedIntent !== conversationIntent) {
-  setConversationIntent(detectedIntent);
-  setWordingModeActive(false);
-  setShowIntentChoices(false);
-}    
+    recordMeaningfulConversationActivity();
 
-    const next = [...messages, { role: "user", content: clean }];
+    const detectedIntent =
+      detectExplicitConversationIntent(
+        clean
+      );
+
+    const effectiveIntent =
+      detectedIntent ||
+      conversationIntent;
+
+    if (
+      detectedIntent &&
+      detectedIntent !==
+        conversationIntent
+    ) {
+      setConversationIntent(
+        detectedIntent
+      );
+
+      setWordingModeActive(
+        false
+      );
+
+      setShowIntentChoices(
+        false
+      );
+    }
+
+    const next = [
+      ...messages,
+      {
+        role: "user",
+        content: clean,
+      },
+    ];
 
     setMessages(next);
     setInput("");
     setWordingSuggestion("");
-setWordingOriginal("");
-setWordingError("");
-setWordingUndo("");
+    setWordingOriginal("");
+    setWordingError("");
+    setWordingUndo("");
     setLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-  messages: next,
-conversationIntent: effectiveIntent, 
-}),
-      });
+      const res = await fetch(
+        "/api/chat",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            messages: next,
+            conversationIntent:
+              effectiveIntent,
+          }),
+        }
+      );
 
-      const data = await res.json();
+      const data =
+        await res.json();
 
       if (!res.ok) {
-        if (res.status === 413) {
-          setMessages((current) => [
-            ...current,
-            {
-              role: "assistant",
-              content:
-                "Your message is a little too long. ❤️ Please shorten it to 6,000 characters or fewer and try again.",
-            },
-          ]);
+        if (
+          res.status === 413
+        ) {
+          setMessages(
+            (current) => [
+              ...current,
+              {
+                role:
+                  "assistant",
+                content:
+                  "Your message is a little too long. ❤️ Please shorten it to 6,000 characters or fewer and try again.",
+              },
+            ]
+          );
+
           return;
         }
 
-        throw new Error("Request failed");
+        throw new Error(
+          "Request failed"
+        );
       }
 
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", content: data.reply },
-      ]);
+      setMessages(
+        (current) => [
+          ...current,
+          {
+            role: "assistant",
+            content: data.reply,
+          },
+        ]
+      );
+
+      /*
+       * QUALITY AUDIT PERSISTENCE
+       *
+       * The old file defined the complete
+       * persistence chain but never attached
+       * it to the live sendMessage path.
+       *
+       * This records the live delivery event
+       * without falsely claiming client-side
+       * quality checks that have not actually
+       * been performed here.
+       */
+      try {
+        const auditContentId =
+          `talk-${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2, 8)}`;
+
+        const gateResult =
+          evaluateQualityGate({
+            id: `gate-${auditContentId}`,
+            experienceId: "talk",
+            contentId:
+              auditContentId,
+            findings: [],
+          });
+
+        const auditRecord =
+          createQualityAuditFromGateResult(
+            {
+              id: `audit-${auditContentId}`,
+              gateResult,
+            }
+          );
+
+        const auditPersistenceResult =
+          await enforceQualityAuditPersistenceVerification(
+            auditRecord
+          );
+
+        if (
+          auditPersistenceResult
+            ?.persistenceAccepted !==
+          true
+        ) {
+          console.warn(
+            "HIISSA quality audit persistence was not verified for this reply.",
+            auditPersistenceResult
+          );
+        }
+      } catch (auditError) {
+        console.error(
+          "HIISSA quality audit persistence failed on the live send path:",
+          auditError
+        );
+      }
     } catch {
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          content:
-            "I'm sorry, I couldn't respond right now. Please try again in a moment. 💛",
-        },
-      ]);
+      setMessages(
+        (current) => [
+          ...current,
+          {
+            role: "assistant",
+            content:
+              "I'm sorry, I couldn't respond right now. Please try again in a moment. 💛",
+          },
+        ]
+      );
     } finally {
       setLoading(false);
     }
   }
-async function helpMeWordThis() {
-  const clean = input.trim();
 
-  if (!clean || loading || wordingLoading) return;
+  async function helpMeWordThis() {
+    const clean =
+      input.trim();
 
-  setWordingLoading(true);
-  setWordingError("");
-  setWordingSuggestion("");
-  setWordingOriginal(input);
-  setWordingUndo("");
+    if (
+      !clean ||
+      loading ||
+      wordingLoading
+    ) {
+      return;
+    }
 
-  try {
-    const res = await fetch("/api/wording", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text: clean }),
-    });
+    setWordingLoading(true);
+    setWordingError("");
+    setWordingSuggestion("");
+    setWordingOriginal(input);
+    setWordingUndo("");
 
-    const data = await res.json();
+    try {
+      const res = await fetch(
+        "/api/wording",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            text: clean,
+          }),
+        }
+      );
 
-    if (!res.ok) {
-      if (res.status === 413) {
-        setWordingError(
-          "Your message is a little too long. ❤️ Please shorten it to 6,000 characters or fewer and try again."
+      const data =
+        await res.json();
+
+      if (!res.ok) {
+        if (
+          res.status === 413
+        ) {
+          setWordingError(
+            "Your message is a little too long. ❤️ Please shorten it to 6,000 characters or fewer and try again."
+          );
+
+          return;
+        }
+
+        throw new Error(
+          "Wording request failed"
         );
-        return;
       }
 
-      throw new Error("Wording request failed");
-    }
+      if (
+        !data.rewritten?.trim()
+      ) {
+        throw new Error(
+          "No rewritten wording returned"
+        );
+      }
 
-    if (!data.rewritten?.trim()) {
-      throw new Error("No rewritten wording returned");
+      setWordingSuggestion(
+        data.rewritten.trim()
+      );
+    } catch {
+      setWordingError(
+        "HIISSA couldn't help with the wording right now. Please try again. 💛"
+      );
+    } finally {
+      setWordingLoading(false);
     }
-
-    setWordingSuggestion(data.rewritten.trim());
-  } catch {
-    setWordingError(
-      "HIISSA couldn't help with the wording right now. Please try again. 💛"
-    );
-  } finally {
-    setWordingLoading(false);
   }
-}
 
-function useWordingSuggestion() {
-recordUserActivity();  
-  if (!wordingSuggestion) return;
+  function useWordingSuggestion() {
+    if (!wordingSuggestion) {
+      return;
+    }
 
-  setWordingUndo(wordingOriginal);
-  setInput(wordingSuggestion);
-  setWordingSuggestion("");
-  setWordingOriginal("");
-  setWordingError("");
-}
+    setWordingUndo(
+      wordingOriginal
+    );
 
-function keepOriginalWording() {
-recordUserActivity();  
-  setWordingSuggestion("");
-  setWordingOriginal("");
-  setWordingError("");
-}
+    setInput(
+      wordingSuggestion
+    );
 
-function undoWordingChange() {
-recordUserActivity();  
-  if (!wordingUndo) return;
+    setWordingSuggestion("");
+    setWordingOriginal("");
+    setWordingError("");
+  }
 
-  setInput(wordingUndo);
-  setWordingUndo("");
-  setWordingSuggestion("");
-  setWordingOriginal("");
-  setWordingError("");
-}
+  function keepOriginalWording() {
+    setWordingSuggestion("");
+    setWordingOriginal("");
+    setWordingError("");
+  }
+
+  function undoWordingChange() {
+    if (!wordingUndo) {
+      return;
+    }
+
+    setInput(wordingUndo);
+    setWordingUndo("");
+    setWordingSuggestion("");
+    setWordingOriginal("");
+    setWordingError("");
+  }
+
   async function copyHiissaLink() {
-  recordUserActivity();
-    
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(
+        window.location.href
+      );
+
       setLinkCopied(true);
 
       window.setTimeout(() => {
@@ -2063,49 +2950,73 @@ recordUserActivity();
   }
 
   function startListening() {
-   recordUserActivity(); 
-    if (listening || loading) return;
+    if (
+      listening ||
+      loading
+    ) {
+      return;
+    }
 
     const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       setVoiceHelp(true);
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition =
+      new SpeechRecognition();
 
-    recognition.lang = "en-GB";
-    recognition.interimResults = false;
-    recognition.continuous = false;
+    recognition.lang =
+      "en-GB";
 
-    recognition.onstart = () => {
-      setVoiceHelp(false);
-      setListening(true);
-    };
+    recognition.interimResults =
+      false;
 
-    recognition.onresult = (event) => {
-      const transcript = event.results?.[0]?.[0]?.transcript || "";
-      setWordingSuggestion("");
-setWordingOriginal("");
-setWordingError("");
+    recognition.continuous =
+      false;
 
-      if (transcript.trim()) {
-        setInput((current) =>
-          current.trim() ? `${current.trim()} ${transcript}` : transcript
+    recognition.onstart =
+      () => {
+        setVoiceHelp(false);
+        setListening(true);
+      };
+
+    recognition.onresult =
+      (event) => {
+        const transcript =
+          event.results?.[0]?.[0]
+            ?.transcript || "";
+
+        setWordingSuggestion(
+          ""
         );
-      }
-    };
 
-    recognition.onerror = () => {
-      setListening(false);
-      setVoiceHelp(true);
-    };
+        setWordingOriginal("");
+        setWordingError("");
 
-    recognition.onend = () => {
-      setListening(false);
-    };
+        if (transcript.trim()) {
+          setInput(
+            (current) =>
+              current.trim()
+                ? `${current.trim()} ${transcript}`
+                : transcript
+          );
+        }
+      };
+
+    recognition.onerror =
+      () => {
+        setListening(false);
+        setVoiceHelp(true);
+      };
+
+    recognition.onend =
+      () => {
+        setListening(false);
+      };
 
     try {
       recognition.start();
@@ -2116,13 +3027,19 @@ setWordingError("");
   }
 
   function chooseHiissaVoice() {
-    const voices = window.speechSynthesis.getVoices();
+    const voices =
+      window.speechSynthesis.getVoices();
 
-    if (!voices.length) return null;
+    if (!voices.length) {
+      return null;
+    }
 
-    const britishVoices = voices.filter((voice) =>
-      voice.lang?.toLowerCase().startsWith("en-gb")
-    );
+    const britishVoices =
+      voices.filter((voice) =>
+        voice.lang
+          ?.toLowerCase()
+          .startsWith("en-gb")
+      );
 
     const femaleVoiceNames = [
       "female",
@@ -2141,81 +3058,150 @@ setWordingError("");
       "zira",
     ];
 
-    const britishFemaleVoice = britishVoices.find((voice) =>
-      femaleVoiceNames.some((name) =>
-        voice.name.toLowerCase().includes(name)
-      )
-    );
+    const britishFemaleVoice =
+      britishVoices.find(
+        (voice) =>
+          femaleVoiceNames.some(
+            (name) =>
+              voice.name
+                .toLowerCase()
+                .includes(name)
+          )
+      );
 
-    if (britishFemaleVoice) return britishFemaleVoice;
+    if (britishFemaleVoice) {
+      return britishFemaleVoice;
+    }
 
-    if (britishVoices.length) return britishVoices[0];
+    if (
+      britishVoices.length
+    ) {
+      return britishVoices[0];
+    }
 
-    const englishFemaleVoice = voices.find(
-      (voice) =>
-        voice.lang?.toLowerCase().startsWith("en") &&
-        femaleVoiceNames.some((name) =>
-          voice.name.toLowerCase().includes(name)
-        )
-    );
+    const englishFemaleVoice =
+      voices.find(
+        (voice) =>
+          voice.lang
+            ?.toLowerCase()
+            .startsWith("en") &&
+          femaleVoiceNames.some(
+            (name) =>
+              voice.name
+                .toLowerCase()
+                .includes(name)
+          )
+      );
 
-    if (englishFemaleVoice) return englishFemaleVoice;
+    if (englishFemaleVoice) {
+      return englishFemaleVoice;
+    }
 
     return (
       voices.find((voice) =>
-        voice.lang?.toLowerCase().startsWith("en")
+        voice.lang
+          ?.toLowerCase()
+          .startsWith("en")
       ) || null
     );
   }
 
-  function prepareSpokenText(text) {
+  function prepareSpokenText(
+    text
+  ) {
     return text
       .replace(
         /Hi,\s*I'm\s+HIISSA\s+Relationship\s+AI\.?/gi,
         "Hi. I'm Hee-sah. Relationship AI."
       )
-      .replace(/\bHIISSA\b/gi, "Hee-sah")
-      .replace(/\*\*(.*?)\*\*/g, "$1")
-      .replace(/__(.*?)__/g, "$1")
-      .replace(/\*(.*?)\*/g, "$1")
-      .replace(/_(.*?)_/g, "$1")
-      .replace(/^\s*#{1,6}\s*/gm, "")
-      .replace(/^\s*[-*+]\s+/gm, "")
-      .replace(/^\s*\d+\.\s+/gm, "")
-      .replace(/`([^`]+)`/g, "$1")
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(
+        /\bHIISSA\b/gi,
+        "Hee-sah"
+      )
+      .replace(
+        /\*\*(.*?)\*\*/g,
+        "$1"
+      )
+      .replace(
+        /__(.*?)__/g,
+        "$1"
+      )
+      .replace(
+        /\*(.*?)\*/g,
+        "$1"
+      )
+      .replace(
+        /_(.*?)_/g,
+        "$1"
+      )
+      .replace(
+        /^\s*#{1,6}\s*/gm,
+        ""
+      )
+      .replace(
+        /^\s*[-*+]\s+/gm,
+        ""
+      )
+      .replace(
+        /^\s*\d+\.\s+/gm,
+        ""
+      )
+      .replace(
+        /`([^`]+)`/g,
+        "$1"
+      )
+      .replace(
+        /\[([^\]]+)\]\([^)]+\)/g,
+        "$1"
+      )
       .replace(/\s+/g, " ")
       .trim();
   }
 
-  function speakMessage(text, index) {
- 
+  function speakMessage(
+    text,
+    index
+  ) {
     if (
-      typeof window === "undefined" ||
-      !("speechSynthesis" in window) ||
-      typeof SpeechSynthesisUtterance === "undefined"
+      typeof window ===
+        "undefined" ||
+      !(
+        "speechSynthesis" in
+        window
+      ) ||
+      typeof SpeechSynthesisUtterance ===
+        "undefined"
     ) {
       return;
     }
 
     window.speechSynthesis.cancel();
 
-    if (speakingIndex === index) {
+    if (
+      speakingIndex === index
+    ) {
       setSpeakingIndex(null);
       return;
     }
 
-    const spokenText = prepareSpokenText(text);
+    const spokenText =
+      prepareSpokenText(text);
 
-    const speech = new SpeechSynthesisUtterance(spokenText);
-    const preferredVoice = chooseHiissaVoice();
+    const speech =
+      new SpeechSynthesisUtterance(
+        spokenText
+      );
+
+    const preferredVoice =
+      chooseHiissaVoice();
 
     speech.lang = "en-GB";
     speech.rate = 0.92;
     speech.pitch = 1;
 
     if (preferredVoice) {
-      speech.voice = preferredVoice;
+      speech.voice =
+        preferredVoice;
     }
 
     speech.onend = () => {
@@ -2227,14 +3213,21 @@ setWordingError("");
     };
 
     setSpeakingIndex(index);
-    window.speechSynthesis.speak(speech);
+
+    window.speechSynthesis.speak(
+      speech
+    );
   }
 
   function maybeLater() {
-  recordUserActivity();  
-    const nextEligibleAt = substantiveAssistantAnswers + 5;
+    const nextEligibleAt =
+      substantiveAssistantAnswers +
+      5;
 
-    setFeedbackEligibleAfter(nextEligibleAt);
+    setFeedbackEligibleAfter(
+      nextEligibleAt
+    );
+
     setFeedbackFormOpen(false);
     setRating(0);
     setHelpful(null);
@@ -2247,13 +3240,18 @@ setWordingError("");
         String(nextEligibleAt)
       );
     } catch {
-      // HIISSA still works if session storage is unavailable.
+      // Session storage is optional.
     }
   }
 
   async function submitFeedback() {
-  recordUserActivity();  
-    if (!rating || helpful === null || feedbackSending) return;
+    if (
+      !rating ||
+      helpful === null ||
+      feedbackSending
+    ) {
+      return;
+    }
 
     setFeedbackSending(true);
     setFeedbackError("");
@@ -2262,34 +3260,54 @@ setWordingError("");
       setFeedbackError(
         "Feedback couldn't be sent right now. Please try again later."
       );
-      setFeedbackSending(false);
+
+      setFeedbackSending(
+        false
+      );
+
       return;
     }
 
     try {
-      const permissionToken = createPermissionToken();
+      const permissionToken =
+        createPermissionToken();
 
-      const { error } = await supabase.rpc("submit_feedback", {
-        p_rating: rating,
-        p_helpful: helpful,
-        p_feedback_text: feedbackText.trim() || null,
-        p_permission_token: permissionToken,
-      });
+      const { error } =
+        await supabase.rpc(
+          "submit_feedback",
+          {
+            p_rating: rating,
+            p_helpful: helpful,
+            p_feedback_text:
+              feedbackText.trim() ||
+              null,
+            p_permission_token:
+              permissionToken,
+          }
+        );
 
       if (error) {
         throw error;
       }
 
-      storePendingPermissionToken(permissionToken);
+      storePendingPermissionToken(
+        permissionToken
+      );
 
-      setFeedbackSubmitted(true);
+      setFeedbackSubmitted(
+        true
+      );
+
       setFeedbackThanks(true);
       setFeedbackFormOpen(false);
 
       try {
-        window.sessionStorage.setItem("hiissa_feedback_submitted", "1");
+        window.sessionStorage.setItem(
+          "hiissa_feedback_submitted",
+          "1"
+        );
       } catch {
-        // HIISSA still works if session storage is unavailable.
+        // Session storage is optional.
       }
 
       window.setTimeout(() => {
@@ -2300,108 +3318,173 @@ setWordingError("");
         "Feedback couldn't be sent right now. Please try again."
       );
     } finally {
-      setFeedbackSending(false);
+      setFeedbackSending(
+        false
+      );
     }
   }
 
   async function allowPublicReview() {
-   recordUserActivity(); 
-    const cleanReview = publicReviewText.trim();
+    const cleanReview =
+      publicReviewText.trim();
 
-    if (!pendingReviewToken || !cleanReview || reviewPermissionSending) return;
+    if (
+      !pendingReviewToken ||
+      !cleanReview ||
+      reviewPermissionSending
+    ) {
+      return;
+    }
 
-    setReviewPermissionSending(true);
-    setReviewPermissionError("");
+    setReviewPermissionSending(
+      true
+    );
+
+    setReviewPermissionError(
+      ""
+    );
 
     if (!supabase) {
       setReviewPermissionError(
         "Public-review permission couldn't be saved right now. Please try again later."
       );
-      setReviewPermissionSending(false);
+
+      setReviewPermissionSending(
+        false
+      );
+
       return;
     }
 
     try {
-      const { data, error } = await supabase.rpc(
-        "give_feedback_public_permission",
-        {
-          p_permission_token: pendingReviewToken,
-          p_public_display_text: cleanReview,
-        }
-      );
+      const { data, error } =
+        await supabase.rpc(
+          "give_feedback_public_permission",
+          {
+            p_permission_token:
+              pendingReviewToken,
+            p_public_display_text:
+              cleanReview,
+          }
+        );
 
       if (error) throw error;
 
       if (data !== true) {
-        removePendingPermissionToken(pendingReviewToken);
-        setPendingReviewToken(null);
-        setReviewPermissionDismissed(true);
+        removePendingPermissionToken(
+          pendingReviewToken
+        );
+
+        setPendingReviewToken(
+          null
+        );
+
+        setReviewPermissionDismissed(
+          true
+        );
+
         setReviewPermissionError(
           "This permission request is no longer available."
         );
+
         return;
       }
 
-      removePendingPermissionToken(pendingReviewToken);
-      setPendingReviewToken(null);
+      removePendingPermissionToken(
+        pendingReviewToken
+      );
+
+      setPendingReviewToken(
+        null
+      );
+
       setPublicReviewText("");
-      setReviewPermissionThanks(true);
+
+      setReviewPermissionThanks(
+        true
+      );
 
       window.setTimeout(() => {
-        setReviewPermissionThanks(false);
+        setReviewPermissionThanks(
+          false
+        );
       }, 7000);
     } catch {
       setReviewPermissionError(
         "Public-review permission couldn't be saved right now. Please try again."
       );
     } finally {
-      setReviewPermissionSending(false);
+      setReviewPermissionSending(
+        false
+      );
     }
   }
 
   function keepReviewPrivate() {
-  recordUserActivity();
-  if (pendingReviewToken) {
-      removePendingPermissionToken(pendingReviewToken);
+    if (pendingReviewToken) {
+      removePendingPermissionToken(
+        pendingReviewToken
+      );
     }
 
-    setPendingReviewToken(null);
+    setPendingReviewToken(
+      null
+    );
+
     setPublicReviewText("");
     setReviewPermissionError("");
-    setReviewPermissionDismissed(true);
+
+    setReviewPermissionDismissed(
+      true
+    );
   }
 
   return (
     <main className="page">
       <div className="orb one" />
       <div className="orb two" />
-      <div className="spark s1">✦</div>
-      <div className="spark s2">♡</div>
+
+      <div className="spark s1">
+        ✦
+      </div>
+
+      <div className="spark s2">
+        ♡
+      </div>
 
       <section className="wrap">
         {showAdminShortcut && (
           <div
             style={{
               display: "flex",
-              justifyContent: "flex-end",
+              justifyContent:
+                "flex-end",
               marginBottom: "14px",
             }}
           >
             <a
               href="/admin"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
+                display:
+                  "inline-flex",
+                alignItems:
+                  "center",
                 gap: "7px",
-                textDecoration: "none",
-                border: "1px solid rgba(80, 102, 93, 0.18)",
-                background: "rgba(255, 253, 248, 0.92)",
+                textDecoration:
+                  "none",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.18)",
+                background:
+                  "rgba(255, 253, 248, 0.92)",
                 color: "#466f67",
-                borderRadius: "999px",
-                padding: "9px 13px",
+                borderRadius:
+                  "999px",
+                padding:
+                  "9px 13px",
                 fontSize: "12px",
                 fontWeight: "800",
-                boxShadow: "0 8px 24px rgba(64, 86, 76, 0.08)",
+                boxShadow:
+                  "0 8px 24px rgba(64, 86, 76, 0.08)",
               }}
             >
               ⚙ Admin Dashboard
@@ -2410,20 +3493,30 @@ setWordingError("");
         )}
 
         <header className="hero">
-          <div className="logo">H</div>
+          <div className="logo">
+            H
+          </div>
 
           <div>
-            <div className="kicker">HIISSA • RELATIONSHIP AI</div>
+            <div className="kicker">
+              HIISSA • RELATIONSHIP
+              AI
+            </div>
 
             <h1>
               Someone to talk to.
               <br />
-              <span>Without judgment.</span>
+              <span>
+                Without judgment.
+              </span>
             </h1>
 
             <p>
-              A beautiful space for relationship questions, emotional clarity,
-              boundaries, healing, and self-respect.
+              A beautiful space for
+              relationship questions,
+              emotional clarity,
+              boundaries, healing,
+              and self-respect.
             </p>
           </div>
         </header>
@@ -2431,800 +3524,1343 @@ setWordingError("");
         <div className="principle">
           ✦{" "}
           <span>
-            I'll help you separate <b>what you know</b>,{" "}
-            <b>what you suspect</b>, <b>what you feel</b>, and{" "}
-            <b>what you cannot control</b>.
+            I'll help you separate{" "}
+            <b>what you know</b>,{" "}
+            <b>
+              what you suspect
+            </b>
+            ,{" "}
+            <b>what you feel</b>, and{" "}
+            <b>
+              what you cannot
+              control
+            </b>
+            .
           </span>
         </div>
 
         <div className="trust">
-          <span>♡ Compassionate</span>
-          <span>⚖ Balanced</span>
-          <span>✦ Self-respecting</span>
-          <span>◌ Non-judgmental</span>
+          <span>
+            ♡ Compassionate
+          </span>
+          <span>
+            ⚖ Balanced
+          </span>
+          <span>
+            ✦ Self-respecting
+          </span>
+          <span>
+            ◌ Non-judgmental
+          </span>
         </div>
-<button
-  type="button"
- onClick={() => {
-  recordUserActivity();
-  setShowExplore(true);
-}}
-  className="exploreEntry"
->
-  <span className="exploreEntryIcon">✦</span>
-  <span className="exploreEntryText">
-    <strong>Explore HIISSA</strong>
-    <small>More ways to talk, listen, reflect and grow.</small>
-  </span>
-  <span className="exploreEntryArrow">›</span>
-</button>
-        <section className="chat">
-          <div className="chatHead">
-            <div className="mini">H</div>
 
-            <div>
-              <strong>HIISSA Relationship AI</strong>
-              <small>● Here with you</small>
-            </div>
-         <button
-  type="button"
-  onClick={() => {
-  recordUserActivity(); 
-    if (messages.length > 1) {
-  const firstUserMessage =
-    messages.find((message) => message.role === "user")?.content ||
-    "Previous conversation";
+        <button
+          type="button"
+          onClick={() => {
+            setShowExplore(true);
+          }}
+          className="exploreEntry"
+        >
+          <span className="exploreEntryIcon">
+            ✦
+          </span>
 
-  const savedChat = {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    title:
-      firstUserMessage.length > 48
-        ? `${firstUserMessage.slice(0, 48)}…`
-        : firstUserMessage,
-    createdAt: new Date().toISOString(),
-    conversationIntent,
-    messages,
-  };
-
-  const updatedChats = activePreviousChatId
-  ? previousChats
-  : [savedChat, ...previousChats].slice(0, 20);
-
-  setPreviousChats(updatedChats);
-
-  try {
-    window.localStorage.setItem(
-      "hiissa_previous_chats",
-      JSON.stringify(updatedChats)
-    );
-  } catch {
-    // Previous Chats remains optional if browser storage is unavailable.
-  }
-} 
- try {
-  window.localStorage.removeItem("hiissa_active_chat");
-} catch {
-  // HIISSA still starts a new chat if browser storage is unavailable.
-}   
-    setMessages([
-      {
-        role: "assistant",
-        content:
-          "Hi, I’m HIISSA Relationship AI. Tell me what’s happening, and I’ll help you look at it with empathy, balance, and self-respect.",
-      },
-    ]);
-    setInput("");
-    setConversationIntent("");
-    setWordingModeActive(false);
-   setOpeningCheckInVisible(false);
-setOpeningCheckInCompleted(false);
-setOpeningCheckInSkipped(false);
-setOpeningFeeling(null); 
-setClosingCheckInVisible(false);
-setClosingCheckInCompleted(false);
-setClosingFeeling(null); 
-setPendingReturnCheckIn(false);
-setReturnCheckInVisible(false);
-setReturnCheckInCompleted(false);
- 
-    setActivePreviousChatId(null);
-    setShowIntentChoices(false);
-    setWordingSuggestion("");
-    setWordingOriginal("");
-    setWordingError("");
-  }}
-  aria-label="Start a new chat"
-  title="New Chat"
-  style={{
-    marginLeft: "auto",
-    background: "transparent",
-    border: "1px solid rgba(47, 63, 59, 0.16)",
-    borderRadius: "999px",
-    padding: "7px 11px",
-    color: "#587a70",
-    fontSize: "12px",
-    fontWeight: "700",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  }}
->
-  ＋ New Chat
-</button>
-<button
-  type="button"
- onClick={() => {
-  recordUserActivity();
-  setShowPreviousChats((current) => !current);
-}}
-  aria-label="View previous chats"
-  title="Previous Chats"
-  style={{
-    background: "transparent",
-    border: "1px solid rgba(47, 63, 59, 0.16)",
-    borderRadius: "999px",
-    padding: "7px 11px",
-    color: "#587a70",
-    fontSize: "12px",
-    fontWeight: "700",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  }}
->
-  🕘 Chats
-</button>
-    </div>
-{showPreviousChats && (
-  <div
-    style={{
-      margin: "14px 18px 6px",
-      padding: "16px",
-      borderRadius: "18px",
-      border: "1px solid rgba(47, 63, 59, 0.12)",
-      background: "rgba(255, 253, 248, 0.96)",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "12px",
-        marginBottom: "12px",
-      }}
-    >
-      <strong style={{ color: "#365d54" }}>Previous Chats</strong>
-
-      <button
-        type="button"
-       onClick={() => {
-  recordUserActivity();
-  setShowPreviousChats(false);
-}}
-        style={{
-          background: "transparent",
-          border: "none",
-          color: "#587a70",
-          fontSize: "12px",
-          fontWeight: "700",
-          cursor: "pointer",
-        }}
-      >
-        Close
-      </button>
-    </div>
-
-    {previousChats.length === 0 ? (
-      <p
-        style={{
-          margin: 0,
-          color: "#71817c",
-          fontSize: "13px",
-          lineHeight: "1.5",
-        }}
-      >
-        Your previous conversations will appear here after you start a new chat.
-      </p>
-    ) : (
-      <div
-        style={{
-          display: "grid",
-          gap: "8px",
-        }}
-      >
-        {previousChats.map((chat) => (
-          <button
-            key={chat.id}
-            type="button"
-            onClick={() => {
-           recordUserActivity(); 
-              setMessages(chat.messages);
-              setActivePreviousChatId(chat.id);
-              setConversationIntent(chat.conversationIntent || "");
-              setShowIntentChoices(false);
-              setInput("");
-              setWordingSuggestion("");
-              setWordingOriginal("");
-              setWordingError("");
-              setShowPreviousChats(false);
-            }}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              padding: "12px 14px",
-              borderRadius: "14px",
-              border: "1px solid rgba(47, 63, 59, 0.12)",
-              background: "#fff",
-              color: "#365d54",
-              cursor: "pointer",
-            }}
-          >
-            <strong
-              style={{
-                display: "block",
-                fontSize: "13px",
-                marginBottom: "4px",
-              }}
-            >
-              {chat.title}
+          <span className="exploreEntryText">
+            <strong>
+              Explore HIISSA
             </strong>
 
-            <span
+            <small>
+              More ways to talk,
+              listen, reflect and
+              grow.
+            </small>
+          </span>
+
+          <span className="exploreEntryArrow">
+            ›
+          </span>
+        </button>
+
+        <section className="chat">
+          <div className="chatHead">
+            <div className="mini">
+              H
+            </div>
+
+            <div>
+              <strong>
+                HIISSA Relationship
+                AI
+              </strong>
+
+              <small>
+                ● Here with you
+              </small>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  messages.length > 1
+                ) {
+                  const firstUserMessage =
+                    messages.find(
+                      (message) =>
+                        message.role ===
+                        "user"
+                    )?.content ||
+                    "Previous conversation";
+
+                  const savedChat = {
+                    id: `${Date.now()}-${Math.random()
+                      .toString(36)
+                      .slice(2, 8)}`,
+
+                    title:
+                      firstUserMessage.length >
+                      48
+                        ? `${firstUserMessage.slice(
+                            0,
+                            48
+                          )}…`
+                        : firstUserMessage,
+
+                    createdAt:
+                      new Date().toISOString(),
+
+                    conversationIntent,
+                    messages,
+                  };
+
+                  const updatedChats =
+                    activePreviousChatId
+                      ? previousChats
+                      : [
+                          savedChat,
+                          ...previousChats,
+                        ].slice(
+                          0,
+                          20
+                        );
+
+                  setPreviousChats(
+                    updatedChats
+                  );
+
+                  try {
+                    window.localStorage.setItem(
+                      "hiissa_previous_chats",
+                      JSON.stringify(
+                        updatedChats
+                      )
+                    );
+                  } catch {
+                    // Previous Chats remains optional.
+                  }
+                }
+
+                try {
+                  window.localStorage.removeItem(
+                    "hiissa_active_chat"
+                  );
+
+                  window.localStorage.removeItem(
+                    CONTINUITY_KEYS.meaningful
+                  );
+
+                  window.localStorage.removeItem(
+                    CONTINUITY_KEYS.legacyActivity
+                  );
+
+                  window.localStorage.setItem(
+                    CONTINUITY_KEYS.legacyMigrated,
+                    "1"
+                  );
+                } catch {
+                  // HIISSA still starts a new chat if storage is unavailable.
+                }
+
+                setMessages([
+                  {
+                    role:
+                      "assistant",
+                    content:
+                      "Hi, I’m HIISSA Relationship AI. Tell me what’s happening, and I’ll help you look at it with empathy, balance, and self-respect.",
+                  },
+                ]);
+
+                setInput("");
+                setConversationIntent(
+                  ""
+                );
+
+                setWordingModeActive(
+                  false
+                );
+
+                setOpeningCheckInVisible(
+                  false
+                );
+
+                setOpeningCheckInCompleted(
+                  false
+                );
+
+                setOpeningCheckInSkipped(
+                  false
+                );
+
+                setOpeningFeeling(
+                  null
+                );
+
+                setClosingCheckInVisible(
+                  false
+                );
+
+                setClosingCheckInCompleted(
+                  false
+                );
+
+                setClosingFeeling(
+                  null
+                );
+
+                setPendingReturnCheckIn(
+                  false
+                );
+
+                setReturnCheckInVisible(
+                  false
+                );
+
+                setReturnCheckInCompleted(
+                  false
+                );
+
+                setReturnCheckInCopy({
+                  title:
+                    "Welcome back 🤍",
+                  message:
+                    "Before we continue, how are you feeling now?",
+                });
+
+                setActivePreviousChatId(
+                  null
+                );
+
+                setShowIntentChoices(
+                  false
+                );
+
+                setWordingSuggestion(
+                  ""
+                );
+
+                setWordingOriginal(
+                  ""
+                );
+
+                setWordingError("");
+              }}
+              aria-label="Start a new chat"
+              title="New Chat"
               style={{
-                display: "block",
-                fontSize: "11px",
-                color: "#7a8984",
+                marginLeft: "auto",
+                background:
+                  "transparent",
+                border:
+                  "1px solid rgba(47, 63, 59, 0.16)",
+                borderRadius:
+                  "999px",
+                padding:
+                  "7px 11px",
+                color: "#587a70",
+                fontSize: "12px",
+                fontWeight: "700",
+                cursor: "pointer",
+                whiteSpace:
+                  "nowrap",
               }}
             >
-              {new Date(chat.createdAt).toLocaleDateString()}
-            </span>
-         <span
-  onClick={(event) => {
- recordUserActivity();
-    event.stopPropagation();
-    deletePreviousChat(chat.id);
-  }}
-  style={{
-    display: "inline-block",
-    marginTop: "8px",
-    fontSize: "11px",
-    fontWeight: "700",
-    color: "#8a5a5a",
-    cursor: "pointer",
-  }}
->
-  Delete
-</span>
-              </button>
-        ))}
-      </div>
-    )}
-  </div>
-)}
-          <div className="messages">
-            {messages.map((message, index) => (
-              <div key={index} className={"row " + message.role}>
-                <div>
-                  <div className={"bubble " + message.role}>
-                   {renderMessageContent(message.content)}
-                  </div>
-
-                  {message.role === "assistant" && (
-                    <button
-                      type="button"
-                      onClick={() => {
-  recordUserActivity();
-  speakMessage(message.content, index);
-}}
-                      aria-label={
-                        speakingIndex === index
-                          ? "Stop listening to HIISSA"
-                          : "Listen to HIISSA"
-                      }
-                      style={{
-                        marginTop: "6px",
-                        marginLeft: "4px",
-                        border: "1px solid rgba(80, 102, 93, 0.18)",
-                        background: "#fffdf8",
-                        color: "#466f67",
-                        borderRadius: "999px",
-                        padding: "7px 11px",
-                        fontSize: "12px",
-                        fontWeight: "800",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {speakingIndex === index
-                        ? "■ Stop listening"
-                        : "🔊 Listen to HIISSA"}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {loading && (
-              <div className="row assistant">
-                <div className="bubble assistant">Thinking…</div>
-              </div>
-            )}
+              ＋ New Chat
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowPreviousChats(
+                  (current) =>
+                    !current
+                );
+              }}
+              aria-label="View previous chats"
+              title="Previous Chats"
+              style={{
+                background:
+                  "transparent",
+                border:
+                  "1px solid rgba(47, 63, 59, 0.16)",
+                borderRadius:
+                  "999px",
+                padding:
+                  "7px 11px",
+                color: "#587a70",
+                fontSize: "12px",
+                fontWeight: "700",
+                cursor: "pointer",
+                whiteSpace:
+                  "nowrap",
+              }}
+            >
+              🕘 Chats
+            </button>
           </div>
 
-          {messages.length === 1 && (
-            <div className="starters">
-              <small>You can start with…</small>
-
-              <div className="grid">
-                {starters.map(([emoji, text]) => (
-                  <button
-                    key={text}
-                    type="button"
-                   onClick={() => {
-  recordUserActivity();
-  sendMessage(text);
-}}
-                  >
-                    <i>{emoji}</i>
-                    <span>{text}</span>
-                    <b>→</b>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-{openingCheckInVisible && (
-  <div
-    style={{
-      margin: "6px 20px 18px",
-      padding: "18px",
-      borderRadius: "20px",
-      background: "#fffdf8",
-      border: "1px solid rgba(80, 102, 93, 0.16)",
-      boxShadow: "0 10px 30px rgba(74, 92, 84, 0.06)",
-    }}
-  >
-    <div
-      style={{
-        textAlign: "center",
-        color: "#3f5f58",
-        fontWeight: "800",
-        fontSize: "16px",
-        marginBottom: "6px",
-      }}
-    >
-      🤍 Before we go further, how are you feeling right now?
-    </div>
-
-    <div
-      style={{
-        textAlign: "center",
-        color: "#6f7f79",
-        fontSize: "13px",
-        lineHeight: "1.5",
-        marginBottom: "14px",
-      }}
-    >
-      You’ve shared a little of what’s happening. Choose what feels closest — or
-      skip for now.
-    </div>
-
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        gap: "8px",
-      }}
-    >
-      {[
-        "Overwhelmed",
-        "Hurt",
-        "Confused",
-        "Angry",
-        "Anxious",
-        "Numb / unsure",
-      ].map((feeling) => (
-        <button
-          key={feeling}
-          type="button"
-          onClick={() => {
-            setOpeningFeeling(feeling);
-           recordUserActivity(); 
-            setOpeningCheckInCompleted(true);
-            setOpeningCheckInVisible(false);
-          }}
-          style={{
-            border: "1px solid rgba(80, 102, 93, 0.18)",
-            background: "#ffffff",
-            color: "#466f67",
-            borderRadius: "999px",
-            padding: "9px 13px",
-            fontSize: "12px",
-            fontWeight: "700",
-            cursor: "pointer",
-          }}
-        >
-          {feeling}
-        </button>
-      ))}
-    </div>
-
-    <button
-      type="button"
-      onClick={() => {
-        setOpeningCheckInSkipped(true);
-        recordUserActivity();
-        setOpeningCheckInVisible(false);
-      }}
-      style={{
-        display: "block",
-        margin: "12px auto 0",
-        border: "0",
-        background: "transparent",
-        color: "#7a8984",
-        fontSize: "12px",
-        fontWeight: "700",
-        cursor: "pointer",
-      }}
-    >
-      Skip for now
-    </button>
-  </div>
-)}
-{closingCheckInVisible && (
-  <div
-    style={{
-      margin: "6px 20px 18px",
-      padding: "18px",
-      borderRadius: "20px",
-      background: "#fffdf8",
-      border: "1px solid rgba(80, 102, 93, 0.16)",
-      boxShadow: "0 10px 30px rgba(74, 92, 84, 0.06)",
-    }}
-  >
-    <div
-      style={{
-        textAlign: "center",
-        color: "#3f5f58",
-        fontWeight: "800",
-        fontSize: "16px",
-        marginBottom: "6px",
-      }}
-    >
-      🤍 Before you go, how are you feeling now?
-    </div>
-
-    <div
-      style={{
-        textAlign: "center",
-        color: "#6f7f79",
-        fontSize: "13px",
-        lineHeight: "1.5",
-        marginBottom: "14px",
-      }}
-    >
-      Choose what feels closest right now — or skip if you’d rather leave it here.
-    </div>
-
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        gap: "8px",
-      }}
-    >
-      {[
-        "Clearer",
-        "Calmer",
-        "Lighter",
-        "Still hurt",
-        "Still overwhelmed",
-        "Unsure",
-      ].map((feeling) => (
-        <button
-          key={feeling}
-          type="button"
-          onClick={() => {
-            setClosingFeeling(feeling);
-            recordUserActivity();
-            setClosingCheckInCompleted(true);
-            setClosingCheckInVisible(false);
-          }}
-          style={{
-            border: "1px solid rgba(80, 102, 93, 0.18)",
-            background: "#ffffff",
-            color: "#466f67",
-            borderRadius: "999px",
-            padding: "9px 13px",
-            fontSize: "12px",
-            fontWeight: "700",
-            cursor: "pointer",
-          }}
-        >
-          {feeling}
-        </button>
-      ))}
-    </div>
-
-    <button
-      type="button"
-      onClick={() => {
-      recordUserActivity();  
-        setClosingCheckInCompleted(true);
-        setClosingCheckInVisible(false);
-      }}
-      style={{
-        display: "block",
-        margin: "12px auto 0",
-        border: "0",
-        background: "transparent",
-        color: "#7a8984",
-        fontSize: "12px",
-        fontWeight: "700",
-        cursor: "pointer",
-      }}
-    >
-      Skip for now
-    </button>
-  </div>
-)}
-{pendingReturnCheckIn && returnCheckInVisible && (
-  <div
-    style={{
-      margin: "8px 20px 14px",
-      padding: "14px",
-      borderRadius: "16px",
-      background: "#FFF8F9",
-      border: "1px solid rgba(90, 102, 93, 0.14)",
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        fontSize: "14px",
-        fontWeight: "700",
-        color: "#6F7779",
-        marginBottom: "6px",
-      }}
-    >
-      Welcome back 🤍
-    </div>
-
-    <div
-      style={{
-        fontSize: "13px",
-        lineHeight: "1.5",
-        color: "#6F7779",
-        marginBottom: "12px",
-      }}
-    >
-      Before we continue, how are you feeling now?
-    </div>
-
-    <button
-      type="button"
-      onClick={() => {
-        setPendingReturnCheckIn(false);
-        setReturnCheckInVisible(false);
-      setReturnCheckInCompleted(true);
- recordUserActivity();
-      }}
-      style={{
-        border: "0",
-        background: "transparent",
-        color: "#7A898A",
-        fontSize: "12px",
-        fontWeight: "700",
-        cursor: "pointer",
-      }}
-    >
-      Continue
-    </button>
-  </div>
-)}
-
-
-
-{(messages.length === 1 || showIntentChoices) && (
-  <div
-    style={{
-      margin: "6px 20px 18px",
-      padding: "16px",
-      borderRadius: "18px",
-      background: "#f8faf9",
-      border: "1px solid rgba(80, 102, 93, 0.14)",
-    }}
-  >
-    <div
-      style={{
-        textAlign: "center",
-        fontWeight: "800",
-        color: "#3f5f58",
-        marginBottom: "4px",
-      }}
-    >
-      What would help most right now?
-    </div>
-
-    <div
-      style={{
-        textAlign: "center",
-        fontSize: "13px",
-        color: "#6f7f79",
-        marginBottom: "12px",
-      }}
-    >
-      Choose if you want to — or just start talking.
-    </div>
-
-    <div
-      style={{
-        display: "grid",
-        gap: "8px",
-      }}
-    >
-      {conversationIntents.map((intent) => (
-        <button
-          key={intent.value}
-          type="button"
-         onClick={() => {
-  setConversationIntent(intent.value);
-  recordUserActivity();         
-  setShowIntentChoices(false);
-}}
-          style={{
-            width: "100%",
-            textAlign: "left",
-            padding: "11px 12px",
-            borderRadius: "14px",
-            border:
-              conversationIntent === intent.value
-                ? "2px solid #587a70"
-                : "1px solid rgba(80, 102, 93, 0.18)",
-            background:
-              conversationIntent === intent.value ? "#eef5f2" : "#ffffff",
-            cursor: "pointer",
-          }}
-        >
-          <div
-            style={{
-              fontWeight: "800",
-              color: "#3f5f58",
-              fontSize: "14px",
-            }}
-          >
-            {intent.emoji} {intent.label}
-          </div>
-
-          <div
-            style={{
-              marginTop: "2px",
-              color: "#6f7f79",
-              fontSize: "12px",
-              lineHeight: "1.4",
-            }}
-          >
-            {intent.description}
-          </div>
-        </button>
-      ))}
-    </div>
-  </div>
-)}
-          {showReviewPermissionCard && (
+          {showPreviousChats && (
             <div
               style={{
-                margin: "6px 20px 18px",
-                padding: "18px",
-                borderRadius: "20px",
-                background: "#f4f7f3",
-                border: "1px solid rgba(80, 102, 93, 0.18)",
-                boxShadow: "0 10px 30px rgba(74, 92, 84, 0.08)",
+                margin:
+                  "14px 18px 6px",
+                padding: "16px",
+                borderRadius:
+                  "18px",
+                border:
+                  "1px solid rgba(47, 63, 59, 0.12)",
+                background:
+                  "rgba(255, 253, 248, 0.96)",
               }}
             >
               <div
                 style={{
-                  textAlign: "center",
-                  color: "#3f5f58",
-                  fontWeight: "800",
-                  fontSize: "16px",
+                  display: "flex",
+                  alignItems:
+                    "center",
+                  justifyContent:
+                    "space-between",
+                  gap: "12px",
+                  marginBottom:
+                    "12px",
                 }}
               >
-                Would you like to share a review publicly? ❤️
+                <strong
+                  style={{
+                    color:
+                      "#365d54",
+                  }}
+                >
+                  Previous Chats
+                </strong>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPreviousChats(
+                      false
+                    );
+                  }}
+                  style={{
+                    background:
+                      "transparent",
+                    border: "none",
+                    color:
+                      "#587a70",
+                    fontSize:
+                      "12px",
+                    fontWeight:
+                      "700",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+
+              {previousChats.length ===
+              0 ? (
+                <p
+                  style={{
+                    margin: 0,
+                    color:
+                      "#71817c",
+                    fontSize:
+                      "13px",
+                    lineHeight:
+                      "1.5",
+                  }}
+                >
+                  Your previous
+                  conversations will
+                  appear here after
+                  you start a new
+                  chat.
+                </p>
+              ) : (
+                <div
+                  style={{
+                    display:
+                      "grid",
+                    gap: "8px",
+                  }}
+                >
+                  {previousChats.map(
+                    (chat) => (
+                      <button
+                        key={
+                          chat.id
+                        }
+                        type="button"
+                        onClick={() => {
+                          setMessages(
+                            chat.messages
+                          );
+
+                          setActivePreviousChatId(
+                            chat.id
+                          );
+
+                          setConversationIntent(
+                            chat.conversationIntent ||
+                              ""
+                          );
+
+                          setShowIntentChoices(
+                            false
+                          );
+
+                          setInput("");
+
+                          setWordingSuggestion(
+                            ""
+                          );
+
+                          setWordingOriginal(
+                            ""
+                          );
+
+                          setWordingError(
+                            ""
+                          );
+
+                          setShowPreviousChats(
+                            false
+                          );
+                        }}
+                        style={{
+                          width:
+                            "100%",
+                          textAlign:
+                            "left",
+                          padding:
+                            "12px 14px",
+                          borderRadius:
+                            "14px",
+                          border:
+                            "1px solid rgba(47, 63, 59, 0.12)",
+                          background:
+                            "#fff",
+                          color:
+                            "#365d54",
+                          cursor:
+                            "pointer",
+                        }}
+                      >
+                        <strong
+                          style={{
+                            display:
+                              "block",
+                            fontSize:
+                              "13px",
+                            marginBottom:
+                              "4px",
+                          }}
+                        >
+                          {
+                            chat.title
+                          }
+                        </strong>
+
+                        <span
+                          style={{
+                            display:
+                              "block",
+                            fontSize:
+                              "11px",
+                            color:
+                              "#7a8984",
+                          }}
+                        >
+                          {new Date(
+                            chat.createdAt
+                          ).toLocaleDateString()}
+                        </span>
+
+                        <span
+                          onClick={(
+                            event
+                          ) => {
+                            event.stopPropagation();
+
+                            deletePreviousChat(
+                              chat.id
+                            );
+                          }}
+                          style={{
+                            display:
+                              "inline-block",
+                            marginTop:
+                              "8px",
+                            fontSize:
+                              "11px",
+                            fontWeight:
+                              "700",
+                            color:
+                              "#8a5a5a",
+                            cursor:
+                              "pointer",
+                          }}
+                        >
+                          Delete
+                        </span>
+                      </button>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="messages">
+            {messages.map(
+              (
+                message,
+                index
+              ) => (
+                <div
+                  key={index}
+                  className={
+                    "row " +
+                    message.role
+                  }
+                >
+                  <div>
+                    <div
+                      className={
+                        "bubble " +
+                        message.role
+                      }
+                    >
+                      {renderMessageContent(
+                        message.content
+                      )}
+                    </div>
+
+                    {message.role ===
+                      "assistant" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          speakMessage(
+                            message.content,
+                            index
+                          );
+                        }}
+                        aria-label={
+                          speakingIndex ===
+                          index
+                            ? "Stop listening to HIISSA"
+                            : "Listen to HIISSA"
+                        }
+                        style={{
+                          marginTop:
+                            "6px",
+                          marginLeft:
+                            "4px",
+                          border:
+                            "1px solid rgba(80, 102, 93, 0.18)",
+                          background:
+                            "#fffdf8",
+                          color:
+                            "#466f67",
+                          borderRadius:
+                            "999px",
+                          padding:
+                            "7px 11px",
+                          fontSize:
+                            "12px",
+                          fontWeight:
+                            "800",
+                          cursor:
+                            "pointer",
+                        }}
+                      >
+                        {speakingIndex ===
+                        index
+                          ? "■ Stop listening"
+                          : "🔊 Listen to HIISSA"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            )}
+
+            {loading && (
+              <div className="row assistant">
+                <div className="bubble assistant">
+                  Thinking…
+                </div>
+              </div>
+            )}
+          </div>
+
+          {messages.length ===
+            1 && (
+            <div className="starters">
+              <small>
+                You can start with…
+              </small>
+
+              <div className="grid">
+                {starters.map(
+                  ([
+                    emoji,
+                    text,
+                  ]) => (
+                    <button
+                      key={text}
+                      type="button"
+                      onClick={() => {
+                        sendMessage(
+                          text
+                        );
+                      }}
+                    >
+                      <i>
+                        {emoji}
+                      </i>
+
+                      <span>
+                        {text}
+                      </span>
+
+                      <b>→</b>
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {openingCheckInVisible && (
+            <div
+              style={{
+                margin:
+                  "6px 20px 18px",
+                padding: "18px",
+                borderRadius:
+                  "20px",
+                background:
+                  "#fffdf8",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.16)",
+                boxShadow:
+                  "0 10px 30px rgba(74, 92, 84, 0.06)",
+              }}
+            >
+              <div
+                style={{
+                  textAlign:
+                    "center",
+                  color:
+                    "#3f5f58",
+                  fontWeight:
+                    "800",
+                  fontSize:
+                    "16px",
+                  marginBottom:
+                    "6px",
+                }}
+              >
+                🤍 Before we go
+                further, how are
+                you feeling right
+                now?
+              </div>
+
+              <div
+                style={{
+                  textAlign:
+                    "center",
+                  color:
+                    "#6f7f79",
+                  fontSize:
+                    "13px",
+                  lineHeight:
+                    "1.5",
+                  marginBottom:
+                    "14px",
+                }}
+              >
+                You’ve shared a
+                little of what’s
+                happening. Choose
+                what feels closest
+                — or skip for now.
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent:
+                    "center",
+                  gap: "8px",
+                }}
+              >
+                {[
+                  "Overwhelmed",
+                  "Hurt",
+                  "Confused",
+                  "Angry",
+                  "Anxious",
+                  "Numb / unsure",
+                ].map(
+                  (feeling) => (
+                    <button
+                      key={
+                        feeling
+                      }
+                      type="button"
+                      onClick={() => {
+                        setOpeningFeeling(
+                          feeling
+                        );
+
+                        setOpeningCheckInCompleted(
+                          true
+                        );
+
+                        setOpeningCheckInVisible(
+                          false
+                        );
+                      }}
+                      style={{
+                        border:
+                          "1px solid rgba(80, 102, 93, 0.18)",
+                        background:
+                          "#ffffff",
+                        color:
+                          "#466f67",
+                        borderRadius:
+                          "999px",
+                        padding:
+                          "9px 13px",
+                        fontSize:
+                          "12px",
+                        fontWeight:
+                          "700",
+                        cursor:
+                          "pointer",
+                      }}
+                    >
+                      {feeling}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setOpeningCheckInSkipped(
+                    true
+                  );
+
+                  setOpeningCheckInVisible(
+                    false
+                  );
+                }}
+                style={{
+                  display:
+                    "block",
+                  margin:
+                    "12px auto 0",
+                  border: "0",
+                  background:
+                    "transparent",
+                  color:
+                    "#7a8984",
+                  fontSize:
+                    "12px",
+                  fontWeight:
+                    "700",
+                  cursor:
+                    "pointer",
+                }}
+              >
+                Skip for now
+              </button>
+            </div>
+          )}
+
+          {closingCheckInVisible && (
+            <div
+              style={{
+                margin:
+                  "6px 20px 18px",
+                padding: "18px",
+                borderRadius:
+                  "20px",
+                background:
+                  "#fffdf8",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.16)",
+                boxShadow:
+                  "0 10px 30px rgba(74, 92, 84, 0.06)",
+              }}
+            >
+              <div
+                style={{
+                  textAlign:
+                    "center",
+                  color:
+                    "#3f5f58",
+                  fontWeight:
+                    "800",
+                  fontSize:
+                    "16px",
+                  marginBottom:
+                    "6px",
+                }}
+              >
+                🤍 Before you go,
+                how are you
+                feeling now?
+              </div>
+
+              <div
+                style={{
+                  textAlign:
+                    "center",
+                  color:
+                    "#6f7f79",
+                  fontSize:
+                    "13px",
+                  lineHeight:
+                    "1.5",
+                  marginBottom:
+                    "14px",
+                }}
+              >
+                Choose what feels
+                closest right now
+                — or skip if you’d
+                rather leave it
+                here.
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent:
+                    "center",
+                  gap: "8px",
+                }}
+              >
+                {[
+                  "Clearer",
+                  "Calmer",
+                  "Lighter",
+                  "Still hurt",
+                  "Still overwhelmed",
+                  "Unsure",
+                ].map(
+                  (feeling) => (
+                    <button
+                      key={
+                        feeling
+                      }
+                      type="button"
+                      onClick={() => {
+                        setClosingFeeling(
+                          feeling
+                        );
+
+                        setClosingCheckInCompleted(
+                          true
+                        );
+
+                        setClosingCheckInVisible(
+                          false
+                        );
+                      }}
+                      style={{
+                        border:
+                          "1px solid rgba(80, 102, 93, 0.18)",
+                        background:
+                          "#ffffff",
+                        color:
+                          "#466f67",
+                        borderRadius:
+                          "999px",
+                        padding:
+                          "9px 13px",
+                        fontSize:
+                          "12px",
+                        fontWeight:
+                          "700",
+                        cursor:
+                          "pointer",
+                      }}
+                    >
+                      {feeling}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setClosingCheckInCompleted(
+                    true
+                  );
+
+                  setClosingCheckInVisible(
+                    false
+                  );
+                }}
+                style={{
+                  display:
+                    "block",
+                  margin:
+                    "12px auto 0",
+                  border: "0",
+                  background:
+                    "transparent",
+                  color:
+                    "#7a8984",
+                  fontSize:
+                    "12px",
+                  fontWeight:
+                    "700",
+                  cursor:
+                    "pointer",
+                }}
+              >
+                Skip for now
+              </button>
+            </div>
+          )}
+
+          {pendingReturnCheckIn &&
+            returnCheckInVisible && (
+              <div
+                style={{
+                  margin:
+                    "8px 20px 14px",
+                  padding: "14px",
+                  borderRadius:
+                    "16px",
+                  background:
+                    "#FFF8F9",
+                  border:
+                    "1px solid rgba(90, 102, 93, 0.14)",
+                  textAlign:
+                    "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize:
+                      "14px",
+                    fontWeight:
+                      "700",
+                    color:
+                      "#6F7779",
+                    marginBottom:
+                      "6px",
+                  }}
+                >
+                  {
+                    returnCheckInCopy.title
+                  }
+                </div>
+
+                <div
+                  style={{
+                    fontSize:
+                      "13px",
+                    lineHeight:
+                      "1.5",
+                    color:
+                      "#6F7779",
+                    marginBottom:
+                      "12px",
+                  }}
+                >
+                  {
+                    returnCheckInCopy.message
+                  }
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingReturnCheckIn(
+                      false
+                    );
+
+                    setReturnCheckInVisible(
+                      false
+                    );
+
+                    setReturnCheckInCompleted(
+                      true
+                    );
+                  }}
+                  style={{
+                    border: "0",
+                    background:
+                      "transparent",
+                    color:
+                      "#7A898A",
+                    fontSize:
+                      "12px",
+                    fontWeight:
+                      "700",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  Continue
+                </button>
+              </div>
+            )}
+
+          {(messages.length === 1 ||
+            showIntentChoices) && (
+            <div
+              style={{
+                margin:
+                  "6px 20px 18px",
+                padding: "16px",
+                borderRadius:
+                  "18px",
+                background:
+                  "#f8faf9",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.14)",
+              }}
+            >
+              <div
+                style={{
+                  textAlign:
+                    "center",
+                  fontWeight:
+                    "800",
+                  color:
+                    "#3f5f58",
+                  marginBottom:
+                    "4px",
+                }}
+              >
+                What would help
+                most right now?
+              </div>
+
+              <div
+                style={{
+                  textAlign:
+                    "center",
+                  fontSize:
+                    "13px",
+                  color:
+                    "#6f7f79",
+                  marginBottom:
+                    "12px",
+                }}
+              >
+                Choose if you want
+                to — or just start
+                talking.
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: "8px",
+                }}
+              >
+                {conversationIntents.map(
+                  (intent) => (
+                    <button
+                      key={
+                        intent.value
+                      }
+                      type="button"
+                      onClick={() => {
+                        setConversationIntent(
+                          intent.value
+                        );
+
+                        setShowIntentChoices(
+                          false
+                        );
+                      }}
+                      style={{
+                        width:
+                          "100%",
+                        textAlign:
+                          "left",
+                        padding:
+                          "11px 12px",
+                        borderRadius:
+                          "14px",
+                        border:
+                          conversationIntent ===
+                          intent.value
+                            ? "2px solid #587a70"
+                            : "1px solid rgba(80, 102, 93, 0.18)",
+                        background:
+                          conversationIntent ===
+                          intent.value
+                            ? "#eef5f2"
+                            : "#ffffff",
+                        cursor:
+                          "pointer",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight:
+                            "800",
+                          color:
+                            "#3f5f58",
+                          fontSize:
+                            "14px",
+                        }}
+                      >
+                        {
+                          intent.emoji
+                        }{" "}
+                        {
+                          intent.label
+                        }
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop:
+                            "2px",
+                          color:
+                            "#6f7f79",
+                          fontSize:
+                            "12px",
+                          lineHeight:
+                            "1.4",
+                        }}
+                      >
+                        {
+                          intent.description
+                        }
+                      </div>
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+          {showReviewPermissionCard && (
+            <div
+              style={{
+                margin:
+                  "6px 20px 18px",
+                padding: "18px",
+                borderRadius:
+                  "20px",
+                background:
+                  "#f4f7f3",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.18)",
+                boxShadow:
+                  "0 10px 30px rgba(74, 92, 84, 0.08)",
+              }}
+            >
+              <div
+                style={{
+                  textAlign:
+                    "center",
+                  color:
+                    "#3f5f58",
+                  fontWeight:
+                    "800",
+                  fontSize:
+                    "16px",
+                }}
+              >
+                Would you like to
+                share a review
+                publicly? ❤️
               </div>
 
               <p
                 style={{
-                  textAlign: "center",
-                  color: "#66706c",
-                  fontSize: "13px",
-                  lineHeight: "1.6",
-                  margin: "7px 0 12px",
+                  textAlign:
+                    "center",
+                  color:
+                    "#66706c",
+                  fontSize:
+                    "13px",
+                  lineHeight:
+                    "1.6",
+                  margin:
+                    "7px 0 12px",
                 }}
               >
-                This is completely optional. Your private feedback is not
-                published automatically.
+                This is completely
+                optional. Your
+                private feedback
+                is not published
+                automatically.
                 <br />
-                Only the review text you enter below may be shared publicly.
-                Your conversation and private feedback are not automatically
+                Only the review
+                text you enter
+                below may be
+                shared publicly.
+                Your conversation
+                and private
+                feedback are not
+                automatically
                 included.
               </p>
 
               <textarea
-                value={publicReviewText}
-               onChange={(event) => {
-    recordUserActivity();
-    setPublicReviewText(event.target.value.slice(0, 1500));
-}}
+                value={
+                  publicReviewText
+                }
+                onChange={(
+                  event
+                ) => {
+                  setPublicReviewText(
+                    event.target.value.slice(
+                      0,
+                      1500
+                    )
+                  );
+                }}
                 placeholder="Write the exact words you are comfortable sharing publicly…"
                 rows={4}
                 style={{
                   width: "100%",
-                  resize: "vertical",
-                  boxSizing: "border-box",
-                  borderRadius: "14px",
-                  border: "1px solid rgba(80, 102, 93, 0.2)",
-                  padding: "12px",
-                  fontFamily: "inherit",
-                  fontSize: "14px",
-                  lineHeight: "1.5",
-                  outline: "none",
-                  background: "#ffffff",
-                  color: "#35443f",
+                  resize:
+                    "vertical",
+                  boxSizing:
+                    "border-box",
+                  borderRadius:
+                    "14px",
+                  border:
+                    "1px solid rgba(80, 102, 93, 0.2)",
+                  padding:
+                    "12px",
+                  fontFamily:
+                    "inherit",
+                  fontSize:
+                    "14px",
+                  lineHeight:
+                    "1.5",
+                  outline:
+                    "none",
+                  background:
+                    "#ffffff",
+                  color:
+                    "#35443f",
                 }}
               />
 
               <div
                 style={{
-                  color: "#77807c",
-                  fontSize: "11px",
-                  lineHeight: "1.5",
-                  margin: "8px 2px 12px",
+                  color:
+                    "#77807c",
+                  fontSize:
+                    "11px",
+                  lineHeight:
+                    "1.5",
+                  margin:
+                    "8px 2px 12px",
                 }}
               >
-                🔒 Please don't include names, contact details, or identifying
-                personal information.
+                🔒 Please don't
+                include names,
+                contact details,
+                or identifying
+                personal
+                information.
               </div>
 
               {reviewPermissionError && (
                 <div
                   role="alert"
                   style={{
-                    color: "#8a4f4f",
-                    background: "#fff6f4",
-                    borderRadius: "12px",
-                    padding: "9px 11px",
-                    fontSize: "12px",
-                    marginBottom: "10px",
+                    color:
+                      "#8a4f4f",
+                    background:
+                      "#fff6f4",
+                    borderRadius:
+                      "12px",
+                    padding:
+                      "9px 11px",
+                    fontSize:
+                      "12px",
+                    marginBottom:
+                      "10px",
                   }}
                 >
-                  {reviewPermissionError}
+                  {
+                    reviewPermissionError
+                  }
                 </div>
               )}
 
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "center",
+                  justifyContent:
+                    "center",
                   gap: "9px",
-                  flexWrap: "wrap",
+                  flexWrap:
+                    "wrap",
                 }}
               >
                 <button
                   type="button"
-                  onClick={allowPublicReview}
-                  disabled={!publicReviewText.trim() || reviewPermissionSending}
+                  onClick={
+                    allowPublicReview
+                  }
+                  disabled={
+                    !publicReviewText.trim() ||
+                    reviewPermissionSending
+                  }
                   style={{
                     border: "0",
-                    borderRadius: "999px",
-                    padding: "10px 16px",
-                    background: publicReviewText.trim()
-                      ? "#466f67"
-                      : "#c8cfcb",
+                    borderRadius:
+                      "999px",
+                    padding:
+                      "10px 16px",
+                    background:
+                      publicReviewText.trim()
+                        ? "#466f67"
+                        : "#c8cfcb",
                     color: "#fff",
-                    fontWeight: "800",
+                    fontWeight:
+                      "800",
                     cursor:
-                      publicReviewText.trim() && !reviewPermissionSending
+                      publicReviewText.trim() &&
+                      !reviewPermissionSending
                         ? "pointer"
                         : "default",
                   }}
@@ -3236,15 +4872,26 @@ setReturnCheckInCompleted(false);
 
                 <button
                   type="button"
-                  onClick={keepReviewPrivate}
-                  disabled={reviewPermissionSending}
+                  onClick={
+                    keepReviewPrivate
+                  }
+                  disabled={
+                    reviewPermissionSending
+                  }
                   style={{
                     border: "0",
-                    background: "transparent",
-                    color: "#68736f",
-                    padding: "10px 12px",
-                    fontWeight: "700",
-                    cursor: reviewPermissionSending ? "default" : "pointer",
+                    background:
+                      "transparent",
+                    color:
+                      "#68736f",
+                    padding:
+                      "10px 12px",
+                    fontWeight:
+                      "700",
+                    cursor:
+                      reviewPermissionSending
+                        ? "default"
+                        : "pointer",
                   }}
                 >
                   Keep private
@@ -3257,140 +4904,221 @@ setReturnCheckInCompleted(false);
             <div
               role="status"
               style={{
-                margin: "6px 20px 18px",
+                margin:
+                  "6px 20px 18px",
                 padding: "16px",
-                borderRadius: "18px",
-                background: "#f1f6f2",
-                border: "1px solid rgba(80, 102, 93, 0.18)",
-                color: "#466f67",
-                fontWeight: "800",
-                textAlign: "center",
+                borderRadius:
+                  "18px",
+                background:
+                  "#f1f6f2",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.18)",
+                color:
+                  "#466f67",
+                fontWeight:
+                  "800",
+                textAlign:
+                  "center",
               }}
             >
-              Thank you ❤️ You've given HIISSA permission to use this review
-              publicly.
+              Thank you ❤️ You've
+              given HIISSA
+              permission to use
+              this review publicly.
             </div>
           )}
 
           {showFeedbackCard && (
             <div
               style={{
-                margin: "6px 20px 18px",
+                margin:
+                  "6px 20px 18px",
                 padding: "14px",
-                borderRadius: "20px",
-                background: "#fffdf8",
-                border: "1px solid rgba(80, 102, 93, 0.18)",
-                boxShadow: "0 10px 30px rgba(74, 92, 84, 0.08)",
+                borderRadius:
+                  "20px",
+                background:
+                  "#fffdf8",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.18)",
+                boxShadow:
+                  "0 10px 30px rgba(74, 92, 84, 0.08)",
               }}
             >
               {!feedbackFormOpen ? (
                 <>
                   <div
                     style={{
-                      textAlign: "center",
-                      color: "#3f5f58",
-                      fontWeight: "800",
-                      fontSize: "16px",
+                      textAlign:
+                        "center",
+                      color:
+                        "#3f5f58",
+                      fontWeight:
+                        "800",
+                      fontSize:
+                        "16px",
                     }}
                   >
-                    Has HIISSA been helpful so far? ❤️
+                    Has HIISSA been
+                    helpful so far?
+                    ❤️
                   </div>
 
                   <p
                     style={{
-                      textAlign: "center",
-                      color: "#66706c",
-                      fontSize: "13px",
-                      lineHeight: "1.5",
-                      margin: "7px 0 10px",
+                      textAlign:
+                        "center",
+                      color:
+                        "#66706c",
+                      fontSize:
+                        "13px",
+                      lineHeight:
+                        "1.5",
+                      margin:
+                        "7px 0 10px",
                     }}
                   >
-                    Your feedback helps us improve HIISSA.
+                    Your feedback
+                    helps us improve
+                    HIISSA.
                   </p>
 
                   <div
                     aria-label="Rate HIISSA"
                     style={{
-                      display: "flex",
-                      justifyContent: "center",
+                      display:
+                        "flex",
+                      justifyContent:
+                        "center",
                       gap: "5px",
-                      marginBottom: "10px",
+                      marginBottom:
+                        "10px",
                     }}
                   >
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                       onClick={() => {
-  recordUserActivity();
-  setRating(star);
-}}
-                        aria-label={`${star} star${star === 1 ? "" : "s"}`}
-                        style={{
-                          border: "0",
-                          background: "transparent",
-                          fontSize: "30px",
-                          lineHeight: "1",
-                          padding: "2px",
-                          cursor: "pointer",
-                          color: star <= rating ? "#b79a5b" : "#d8d8d2",
-                        }}
-                      >
-                        ★
-                      </button>
-                    ))}
+                    {[
+                      1,
+                      2,
+                      3,
+                      4,
+                      5,
+                    ].map(
+                      (star) => (
+                        <button
+                          key={
+                            star
+                          }
+                          type="button"
+                          onClick={() => {
+                            setRating(
+                              star
+                            );
+                          }}
+                          aria-label={`${star} star${
+                            star ===
+                            1
+                              ? ""
+                              : "s"
+                          }`}
+                          style={{
+                            border:
+                              "0",
+                            background:
+                              "transparent",
+                            fontSize:
+                              "30px",
+                            lineHeight:
+                              "1",
+                            padding:
+                              "2px",
+                            cursor:
+                              "pointer",
+                            color:
+                              star <=
+                              rating
+                                ? "#b79a5b"
+                                : "#d8d8d2",
+                          }}
+                        >
+                          ★
+                        </button>
+                      )
+                    )}
                   </div>
 
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "center",
+                      display:
+                        "flex",
+                      justifyContent:
+                        "center",
                       gap: "8px",
-                      flexWrap: "wrap",
-                      marginBottom: "10px",
+                      flexWrap:
+                        "wrap",
+                      marginBottom:
+                        "10px",
                     }}
                   >
                     <button
                       type="button"
                       onClick={() => {
-  recordUserActivity();
-  setHelpful(true);
-}}
+                        setHelpful(
+                          true
+                        );
+                      }}
                       style={{
                         border:
-                          helpful === true
+                          helpful ===
+                          true
                             ? "1px solid #466f67"
                             : "1px solid rgba(80, 102, 93, 0.18)",
                         background:
-                          helpful === true ? "#e8f0ec" : "#ffffff",
-                        color: "#466f67",
-                        borderRadius: "999px",
-                        padding: "8px 13px",
-                        fontWeight: "800",
-                        cursor: "pointer",
+                          helpful ===
+                          true
+                            ? "#e8f0ec"
+                            : "#ffffff",
+                        color:
+                          "#466f67",
+                        borderRadius:
+                          "999px",
+                        padding:
+                          "8px 13px",
+                        fontWeight:
+                          "800",
+                        cursor:
+                          "pointer",
                       }}
                     >
-                      Yes, helpful ❤️
+                      Yes, helpful
+                      ❤️
                     </button>
 
                     <button
                       type="button"
-                     onClick={() => {
-  recordUserActivity();
-  setHelpful(false);
-}}
+                      onClick={() => {
+                        setHelpful(
+                          false
+                        );
+                      }}
                       style={{
                         border:
-                          helpful === false
+                          helpful ===
+                          false
                             ? "1px solid #466f67"
                             : "1px solid rgba(80, 102, 93, 0.18)",
                         background:
-                          helpful === false ? "#e8f0ec" : "#ffffff",
-                        color: "#466f67",
-                        borderRadius: "999px",
-                        padding: "8px 13px",
-                        fontWeight: "800",
-                        cursor: "pointer",
+                          helpful ===
+                          false
+                            ? "#e8f0ec"
+                            : "#ffffff",
+                        color:
+                          "#466f67",
+                        borderRadius:
+                          "999px",
+                        padding:
+                          "8px 13px",
+                        fontWeight:
+                          "800",
+                        cursor:
+                          "pointer",
                       }}
                     >
                       Not yet
@@ -3399,29 +5127,48 @@ setReturnCheckInCompleted(false);
 
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "center",
+                      display:
+                        "flex",
+                      justifyContent:
+                        "center",
                       gap: "9px",
-                      flexWrap: "wrap",
+                      flexWrap:
+                        "wrap",
                     }}
                   >
                     <button
                       type="button"
-                      disabled={!rating || helpful === null}
-                    onClick={() => {
-  recordUserActivity();
-  setFeedbackFormOpen(true);
-}}
+                      disabled={
+                        !rating ||
+                        helpful ===
+                          null
+                      }
+                      onClick={() => {
+                        setFeedbackFormOpen(
+                          true
+                        );
+                      }}
                       style={{
-                        border: "0",
-                        borderRadius: "999px",
-                        padding: "10px 16px",
+                        border:
+                          "0",
+                        borderRadius:
+                          "999px",
+                        padding:
+                          "10px 16px",
                         background:
-                          rating && helpful !== null ? "#466f67" : "#c8cfcb",
-                        color: "#fff",
-                        fontWeight: "800",
+                          rating &&
+                          helpful !==
+                            null
+                            ? "#466f67"
+                            : "#c8cfcb",
+                        color:
+                          "#fff",
+                        fontWeight:
+                          "800",
                         cursor:
-                          rating && helpful !== null
+                          rating &&
+                          helpful !==
+                            null
                             ? "pointer"
                             : "default",
                       }}
@@ -3431,14 +5178,22 @@ setReturnCheckInCompleted(false);
 
                     <button
                       type="button"
-                      onClick={maybeLater}
+                      onClick={
+                        maybeLater
+                      }
                       style={{
-                        border: "0",
-                        background: "transparent",
-                        color: "#68736f",
-                        padding: "10px 12px",
-                        fontWeight: "700",
-                        cursor: "pointer",
+                        border:
+                          "0",
+                        background:
+                          "transparent",
+                        color:
+                          "#68736f",
+                        padding:
+                          "10px 12px",
+                        fontWeight:
+                          "700",
+                        cursor:
+                          "pointer",
                       }}
                     >
                       Maybe later
@@ -3449,62 +5204,111 @@ setReturnCheckInCompleted(false);
                 <>
                   <div
                     style={{
-                      color: "#3f5f58",
-                      fontWeight: "800",
-                      textAlign: "center",
-                      fontSize: "16px",
+                      color:
+                        "#3f5f58",
+                      fontWeight:
+                        "800",
+                      textAlign:
+                        "center",
+                      fontSize:
+                        "16px",
                     }}
                   >
-                    Thank you for helping HIISSA grow ❤️
+                    Thank you for
+                    helping HIISSA
+                    grow ❤️
                   </div>
 
                   <p
                     style={{
-                      textAlign: "center",
-                      color: "#66706c",
-                      fontSize: "13px",
-                      lineHeight: "1.5",
-                      margin: "7px 0 12px",
+                      textAlign:
+                        "center",
+                      color:
+                        "#66706c",
+                      fontSize:
+                        "13px",
+                      lineHeight:
+                        "1.5",
+                      margin:
+                        "7px 0 12px",
                     }}
                   >
-                    What helped you, or what could HIISSA do better?
+                    What helped
+                    you, or what
+                    could HIISSA
+                    do better?
                     <br />
-                    <span style={{ fontSize: "12px" }}>(Optional)</span>
+
+                    <span
+                      style={{
+                        fontSize:
+                          "12px",
+                      }}
+                    >
+                      (Optional)
+                    </span>
                   </p>
 
                   <textarea
-                    value={feedbackText}
-                    onChange={(event) => {
-  recordUserActivity();
-  setFeedbackText(event.target.value.slice(0, 1500));
-}}
+                    value={
+                      feedbackText
+                    }
+                    onChange={(
+                      event
+                    ) => {
+                      setFeedbackText(
+                        event.target.value.slice(
+                          0,
+                          1500
+                        )
+                      );
+                    }}
                     placeholder="Write your feedback here…"
                     rows={4}
                     style={{
-                      width: "100%",
-                      resize: "vertical",
-                      boxSizing: "border-box",
-                      borderRadius: "14px",
-                      border: "1px solid rgba(80, 102, 93, 0.2)",
-                      padding: "12px",
-                      fontFamily: "inherit",
-                      fontSize: "14px",
-                      lineHeight: "1.5",
-                      outline: "none",
-                      background: "#ffffff",
-                      color: "#35443f",
+                      width:
+                        "100%",
+                      resize:
+                        "vertical",
+                      boxSizing:
+                        "border-box",
+                      borderRadius:
+                        "14px",
+                      border:
+                        "1px solid rgba(80, 102, 93, 0.2)",
+                      padding:
+                        "12px",
+                      fontFamily:
+                        "inherit",
+                      fontSize:
+                        "14px",
+                      lineHeight:
+                        "1.5",
+                      outline:
+                        "none",
+                      background:
+                        "#ffffff",
+                      color:
+                        "#35443f",
                     }}
                   />
 
                   <div
                     style={{
-                      color: "#77807c",
-                      fontSize: "11px",
-                      lineHeight: "1.5",
-                      margin: "8px 2px 12px",
+                      color:
+                        "#77807c",
+                      fontSize:
+                        "11px",
+                      lineHeight:
+                        "1.5",
+                      margin:
+                        "8px 2px 12px",
                     }}
                   >
-                    🔒 Please don't include names or identifying personal
+                    🔒 Please don't
+                    include names
+                    or identifying
+                    personal
                     information.
                   </div>
 
@@ -3512,58 +5316,98 @@ setReturnCheckInCompleted(false);
                     <div
                       role="alert"
                       style={{
-                        color: "#8a4f4f",
-                        background: "#fff6f4",
-                        borderRadius: "12px",
-                        padding: "9px 11px",
-                        fontSize: "12px",
-                        marginBottom: "10px",
+                        color:
+                          "#8a4f4f",
+                        background:
+                          "#fff6f4",
+                        borderRadius:
+                          "12px",
+                        padding:
+                          "9px 11px",
+                        fontSize:
+                          "12px",
+                        marginBottom:
+                          "10px",
                       }}
                     >
-                      {feedbackError}
+                      {
+                        feedbackError
+                      }
                     </div>
                   )}
 
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "center",
+                      display:
+                        "flex",
+                      justifyContent:
+                        "center",
                       gap: "9px",
-                      flexWrap: "wrap",
+                      flexWrap:
+                        "wrap",
                     }}
                   >
                     <button
                       type="button"
-                      onClick={submitFeedback}
-                      disabled={feedbackSending}
+                      onClick={
+                        submitFeedback
+                      }
+                      disabled={
+                        feedbackSending
+                      }
                       style={{
-                        border: "0",
-                        borderRadius: "999px",
-                        padding: "10px 16px",
-                        background: "#466f67",
-                        color: "#fff",
-                        fontWeight: "800",
-                        cursor: feedbackSending ? "default" : "pointer",
+                        border:
+                          "0",
+                        borderRadius:
+                          "999px",
+                        padding:
+                          "10px 16px",
+                        background:
+                          "#466f67",
+                        color:
+                          "#fff",
+                        fontWeight:
+                          "800",
+                        cursor:
+                          feedbackSending
+                            ? "default"
+                            : "pointer",
                       }}
                     >
-                      {feedbackSending ? "Sending…" : "Send feedback"}
+                      {feedbackSending
+                        ? "Sending…"
+                        : "Send feedback"}
                     </button>
 
                     <button
                       type="button"
                       onClick={() => {
-                      recordUserActivity();  
-                        setFeedbackFormOpen(false);
-                        setFeedbackError("");
+                        setFeedbackFormOpen(
+                          false
+                        );
+
+                        setFeedbackError(
+                          ""
+                        );
                       }}
-                      disabled={feedbackSending}
+                      disabled={
+                        feedbackSending
+                      }
                       style={{
-                        border: "0",
-                        background: "transparent",
-                        color: "#68736f",
-                        padding: "10px 12px",
-                        fontWeight: "700",
-                        cursor: feedbackSending ? "default" : "pointer",
+                        border:
+                          "0",
+                        background:
+                          "transparent",
+                        color:
+                          "#68736f",
+                        padding:
+                          "10px 12px",
+                        fontWeight:
+                          "700",
+                        cursor:
+                          feedbackSending
+                            ? "default"
+                            : "pointer",
                       }}
                     >
                       Back
@@ -3578,49 +5422,85 @@ setReturnCheckInCompleted(false);
             <div
               role="status"
               style={{
-                margin: "6px 20px 18px",
+                margin:
+                  "6px 20px 18px",
                 padding: "16px",
-                borderRadius: "18px",
-                background: "#f1f6f2",
-                border: "1px solid rgba(80, 102, 93, 0.18)",
-                color: "#466f67",
-                fontWeight: "800",
-                textAlign: "center",
+                borderRadius:
+                  "18px",
+                background:
+                  "#f1f6f2",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.18)",
+                color:
+                  "#466f67",
+                fontWeight:
+                  "800",
+                textAlign:
+                  "center",
               }}
             >
-              Thank you ❤️ Your feedback has been received.
+              Thank you ❤️ Your
+              feedback has been
+              received.
             </div>
           )}
 
           <div className="privacy">
-            🔒 Please avoid sharing identifying or highly sensitive personal
-            information such as your full name, address, phone number,
-            passwords, financial details, or private account information.
+            🔒 Please avoid sharing
+            identifying or highly
+            sensitive personal
+            information such as
+            your full name,
+            address, phone number,
+            passwords, financial
+            details, or private
+            account information.
           </div>
 
           <div
             style={{
               display: "flex",
-              justifyContent: "center",
-              padding: "0 15px 10px",
+              justifyContent:
+                "center",
+              padding:
+                "0 15px 10px",
             }}
           >
             <button
               type="button"
-              onClick={startListening}
-              disabled={listening || loading}
+              onClick={
+                startListening
+              }
+              disabled={
+                listening ||
+                loading
+              }
               aria-label="Speak your message to HIISSA"
               style={{
-                border: "1px solid rgba(80, 102, 93, 0.18)",
-                background: listening ? "#e8f0ec" : "#fffdf8",
-                color: "#466f67",
-                borderRadius: "999px",
-                padding: "10px 16px",
-                fontWeight: "800",
-                cursor: listening || loading ? "default" : "pointer",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.18)",
+                background:
+                  listening
+                    ? "#e8f0ec"
+                    : "#fffdf8",
+                color:
+                  "#466f67",
+                borderRadius:
+                  "999px",
+                padding:
+                  "10px 16px",
+                fontWeight:
+                  "800",
+                cursor:
+                  listening ||
+                  loading
+                    ? "default"
+                    : "pointer",
               }}
             >
-              {listening ? "🎤 Listening…" : "🎤 Speak to HIISSA"}
+              {listening
+                ? "🎤 Listening…"
+                : "🎤 Speak to HIISSA"}
             </button>
           </div>
 
@@ -3628,323 +5508,524 @@ setReturnCheckInCompleted(false);
             <div
               role="alert"
               style={{
-                margin: "0 20px 14px",
-                padding: "14px 16px",
-                borderRadius: "16px",
-                background: "#f4f7f3",
-                border: "1px solid rgba(80, 102, 93, 0.18)",
-                color: "#4e5954",
-                fontSize: "13px",
-                lineHeight: "1.6",
-                textAlign: "center",
+                margin:
+                  "0 20px 14px",
+                padding:
+                  "14px 16px",
+                borderRadius:
+                  "16px",
+                background:
+                  "#f4f7f3",
+                border:
+                  "1px solid rgba(80, 102, 93, 0.18)",
+                color:
+                  "#4e5954",
+                fontSize:
+                  "13px",
+                lineHeight:
+                  "1.6",
+                textAlign:
+                  "center",
               }}
             >
-              <strong style={{ color: "#466f67" }}>
-                🎤 Want to speak to HIISSA?
+              <strong
+                style={{
+                  color:
+                    "#466f67",
+                }}
+              >
+                🎤 Want to speak to
+                HIISSA?
               </strong>
 
               <br />
 
-              Voice isn't available in this browser. If you opened HIISSA
-              inside TikTok, copy the HIISSA link below, open Chrome or your
-              phone browser, and paste the link there to use Speak to HIISSA.
-              You can still type your message here.
+              Voice isn't available
+              in this browser. If
+              you opened HIISSA
+              inside TikTok, copy
+              the HIISSA link
+              below, open Chrome or
+              your phone browser,
+              and paste the link
+              there to use Speak to
+              HIISSA. You can still
+              type your message
+              here.
 
               <br />
 
               <button
                 type="button"
-                onClick={copyHiissaLink}
+                onClick={
+                  copyHiissaLink
+                }
                 style={{
-                  marginTop: "12px",
+                  marginTop:
+                    "12px",
                   border: "0",
-                  borderRadius: "999px",
-                  padding: "10px 16px",
-                  background: "#466f67",
+                  borderRadius:
+                    "999px",
+                  padding:
+                    "10px 16px",
+                  background:
+                    "#466f67",
                   color: "#fff",
-                  fontWeight: "800",
-                  cursor: "pointer",
+                  fontWeight:
+                    "800",
+                  cursor:
+                    "pointer",
                 }}
               >
-                {linkCopied ? "✓ Link copied" : "📋 Copy HIISSA link"}
+                {linkCopied
+                  ? "✓ Link copied"
+                  : "📋 Copy HIISSA link"}
               </button>
             </div>
           )}
+          <div
+            style={{
+              padding:
+                "0 20px 12px",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  !input.trim()
+                ) {
+                  setWordingModeActive(
+                    true
+                  );
 
-<div
-  style={{
-    padding: "0 20px 12px",
-  }}
->
-  <button
-    type="button"
-   onClick={() => {
-  recordUserActivity();   
-  if (!input.trim()) {
-    setWordingModeActive(true);
-    setConversationIntent(null);
-    setShowIntentChoices(false);
-    return;
-  }
+                  setConversationIntent(
+                    null
+                  );
 
-  helpMeWordThis();
-}}
-    disabled={loading || wordingLoading}
-    style={{
-     border: wordingModeActive
-  ? "2px solid #587a70"
-  : "1px solid rgba(80, 102, 93, 0.18)",
-background: wordingModeActive ? "#eef5f2" : "#fffdf8",
-      color: "#466f67",
-      borderRadius: "999px",
-      padding: "9px 14px",
-      fontSize: "12px",
-      fontWeight: "800",
-    cursor:
-  loading || wordingLoading
-    ? "default"
-    : "pointer",
-opacity:
-  loading || wordingLoading ? 0.6 : 1,
-    }}
-  >
-    {wordingLoading ? "✨ Helping you word it…" : "✨ Help me word this"}
-  </button>
+                  setShowIntentChoices(
+                    false
+                  );
 
-  {wordingError && (
-    <div
-      role="alert"
-      style={{
-        marginTop: "10px",
-        padding: "11px 13px",
-        borderRadius: "14px",
-        background: "#fff6f4",
-        color: "#8a4f4f",
-        fontSize: "12px",
-        lineHeight: "1.5",
-      }}
-    >
-      {wordingError}
-    </div>
-  )}
+                  return;
+                }
 
-  {wordingSuggestion && (
-    <div
-      role="status"
-      style={{
-        marginTop: "10px",
-        padding: "15px",
-        borderRadius: "18px",
-        background: "#f4f7f3",
-        border: "1px solid rgba(80, 102, 93, 0.18)",
-      }}
-    >
-      <div
-        style={{
-          color: "#3f5f58",
-          fontWeight: "800",
-          fontSize: "14px",
-          marginBottom: "8px",
-        }}
-      >
-        ✨ A clearer way to say it
-      </div>
+                helpMeWordThis();
+              }}
+              disabled={
+                loading ||
+                wordingLoading
+              }
+              style={{
+                border:
+                  wordingModeActive
+                    ? "2px solid #587a70"
+                    : "1px solid rgba(80, 102, 93, 0.18)",
+                background:
+                  wordingModeActive
+                    ? "#eef5f2"
+                    : "#fffdf8",
+                color:
+                  "#466f67",
+                borderRadius:
+                  "999px",
+                padding:
+                  "9px 14px",
+                fontSize:
+                  "12px",
+                fontWeight:
+                  "800",
+                cursor:
+                  loading ||
+                  wordingLoading
+                    ? "default"
+                    : "pointer",
+                opacity:
+                  loading ||
+                  wordingLoading
+                    ? 0.6
+                    : 1,
+              }}
+            >
+              {wordingLoading
+                ? "✨ Helping you word it…"
+                : "✨ Help me word this"}
+            </button>
 
-      <div
-        style={{
-          color: "#4f5b56",
-          fontSize: "14px",
-          lineHeight: "1.6",
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {wordingSuggestion}
-      </div>
+            {wordingError && (
+              <div
+                role="alert"
+                style={{
+                  marginTop:
+                    "10px",
+                  padding:
+                    "11px 13px",
+                  borderRadius:
+                    "14px",
+                  background:
+                    "#fff6f4",
+                  color:
+                    "#8a4f4f",
+                  fontSize:
+                    "12px",
+                  lineHeight:
+                    "1.5",
+                }}
+              >
+                {wordingError}
+              </div>
+            )}
 
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          flexWrap: "wrap",
-          marginTop: "13px",
-        }}
-      >
-        <button
-          type="button"
-          onClick={useWordingSuggestion}
-          style={{
-            border: "0",
-            borderRadius: "999px",
-            padding: "9px 14px",
-            background: "#466f67",
-            color: "#fff",
-            fontWeight: "800",
-            cursor: "pointer",
-          }}
-        >
-          Use this version
-        </button>
+            {wordingSuggestion && (
+              <div
+                role="status"
+                style={{
+                  marginTop:
+                    "10px",
+                  padding:
+                    "15px",
+                  borderRadius:
+                    "18px",
+                  background:
+                    "#f4f7f3",
+                  border:
+                    "1px solid rgba(80, 102, 93, 0.18)",
+                }}
+              >
+                <div
+                  style={{
+                    color:
+                      "#3f5f58",
+                    fontWeight:
+                      "800",
+                    fontSize:
+                      "14px",
+                    marginBottom:
+                      "8px",
+                  }}
+                >
+                  ✨ A clearer way
+                  to say it
+                </div>
 
-        <button
-          type="button"
-          onClick={keepOriginalWording}
-          style={{
-            border: "0",
-            background: "transparent",
-            color: "#68736f",
-            padding: "9px 12px",
-            fontWeight: "700",
-            cursor: "pointer",
-          }}
-        >
-          Keep my original
-        </button>
-      </div>
-    </div>
-  )}
+                <div
+                  style={{
+                    color:
+                      "#4f5b56",
+                    fontSize:
+                      "14px",
+                    lineHeight:
+                      "1.6",
+                    whiteSpace:
+                      "pre-wrap",
+                  }}
+                >
+                  {
+                    wordingSuggestion
+                  }
+                </div>
 
-  {wordingUndo && !wordingSuggestion && (
-    <button
-      type="button"
-      onClick={undoWordingChange}
-      style={{
-        marginTop: "8px",
-        border: "0",
-        background: "transparent",
-        color: "#68736f",
-        padding: "5px 2px",
-        fontSize: "12px",
-        fontWeight: "700",
-        cursor: "pointer",
-      }}
-    >
-      ↩ Undo wording change
-    </button>
-  )}
-</div>         
-{(conversationIntent || wordingModeActive) && !showIntentChoices && (
-  <div
-    style={{
-      margin: "0 0 10px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "10px",
-      color: "#587a70",
-      fontSize: "12px",
-      fontWeight: "700",
-      width: "100%",
-    }}
-  >
-    <span>
-      {conversationIntent === "listen" && "❤️ Just listen"}
-      {conversationIntent === "understand" && "🧭 Help me understand"}
-      {conversationIntent === "move_forward" && "🌱 Help me move forward"}
-{wordingModeActive && "✨ Help me word this"}
-    </span>
+                <div
+                  style={{
+                    display:
+                      "flex",
+                    gap: "8px",
+                    flexWrap:
+                      "wrap",
+                    marginTop:
+                      "13px",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={
+                      useWordingSuggestion
+                    }
+                    style={{
+                      border: "0",
+                      borderRadius:
+                        "999px",
+                      padding:
+                        "9px 14px",
+                      background:
+                        "#466f67",
+                      color:
+                        "#fff",
+                      fontWeight:
+                        "800",
+                      cursor:
+                        "pointer",
+                    }}
+                  >
+                    Use this version
+                  </button>
 
-    <button
-      type="button"
-      onClick={() => {
-   recordUserActivity();     
-  setWordingModeActive(false);
-  setShowIntentChoices(true);
-}}
-      style={{
-        background: "transparent",
-        border: "none",
-        padding: "4px 0",
-        color: "#587a70",
-        fontSize: "12px",
-        fontWeight: "700",
-        cursor: "pointer",
-      }}
-    >
-      Change
-    </button>
-  </div>
-)}
-<form
+                  <button
+                    type="button"
+                    onClick={
+                      keepOriginalWording
+                    }
+                    style={{
+                      border: "0",
+                      background:
+                        "transparent",
+                      color:
+                        "#68736f",
+                      padding:
+                        "9px 12px",
+                      fontWeight:
+                        "700",
+                      cursor:
+                        "pointer",
+                    }}
+                  >
+                    Keep my original
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {wordingUndo &&
+              !wordingSuggestion && (
+                <button
+                  type="button"
+                  onClick={
+                    undoWordingChange
+                  }
+                  style={{
+                    marginTop:
+                      "8px",
+                    border: "0",
+                    background:
+                      "transparent",
+                    color:
+                      "#68736f",
+                    padding:
+                      "5px 2px",
+                    fontSize:
+                      "12px",
+                    fontWeight:
+                      "700",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  ↩ Undo wording
+                  change
+                </button>
+              )}
+          </div>
+
+          {(conversationIntent ||
+            wordingModeActive) &&
+            !showIntentChoices && (
+              <div
+                style={{
+                  margin:
+                    "0 0 10px",
+                  display:
+                    "flex",
+                  alignItems:
+                    "center",
+                  justifyContent:
+                    "space-between",
+                  gap: "10px",
+                  color:
+                    "#587a70",
+                  fontSize:
+                    "12px",
+                  fontWeight:
+                    "700",
+                  width:
+                    "100%",
+                }}
+              >
+                <span>
+                  {conversationIntent ===
+                    "listen" &&
+                    "❤️ Just listen"}
+
+                  {conversationIntent ===
+                    "understand" &&
+                    "🧭 Help me understand"}
+
+                  {conversationIntent ===
+                    "move_forward" &&
+                    "🌱 Help me move forward"}
+
+                  {wordingModeActive &&
+                    "✨ Help me word this"}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWordingModeActive(
+                      false
+                    );
+
+                    setShowIntentChoices(
+                      true
+                    );
+                  }}
+                  style={{
+                    background:
+                      "transparent",
+                    border: "none",
+                    padding:
+                      "4px 0",
+                    color:
+                      "#587a70",
+                    fontSize:
+                      "12px",
+                    fontWeight:
+                      "700",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  Change
+                </button>
+              </div>
+            )}
+
+          <form
             className="composer"
             onSubmit={(event) => {
               event.preventDefault();
-             recordUserActivity(); 
+
+              /*
+               * IMPORTANT:
+               * Do NOT record activity here.
+               * sendMessage() is the single
+               * meaningful-conversation entry point.
+               */
               sendMessage();
             }}
           >
             <textarea
               value={input}
-              onChange={(event) => {
-  recordUserActivity();              
-  setInput(event.target.value);
-  setWordingSuggestion("");
-  setWordingOriginal("");
-  setWordingError("");
-}}
-            placeholder={
-  wordingModeActive
-    ? "Tell me what you'd like help putting into words…"
-    : conversationIntent === "understand"
-    ? "Tell me what you're trying to understand…"
-    : conversationIntent === "move_forward"
-    ? "Tell me what you'd like help moving forward with…"
-    : "Tell me what's on your heart…"
-}
+              onChange={(
+                event
+              ) => {
+                /*
+                 * Typing is ordinary UI activity.
+                 * It must NOT destroy the
+                 * meaningful-conversation inactivity gap.
+                 */
+                setInput(
+                  event.target.value
+                );
+
+                setWordingSuggestion(
+                  ""
+                );
+
+                setWordingOriginal(
+                  ""
+                );
+
+                setWordingError("");
+              }}
+              placeholder={
+                wordingModeActive
+                  ? "Tell me what you'd like help putting into words…"
+                  : conversationIntent ===
+                      "understand"
+                    ? "Tell me what you're trying to understand…"
+                    : conversationIntent ===
+                        "move_forward"
+                      ? "Tell me what you'd like help moving forward with…"
+                      : "Tell me what's on your heart…"
+              }
               rows={1}
-               spellCheck={true} 
+              spellCheck={true}
               autoCorrect="on"
               autoCapitalize="sentences"
             />
 
             <button
-  type="submit"
-  disabled={!input.trim() || loading || wordingLoading}
->
+              type="submit"
+              disabled={
+                !input.trim() ||
+                loading ||
+                wordingLoading
+              }
+            >
               Send ↑
             </button>
           </form>
 
           <p className="fine">
-            HIISSA offers reflective AI guidance, not emergency, medical,
-            legal, or professional mental-health care.
+            HIISSA offers
+            reflective AI
+            guidance, not
+            emergency, medical,
+            legal, or
+            professional
+            mental-health care.
           </p>
         </section>
 
-        {publicReviews.length > 0 && (
+        {publicReviews.length >
+          0 && (
           <section
             aria-label="Public reviews"
             style={{
               marginTop: "22px",
-              padding: "24px 20px",
-              borderRadius: "24px",
-              background: "rgba(255, 253, 248, 0.92)",
-              border: "1px solid rgba(80, 102, 93, 0.16)",
-              boxShadow: "0 14px 40px rgba(64, 86, 76, 0.08)",
+              padding:
+                "24px 20px",
+              borderRadius:
+                "24px",
+              background:
+                "rgba(255, 253, 248, 0.92)",
+              border:
+                "1px solid rgba(80, 102, 93, 0.16)",
+              boxShadow:
+                "0 14px 40px rgba(64, 86, 76, 0.08)",
             }}
           >
-            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+            <div
+              style={{
+                textAlign:
+                  "center",
+                marginBottom:
+                  "16px",
+              }}
+            >
               <div
                 style={{
-                  color: "#466f67",
-                  fontSize: "12px",
-                  fontWeight: "800",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  marginBottom: "6px",
+                  color:
+                    "#466f67",
+                  fontSize:
+                    "12px",
+                  fontWeight:
+                    "800",
+                  letterSpacing:
+                    "0.08em",
+                  textTransform:
+                    "uppercase",
+                  marginBottom:
+                    "6px",
                 }}
               >
-                Shared with permission
+                Shared with
+                permission
               </div>
 
               <h2
                 style={{
                   margin: 0,
-                  color: "#32453f",
-                  fontSize: "24px",
-                  lineHeight: "1.25",
+                  color:
+                    "#32453f",
+                  fontSize:
+                    "24px",
+                  lineHeight:
+                    "1.25",
                 }}
               >
-                What people are saying about HIISSA
+                What people are
+                saying about HIISSA
               </h2>
             </div>
 
@@ -3952,134 +6033,222 @@ opacity:
               style={{
                 display: "grid",
                 gap: "12px",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(220px, 1fr))",
               }}
             >
-              {publicReviews.map((review, index) => {
-                const safeRating = Math.max(
-                  0,
-                  Math.min(5, Number(review.rating) || 0)
-                );
+              {publicReviews.map(
+                (
+                  review,
+                  index
+                ) => {
+                  const safeRating =
+                    Math.max(
+                      0,
+                      Math.min(
+                        5,
+                        Number(
+                          review.rating
+                        ) || 0
+                      )
+                    );
 
-                return (
-                  <article
-                    key={`${review.permission_date || "review"}-${index}`}
-                    style={{
-                      padding: "17px",
-                      borderRadius: "18px",
-                      background: "#ffffff",
-                      border: "1px solid rgba(80, 102, 93, 0.14)",
-                    }}
-                  >
-                    <div
-                      aria-label={`${safeRating} out of 5 stars`}
+                  return (
+                    <article
+                      key={`${
+                        review.permission_date ||
+                        "review"
+                      }-${index}`}
                       style={{
-                        color: "#b79a5b",
-                        fontSize: "17px",
-                        letterSpacing: "2px",
-                        marginBottom: "9px",
+                        padding:
+                          "17px",
+                        borderRadius:
+                          "18px",
+                        background:
+                          "#ffffff",
+                        border:
+                          "1px solid rgba(80, 102, 93, 0.14)",
                       }}
                     >
-                      {"★".repeat(safeRating)}
-                      <span style={{ color: "#dddcd6" }}>
-                        {"★".repeat(5 - safeRating)}
-                      </span>
-                    </div>
+                      <div
+                        aria-label={`${safeRating} out of 5 stars`}
+                        style={{
+                          color:
+                            "#b79a5b",
+                          fontSize:
+                            "17px",
+                          letterSpacing:
+                            "2px",
+                          marginBottom:
+                            "9px",
+                        }}
+                      >
+                        {"★".repeat(
+                          safeRating
+                        )}
 
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "#4f5b56",
-                        fontSize: "14px",
-                        lineHeight: "1.65",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      “{review.public_display_text}”
-                    </p>
-                  </article>
-                );
-              })}
+                        <span
+                          style={{
+                            color:
+                              "#dddcd6",
+                          }}
+                        >
+                          {"★".repeat(
+                            5 -
+                              safeRating
+                          )}
+                        </span>
+                      </div>
+
+                      <p
+                        style={{
+                          margin: 0,
+                          color:
+                            "#4f5b56",
+                          fontSize:
+                            "14px",
+                          lineHeight:
+                            "1.65",
+                          whiteSpace:
+                            "pre-wrap",
+                        }}
+                      >
+                        “
+                        {
+                          review.public_display_text
+                        }
+                        ”
+                      </p>
+                    </article>
+                  );
+                }
+              )}
             </div>
           </section>
         )}
 
         <footer>
-          <b>HIISSA</b> · Healing is transformation, not erasure.
+          <b>HIISSA</b> · Healing
+          is transformation, not
+          erasure.
           <br />
-          <a href="/privacy">Privacy</a>
+          <a href="/privacy">
+            Privacy
+          </a>
         </footer>
       </section>
-    {showExplore && (
-  <div className="exploreOverlay">
-    <div
-      className="explorePanel"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="explore-title"
-    >
-      <div className="explorePanelHead">
-        <div>
-          <strong id="explore-title">✦ Explore HIISSA</strong>
-          <p>What would feel right for you today?</p>
-        </div>
 
-        <button
-          type="button"
-         onClick={() => {
-  recordUserActivity();
-  setShowExplore(false);
-}}
-          className="exploreClose"
-          aria-label="Close Explore HIISSA"
-        >
-          ×
-        </button>
-      </div>
-
-      <div className="explorePathwayList">
-        {explorePathways.map((pathway) => (
-          <button
-            key={pathway.id}
-            type="button"
-            className="explorePathway"
-            disabled={pathway.status !== "live"}
-            onClick={() => {
-            recordUserActivity(); 
-              if (pathway.id === "talk") {
-                setShowExplore(false);
-              }
-            }}
+      {showExplore && (
+        <div className="exploreOverlay">
+          <div
+            className="explorePanel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="explore-title"
           >
-            <span className="explorePathwayEmoji">{pathway.emoji}</span>
+            <div className="explorePanelHead">
+              <div>
+                <strong id="explore-title">
+                  ✦ Explore HIISSA
+                </strong>
 
-            <span className="explorePathwayText">
-              <strong>{pathway.name}</strong>
-              <small>{pathway.description}</small>
-            </span>
+                <p>
+                  What would feel
+                  right for you
+                  today?
+                </p>
+              </div>
 
-            {pathway.status === "live" && (
-              <span className="explorePathwayArrow">›</span>
-            )}
-          </button>
-        ))}
-      </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExplore(
+                    false
+                  );
+                }}
+                className="exploreClose"
+                aria-label="Close Explore HIISSA"
+              >
+                ×
+              </button>
+            </div>
 
-      <div className="exploreUnsure">
-        <strong>Not sure what you need?</strong>
-        <button
-          type="button"
-         onClick={() => {
-  recordUserActivity();
-  setShowExplore(false);
-}}
-        >
-          Tell HIISSA how you're feeling →
-        </button>
-      </div>
-    </div>
-  </div>
-)}      
+            <div className="explorePathwayList">
+              {explorePathways.map(
+                (pathway) => (
+                  <button
+                    key={
+                      pathway.id
+                    }
+                    type="button"
+                    className="explorePathway"
+                    disabled={
+                      pathway.status !==
+                      "live"
+                    }
+                    onClick={() => {
+                      if (
+                        pathway.id ===
+                        "talk"
+                      ) {
+                        setShowExplore(
+                          false
+                        );
+                      }
+                    }}
+                  >
+                    <span className="explorePathwayEmoji">
+                      {
+                        pathway.emoji
+                      }
+                    </span>
+
+                    <span className="explorePathwayText">
+                      <strong>
+                        {
+                          pathway.name
+                        }
+                      </strong>
+
+                      <small>
+                        {
+                          pathway.description
+                        }
+                      </small>
+                    </span>
+
+                    {pathway.status ===
+                      "live" && (
+                      <span className="explorePathwayArrow">
+                        ›
+                      </span>
+                    )}
+                  </button>
+                )
+              )}
+            </div>
+
+            <div className="exploreUnsure">
+              <strong>
+                Not sure what you
+                need?
+              </strong>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExplore(
+                    false
+                  );
+                }}
+              >
+                Tell HIISSA how
+                you're feeling →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
