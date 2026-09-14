@@ -2019,6 +2019,7 @@ async function helpMeWordThis() {
 }
 
 function useWordingSuggestion() {
+recordUserActivity();  
   if (!wordingSuggestion) return;
 
   setWordingUndo(wordingOriginal);
@@ -2029,12 +2030,14 @@ function useWordingSuggestion() {
 }
 
 function keepOriginalWording() {
+recordUserActivity();  
   setWordingSuggestion("");
   setWordingOriginal("");
   setWordingError("");
 }
 
 function undoWordingChange() {
+recordUserActivity();  
   if (!wordingUndo) return;
 
   setInput(wordingUndo);
@@ -2227,6 +2230,7 @@ setWordingError("");
   }
 
   function maybeLater() {
+  recordUserActivity();  
     const nextEligibleAt = substantiveAssistantAnswers + 5;
 
     setFeedbackEligibleAfter(nextEligibleAt);
@@ -3469,9 +3473,10 @@ setReturnCheckInCompleted(false);
 
                   <textarea
                     value={feedbackText}
-                    onChange={(event) =>
-                      setFeedbackText(event.target.value.slice(0, 1500))
-                    }
+                    onChange={(event) => {
+  recordUserActivity();
+  setFeedbackText(event.target.value.slice(0, 1500));
+}}
                     placeholder="Write your feedback here…"
                     rows={4}
                     style={{
