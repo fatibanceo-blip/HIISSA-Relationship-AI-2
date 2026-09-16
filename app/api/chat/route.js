@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { createConversationUnderstanding } from "../../../lib/hiissa/conversational-intelligence.js";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -538,6 +539,14 @@ const safeConversationIntent = allowedConversationIntents.includes(
       }))
   : [];
 
+const conversationUnderstanding = createConversationUnderstanding({
+  userMessage:
+    [...safeMessages].reverse().find((message) => message.role === "user")
+      ?.content ?? "",
+  conversationMessages: safeMessages,
+  explicitIntent: safeConversationIntent,
+});    
+
     const oversizedUserMessage = safeMessages.some(
       (message) =>
         message?.role === "user" &&
@@ -795,6 +804,7 @@ Never rush someone's story simply because you can generate an answer.
         content: [
   systemPrompt,
   `HIISSA CONVERSATIONAL INTELLIGENCE:\n${conversationalIntelligenceInstruction}`,
+ `HIISSA CONVERSATION UNDERSTANDING:\n${JSON.stringify(conversationUnderstanding)}`,         
   supportModeInstruction
     ? `CURRENT USER-SELECTED SUPPORT MODE:\n${supportModeInstruction}`
     : "",
