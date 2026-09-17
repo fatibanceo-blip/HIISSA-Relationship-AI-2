@@ -830,7 +830,7 @@ try {
 
 const qualityAction = decideHiissaQualityAction(qualityObservation);
 const forceRegenerationTest = false; 
-const forceBlockTest = true;  
+const forceBlockTest = false;  
 if (forceBlockTest || qualityAction === "block") {
   console.log("HIISSA protected BLOCK path triggered");
   finalReply = await regenerateHiissaReply({
