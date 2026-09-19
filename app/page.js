@@ -3695,7 +3695,7 @@ clientCreatedAt: new Date().toISOString(),
 
         <button
           type="button"
-          onClick={() => {
+         onClick={async () => {
             setShowExplore(true);
           }}
           className="exploreEntry"
