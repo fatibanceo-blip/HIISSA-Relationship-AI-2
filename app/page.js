@@ -1611,7 +1611,7 @@ export default function Home() {
           "Hi, I'm HIISSA Relationship AI. Tell me what's happening, and I'll help you look at it with empathy, balance, and self-respect.",
       },
     ]);
-
+const [serverConversationId, setServerConversationId] = useState(null);
   const [
     previousChats,
     setPreviousChats,
@@ -2691,6 +2691,39 @@ export default function Home() {
       },
     ];
 
+const { data: { session } } = supabase
+  ? await supabase.auth.getSession()
+  : { data: { session: null } };
+
+let activeServerConversationId = serverConversationId; 
+if (session?.access_token && !activeServerConversationId) { 
+const conversationRes = await fetch("/api/conversations", {
+method: "POST",
+headers: {  
+"Content-Type": "application/json",  
+Authorization: `Bearer ${session.access_token}`,  
+},  
+body: JSON.stringify({}),
+});
+const conversationData = await conversationRes.json();  
+activeServerConversationId = conversationData.conversation?.id;  
+setServerConversationId(activeServerConversationId);  
+} 
+if (session?.access_token && activeServerConversationId) { 
+await fetch("/api/messages", {  
+method: "POST",  
+headers: {  
+"Content-Type": "application/json",  
+Authorization: `Bearer ${session.access_token}`,  
+},  
+body: JSON.stringify({  
+conversationId: activeServerConversationId,
+role: "user",
+originalContent: clean,
+clientCreatedAt: new Date().toISOString(),
+}),
+});
+}  
     setMessages(next);
     setInput("");
     setWordingSuggestion("");
@@ -2752,6 +2785,22 @@ export default function Home() {
           },
         ]
       );
+
+ if (session?.access_token && activeServerConversationId) {
+  await fetch("/api/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      conversationId: activeServerConversationId,
+      role: "assistant",
+      originalContent: data.reply,
+      clientCreatedAt: new Date().toISOString(),
+    }),
+  });
+}     
 
       /*
        * QUALITY AUDIT PERSISTENCE
