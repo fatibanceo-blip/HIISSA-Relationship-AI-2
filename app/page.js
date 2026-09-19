@@ -2265,7 +2265,7 @@ useEffect(() => {
                 title:
                   conversation.title ||
                   "HIISSA Conversation",
-                date:
+                createdAt:
                   conversation.last_message_at ||
                   conversation.updated_at ||
                   conversation.created_at,
