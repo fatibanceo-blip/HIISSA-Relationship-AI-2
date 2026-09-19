@@ -2313,8 +2313,25 @@ useEffect(() => {
   };
 }, []);  
 
-  useEffect(() => {
+useEffect(() => {
+  let cancelled = false;
+
+  async function restoreActiveChat() {
     try {
+      const {
+        data: { session },
+      } = supabase
+        ? await supabase.auth.getSession()
+        : { data: { session: null } };
+
+      if (cancelled) {
+        return;
+      }
+
+      if (session?.access_token) {
+        return;
+      }
+
       const savedActiveChat =
         JSON.parse(
           window.localStorage.getItem(
@@ -2327,16 +2344,14 @@ useEffect(() => {
         Array.isArray(
           savedActiveChat.messages
         ) &&
-        savedActiveChat.messages
-          .length > 0
+        savedActiveChat.messages.length > 0
       ) {
         setMessages(
           savedActiveChat.messages
         );
 
         setInput(
-          savedActiveChat.input ||
-            ""
+          savedActiveChat.input || ""
         );
 
         setConversationIntent(
@@ -2349,18 +2364,25 @@ useEffect(() => {
             null
         );
 
-        setShowIntentChoices(
-          false
-        );
+        setShowIntentChoices(false);
 
         checkForMeaningfulReturn();
       }
     } catch {
-      // HIISSA starts fresh if the active chat cannot be restored.
+      // HIISSA starts fresh if Guest active chat cannot be restored.
     } finally {
-      setActiveChatLoaded(true);
+      if (!cancelled) {
+        setActiveChatLoaded(true);
+      }
     }
-  }, []);
+  }
+
+  restoreActiveChat();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   useEffect(() => {
     if (!activeChatLoaded) {
@@ -3719,64 +3741,64 @@ clientCreatedAt: new Date().toISOString(),
             <button
               type="button"
               onClick={() => {
-                if (
-                  messages.length > 1
-                ) {
-                  const firstUserMessage =
-                    messages.find(
-                      (message) =>
-                        message.role ===
-                        "user"
-                    )?.content ||
-                    "Previous conversation";
+               if (
+  messages.length > 1
+) {
+  const {
+    data: { session },
+  } = supabase
+    ? await supabase.auth.getSession()
+    : { data: { session: null } };
 
-                  const savedChat = {
-                    id: `${Date.now()}-${Math.random()
-                      .toString(36)
-                      .slice(2, 8)}`,
+  if (!session?.access_token) {
+    const firstUserMessage =
+      messages.find(
+        (message) =>
+          message.role === "user"
+      )?.content ||
+      "Previous conversation";
 
-                    title:
-                      firstUserMessage.length >
-                      48
-                        ? `${firstUserMessage.slice(
-                            0,
-                            48
-                          )}…`
-                        : firstUserMessage,
+    const savedChat = {
+      id: `${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}`,
+      title:
+        firstUserMessage.length > 48
+          ? `${firstUserMessage.slice(
+              0,
+              48
+            )}…`
+          : firstUserMessage,
+      createdAt:
+        new Date().toISOString(),
+      conversationIntent,
+      messages,
+    };
 
-                    createdAt:
-                      new Date().toISOString(),
+    const updatedChats =
+      activePreviousChatId
+        ? previousChats
+        : [
+            savedChat,
+            ...previousChats,
+          ].slice(0, 20);
 
-                    conversationIntent,
-                    messages,
-                  };
+    setPreviousChats(
+      updatedChats
+    );
 
-                  const updatedChats =
-                    activePreviousChatId
-                      ? previousChats
-                      : [
-                          savedChat,
-                          ...previousChats,
-                        ].slice(
-                          0,
-                          20
-                        );
-
-                  setPreviousChats(
-                    updatedChats
-                  );
-
-                  try {
-                    window.localStorage.setItem(
-                      "hiissa_previous_chats",
-                      JSON.stringify(
-                        updatedChats
-                      )
-                    );
-                  } catch {
-                    // Previous Chats remains optional.
-                  }
-                }
+    try {
+      window.localStorage.setItem(
+        "hiissa_previous_chats",
+        JSON.stringify(
+          updatedChats
+        )
+      );
+    } catch {
+      // Previous Chats remains optional.
+    }
+  }
+}
 
                 try {
                   window.localStorage.removeItem(
@@ -3867,6 +3889,10 @@ clientCreatedAt: new Date().toISOString(),
                 setActivePreviousChatId(
                   null
                 );
+setServerConversationId(
+  null
+);
+                
 
                 setShowIntentChoices(
                   false
@@ -4029,42 +4055,106 @@ clientCreatedAt: new Date().toISOString(),
                           chat.id
                         }
                         type="button"
-                        onClick={() => {
-                          setMessages(
-                            chat.messages
-                          );
+                       onClick={async () => {
+  if (chat.serverConversation) {
+    const {
+      data: { session },
+    } = supabase
+      ? await supabase.auth.getSession()
+      : { data: { session: null } };
 
-                          setActivePreviousChatId(
-                            chat.id
-                          );
+    if (!session?.access_token) {
+      return;
+    }
 
-                          setConversationIntent(
-                            chat.conversationIntent ||
-                              ""
-                          );
+    try {
+      const response = await fetch(
+        `/api/messages?conversationId=${encodeURIComponent(
+          chat.id
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
 
-                          setShowIntentChoices(
-                            false
-                          );
+      if (!response.ok) {
+        throw new Error(
+          "Unable to load server messages."
+        );
+      }
 
-                          setInput("");
+      const data = await response.json();
 
-                          setWordingSuggestion(
-                            ""
-                          );
+      if (!Array.isArray(data.messages)) {
+        throw new Error(
+          "Invalid server message response."
+        );
+      }
 
-                          setWordingOriginal(
-                            ""
-                          );
+      setMessages(
+        data.messages.map(
+          (message) => ({
+            role: message.role,
+            content:
+              message.original_content,
+          })
+        )
+      );
 
-                          setWordingError(
-                            ""
-                          );
+      setServerConversationId(
+        chat.id
+      );
+    } catch (error) {
+      console.error(
+        "HIISSA server message load failed:",
+        error
+      );
+      return;
+    }
+  } else {
+    setMessages(
+      chat.messages
+    );
 
-                          setShowPreviousChats(
-                            false
-                          );
-                        }}
+    setServerConversationId(
+      null
+    );
+  }
+
+  setActivePreviousChatId(
+    chat.id
+  );
+
+  setConversationIntent(
+    chat.conversationIntent ||
+      ""
+  );
+
+  setShowIntentChoices(
+    false
+  );
+
+  setInput("");
+
+  setWordingSuggestion(
+    ""
+  );
+
+  setWordingOriginal(
+    ""
+  );
+
+  setWordingError(
+    ""
+  );
+
+  setShowPreviousChats(
+    false
+  );
+}}
                         style={{
                           width:
                             "100%",
