@@ -3740,7 +3740,7 @@ clientCreatedAt: new Date().toISOString(),
 
             <button
               type="button"
-              onClick={() => {
+            onClick={async () => {
                if (
   messages.length > 1
 ) {
