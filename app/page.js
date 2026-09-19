@@ -2277,11 +2277,17 @@ useEffect(() => {
         }
 
         return;
-      } catch (error) {
+           } catch (error) {
         console.error(
           "HIISSA server conversation load failed:",
           error
         );
+
+        if (!cancelled) {
+          setPreviousChats([]);
+        }
+
+        return;
       }
     }
 
@@ -2476,26 +2482,76 @@ useEffect(() => {
     activeChatLoaded,
   ]);
 
-  function deletePreviousChat(
-    chatId
-  ) {
-    const shouldDelete =
-      window.confirm(
-        "Delete this chat? This cannot be undone."
-      );
+  async function deletePreviousChat(
+  chatId
+) {
+  const shouldDelete =
+    window.confirm(
+      "Delete this chat? This cannot be undone."
+    );
 
-    if (!shouldDelete) {
+  if (!shouldDelete) {
+    return;
+  }
+
+  const chatToDelete =
+    previousChats.find(
+      (chat) => chat.id === chatId
+    );
+
+  if (chatToDelete?.serverConversation) {
+    const {
+      data: { session },
+    } = supabase
+      ? await supabase.auth.getSession()
+      : { data: { session: null } };
+
+    if (!session?.access_token) {
       return;
     }
 
-    setPreviousChats(
-      (currentChats) => {
-        const updatedChats =
-          currentChats.filter(
-            (chat) =>
-              chat.id !== chatId
-          );
+    try {
+      const response = await fetch(
+        "/api/conversations",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type":
+              "application/json",
+            Authorization:
+              `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            conversationId: chatId,
+          }),
+        }
+      );
 
+      if (!response.ok) {
+        throw new Error(
+          "Unable to delete server conversation."
+        );
+      }
+    } catch (error) {
+      console.error(
+        "HIISSA server conversation delete failed:",
+        error
+      );
+      return;
+    }
+  }
+
+  setPreviousChats(
+    (currentChats) => {
+      const updatedChats =
+        currentChats.filter(
+          (chat) =>
+            chat.id !== chatId
+        );
+
+      if (
+        !chatToDelete?.serverConversation
+      ) {
         try {
           window.localStorage.setItem(
             "hiissa_previous_chats",
@@ -2504,30 +2560,39 @@ useEffect(() => {
             )
           );
         } catch {
-          // Previous Chats deletion still works if storage is unavailable.
+          // Guest deletion still works if storage is unavailable.
         }
-
-        return updatedChats;
       }
+
+      return updatedChats;
+    }
+  );
+
+  if (
+    activePreviousChatId ===
+    chatId
+  ) {
+    setActivePreviousChatId(
+      null
     );
 
     if (
-      activePreviousChatId ===
-      chatId
+      chatToDelete?.serverConversation
     ) {
-      setActivePreviousChatId(
+      setServerConversationId(
         null
       );
+    }
 
-      try {
-        window.localStorage.removeItem(
-          "hiissa_active_chat"
-        );
-      } catch {
-        // Optional cleanup.
-      }
+    try {
+      window.localStorage.removeItem(
+        "hiissa_active_chat"
+      );
+    } catch {
+      // Optional cleanup.
     }
   }
+}
     useEffect(() => {
     async function checkAdminAccess() {
       if (!supabase) return;
@@ -2785,20 +2850,81 @@ const { data: { session } } = supabase
   ? await supabase.auth.getSession()
   : { data: { session: null } };
 
-let activeServerConversationId = serverConversationId; 
-if (session?.access_token && !activeServerConversationId) { 
-const conversationRes = await fetch("/api/conversations", {
-method: "POST",
-headers: {  
-"Content-Type": "application/json",  
-Authorization: `Bearer ${session.access_token}`,  
-},  
-body: JSON.stringify({}),
-});
-const conversationData = await conversationRes.json();  
-activeServerConversationId = conversationData.conversation?.id;  
-setServerConversationId(activeServerConversationId);  
-} 
+let activeServerConversationId =
+  serverConversationId;
+
+if (
+  session?.access_token &&
+  !activeServerConversationId
+) {
+  const conversationTitle =
+    clean.length > 48
+      ? `${clean.slice(0, 48)}…`
+      : clean;
+
+  const conversationRes =
+    await fetch(
+      "/api/conversations",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+          Authorization:
+            `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          title: conversationTitle,
+        }),
+      }
+    );
+
+  if (!conversationRes.ok) {
+    console.error(
+      "HIISSA server conversation creation failed."
+    );
+  } else {
+    const conversationData =
+      await conversationRes.json();
+
+    const createdConversation =
+      conversationData.conversation;
+
+    activeServerConversationId =
+      createdConversation?.id;
+
+    if (activeServerConversationId) {
+      setServerConversationId(
+        activeServerConversationId
+      );
+
+      setPreviousChats(
+        (currentChats) => [
+          {
+            id:
+              createdConversation.id,
+            title:
+              createdConversation.title ||
+              conversationTitle ||
+              "HIISSA Conversation",
+            createdAt:
+              createdConversation.last_message_at ||
+              createdConversation.updated_at ||
+              createdConversation.created_at ||
+              new Date().toISOString(),
+            messages: [],
+            serverConversation: true,
+          },
+          ...currentChats.filter(
+            (chat) =>
+              chat.id !==
+              createdConversation.id
+          ),
+        ]
+      );
+    }
+  }
+}
 if (session?.access_token && activeServerConversationId) { 
 await fetch("/api/messages", {  
 method: "POST",  
