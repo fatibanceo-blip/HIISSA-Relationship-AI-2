@@ -2224,7 +2224,67 @@ const [serverConversationId, setServerConversationId] = useState(null);
     }
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadPreviousChats() {
+    const {
+      data: { session },
+    } = supabase
+      ? await supabase.auth.getSession()
+      : { data: { session: null } };
+
+    if (session?.access_token) {
+      try {
+        const response = await fetch(
+          "/api/conversations",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "Unable to load server conversations."
+          );
+        }
+
+        const data = await response.json();
+
+        if (
+          !cancelled &&
+          Array.isArray(data.conversations)
+        ) {
+          setPreviousChats(
+            data.conversations.map(
+              (conversation) => ({
+                id: conversation.id,
+                title:
+                  conversation.title ||
+                  "HIISSA Conversation",
+                date:
+                  conversation.last_message_at ||
+                  conversation.updated_at ||
+                  conversation.created_at,
+                messages: [],
+                serverConversation: true,
+              })
+            )
+          );
+        }
+
+        return;
+      } catch (error) {
+        console.error(
+          "HIISSA server conversation load failed:",
+          error
+        );
+      }
+    }
+
     try {
       const savedChats =
         JSON.parse(
@@ -2234,16 +2294,24 @@ const [serverConversationId, setServerConversationId] = useState(null);
         );
 
       if (
+        !cancelled &&
         Array.isArray(savedChats)
       ) {
-        setPreviousChats(
-          savedChats
-        );
+        setPreviousChats(savedChats);
       }
     } catch {
-      setPreviousChats([]);
+      if (!cancelled) {
+        setPreviousChats([]);
+      }
     }
-  }, []);
+  }
+
+  loadPreviousChats();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);  
 
   useEffect(() => {
     try {
