@@ -2,19 +2,43 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 function createAuthenticatedSupabase(request) {
-  const authHeader = request.headers.get("authorization");
+  const authHeader =
+    request.headers.get("authorization");
 
-  if (!authHeader?.startsWith("Bearer ")) {
+  if (
+    !authHeader ||
+    !authHeader.startsWith("Bearer ")
+  ) {
+    return null;
+  }
+
+  const accessToken =
+    authHeader.slice(7).trim();
+
+  if (!accessToken) {
+    return null;
+  }
+
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  const supabaseKey =
+    process.env
+      .NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
     return null;
   }
 
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    supabaseUrl,
+    supabaseKey,
     {
       global: {
         headers: {
-          Authorization: authHeader,
+          Authorization:
+            `Bearer ${accessToken}`,
         },
       },
       auth: {
@@ -25,7 +49,9 @@ function createAuthenticatedSupabase(request) {
   );
 }
 
-async function getAuthenticatedUser(supabase) {
+async function getAuthenticatedUser(
+  supabase
+) {
   if (!supabase) {
     return null;
   }
@@ -44,33 +70,50 @@ async function getAuthenticatedUser(supabase) {
 
 export async function GET(request) {
   try {
-    const supabase = createAuthenticatedSupabase(request);
-    const user = await getAuthenticatedUser(supabase);
+    const supabase =
+      createAuthenticatedSupabase(
+        request
+      );
+
+    const user =
+      await getAuthenticatedUser(
+        supabase
+      );
 
     if (!user) {
       return NextResponse.json(
-        { error: "Authentication required." },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const { data, error } = await supabase
-      .from("conversations")
-      .select(
-        "id, title, created_at, updated_at, last_message_at, archived_at, deleted_at"
-      )
-      .is("deleted_at", null)
-      .order("last_message_at", {
-        ascending: false,
-        nullsFirst: false,
-      })
-      .order("created_at", { ascending: false });
+    const { data, error } =
+      await supabase
+        .from("conversations")
+        .select(
+          "id, title, created_at, updated_at, last_message_at, archived_at, deleted_at"
+        )
+        .eq("user_id", user.id)
+        .is("deleted_at", null)
+        .order("last_message_at", {
+          ascending: false,
+          nullsFirst: false,
+        })
+        .order("created_at", {
+          ascending: false,
+        });
 
     if (error) {
-      console.error("HIISSA conversation load failed:", error);
+      console.error(
+        "HIISSA conversations GET failed:",
+        error
+      );
 
       return NextResponse.json(
-        { error: "Unable to load conversations." },
+        {
+          error:
+            "Unable to load conversations.",
+        },
         { status: 500 }
       );
     }
@@ -79,10 +122,16 @@ export async function GET(request) {
       conversations: data ?? [],
     });
   } catch (error) {
-    console.error("HIISSA conversation GET error:", error);
+    console.error(
+      "HIISSA conversations GET error:",
+      error
+    );
 
     return NextResponse.json(
-      { error: "Unable to load conversations." },
+      {
+        error:
+          "Unable to load conversations.",
+      },
       { status: 500 }
     );
   }
@@ -90,54 +139,204 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createAuthenticatedSupabase(request);
-    const user = await getAuthenticatedUser(supabase);
+    const supabase =
+      createAuthenticatedSupabase(
+        request
+      );
+
+    const user =
+      await getAuthenticatedUser(
+        supabase
+      );
 
     if (!user) {
       return NextResponse.json(
-        { error: "Authentication required." },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const body = await request.json().catch(() => ({}));
+    let body = {};
 
-    const title =
-      typeof body?.title === "string" && body.title.trim()
-        ? body.title.trim().slice(0, 300)
-        : null;
+    try {
+      body = await request.json();
+    } catch {
+      body = {};
+    }
 
-    const { data, error } = await supabase
-      .from("conversations")
-      .insert({
-        user_id: user.id,
-        title,
-      })
-      .select(
-        "id, title, created_at, updated_at, last_message_at, archived_at, deleted_at"
-      )
-      .single();
+    const rawTitle =
+      typeof body?.title === "string"
+        ? body.title.trim()
+        : "";
+
+    const title = rawTitle
+      ? rawTitle.slice(0, 120)
+      : null;
+
+    const now =
+      new Date().toISOString();
+
+    const { data, error } =
+      await supabase
+        .from("conversations")
+        .insert({
+          user_id: user.id,
+          title,
+          updated_at: now,
+          last_message_at: now,
+        })
+        .select(
+          "id, title, created_at, updated_at, last_message_at, archived_at, deleted_at"
+        )
+        .single();
 
     if (error) {
-      console.error("HIISSA conversation creation failed:", error);
+      console.error(
+        "HIISSA conversation POST failed:",
+        error
+      );
 
       return NextResponse.json(
-        { error: "Unable to create conversation." },
+        {
+          error:
+            "Unable to create conversation.",
+        },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
-      {
-        conversation: data,
-      },
+      { conversation: data },
       { status: 201 }
     );
   } catch (error) {
-    console.error("HIISSA conversation POST error:", error);
+    console.error(
+      "HIISSA conversation POST error:",
+      error
+    );
 
     return NextResponse.json(
-      { error: "Unable to create conversation." },
+      {
+        error:
+          "Unable to create conversation.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const supabase =
+      createAuthenticatedSupabase(
+        request
+      );
+
+    const user =
+      await getAuthenticatedUser(
+        supabase
+      );
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const url =
+      new URL(request.url);
+
+    let conversationId =
+      url.searchParams.get(
+        "conversationId"
+      );
+
+    if (!conversationId) {
+      try {
+        const body =
+          await request.json();
+
+        conversationId =
+          body?.conversationId;
+      } catch {
+        conversationId = null;
+      }
+    }
+
+    if (
+      typeof conversationId !==
+        "string" ||
+      !conversationId.trim()
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "conversationId is required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const now =
+      new Date().toISOString();
+
+    const { data, error } =
+      await supabase
+        .from("conversations")
+        .update({
+          deleted_at: now,
+          updated_at: now,
+        })
+        .eq(
+          "id",
+          conversationId.trim()
+        )
+        .eq("user_id", user.id)
+        .is("deleted_at", null)
+        .select("id")
+        .maybeSingle();
+
+    if (error) {
+      console.error(
+        "HIISSA conversation DELETE failed:",
+        error
+      );
+
+      return NextResponse.json(
+        {
+          error:
+            "Unable to delete conversation.",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        {
+          error:
+            "Conversation not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      deleted: true,
+      conversationId: data.id,
+    });
+  } catch (error) {
+    console.error(
+      "HIISSA conversation DELETE error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Unable to delete conversation.",
+      },
       { status: 500 }
     );
   }
