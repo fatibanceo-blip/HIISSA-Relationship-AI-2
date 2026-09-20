@@ -1612,6 +1612,12 @@ export default function Home() {
       },
     ]);
 const [serverConversationId, setServerConversationId] = useState(null);
+const [authSession, setAuthSession] = useState(null);
+const [authEmail, setAuthEmail] = useState("");
+const [authMessage, setAuthMessage] = useState("");
+const [authLoading, setAuthLoading] = useState(false);
+const [showAuthPanel, setShowAuthPanel] = useState(false);
+const [authError, setAuthError] = useState("");  
   const [
     previousChats,
     setPreviousChats,
@@ -2223,7 +2229,36 @@ const [serverConversationId, setServerConversationId] = useState(null);
       // Session storage is optional.
     }
   }, []);
+useEffect(() => {
+  if (!supabase) return;
 
+  let mounted = true;
+
+  async function initialiseAuthSession() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (mounted) {
+      setAuthSession(session ?? null);
+    }
+  }
+
+  initialiseAuthSession();
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    if (mounted) {
+      setAuthSession(session ?? null);
+    }
+  });
+
+  return () => {
+    mounted = false;
+    subscription.unsubscribe();
+  };
+}, []);
 useEffect(() => {
   let cancelled = false;
 
@@ -2790,7 +2825,48 @@ useEffect(() => {
 
     return null;
   }
+async function sendMagicLink() {
+  const email = authEmail.trim();
 
+  setAuthError("");
+  setAuthMessage("");
+
+  if (!email) {
+    setAuthError("Please enter your email address.");
+    return;
+  }
+
+  if (!supabase) {
+    setAuthError("HIISSA sign-in is temporarily unavailable.");
+    return;
+  }
+
+  setAuthLoading(true);
+
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      setAuthError(error.message);
+      return;
+    }
+
+    setAuthMessage(
+      "Check your email for your secure HIISSA sign-in link."
+    );
+  } catch {
+    setAuthError(
+      "We couldn't send your sign-in link. Please try again."
+    );
+  } finally {
+    setAuthLoading(false);
+  }
+}
   async function sendMessage(
     text = input
   ) {
@@ -3756,7 +3832,95 @@ clientCreatedAt: new Date().toISOString(),
             </a>
           </div>
         )}
+      {!authSession && (
+        <div
+          style={{
+            marginBottom: "18px",
+            padding: "16px",
+            border: "1px solid rgba(80, 102, 93, 0.18)",
+            borderRadius: "18px",
+            background: "rgba(255, 253, 248, 0.92)",
+            boxShadow: "0 8px 24px rgba(64, 86, 76, 0.08)",
+          }}
+        >
+          {!showAuthPanel ? (
+            <button
+              type="button"
+              onClick={() => {
+                setShowAuthPanel(true);
+                setAuthError("");
+                setAuthMessage("");
+              }}
+            >
+              Save & Sync My HIISSA
+            </button>
+          ) : (
+            <>
+              <div style={{ marginBottom: "10px" }}>
+                <strong>Take your HIISSA with you 🤍</strong>
+              </div>
 
+              <div style={{ marginBottom: "12px" }}>
+                Save your HIISSA space and securely continue your conversations
+                across your phone, laptop and other devices.
+              </div>
+
+              <input
+                type="email"
+                value={authEmail}
+                onChange={(event) => setAuthEmail(event.target.value)}
+                placeholder="Your email address"
+                autoComplete="email"
+                disabled={authLoading}
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "11px 12px",
+                  marginBottom: "10px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(80, 102, 93, 0.25)",
+                }}
+              />
+
+              <button
+                type="button"
+                onClick={sendMagicLink}
+                disabled={authLoading}
+              >
+                {authLoading ? "Sending secure link..." : "Email me a secure sign-in link"}
+              </button>
+
+              {authMessage && (
+                <div style={{ marginTop: "10px" }}>
+                  {authMessage}
+                </div>
+              )}
+
+              {authError && (
+                <div
+                  role="alert"
+                  style={{ marginTop: "10px" }}
+                >
+                  {authError}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAuthPanel(false);
+                  setAuthError("");
+                  setAuthMessage("");
+                }}
+                disabled={authLoading}
+                style={{ marginTop: "10px" }}
+              >
+                Not now
+              </button>
+            </>
+          )}
+        </div>
+      )}
         <header className="hero">
           <div className="logo">
             H
