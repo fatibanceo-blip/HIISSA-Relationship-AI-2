@@ -1269,7 +1269,8 @@ const supabase =
   supabaseUrl && supabasePublishableKey
     ? createClient(
         supabaseUrl,
-        supabasePublishableKey
+        supabasePublishableKey,
+   { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }   
       )
     : null;
 
@@ -1613,6 +1614,8 @@ export default function Home() {
     ]);
 const [serverConversationId, setServerConversationId] = useState(null);
 const [authSession, setAuthSession] = useState(null);
+const [authInitialised, setAuthInitialised] = useState(false);  
+
 const [authEmail, setAuthEmail] = useState("");
 const [authMessage, setAuthMessage] = useState("");
 const [authLoading, setAuthLoading] = useState(false);
@@ -2241,6 +2244,7 @@ useEffect(() => {
 
     if (mounted) {
       setAuthSession(session ?? null);
+    setAuthInitialised(true);  
     }
   }
 
@@ -2251,6 +2255,7 @@ useEffect(() => {
   } = supabase.auth.onAuthStateChange((_event, session) => {
     if (mounted) {
       setAuthSession(session ?? null);
+ setAuthInitialised(true);     
     }
   });
 
@@ -2260,6 +2265,7 @@ useEffect(() => {
   };
 }, []);
 useEffect(() => {
+if (!authInitialised) return;  
   let cancelled = false;
 
   async function loadPreviousChats() {
@@ -2352,9 +2358,9 @@ useEffect(() => {
   return () => {
     cancelled = true;
   };
-}, []);  
-
+}, [authInitialised, authSession?.access_token]);
 useEffect(() => {
+if (!authInitialised) return;  
   let cancelled = false;
 
   async function restoreActiveChat() {
@@ -2423,9 +2429,12 @@ useEffect(() => {
   return () => {
     cancelled = true;
   };
-}, []);
+}, [authInitialised, authSession?.access_token]);
 
   useEffect(() => {
+  if (!authInitialised || authSession?.access_token) {
+  return;
+}  
     if (!activeChatLoaded) {
       return;
     }
@@ -2471,9 +2480,12 @@ useEffect(() => {
     activePreviousChatId,
     activeChatLoaded,
     closingCheckInCompleted,
+  authInitialised,
+authSession?.access_token,  
   ]);
 
   useEffect(() => {
+  if (!authInitialised || authSession?.access_token) return;  
     if (
       !activeChatLoaded ||
       !activePreviousChatId
@@ -2515,6 +2527,8 @@ useEffect(() => {
     conversationIntent,
     activePreviousChatId,
     activeChatLoaded,
+  authInitialised,
+authSession?.access_token,  
   ]);
 
   async function deletePreviousChat(
@@ -2629,6 +2643,7 @@ useEffect(() => {
   }
 }
     useEffect(() => {
+   if (!authInitialised) return;   
     async function checkAdminAccess() {
       if (!supabase) return;
 
@@ -2664,7 +2679,7 @@ useEffect(() => {
     }
 
     checkAdminAccess();
-  }, []);
+ }, [authInitialised, authSession?.access_token]);
 
   useEffect(() => {
     async function loadPublicReviews() {
