@@ -3848,7 +3848,7 @@ clientCreatedAt: new Date().toISOString(),
             </a>
           </div>
         )}
-      {!authSession && (
+     {authInitialised && !authSession && (
         <div
           style={{
             marginBottom: "18px",
