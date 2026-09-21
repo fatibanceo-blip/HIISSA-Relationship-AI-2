@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import { getContinuityContext } from "../lib/hiissa/continuity";
 
 const starters = [
@@ -1267,7 +1267,7 @@ const supabasePublishableKey =
 
 const supabase =
   supabaseUrl && supabasePublishableKey
-    ? createClient(
+    ? createBrowserClient(
         supabaseUrl,
         supabasePublishableKey,
    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }   
