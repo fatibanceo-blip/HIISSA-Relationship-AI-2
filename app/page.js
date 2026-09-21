@@ -2863,6 +2863,7 @@ async function sendMagicLink() {
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
+     shouldCreateUser: false,   
       },
     });
 
