@@ -1,20 +1,32 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function GET(request) {
   const requestUrl = new URL(request.url);
-  const tokenHash = requestUrl.searchParams.get("token_hash");
-  const type = requestUrl.searchParams.get("type");
-  const next = requestUrl.searchParams.get("next") || "/";
+
+  const tokenHash =
+    requestUrl.searchParams.get("token_hash");
+
+  const type =
+    requestUrl.searchParams.get("type");
+
+  const next =
+    requestUrl.searchParams.get("next") || "/";
 
   if (!tokenHash || !type) {
     return NextResponse.redirect(
-      new URL("/?auth_error=invalid_link", requestUrl.origin)
+      new URL(
+        "/?auth_error=invalid_link",
+        requestUrl.origin
+      )
     );
   }
 
-  const cookieStore = await cookies();
+  // This is the exact response that will return
+  // the authenticated browser to HIISSA.
+  const response = NextResponse.redirect(
+    new URL(next, requestUrl.origin)
+  );
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,32 +34,38 @@ export async function GET(request) {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll();
+          return request.cookies.getAll();
         },
+
         setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Cookie setting can be ignored when called
-            // from a context that cannot modify cookies.
-          }
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              response.cookies.set(
+                name,
+                value,
+                options
+              );
+            }
+          );
         },
       },
     }
   );
 
-  const { error } = await supabase.auth.verifyOtp({
-    type,
-    token_hash: tokenHash,
-  });
+  const { error } =
+    await supabase.auth.verifyOtp({
+      type,
+      token_hash: tokenHash,
+    });
 
   if (error) {
     return NextResponse.redirect(
-      new URL("/?auth_error=verification_failed", requestUrl.origin)
+      new URL(
+        "/?auth_error=verification_failed",
+        requestUrl.origin
+      )
     );
   }
 
-  return NextResponse.redirect(new URL(next, requestUrl.origin));
+  return response;
 }
