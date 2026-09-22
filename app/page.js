@@ -1628,6 +1628,9 @@ const [guestMigrationError, setGuestMigrationError] = useState("");
     previousChats,
     setPreviousChats,
   ] = useState([]);
+const hasGuestConversations =
+  previousChats.length > 0 || messages.length > 1;
+  
 
   const [
     activePreviousChatId,
@@ -4092,7 +4095,7 @@ clientCreatedAt: new Date().toISOString(),
 
     <button
       type="button"
-      onClick={() => chooseGuestMigration("save")}
+      onClick={() => saveGuestMigrationChoice("save")}
       disabled={authLoading}
       style={{ width: "100%", marginBottom: "8px" }}
     >
@@ -4101,7 +4104,7 @@ clientCreatedAt: new Date().toISOString(),
 
     <button
       type="button"
-      onClick={() => chooseGuestMigration("skip")}
+      onClick={() => saveGuestMigrationChoice("skip")}
       disabled={authLoading}
       style={{ width: "100%" }}
     >
