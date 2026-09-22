@@ -1621,6 +1621,9 @@ const [authMessage, setAuthMessage] = useState("");
 const [authLoading, setAuthLoading] = useState(false);
 const [showAuthPanel, setShowAuthPanel] = useState(false);
 const [authError, setAuthError] = useState("");  
+const [guestMigrationChoice, setGuestMigrationChoice] = useState(null);
+const [guestMigrationStatus, setGuestMigrationStatus] = useState("");
+const [guestMigrationError, setGuestMigrationError] = useState("");  
   const [
     previousChats,
     setPreviousChats,
@@ -2264,7 +2267,38 @@ useEffect(() => {
     subscription.unsubscribe();
   };
 }, []);
-useEffect(() => {
+  useEffect(() => {
+    if (!authInitialised || !authSession?.access_token) return;
+
+    let cancelled = false;
+
+    async function runPendingGuestMigration() {
+      try {
+        const migrationIntent = window.localStorage.getItem(
+          "hiissa_guest_migration_intent"
+        );
+
+        if (
+          !cancelled &&
+          (migrationIntent === "save" || migrationIntent === "skip")
+        ) {
+          await migrateGuestConversations(authSession);
+        }
+      } catch (error) {
+        console.error(
+          "HIISSA pending Guest migration check failed:",
+          error
+        );
+      }
+    }
+
+    runPendingGuestMigration();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authInitialised, authSession]);
+  useEffect(() => {  
 if (!authInitialised) return;  
   let cancelled = false;
 
@@ -2837,10 +2871,173 @@ authSession?.access_token,
     ) {
       return "move_forward";
     }
+function saveGuestMigrationChoice(choice) {
+  if (choice !== "save" && choice !== "skip") {
+    return;
+  }
 
+  setGuestMigrationChoice(choice);
+  setGuestMigrationError("");
+  setGuestMigrationStatus("");
+
+  try {
+    window.localStorage.setItem(
+      "hiissa_guest_migration_intent",
+      choice
+    );
+  } catch {
+    setGuestMigrationError(
+      "HIISSA couldn't remember your conversation choice on this device. Please try again."
+    );
+  }
+}
     return null;
   }
-async function sendMagicLink() {
+async function migrateGuestConversations(session) {
+  if (!session?.access_token) {
+    return;
+  }
+
+  let migrationIntent = null;
+
+  try {
+    migrationIntent = window.localStorage.getItem(
+      "hiissa_guest_migration_intent"
+    );
+  } catch {
+    return;
+  }
+
+  if (migrationIntent === "skip") {
+    window.localStorage.removeItem(
+      "hiissa_guest_migration_intent"
+    );
+    setGuestMigrationChoice(null);
+    return;
+  }
+
+  if (migrationIntent !== "save") {
+    return;
+  }
+
+  setGuestMigrationStatus(
+    "Saving your conversations to My HIISSA..."
+  );
+  setGuestMigrationError("");
+
+  try {
+    const savedChats = JSON.parse(
+      window.localStorage.getItem(
+        "hiissa_previous_chats"
+      ) || "[]"
+    );
+
+    const activeChat = JSON.parse(
+      window.localStorage.getItem(
+        "hiissa_active_chat"
+      ) || "null"
+    );
+
+    const conversations = Array.isArray(savedChats)
+      ? [...savedChats]
+      : [];
+
+    if (
+      activeChat &&
+      Array.isArray(activeChat.messages) &&
+      activeChat.messages.length > 1 &&
+      !activeChat.activePreviousChatId
+    ) {
+      let activeGuestSourceId =
+        window.localStorage.getItem(
+          "hiissa_active_guest_source_id"
+        );
+
+      if (!activeGuestSourceId) {
+        activeGuestSourceId =
+          typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random()
+                .toString(36)
+                .slice(2, 10)}`;
+
+        window.localStorage.setItem(
+          "hiissa_active_guest_source_id",
+          activeGuestSourceId
+        );
+      }
+
+      const firstUserMessage =
+        activeChat.messages.find(
+          (message) => message.role === "user"
+        )?.content || "HIISSA Conversation";
+
+      conversations.push({
+        id: `active-${activeGuestSourceId}`,
+        title:
+          firstUserMessage.length > 48
+            ? `${firstUserMessage.slice(0, 48)}…`
+            : firstUserMessage,
+        messages: activeChat.messages,
+      });
+    }
+
+    for (const conversation of conversations) {
+      if (
+        !conversation?.id ||
+        !Array.isArray(conversation.messages) ||
+        conversation.messages.length === 0
+      ) {
+        continue;
+      }
+
+      const response = await fetch(
+        "/api/guest-migration",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            guestSourceId: `guest:${conversation.id}`,
+            title:
+              conversation.title ||
+              "HIISSA Conversation",
+            messages: conversation.messages,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "One or more conversations could not be saved."
+        );
+      }
+    }
+
+    window.localStorage.removeItem(
+      "hiissa_guest_migration_intent"
+    );
+
+    setGuestMigrationChoice(null);
+    setGuestMigrationStatus(
+      "Your conversations are now saved to My HIISSA."
+    );
+  } catch (error) {
+    console.error(
+      "HIISSA Guest migration failed:",
+      error
+    );
+
+    setGuestMigrationStatus("");
+    setGuestMigrationError(
+      "Your conversations are still safe on this device, but HIISSA couldn't finish saving them to your account. Please try again."
+    );
+  }
+}
+  async function sendMagicLink() {
   const email = authEmail.trim();
 
   setAuthError("");
@@ -3880,7 +4077,38 @@ clientCreatedAt: new Date().toISOString(),
                 Save your HIISSA space and securely continue your conversations
                 across your phone, laptop and other devices.
               </div>
+{hasGuestConversations && !guestMigrationChoice && (
+  <div
+    style={{
+      marginBottom: "12px",
+      padding: "12px",
+      border: "1px solid rgba(80, 102, 93, 0.18)",
+      borderRadius: "12px",
+    }}
+  >
+    <div style={{ marginBottom: "10px", fontWeight: 600 }}>
+      Would you like to bring your existing conversations with you?
+    </div>
 
+    <button
+      type="button"
+      onClick={() => chooseGuestMigration("save")}
+      disabled={authLoading}
+      style={{ width: "100%", marginBottom: "8px" }}
+    >
+      Save my existing conversations
+    </button>
+
+    <button
+      type="button"
+      onClick={() => chooseGuestMigration("skip")}
+      disabled={authLoading}
+      style={{ width: "100%" }}
+    >
+      Start my account without these conversations
+    </button>
+  </div>
+)}
               <input
                 type="email"
                 value={authEmail}
