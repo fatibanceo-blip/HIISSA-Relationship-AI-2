@@ -10,8 +10,7 @@ const HANDOFF_LIFETIME_MS = 60 * 60 * 1000;
 
 function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
+ const serviceRoleKey = process.env.SUPABASE_SECRET_KEY;
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error("Guest migration handoff server configuration is missing.");
   }
