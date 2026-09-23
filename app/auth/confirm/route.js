@@ -13,6 +13,9 @@ export async function GET(request) {
   const next =
     requestUrl.searchParams.get("next") || "/";
 
+  const handoffToken =
+    requestUrl.searchParams.get("handoff") || "";
+
   if (!tokenHash || !type) {
     return NextResponse.redirect(
       new URL(
@@ -22,11 +25,27 @@ export async function GET(request) {
     );
   }
 
+  // Build the authenticated destination.
+  // If this sign-in belongs to an approved Guest
+  // Save & Sync transfer, preserve its opaque
+  // one-time handoff token for the authenticated
+  // claim step after sign-in succeeds.
+  const destination = new URL(
+    next,
+    requestUrl.origin
+  );
+
+  if (handoffToken) {
+    destination.searchParams.set(
+      "guest_handoff",
+      handoffToken
+    );
+  }
+
   // This is the exact response that will return
   // the authenticated browser to HIISSA.
-  const response = NextResponse.redirect(
-    new URL(next, requestUrl.origin)
-  );
+  const response =
+    NextResponse.redirect(destination);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
