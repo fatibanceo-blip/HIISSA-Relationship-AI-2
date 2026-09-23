@@ -83,6 +83,15 @@ function cleanConversations(conversations) {
     .filter(Boolean);
 }
 
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -154,6 +163,83 @@ export async function POST(request) {
         error: "HIISSA couldn't prepare your conversations for saving.",
       },
       { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const body = await request.json();
+    const handoffToken =
+      typeof body?.handoffToken === "string"
+        ? body.handoffToken.trim()
+        : "";
+
+    if (!handoffToken) {
+      return Response.json(
+        { error: "A Guest migration handoff token is required." },
+        {
+          status: 400,
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
+
+    const tokenHash = hashToken(handoffToken);
+    const supabase = getSupabaseAdmin();
+
+    const { error } = await supabase
+      .from("guest_migration_handoffs")
+      .delete()
+      .eq("token_hash", tokenHash)
+      .eq("status", "pending");
+
+    if (error) {
+      console.error(
+        "HIISSA Guest migration handoff cancellation failed:",
+        error
+      );
+
+      return Response.json(
+        {
+          error: "HIISSA couldn't cancel the pending Guest handoff.",
+        },
+        {
+          status: 500,
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        }
+      );
+    }
+
+    return Response.json(
+      { cancelled: true },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  } catch (error) {
+    console.error(
+      "HIISSA Guest migration handoff cancellation request failed:",
+      error
+    );
+
+    return Response.json(
+      {
+        error: "HIISSA couldn't cancel the pending Guest handoff.",
+      },
+      {
+        status: 500,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      }
     );
   }
 }
