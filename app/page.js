@@ -2271,86 +2271,185 @@ useEffect(() => {
   };
 }, []);
 useEffect(() => {
-  if (!authInitialised || !supabase) return;
+  if (
+    !authInitialised ||
+    !authSession?.access_token
+  ) {
+    return;
+  }
 
   let cancelled = false;
 
-  async function runPendingGuestMigration() {
+  async function claimGuestHandoff() {
+    const currentUrl =
+      new URL(window.location.href);
+
+    const handoffToken =
+      currentUrl.searchParams.get(
+        "guest_handoff"
+      );
+
+    if (!handoffToken) {
+      try {
+        const migrationIntent =
+          window.localStorage.getItem(
+            "hiissa_guest_migration_intent"
+          );
+
+        if (migrationIntent === "skip") {
+          window.localStorage.removeItem(
+            "hiissa_guest_migration_intent"
+          );
+
+          window.localStorage.removeItem(
+            "hiissa_guest_migration_expected_count"
+          );
+
+          if (!cancelled) {
+            setGuestMigrationChoice(null);
+          }
+        }
+      } catch {
+        // Local storage is optional.
+      }
+
+      return;
+    }
+
+    if (!cancelled) {
+      setGuestMigrationStatus(
+        "Saving your conversations to My HIISSA..."
+      );
+
+      setGuestMigrationError("");
+    }
+
     try {
-      const migrationIntent =
-        window.localStorage.getItem(
+      const claimResponse = await fetch(
+        "/api/guest-migration-claim",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            Authorization:
+              `Bearer ${authSession.access_token}`,
+          },
+          body: JSON.stringify({
+            handoffToken,
+          }),
+        }
+      );
+
+      const claimData =
+        await claimResponse
+          .json()
+          .catch(() => ({}));
+
+      if (
+        !claimResponse.ok ||
+        !claimData?.claimed
+      ) {
+        throw new Error(
+          claimData?.error ||
+            "HIISSA couldn't complete the secure conversation handoff."
+        );
+      }
+
+      const refreshedResponse =
+        await fetch(
+          "/api/conversations",
+          {
+            method: "GET",
+            headers: {
+              Authorization:
+                `Bearer ${authSession.access_token}`,
+            },
+          }
+        );
+
+      if (!refreshedResponse.ok) {
+        throw new Error(
+          "Your conversations were saved, but HIISSA couldn't refresh Previous Chats yet."
+        );
+      }
+
+      const refreshedData =
+        await refreshedResponse.json();
+
+      if (cancelled) {
+        return;
+      }
+
+      setPreviousChats(
+        (
+          Array.isArray(
+            refreshedData?.conversations
+          )
+            ? refreshedData.conversations
+            : []
+        ).map((conversation) => ({
+          ...conversation,
+          messages: Array.isArray(
+            conversation.messages
+          )
+            ? conversation.messages
+            : [],
+        }))
+      );
+
+      try {
+        window.localStorage.removeItem(
           "hiissa_guest_migration_intent"
         );
 
-      if (
-        migrationIntent !== "save" &&
-        migrationIntent !== "skip"
-      ) {
-        return;
+        window.localStorage.removeItem(
+          "hiissa_guest_migration_expected_count"
+        );
+      } catch {
+        // Local Guest originals remain safe.
       }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const cleanUrl =
+        new URL(window.location.href);
 
-      if (
-        cancelled ||
-        !session?.access_token
-      ) {
-        return;
-      }
+      cleanUrl.searchParams.delete(
+        "guest_handoff"
+      );
 
-      await migrateGuestConversations(session);
+      window.history.replaceState(
+        {},
+        "",
+        `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`
+      );
+
+      setGuestMigrationChoice(null);
+
+      setGuestMigrationStatus(
+        "Your conversations are now saved to My HIISSA."
+      );
     } catch (error) {
       console.error(
-        "HIISSA pending Guest migration check failed:",
+        "HIISSA Guest handoff claim failed:",
         error
       );
 
       if (!cancelled) {
         setGuestMigrationStatus("");
+
         setGuestMigrationError(
-          "Your conversations are still safe on this device, but HIISSA couldn't finish saving them to your account. Please try again."
+          "Your conversations are still safe, but HIISSA couldn't finish saving them to your account. Please try again."
         );
       }
     }
   }
 
-  runPendingGuestMigration();
-
-  function retryPendingGuestMigration() {
-    if (
-      document.visibilityState === "visible"
-    ) {
-      runPendingGuestMigration();
-    }
-  }
-
-  window.addEventListener(
-    "focus",
-    retryPendingGuestMigration
-  );
-
-  document.addEventListener(
-    "visibilitychange",
-    retryPendingGuestMigration
-  );
+  claimGuestHandoff();
 
   return () => {
     cancelled = true;
-
-    window.removeEventListener(
-      "focus",
-      retryPendingGuestMigration
-    );
-
-    document.removeEventListener(
-      "visibilitychange",
-      retryPendingGuestMigration
-    );
   };
-}, [authInitialised, authSession]); 
-    
+}, [authInitialised, authSession]);
   
   useEffect(() => {  
 if (!authInitialised) return;  
