@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 export default function AuthContinuePage() {
   const [tokenHash, setTokenHash] = useState("");
   const [type, setType] = useState("email");
+  const [handoffToken, setHandoffToken] = useState("");
   const [ready, setReady] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState("");
@@ -28,8 +29,14 @@ export default function AuthContinuePage() {
       query.get("type") ||
       "email";
 
+    const guestHandoff =
+      query.get("handoff") ||
+      hash.get("handoff") ||
+      "";
+
     setTokenHash(token);
     setType(authType);
+    setHandoffToken(guestHandoff);
     setReady(true);
   }, []);
 
@@ -49,6 +56,10 @@ export default function AuthContinuePage() {
       type,
       next: "/",
     });
+
+    if (handoffToken) {
+      params.set("handoff", handoffToken);
+    }
 
     window.location.assign(
       `/auth/confirm?${params.toString()}`
