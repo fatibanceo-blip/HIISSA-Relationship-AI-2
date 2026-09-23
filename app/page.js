@@ -6,7 +6,7 @@ import { getContinuityContext } from "../lib/hiissa/continuity";
 
 const starters = [
   ["💔", "I'm struggling to let someone go."],
-  ["❤️", "I don't know if they really love me."],f
+  ["❤️", "I don't know if they really love me."],
   ["🧩", "I don't understand their behavior."],
   ["🌱", "I want to heal and move forward."],
 ];
