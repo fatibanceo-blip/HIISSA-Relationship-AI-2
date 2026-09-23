@@ -6,7 +6,7 @@ import { getContinuityContext } from "../lib/hiissa/continuity";
 
 const starters = [
   ["💔", "I'm struggling to let someone go."],
-  ["❤️", "I don't know if they really love me."],
+  ["❤️", "I don't know if they really love me."],f
   ["🧩", "I don't understand their behavior."],
   ["🌱", "I want to heal and move forward."],
 ];
@@ -3189,11 +3189,113 @@ window.localStorage.removeItem(
   setAuthLoading(true);
 
   try {
-    const { error } = await supabase.auth.signInWithOtp({
+  let emailRedirectTo =
+    `${window.location.origin}/auth/continue`;
+
+  if (guestMigrationChoice === "save") {
+    const savedChats = JSON.parse(
+      window.localStorage.getItem(
+        "hiissa_previous_chats"
+      ) || "[]"
+    );
+
+    const activeChat = JSON.parse(
+      window.localStorage.getItem(
+        "hiissa_active_chat"
+      ) || "null"
+    );
+
+    const conversations = Array.isArray(savedChats)
+      ? [...savedChats]
+      : [];
+
+    if (
+      activeChat &&
+      Array.isArray(activeChat.messages) &&
+      activeChat.messages.length > 1 &&
+      !activeChat.activePreviousChatId
+    ) {
+      let activeGuestSourceId =
+        window.localStorage.getItem(
+          "hiissa_active_guest_source_id"
+        );
+
+      if (!activeGuestSourceId) {
+        activeGuestSourceId =
+          typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random()
+                .toString(36)
+                .slice(2, 10)}`;
+
+        window.localStorage.setItem(
+          "hiissa_active_guest_source_id",
+          activeGuestSourceId
+        );
+      }
+
+      const firstUserMessage =
+        activeChat.messages.find(
+          (message) => message.role === "user"
+        )?.content || "HIISSA Conversation";
+
+      conversations.push({
+        id: `active-${activeGuestSourceId}`,
+        title:
+          firstUserMessage.length > 48
+            ? `${firstUserMessage.slice(0, 48)}…`
+            : firstUserMessage,
+        messages: activeChat.messages,
+      });
+    }
+
+    if (conversations.length === 0) {
+      throw new Error(
+        "No Guest conversations were available to save."
+      );
+    }
+
+    const handoffResponse = await fetch(
+      "/api/guest-migration-handoff",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversations,
+        }),
+      }
+    );
+
+    if (!handoffResponse.ok) {
+      throw new Error(
+        "HIISSA couldn't securely prepare your conversations."
+      );
+    }
+
+    const handoffData =
+      await handoffResponse.json();
+
+    if (!handoffData?.handoffToken) {
+      throw new Error(
+        "HIISSA couldn't create the secure conversation handoff."
+      );
+    }
+
+    emailRedirectTo =
+      `${window.location.origin}/auth/continue?handoff=${encodeURIComponent(
+        handoffData.handoffToken
+      )}`;
+  }
+
+  const { error } =
+    await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/continue`,
-     shouldCreateUser: false,   
+        emailRedirectTo,
+        shouldCreateUser: false,
       },
     });
 
