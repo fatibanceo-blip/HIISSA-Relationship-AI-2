@@ -2270,35 +2270,86 @@ useEffect(() => {
     subscription.unsubscribe();
   };
 }, []);
-  useEffect(() => {
-    if (!authInitialised || !authSession?.access_token) return;
+useEffect(() => {
+  if (!authInitialised || !supabase) return;
 
-    let cancelled = false;
+  let cancelled = false;
 
-    async function runPendingGuestMigration() {
-      try {
-        const migrationIntent = window.localStorage.getItem(
+  async function runPendingGuestMigration() {
+    try {
+      const migrationIntent =
+        window.localStorage.getItem(
           "hiissa_guest_migration_intent"
         );
 
-        if (
-          !cancelled &&
-          (migrationIntent === "save" || migrationIntent === "skip")
-        ) {
-          await migrateGuestConversations(authSession);
-        }
-      } catch (error) {
-        console.error(
-          "HIISSA pending Guest migration check failed:",
-          error
+      if (
+        migrationIntent !== "save" &&
+        migrationIntent !== "skip"
+      ) {
+        return;
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (
+        cancelled ||
+        !session?.access_token
+      ) {
+        return;
+      }
+
+      await migrateGuestConversations(session);
+    } catch (error) {
+      console.error(
+        "HIISSA pending Guest migration check failed:",
+        error
+      );
+
+      if (!cancelled) {
+        setGuestMigrationStatus("");
+        setGuestMigrationError(
+          "Your conversations are still safe on this device, but HIISSA couldn't finish saving them to your account. Please try again."
         );
       }
     }
+  }
 
-    runPendingGuestMigration();
+  runPendingGuestMigration();
 
-    return () => {
-      cancelled = true;
+  function retryPendingGuestMigration() {
+    if (
+      document.visibilityState === "visible"
+    ) {
+      runPendingGuestMigration();
+    }
+  }
+
+  window.addEventListener(
+    "focus",
+    retryPendingGuestMigration
+  );
+
+  document.addEventListener(
+    "visibilitychange",
+    retryPendingGuestMigration
+  );
+
+  return () => {
+    cancelled = true;
+
+    window.removeEventListener(
+      "focus",
+      retryPendingGuestMigration
+    );
+
+    document.removeEventListener(
+      "visibilitychange",
+      retryPendingGuestMigration
+    );
+  };
+}, [authInitialised, authSession]); 
     };
   }, [authInitialised, authSession]);
   useEffect(() => {  
