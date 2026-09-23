@@ -2883,7 +2883,36 @@ function saveGuestMigrationChoice(choice) {
   setGuestMigrationError("");
   setGuestMigrationStatus("");
 
-  try {
+  try {if (choice === "save") {
+  const savedChats = JSON.parse(
+    window.localStorage.getItem(
+      "hiissa_previous_chats"
+    ) || "[]"
+  );
+
+  const activeChat = JSON.parse(
+    window.localStorage.getItem(
+      "hiissa_active_chat"
+    ) || "null"
+  );
+
+  const hasActiveGuestChat =
+    activeChat &&
+    Array.isArray(activeChat.messages) &&
+    activeChat.messages.length > 1 &&
+    !activeChat.activePreviousChatId;
+
+  const expectedConversationCount =
+    (Array.isArray(savedChats)
+      ? savedChats.length
+      : 0) +
+    (hasActiveGuestChat ? 1 : 0);
+
+  window.localStorage.setItem(
+    "hiissa_guest_migration_expected_count",
+    String(expectedConversationCount)
+  );
+}
     window.localStorage.setItem(
       "hiissa_guest_migration_intent",
       choice
@@ -2985,7 +3014,25 @@ async function migrateGuestConversations(session) {
         messages: activeChat.messages,
       });
     }
+const expectedConversationCount = Number(
+  window.localStorage.getItem(
+    "hiissa_guest_migration_expected_count"
+  ) || "0"
+);
 
+if (
+  expectedConversationCount > 0 &&
+  conversations.length < expectedConversationCount
+) {
+  throw new Error(
+    "HIISSA could not access all of the Guest conversations selected for transfer."
+  );
+}
+    if (conversations.length === 0) {
+  throw new Error(
+    "No Guest conversations were available to transfer."
+  );
+}
     for (const conversation of conversations) {
       if (
         !conversation?.id ||
@@ -3019,7 +3066,39 @@ async function migrateGuestConversations(session) {
         );
       }
     }
+    
+const refreshedResponse = await fetch(
+  "/api/conversations",
+  {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  }
+);
 
+if (!refreshedResponse.ok) {
+  throw new Error(
+    "Saved conversations could not be verified."
+  );
+}
+
+const refreshedConversations =
+  await refreshedResponse.json();
+
+setPreviousChats(
+  (Array.isArray(refreshedConversations)
+    ? refreshedConversations
+    : []
+  ).map((conversation) => ({
+    ...conversation,
+    messages: Array.isArray(conversation.messages)
+      ? conversation.messages
+      : [],
+  }))
+);
+window.localStorage.removeItem(
+  "hiissa_guest_migration_expected_count"
+);   
     window.localStorage.removeItem(
       "hiissa_guest_migration_intent"
     );
