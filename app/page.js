@@ -2350,8 +2350,8 @@ useEffect(() => {
     );
   };
 }, [authInitialised, authSession]); 
-    };
-  }, [authInitialised, authSession]);
+    
+  
   useEffect(() => {  
 if (!authInitialised) return;  
   let cancelled = false;
