@@ -3024,7 +3024,10 @@ authSession?.access_token,
     ) {
       return "move_forward";
     }
-function saveGuestMigrationChoice(choice) {
+    return null;
+  }
+    
+    function saveGuestMigrationChoice(choice) {
   if (choice !== "save" && choice !== "skip") {
     return;
   }
@@ -3073,202 +3076,8 @@ function saveGuestMigrationChoice(choice) {
     );
   }
 }
-    return null;
-  }
-async function migrateGuestConversations(session) {
-  if (!session?.access_token) {
-    return;
-  }
+  
 
-  let migrationIntent = null;
-
-  try {
-    migrationIntent = window.localStorage.getItem(
-      "hiissa_guest_migration_intent"
-    );
-  } catch {
-    return;
-  }
-
-  if (migrationIntent === "skip") {
-    window.localStorage.removeItem(
-      "hiissa_guest_migration_intent"
-    );
-    setGuestMigrationChoice(null);
-    return;
-  }
-
-  if (migrationIntent !== "save") {
-    return;
-  }
-
-  setGuestMigrationStatus(
-    "Saving your conversations to My HIISSA..."
-  );
-  setGuestMigrationError("");
-
-  try {
-    const savedChats = JSON.parse(
-      window.localStorage.getItem(
-        "hiissa_previous_chats"
-      ) || "[]"
-    );
-
-    const activeChat = JSON.parse(
-      window.localStorage.getItem(
-        "hiissa_active_chat"
-      ) || "null"
-    );
-
-    const conversations = Array.isArray(savedChats)
-      ? [...savedChats]
-      : [];
-
-    if (
-      activeChat &&
-      Array.isArray(activeChat.messages) &&
-      activeChat.messages.length > 1 &&
-      !activeChat.activePreviousChatId
-    ) {
-      let activeGuestSourceId =
-        window.localStorage.getItem(
-          "hiissa_active_guest_source_id"
-        );
-
-      if (!activeGuestSourceId) {
-        activeGuestSourceId =
-          typeof crypto !== "undefined" &&
-          typeof crypto.randomUUID === "function"
-            ? crypto.randomUUID()
-            : `${Date.now()}-${Math.random()
-                .toString(36)
-                .slice(2, 10)}`;
-
-        window.localStorage.setItem(
-          "hiissa_active_guest_source_id",
-          activeGuestSourceId
-        );
-      }
-
-      const firstUserMessage =
-        activeChat.messages.find(
-          (message) => message.role === "user"
-        )?.content || "HIISSA Conversation";
-
-      conversations.push({
-        id: `active-${activeGuestSourceId}`,
-        title:
-          firstUserMessage.length > 48
-            ? `${firstUserMessage.slice(0, 48)}…`
-            : firstUserMessage,
-        messages: activeChat.messages,
-      });
-    }
-const expectedConversationCount = Number(
-  window.localStorage.getItem(
-    "hiissa_guest_migration_expected_count"
-  ) || "0"
-);
-
-if (
-  expectedConversationCount > 0 &&
-  conversations.length < expectedConversationCount
-) {
-  throw new Error(
-    "HIISSA could not access all of the Guest conversations selected for transfer."
-  );
-}
-    if (conversations.length === 0) {
-  throw new Error(
-    "No Guest conversations were available to transfer."
-  );
-}
-    for (const conversation of conversations) {
-      if (
-        !conversation?.id ||
-        !Array.isArray(conversation.messages) ||
-        conversation.messages.length === 0
-      ) {
-        continue;
-      }
-
-      const response = await fetch(
-        "/api/guest-migration",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            guestSourceId: `guest:${conversation.id}`,
-            title:
-              conversation.title ||
-              "HIISSA Conversation",
-            messages: conversation.messages,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          "One or more conversations could not be saved."
-        );
-      }
-    }
-    
-const refreshedResponse = await fetch(
-  "/api/conversations",
-  {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  }
-);
-
-if (!refreshedResponse.ok) {
-  throw new Error(
-    "Saved conversations could not be verified."
-  );
-}
-
-const refreshedConversations =
-  await refreshedResponse.json();
-
-setPreviousChats(
-  (Array.isArray(refreshedConversations)
-    ? refreshedConversations
-    : []
-  ).map((conversation) => ({
-    ...conversation,
-    messages: Array.isArray(conversation.messages)
-      ? conversation.messages
-      : [],
-  }))
-);
-window.localStorage.removeItem(
-  "hiissa_guest_migration_expected_count"
-);   
-    window.localStorage.removeItem(
-      "hiissa_guest_migration_intent"
-    );
-
-    setGuestMigrationChoice(null);
-    setGuestMigrationStatus(
-      "Your conversations are now saved to My HIISSA."
-    );
-  } catch (error) {
-    console.error(
-      "HIISSA Guest migration failed:",
-      error
-    );
-
-    setGuestMigrationStatus("");
-    setGuestMigrationError(
-      "Your conversations are still safe on this device, but HIISSA couldn't finish saving them to your account. Please try again."
-    );
-  }
-}
   async function sendMagicLink() {
   const email = authEmail.trim();
 
@@ -3283,7 +3092,17 @@ window.localStorage.removeItem(
   if (!supabase) {
     setAuthError("HIISSA sign-in is temporarily unavailable.");
     return;
-  }
+ }   
+ if (
+  hasGuestConversations &&
+  guestMigrationChoice !== "save" &&
+  guestMigrationChoice !== "skip"
+) {
+  setAuthError(
+    "Please choose whether to save your existing conversations before we send your sign-in link."
+  );
+  return;
+}
 
   setAuthLoading(true);
 
@@ -3304,10 +3123,23 @@ window.localStorage.removeItem(
       ) || "null"
     );
 
-    const conversations = Array.isArray(savedChats)
-      ? [...savedChats]
-      : [];
-
+   const conversations = Array.isArray(savedChats)
+  ? savedChats
+      .filter(
+        (conversation) =>
+          typeof conversation?.id === "string" &&
+          conversation.id.trim() &&
+          Array.isArray(conversation?.messages) &&
+          conversation.messages.length > 0
+      )
+      .map((conversation) => ({
+        guestSourceId: `guest:${conversation.id.trim()}`,
+        title:
+          conversation.title ||
+          "HIISSA Conversation",
+        messages: conversation.messages,
+      }))
+  : [];
     if (
       activeChat &&
       Array.isArray(activeChat.messages) &&
@@ -3340,7 +3172,7 @@ window.localStorage.removeItem(
         )?.content || "HIISSA Conversation";
 
       conversations.push({
-        id: `active-${activeGuestSourceId}`,
+       guestSourceId: `guest:active-${activeGuestSourceId}`,
         title:
           firstUserMessage.length > 48
             ? `${firstUserMessage.slice(0, 48)}…`
