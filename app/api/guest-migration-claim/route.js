@@ -250,20 +250,20 @@ export async function POST(request) {
       const conversation
       of conversations
     ) {
-      const conversationId =
-        typeof conversation?.id === "string"
-          ? conversation.id.trim()
-          : "";
+     const guestSourceId =
+  typeof conversation?.guestSourceId === "string"
+    ? conversation.guestSourceId.trim()
+    : "";
 
-      if (
-        !conversationId ||
-        !Array.isArray(
-          conversation?.messages
-        ) ||
-        conversation.messages.length === 0
-      ) {
-        continue;
-      }
+if (
+  !guestSourceId ||
+  !Array.isArray(
+    conversation?.messages
+  ) ||
+  conversation.messages.length === 0
+) {
+  continue;
+}
 
       const migrationResponse =
         await fetch(
@@ -280,8 +280,7 @@ export async function POST(request) {
                 `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
-              guestSourceId:
-                `guest:${conversationId}`,
+             guestSourceId,
               title:
                 conversation.title ||
                 "HIISSA Conversation",
