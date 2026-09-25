@@ -1,3 +1,4 @@
+import { validateGuestMigrationServerConfig, logGuestMigrationFailure } from "../../../lib/hiissa/guest-migration-server-config";
 import { createClient } from "@supabase/supabase-js";
 import { createHash, randomBytes } from "crypto";
 
@@ -10,7 +11,8 @@ const HANDOFF_LIFETIME_MS = 60 * 60 * 1000;
 
 function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
- const serviceRoleKey = process.env.SUPABASE_SECRET_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SECRET_KEY;
+  validateGuestMigrationServerConfig(supabaseUrl, serviceRoleKey);
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error("Guest migration handoff server configuration is missing.");
   }
@@ -127,10 +129,7 @@ export async function POST(request) {
       });
 
     if (error) {
-      console.error(
-        "HIISSA Guest migration handoff creation failed:",
-        error
-      );
+      logGuestMigrationFailure("handoff-create", error);
 
       return Response.json(
         {
@@ -153,10 +152,7 @@ export async function POST(request) {
       }
     );
   } catch (error) {
-    console.error(
-      "HIISSA Guest migration handoff request failed:",
-      error
-    );
+    logGuestMigrationFailure("handoff-create", error);
 
     return Response.json(
       {
@@ -197,10 +193,7 @@ export async function DELETE(request) {
       .eq("status", "pending");
 
     if (error) {
-      console.error(
-        "HIISSA Guest migration handoff cancellation failed:",
-        error
-      );
+      logGuestMigrationFailure("handoff-cancel", error);
 
       return Response.json(
         {
@@ -225,10 +218,7 @@ export async function DELETE(request) {
       }
     );
   } catch (error) {
-    console.error(
-      "HIISSA Guest migration handoff cancellation request failed:",
-      error
-    );
+    logGuestMigrationFailure("handoff-cancel", error);
 
     return Response.json(
       {

@@ -1,3 +1,4 @@
+import { validateGuestMigrationServerConfig, logGuestMigrationFailure } from "../../../lib/hiissa/guest-migration-server-config";
 import { createClient } from "@supabase/supabase-js";
 import { createHash } from "crypto";
 
@@ -47,6 +48,8 @@ function getSupabaseClients() {
 
   const secretKey =
     process.env.SUPABASE_SECRET_KEY;
+
+  validateGuestMigrationServerConfig(supabaseUrl, secretKey);
 
   if (
     !supabaseUrl ||
@@ -147,6 +150,7 @@ export async function POST(request) {
       userError ||
       !user?.id
     ) {
+      logGuestMigrationFailure("claim-auth", userError);
       return jsonResponse(
         {
           error:
@@ -171,10 +175,7 @@ export async function POST(request) {
       .maybeSingle();
 
     if (handoffError) {
-      console.error(
-        "HIISSA Guest handoff lookup failed:",
-        handoffError
-      );
+      logGuestMigrationFailure("claim-lookup", handoffError);
 
       return jsonResponse(
         {
@@ -338,10 +339,7 @@ if (
       .select("token_hash");
 
     if (claimError) {
-      console.error(
-        "HIISSA Guest handoff completion failed:",
-        claimError
-      );
+      logGuestMigrationFailure("claim-complete", claimError);
 
       return jsonResponse(
         {
@@ -358,6 +356,7 @@ if (
     ) {
       const {
         data: currentHandoff,
+        error: recheckError,
       } = await adminClient
         .from(
           "guest_migration_handoffs"
@@ -368,6 +367,10 @@ if (
           tokenHash
         )
         .maybeSingle();
+
+      if (recheckError) {
+        logGuestMigrationFailure("claim-recheck", recheckError);
+      }
 
       if (
         currentHandoff?.status ===
@@ -393,10 +396,7 @@ if (
       migratedConversationCount,
     });
   } catch (error) {
-    console.error(
-      "HIISSA Guest migration claim failed:",
-      error
-    );
+    logGuestMigrationFailure("claim-request", error);
 
     return jsonResponse(
       {
