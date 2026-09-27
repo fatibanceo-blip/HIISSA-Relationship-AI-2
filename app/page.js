@@ -2406,6 +2406,17 @@ useEffect(() => {
         window.localStorage.removeItem(
           "hiissa_guest_migration_expected_count"
         );
+      window.localStorage.removeItem(
+  "hiissa_previous_chats"
+);
+
+window.localStorage.removeItem(
+  "hiissa_active_chat"
+);
+
+window.localStorage.removeItem(
+  "hiissa_active_guest_source_id"
+);  
       } catch {
         // Local Guest originals remain safe.
       }
