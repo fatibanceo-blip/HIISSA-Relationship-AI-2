@@ -506,6 +506,7 @@ export async function POST(request) {
       .from("guest_migration_handoffs")
       .update({
         status: "claimed",
+        claimed_at: new Date().toISOString(),
         payload: {
           version: 1,
           conversations: [],
