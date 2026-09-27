@@ -3119,7 +3119,7 @@ function saveGuestMigrationChoice(choice) {
 
   try {
   let emailRedirectTo =
-    `${window.location.origin}/auth/continue`;
+    `${window.location.origin}/auth/continue?flow=auth`;
 
   if (guestMigrationChoice === "save") {
     const savedChats = JSON.parse(
@@ -3226,7 +3226,7 @@ function saveGuestMigrationChoice(choice) {
     }
 
     emailRedirectTo =
-      `${window.location.origin}/auth/continue?handoff=${encodeURIComponent(
+      `${window.location.origin}/auth/continue?flow=auth&handoff=${encodeURIComponent(
         handoffData.handoffToken
       )}`;
   }
