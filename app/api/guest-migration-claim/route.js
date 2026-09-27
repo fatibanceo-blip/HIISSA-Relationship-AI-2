@@ -262,7 +262,13 @@ export async function POST(request) {
         ) ||
         conversation.messages.length === 0
       ) {
-        continue;
+      return jsonResponse(
+  {
+    error:
+      "A staged Guest conversation is invalid. The handoff remains available for a safe retry.",
+  },
+  409
+);  
       }
 
       const migrationResponse =
