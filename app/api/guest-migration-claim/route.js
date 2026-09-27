@@ -271,36 +271,49 @@ export async function POST(request) {
 );  
       }
 
-      const migrationResponse =
-        await fetch(
-          new URL(
-            "/api/guest-migration",
-            request.url
-          ),
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-              Authorization:
-                `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-             guestSourceId,
-              title:
-                conversation.title ||
-                "HIISSA Conversation",
-              messages:
-                conversation.messages,
-            }),
-            cache: "no-store",
-          }
-        );
+      const cleanMessages =
+        conversation.messages
+          .filter(
+            (message) =>
+              (message?.role === "user" ||
+                message?.role === "assistant") &&
+              typeof message?.content === "string" &&
+              message.content.trim()
+          )
+          .map((message) => ({
+            role: message.role,
+            original_content: message.content,
+            client_created_at:
+              typeof message?.createdAt === "string" &&
+              message.createdAt.trim()
+                ? message.createdAt.trim()
+                : null,
+          }));
 
-      if (!migrationResponse.ok) {
+      if (cleanMessages.length === 0) {
+        return jsonResponse(
+          {
+            error:
+              "A staged Guest conversation has no valid messages. The handoff remains available for a safe retry.",
+          },
+          409
+        );
+      }
+
+      const {
+        data: existingConversation,
+        error: existingLookupError,
+      } = await adminClient
+        .from("conversations")
+        .select("id, guest_source_id")
+        .eq("user_id", user.id)
+        .eq("guest_source_id", guestSourceId)
+        .maybeSingle();
+
+      if (existingLookupError) {
         console.error(
-          "HIISSA staged Guest conversation migration failed:",
-          migrationResponse.status
+          "HIISSA staged Guest migration lookup failed:",
+          existingLookupError
         );
 
         return jsonResponse(
@@ -308,7 +321,166 @@ export async function POST(request) {
             error:
               "HIISSA couldn't finish transferring all of the Guest conversations. The handoff remains available for a safe retry.",
           },
-          502
+          500
+        );
+      }
+
+      let conversationId =
+        existingConversation?.id ?? null;
+
+      if (!conversationId) {
+        const now = new Date().toISOString();
+        const rawTitle =
+          typeof conversation?.title === "string"
+            ? conversation.title.trim()
+            : "";
+
+        const {
+          data: createdConversation,
+          error: createConversationError,
+        } = await adminClient
+          .from("conversations")
+          .insert({
+            user_id: user.id,
+            title: rawTitle
+              ? rawTitle.slice(0, 120)
+              : null,
+            guest_source_id: guestSourceId,
+            updated_at: now,
+            last_message_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (createConversationError) {
+          if (
+            createConversationError.code ===
+            "23505"
+          ) {
+            const {
+              data: retryConversation,
+              error: retryLookupError,
+            } = await adminClient
+              .from("conversations")
+              .select("id")
+              .eq("user_id", user.id)
+              .eq(
+                "guest_source_id",
+                guestSourceId
+              )
+              .maybeSingle();
+
+            if (
+              retryLookupError ||
+              !retryConversation?.id
+            ) {
+              console.error(
+                "HIISSA staged Guest migration retry lookup failed:",
+                retryLookupError
+              );
+
+              return jsonResponse(
+                {
+                  error:
+                    "HIISSA couldn't safely recover the Guest conversation transfer. The handoff remains available for a safe retry.",
+                },
+                500
+              );
+            }
+
+            conversationId =
+              retryConversation.id;
+          } else {
+            console.error(
+              "HIISSA staged Guest conversation creation failed:",
+              createConversationError
+            );
+
+            return jsonResponse(
+              {
+                error:
+                  "HIISSA couldn't finish transferring all of the Guest conversations. The handoff remains available for a safe retry.",
+              },
+              500
+            );
+          }
+        } else {
+          conversationId =
+            createdConversation.id;
+        }
+      }
+
+      const {
+        count: existingMessageCount,
+        error: messageCountError,
+      } = await adminClient
+        .from("messages")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .eq(
+          "conversation_id",
+          conversationId
+        );
+
+      if (messageCountError) {
+        console.error(
+          "HIISSA staged Guest message check failed:",
+          messageCountError
+        );
+
+        return jsonResponse(
+          {
+            error:
+              "HIISSA couldn't verify the Guest conversation transfer. The handoff remains available for a safe retry.",
+          },
+          500
+        );
+      }
+
+      if ((existingMessageCount ?? 0) === 0) {
+        const messageRows =
+          cleanMessages.map((message) => ({
+            conversation_id:
+              conversationId,
+            role: message.role,
+            original_content:
+              message.original_content,
+            client_created_at:
+              message.client_created_at,
+          }));
+
+        const {
+          error: messageInsertError,
+        } = await adminClient
+          .from("messages")
+          .insert(messageRows);
+
+        if (messageInsertError) {
+          console.error(
+            "HIISSA staged Guest message migration failed:",
+            messageInsertError
+          );
+
+          return jsonResponse(
+            {
+              error:
+                "HIISSA couldn't finish transferring all of the Guest conversations. The handoff remains available for a safe retry.",
+            },
+            500
+          );
+        }
+      } else if (
+        existingMessageCount !==
+        cleanMessages.length
+      ) {
+        return jsonResponse(
+          {
+            error:
+              "A staged Guest conversation has an incomplete or conflicting previous migration. The handoff remains available for a safe retry.",
+          },
+          409
         );
       }
 
