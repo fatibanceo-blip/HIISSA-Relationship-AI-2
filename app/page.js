@@ -3075,8 +3075,8 @@ function saveGuestMigrationChoice(choice) {
     );
   }
 }
-    return null;
-  }
+  
+  
 
   async function sendMagicLink() {
   const email = authEmail.trim();
