@@ -35,7 +35,7 @@ test("production URL is rejected", () => {
 });
 
 test("malformed URL and lookalike hostname are rejected", () => {
-  for (const supabaseUrl of ["not a URL", "https://upcssfmilewwshyxyvdf.supabase.co.evil.example"]) {
+  for (const supabaseUrl of ["not a URL", "http://upcssfmilewwshyxyvdf.supabase.co", "https://upcssfmilewwshyxyvdf.supabase.co.evil.example"]) {
     assert.equal(assessAdminStagingReadiness({ ...valid, supabaseUrl }).readyForLiveVerification, false);
   }
 });
