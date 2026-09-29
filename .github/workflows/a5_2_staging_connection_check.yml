@@ -25,5 +25,4 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://upcssfmilewwshyxyvdf.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.HIISSA_A52_STAGING_PUBLISHABLE_KEY }}
-          SUPABASE_SECRET_KEY: ${{ secrets.HIISSA_A52_STAGING_SECRET_KEY }}
         run: node scripts/a5_2_staging_connection_check.mjs
