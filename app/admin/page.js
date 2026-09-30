@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-);
+// Avoid constructing a browser-only client while Next.js prerenders this page.
+const supabase =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    : null;
 
 export default function AdminPage() {
   const [checking, setChecking] = useState(true);
@@ -22,6 +23,11 @@ export default function AdminPage() {
 
   useEffect(() => {
     async function loadAdminDashboard() {
+      if (!supabase) {
+        setStatsError("Admin authentication is not configured for this environment.");
+        setChecking(false);
+        return;
+      }
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -102,7 +108,7 @@ export default function AdminPage() {
 
   async function handleSignOut() {
     setSigningOut(true);
-    await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut();
     window.location.replace("/admin/login");
   }
 
