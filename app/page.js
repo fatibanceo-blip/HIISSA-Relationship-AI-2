@@ -4229,10 +4229,10 @@ clientCreatedAt: new Date().toISOString(),
         {!guestEntry && !guestMain && (!authInitialised || !authSession || showAuthPanel) && (
           <section aria-label="Welcome and account access" style={{
             marginBottom:"22px",padding:"clamp(20px,4vw,32px)",border:"1px solid #d6e2d6",borderRadius:"24px",
-            background:"linear-gradient(135deg,#eff7f0,#fffefa 30%,#fffefa 85%,#edf4ed)",
+            background:"radial-gradient(ellipse at 0% 16%,rgba(150,179,118,.27),transparent 29%),radial-gradient(ellipse at 98% 15%,rgba(148,181,116,.25),transparent 30%),radial-gradient(ellipse at 5% 90%,rgba(221,184,108,.20),transparent 32%),linear-gradient(120deg,#fffaf0,#fffef9 45%,#fff7e9)",
             boxShadow:"0 12px 35px rgba(33,77,56,.09)",color:"#234735"
           }}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",marginBottom:"clamp(28px,6vw,54px)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",marginBottom:"clamp(22px,4vw,36px)"}}>
               <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
                 <span aria-hidden="true" style={{display:"grid",placeItems:"center",width:"52px",height:"52px",borderRadius:"15px",background:"#204b3b",color:"white",fontSize:"31px",fontWeight:800}}>H</span>
                 <span style={{fontWeight:800,fontSize:"20px",color:"#204b3b"}}>HIISSA</span>
@@ -4249,29 +4249,29 @@ clientCreatedAt: new Date().toISOString(),
                     <p style={{fontSize:"clamp(16px,2.5vw,19px)",lineHeight:1.65,color:"#596d61",maxWidth:"560px",margin:"0 auto"}}>Whether you need someone to talk to or want to explore something deeper, you can begin here.</p>
                   </div>
                   <div style={{display:"grid",gap:"13px"}}>
-                    <button type="button" onClick={()=>{setGuestEntry(true);setWelcomePlan(null);window.scrollTo({top:0,behavior:"smooth"});}} style={{width:"100%",background:"#204b3b",color:"white",padding:"23px 16px",borderRadius:"20px",border:"none",cursor:"pointer"}}>
+                    <button type="button" onClick={()=>{setGuestEntry(true);setWelcomePlan(null);window.scrollTo({top:0,behavior:"smooth"});}} style={{width:"100%",background:"linear-gradient(105deg,#0e3d2e,#225b43 53%,#103e30)",color:"white",padding:"23px 16px",borderRadius:"20px",border:"none",cursor:"pointer"}}>
                       <strong style={{display:"block",fontSize:"clamp(20px,3vw,25px)"}}>Start talking</strong>
                       <span style={{display:"block",fontSize:"clamp(15px,2.5vw,18px)",marginTop:"5px"}}>Continue as a guest — no account needed</span>
                     </button>
-                    <button type="button" onClick={()=>{setAuthPanelMode("free");setShowAuthPanel(true);setAuthError("");setAuthMessage("");}} style={{width:"100%",background:"#f8fcf8",color:"#204b3b",border:"1px solid #a5c4ad",padding:"22px 14px",borderRadius:"20px",cursor:"pointer"}}>
+                    <button type="button" onClick={()=>{setAuthPanelMode("free");setShowAuthPanel(true);setAuthError("");setAuthMessage("");}} style={{width:"100%",background:"rgba(255,253,247,.93)",color:"#204b3b",border:"1px solid #caa76c",padding:"22px 14px",borderRadius:"20px",cursor:"pointer"}}>
                       <strong style={{display:"block",fontSize:"clamp(19px,3vw,23px)"}}>Get started with HIISSA FREE</strong>
                       <span style={{display:"block",fontSize:"clamp(15px,2.5vw,18px)",marginTop:"5px",color:"#596d61"}}>Create your free account</span>
                     </button>
                   </div>
                   <div style={{height:"1px",background:"#d9e4d9",margin:"36px 0 28px"}}/>
-                  <div style={{background:"#fcf8f1",border:"1px solid #e5d7be",borderRadius:"20px",padding:"clamp(17px,3vw,24px)"}}>
+                  <div style={{background:"linear-gradient(110deg,#fff7e7,#fffaf1)",border:"1px solid #dcb56c",borderRadius:"20px",padding:"clamp(17px,3vw,24px)"}}>
                     <h3 style={{fontSize:"clamp(21px,3vw,25px)",margin:"0 0 15px",color:"#46513f"}}><span aria-hidden="true" style={{color:"#a3854e"}}>✧ </span>Discover more with HIISSA</h3>
                     <p style={{fontSize:"17px",lineHeight:1.65,color:"#647060",margin:"0 0 18px"}}>Explore deeper personal experiences and meaningful shared connections.</p>
                     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))",gap:"13px"}}>
-                      <button type="button" onClick={()=>setWelcomePlan("plus")} style={{textAlign:"left",background:"#fff",border:"1px solid #e2d7c6",borderRadius:"17px",padding:"22px",minHeight:"170px",cursor:"pointer"}}>
-                        <strong style={{display:"block",fontSize:"22px",color:"#204b3b",marginBottom:"12px"}}>HIISSA+</strong>
+                      <button type="button" onClick={()=>setWelcomePlan("plus")} style={{textAlign:"left",background:"radial-gradient(ellipse at 95% 95%,rgba(140,175,110,.18),transparent 38%),linear-gradient(125deg,#fff,#fffdf5)",border:"1px solid #d8b77e",borderRadius:"17px",padding:"22px",minHeight:"170px",cursor:"pointer"}}>
+                        <strong style={{display:"block",fontSize:"22px",color:"#204b3b",marginBottom:"12px"}}><span aria-hidden="true" style={{display:"inline-grid",placeItems:"center",background:"linear-gradient(140deg,#fff8e7,#d9b263)",border:"1px solid #e1c389",borderRadius:"14px",width:"50px",height:"50px",marginRight:"12px",fontSize:"26px",verticalAlign:"middle"}}>H<span style={{fontSize:"15px",position:"absolute",marginLeft:"30px",marginTop:"-24px"}}>+</span></span>HIISSA+</strong>
                         <span style={{display:"block",fontSize:"16px",color:"#647060",lineHeight:1.5,marginBottom:"16px"}}>More for your personal journey</span>
-                        <span style={{color:"#99733b",fontSize:"17px",fontWeight:800}}>Discover →</span>
+                        <span style={{display:"inline-block",background:"#a67c35",color:"#fff",padding:"10px 22px",borderRadius:"18px",fontSize:"17px",fontWeight:800}}>Discover →</span>
                       </button>
-                      <button type="button" onClick={()=>setWelcomePlan("together")} style={{textAlign:"left",background:"#fff",border:"1px solid #e2d7c6",borderRadius:"17px",padding:"22px",minHeight:"170px",cursor:"pointer"}}>
-                        <strong style={{display:"block",fontSize:"22px",color:"#204b3b",marginBottom:"12px"}}>HIISSA TOGETHER</strong>
+                      <button type="button" onClick={()=>setWelcomePlan("together")} style={{textAlign:"left",background:"radial-gradient(ellipse at 95% 95%,rgba(140,175,110,.18),transparent 38%),linear-gradient(125deg,#fff,#fffdf5)",border:"1px solid #d8b77e",borderRadius:"17px",padding:"22px",minHeight:"170px",cursor:"pointer"}}>
+                        <strong style={{display:"flex",alignItems:"center",gap:"12px",flexWrap:"wrap",fontSize:"22px",color:"#204b3b",marginBottom:"12px"}}>HIISSA <span style={{color:"#a57c36"}}>TOGETHER</span><span aria-label="Approved HIISSA TOGETHER artwork awaiting exact asset integration" style={{display:"none"}} /></strong>
                         <span style={{display:"block",fontSize:"16px",color:"#647060",lineHeight:1.5,marginBottom:"16px"}}>For the relationships that matter</span>
-                        <span style={{color:"#99733b",fontSize:"17px",fontWeight:800}}>Discover →</span>
+                        <span style={{display:"inline-block",background:"#a67c35",color:"#fff",padding:"10px 22px",borderRadius:"18px",fontSize:"17px",fontWeight:800}}>Discover →</span>
                       </button>
                     </div>
                   </div>
