@@ -1,0 +1,31 @@
+name: Package A offline safety tests
+
+on:
+  push:
+    branches:
+      - feature/admin-permissions-package-a
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-safety:
+    if: github.ref == 'refs/heads/feature/admin-permissions-package-a'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out Package A without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm deployment remains disabled
+        shell: bash
+        run: |
+          node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const config=JSON.parse(fs.readFileSync('vercel.json','utf8')); assert.equal(config.git.deploymentEnabled['feature/admin-permissions-package-a'],false)"
+      - name: Run isolated Admin readiness tests
+        run: node --test tests/admin-staging-readiness.test.mjs
