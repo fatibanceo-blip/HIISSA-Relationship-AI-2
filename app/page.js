@@ -4242,19 +4242,43 @@ clientCreatedAt: new Date().toISOString(),
                   style={{ background: "#245B48", color: "#fff", padding: "14px", borderRadius: "13px" }}>
                   <strong>Start talking</strong><br /><small>{authInitialised && authSession ? "Continue to my conversations" : "Continue as a guest"}</small>
                 </button>
-                {authInitialised && !authSession && <button type="button" onClick={() => { setAuthPanelMode("signin"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
+                {authInitialised && <button type="button" onClick={() => { setAuthPanelMode(authSession ? "account" : "signin"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
                   style={{ background: "#fff", color: "#245B48", border: "1px solid #245B48", padding: "14px", borderRadius: "13px" }}>
-                  <strong>Sign in</strong><br /><small>I already have an account</small>
+                  <strong>{authSession ? "My Account" : "Sign in"}</strong><br /><small>{authSession ? "View my sign-in and account options" : "I already have an account"}</small>
                 </button>}
                 {authInitialised && !authSession && <button type="button" onClick={() => { setAuthPanelMode("save"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
                   style={{ background: "#fff", color: "#245B48", border: "1px solid #d0ded5", padding: "14px", borderRadius: "13px" }}>
                   <strong>Save &amp; Sync My HIISSA</strong><br /><small>Save my guest conversations</small>
                 </button>}
-                {authInitialised && authSession && <p role="status" style={{ textAlign: "center", color: "#245B48" }}>You are signed in to HIISSA.</p>}
+                {authInitialised && authSession && <p role="status" style={{ textAlign: "center", color: "#245B48" }}>You are signed in to HIISSA. Use My Account to manage your sign-in.</p>}
                 {!authInitialised && <p role="status" style={{ textAlign: "center", color: "#52675e" }}>Checking your account…</p>}
               </div>
             ) : (
               <div>
+                {authPanelMode === "account" ? (
+                  <div>
+                    <h3 style={{ color: "#245B48" }}>My Account</h3>
+                    <p role="status">{authSession ? "You are signed in to HIISSA on this device." : "You are not signed in on this device."}</p>
+                    <p>Each browser signs in separately. Use the same HIISSA email address on another device to access your account.</p>
+                    {authSession ? (
+                      <button type="button" disabled={authLoading} onClick={async () => {
+                        if (!window.confirm("Sign out of HIISSA on this device? Your saved account conversations will remain in your account. Any unsaved guest conversations on this device will not be transferred automatically.")) return;
+                        if (!supabase) { setAuthError("Sign-out is temporarily unavailable."); return; }
+                        setAuthLoading(true);
+                        setAuthError("");
+                        try {
+                          const { error } = await supabase.auth.signOut({ scope: "local" });
+                          if (error) throw error;
+                          window.location.reload();
+                        } catch { setAuthError("Could not sign out. Please try again."); setAuthLoading(false); }
+                      }}>Sign out on this device</button>
+                    ) : (
+                      <button type="button" onClick={() => setAuthPanelMode("signin")}>Sign in</button>
+                    )}
+                    {authError && <p role="alert">{authError}</p>}
+                    <button type="button" onClick={() => { setShowAuthPanel(false); setAuthError(""); }} style={{ marginTop: "12px" }}>Back</button>
+                  </div>
+                ) : (<>
                 <h3 style={{ color: "#245B48" }}>{authPanelMode === "signin" ? "Welcome back" : "Take your HIISSA with you 🤍"}</h3>
                 <p>{authPanelMode === "signin"
                   ? "Enter the email address for your existing HIISSA account. We'll send you a secure sign-in link."
@@ -4280,6 +4304,7 @@ clientCreatedAt: new Date().toISOString(),
                 {authError && <p role="alert">{authError}</p>}
                 <button type="button" onClick={() => { setShowAuthPanel(false); setAuthError(""); setAuthMessage(""); }}
                   disabled={authLoading} style={{ marginTop: "12px" }}>Back</button>
+                </>)}
               </div>
             )}
           </section>
