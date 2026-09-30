@@ -1,4 +1,4 @@
-name: A5.2 Staging connection diagnostic (manual only)
+name: A5.2 Staging connection diagnostic
 
 on:
   push:
@@ -27,5 +27,5 @@ jobs:
       - name: Run existing read-only Staging diagnostic
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://upcssfmilewwshyxyvdf.supabase.co
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.HIISSA_A52_STAGING_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_T3sZpETasnO2rZAuFuzmkg_r5rY9A-Q
         run: node scripts/a5_2_staging_connection_check.mjs
