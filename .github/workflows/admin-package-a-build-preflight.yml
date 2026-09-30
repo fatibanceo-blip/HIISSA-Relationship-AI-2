@@ -1,4 +1,4 @@
-name: Package A build preflight (no deployment)
+name: Package A build preflight (Staging branch)
 
 on:
   push:
@@ -23,8 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify deployment restriction before build
-        run: node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(fs.readFileSync('vercel.json','utf8')); assert.equal(c.git.deploymentEnabled['feature/admin-permissions-package-a'],false)"
+      - name: Verify branch-scoped deployment configuration
+        run: node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(fs.readFileSync('vercel.json','utf8')); assert.equal(c.git.deploymentEnabled['feature/admin-permissions-package-a'],true)"
       - name: Install dependencies without deployment
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Run Next.js build with nonfunctional test-only credential
