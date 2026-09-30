@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { assessAdminStagingReadiness } from "../../../lib/admin/staging-readiness.js";
+import { assessAdminStagingReadiness } from "../../../../lib/admin/staging-readiness.js";
 
 // Temporary A5.2 read-only diagnostic. No credentials, user data or raw
 // configuration values are returned. This route is not an Admin API.
