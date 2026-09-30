@@ -4285,7 +4285,8 @@ clientCreatedAt: new Date().toISOString(),
                   </div>
                 )}
               </div>
-
+            ) : (
+              <div>
                 {authPanelMode === "account" ? (
                   <div>
                     <h3 style={{ color: "#245B48" }}>My Account</h3>
