@@ -1,0 +1,31 @@
+name: Package A build preflight (no deployment)
+
+on:
+  push:
+    branches:
+      - feature/admin-permissions-package-a
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-preflight:
+    if: github.ref == 'refs/heads/feature/admin-permissions-package-a'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out isolated Package A branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify deployment restriction before build
+        run: node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(fs.readFileSync('vercel.json','utf8')); assert.equal(c.git.deploymentEnabled['feature/admin-permissions-package-a'],false)"
+      - name: Install dependencies without deployment
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run Next.js build without production credentials
+        run: npm run build
