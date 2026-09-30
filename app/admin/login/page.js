@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-);
+// Keep this page buildable when Preview Supabase variables are unavailable.
+// Authentication remains disabled until valid public configuration is present.
+const supabase =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    : null;
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -18,6 +20,10 @@ export default function AdminLoginPage() {
   async function handleLogin(event) {
     event.preventDefault();
     setMessage("");
+    if (!supabase) {
+      setMessage("Admin sign-in is not configured for this environment.");
+      return;
+    }
     setSigningIn(true);
 
     const { error } = await supabase.auth.signInWithPassword({
