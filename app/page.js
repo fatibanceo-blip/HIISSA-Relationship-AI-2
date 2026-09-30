@@ -1620,6 +1620,7 @@ const [authEmail, setAuthEmail] = useState("");
 const [authMessage, setAuthMessage] = useState("");
 const [authLoading, setAuthLoading] = useState(false);
 const [showAuthPanel, setShowAuthPanel] = useState(false);
+const [authPanelMode, setAuthPanelMode] = useState("signin");
 const [authError, setAuthError] = useState("");  
 const [guestMigrationChoice, setGuestMigrationChoice] = useState(null);
 const [guestMigrationStatus, setGuestMigrationStatus] = useState("");
@@ -3105,6 +3106,7 @@ function saveGuestMigrationChoice(choice) {
     return;
   }
   if (
+    authPanelMode === "save" &&
     hasGuestConversations &&
     guestMigrationChoice !== "save" &&
     guestMigrationChoice !== "skip"
@@ -3121,7 +3123,7 @@ function saveGuestMigrationChoice(choice) {
   let emailRedirectTo =
     `${window.location.origin}/auth/continue?flow=auth`;
 
-  if (guestMigrationChoice === "save") {
+  if (authPanelMode === "save" && guestMigrationChoice === "save") {
     const savedChats = JSON.parse(
       window.localStorage.getItem(
         "hiissa_previous_chats"
@@ -4221,126 +4223,65 @@ clientCreatedAt: new Date().toISOString(),
             </a>
           </div>
         )}
-     {authInitialised && !authSession && (
-        <div
-          style={{
-            marginBottom: "18px",
-            padding: "16px",
-            border: "1px solid rgba(80, 102, 93, 0.18)",
-            borderRadius: "18px",
-            background: "rgba(255, 253, 248, 0.92)",
-            boxShadow: "0 8px 24px rgba(64, 86, 76, 0.08)",
-          }}
-        >
-          {!showAuthPanel ? (
-            <button
-              type="button"
-              onClick={() => {
-                setShowAuthPanel(true);
-                setAuthError("");
-                setAuthMessage("");
-              }}
-            >
-              Save & Sync My HIISSA
-            </button>
-          ) : (
-            <>
-              <div style={{ marginBottom: "10px" }}>
-                <strong>Take your HIISSA with you 🤍</strong>
+        {authInitialised && !authSession && (
+          <section aria-label="Welcome and account access" style={{
+            marginBottom: "22px", padding: "24px",
+            border: "1px solid rgba(80, 102, 93, 0.18)", borderRadius: "22px",
+            background: "rgba(255, 253, 248, 0.96)",
+            boxShadow: "0 8px 24px rgba(64, 86, 76, 0.08)"
+          }}>
+            <h2 style={{ textAlign: "center", margin: "0 0 6px", color: "#245B48" }}>
+              Welcome to HIISSA
+            </h2>
+            <p style={{ textAlign: "center", margin: "0 0 20px", color: "#52675e" }}>
+              Your space to talk, heal and grow.
+            </p>
+            {!showAuthPanel ? (
+              <div style={{ display: "grid", gap: "10px" }}>
+                <button type="button" onClick={() => document.getElementById("hiissa-conversation")?.scrollIntoView({ behavior: "smooth" })}
+                  style={{ background: "#245B48", color: "#fff", padding: "14px", borderRadius: "13px" }}>
+                  <strong>Start talking</strong><br /><small>Continue as a guest</small>
+                </button>
+                <button type="button" onClick={() => { setAuthPanelMode("signin"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
+                  style={{ background: "#fff", color: "#245B48", border: "1px solid #245B48", padding: "14px", borderRadius: "13px" }}>
+                  <strong>Sign in</strong><br /><small>I already have an account</small>
+                </button>
+                <button type="button" onClick={() => { setAuthPanelMode("save"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
+                  style={{ background: "#fff", color: "#245B48", border: "1px solid #d0ded5", padding: "14px", borderRadius: "13px" }}>
+                  <strong>Save &amp; Sync My HIISSA</strong><br /><small>Save my guest conversations</small>
+                </button>
               </div>
-
-              <div style={{ marginBottom: "12px" }}>
-                Save your HIISSA space and securely continue your conversations
-                across your phone, laptop and other devices.
+            ) : (
+              <div>
+                <h3 style={{ color: "#245B48" }}>{authPanelMode === "signin" ? "Welcome back" : "Take your HIISSA with you 🤍"}</h3>
+                <p>{authPanelMode === "signin"
+                  ? "Enter the email address for your existing HIISSA account. We'll send you a secure sign-in link."
+                  : "Save your HIISSA space and continue your conversations across devices."}</p>
+                {authPanelMode === "save" && hasGuestConversations && !guestMigrationChoice && (
+                  <div style={{ padding: "12px", border: "1px solid #d0ded5", borderRadius: "12px", marginBottom: "12px" }}>
+                    <p>Would you like to bring your existing conversations with you?</p>
+                    <button type="button" onClick={() => saveGuestMigrationChoice("save")} disabled={authLoading}
+                      style={{ width: "100%", marginBottom: "8px" }}>Save my existing conversations</button>
+                    <button type="button" onClick={() => saveGuestMigrationChoice("skip")} disabled={authLoading}
+                      style={{ width: "100%" }}>Continue without these conversations</button>
+                  </div>
+                )}
+                <label htmlFor="hiissa-auth-email">Your email address</label>
+                <input id="hiissa-auth-email" type="email" value={authEmail}
+                  onChange={(event) => setAuthEmail(event.target.value)}
+                  placeholder="Your email address" autoComplete="email" disabled={authLoading}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "12px", margin: "8px 0 12px", borderRadius: "12px", border: "1px solid #b7c9bf" }} />
+                <button type="button" onClick={sendMagicLink} disabled={authLoading}>
+                  {authLoading ? "Sending secure link..." : "Email me a secure sign-in link"}
+                </button>
+                {authMessage && <p role="status">{authMessage}</p>}
+                {authError && <p role="alert">{authError}</p>}
+                <button type="button" onClick={() => { setShowAuthPanel(false); setAuthError(""); setAuthMessage(""); }}
+                  disabled={authLoading} style={{ marginTop: "12px" }}>Back</button>
               </div>
-{hasGuestConversations && !guestMigrationChoice && (
-  <div
-    style={{
-      marginBottom: "12px",
-      padding: "12px",
-      border: "1px solid rgba(80, 102, 93, 0.18)",
-      borderRadius: "12px",
-    }}
-  >
-    <div style={{ marginBottom: "10px", fontWeight: 600 }}>
-      Would you like to bring your existing conversations with you?
-    </div>
-
-    <button
-      type="button"
-      onClick={() => saveGuestMigrationChoice("save")}
-      disabled={authLoading}
-      style={{ width: "100%", marginBottom: "8px" }}
-    >
-      Save my existing conversations
-    </button>
-
-    <button
-      type="button"
-      onClick={() => saveGuestMigrationChoice("skip")}
-      disabled={authLoading}
-      style={{ width: "100%" }}
-    >
-      Start my account without these conversations
-    </button>
-  </div>
-)}
-              <input
-                type="email"
-                value={authEmail}
-                onChange={(event) => setAuthEmail(event.target.value)}
-                placeholder="Your email address"
-                autoComplete="email"
-                disabled={authLoading}
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "11px 12px",
-                  marginBottom: "10px",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(80, 102, 93, 0.25)",
-                }}
-              />
-
-              <button
-                type="button"
-                onClick={sendMagicLink}
-                disabled={authLoading}
-              >
-                {authLoading ? "Sending secure link..." : "Email me a secure sign-in link"}
-              </button>
-
-              {authMessage && (
-                <div style={{ marginTop: "10px" }}>
-                  {authMessage}
-                </div>
-              )}
-
-              {authError && (
-                <div
-                  role="alert"
-                  style={{ marginTop: "10px" }}
-                >
-                  {authError}
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAuthPanel(false);
-                  setAuthError("");
-                  setAuthMessage("");
-                }}
-                disabled={authLoading}
-                style={{ marginTop: "10px" }}
-              >
-                Not now
-              </button>
-            </>
-          )}
-        </div>
-      )}
+            )}
+          </section>
+        )}
         <header className="hero">
           <div className="logo">
             H
