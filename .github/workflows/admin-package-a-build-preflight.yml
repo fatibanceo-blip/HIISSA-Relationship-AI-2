@@ -27,5 +27,9 @@ jobs:
         run: node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(fs.readFileSync('vercel.json','utf8')); assert.equal(c.git.deploymentEnabled['feature/admin-permissions-package-a'],false)"
       - name: Install dependencies without deployment
         run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Run Next.js build without production credentials
+      - name: Run Next.js build with nonfunctional test-only credential
+        env:
+          OPENAI_API_KEY: sk-test-placeholder-not-a-real-key
+          NEXT_PUBLIC_SUPABASE_URL: https://upcssfmilewwshyxyvdf.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_TEST_PLACEHOLDER_NOT_A_REAL_KEY
         run: npm run build
