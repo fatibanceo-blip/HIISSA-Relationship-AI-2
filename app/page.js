@@ -4223,7 +4223,7 @@ clientCreatedAt: new Date().toISOString(),
             </a>
           </div>
         )}
-        {(!authSession) && (
+        {(
           <section aria-label="Welcome and account access" style={{
             marginBottom: "22px", padding: "24px",
             border: "1px solid rgba(80, 102, 93, 0.18)", borderRadius: "22px",
@@ -4242,14 +4242,16 @@ clientCreatedAt: new Date().toISOString(),
                   style={{ background: "#245B48", color: "#fff", padding: "14px", borderRadius: "13px" }}>
                   <strong>Start talking</strong><br /><small>Continue as a guest</small>
                 </button>
-                <button type="button" onClick={() => { setAuthPanelMode("signin"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
+                {authInitialised && !authSession && <button type="button" onClick={() => { setAuthPanelMode("signin"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
                   style={{ background: "#fff", color: "#245B48", border: "1px solid #245B48", padding: "14px", borderRadius: "13px" }}>
                   <strong>Sign in</strong><br /><small>I already have an account</small>
-                </button>
-                <button type="button" onClick={() => { setAuthPanelMode("save"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
+                </button>}
+                {authInitialised && !authSession && <button type="button" onClick={() => { setAuthPanelMode("save"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
                   style={{ background: "#fff", color: "#245B48", border: "1px solid #d0ded5", padding: "14px", borderRadius: "13px" }}>
                   <strong>Save &amp; Sync My HIISSA</strong><br /><small>Save my guest conversations</small>
-                </button>
+                </button>}
+                {authInitialised && authSession && <p role="status" style={{ textAlign: "center", color: "#245B48" }}>You are signed in to HIISSA.</p>}
+                {!authInitialised && <p role="status" style={{ textAlign: "center", color: "#52675e" }}>Checking your account…</p>}
               </div>
             ) : (
               <div>
