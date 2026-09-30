@@ -4240,7 +4240,7 @@ clientCreatedAt: new Date().toISOString(),
               <div style={{ display: "grid", gap: "10px" }}>
                 <button type="button" onClick={() => document.getElementById("hiissa-conversation")?.scrollIntoView({ behavior: "smooth" })}
                   style={{ background: "#245B48", color: "#fff", padding: "14px", borderRadius: "13px" }}>
-                  <strong>Start talking</strong><br /><small>Continue as a guest</small>
+                  <strong>Start talking</strong><br /><small>{authInitialised && authSession ? "Continue to my conversations" : "Continue as a guest"}</small>
                 </button>
                 {authInitialised && !authSession && <button type="button" onClick={() => { setAuthPanelMode("signin"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
                   style={{ background: "#fff", color: "#245B48", border: "1px solid #245B48", padding: "14px", borderRadius: "13px" }}>
