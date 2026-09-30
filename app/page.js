@@ -4309,6 +4309,41 @@ clientCreatedAt: new Date().toISOString(),
             )}
           </section>
         )}
+        {/* Approved adaptive home — additive to the existing Welcome card. */}
+        {authInitialised && (
+          <section aria-label={authSession ? "My HIISSA home" : "Guest home"} style={{
+            marginBottom: "22px", padding: "24px",
+            border: "1px solid rgba(80, 102, 93, 0.18)", borderRadius: "22px",
+            background: "#edf5ef", color: "#245B48"
+          }}>
+            <h2 style={{ margin: "0 0 8px", color: "#245B48" }}>
+              {authSession
+                ? `Hello${typeof authSession.user?.user_metadata?.display_name === "string" && authSession.user.user_metadata.display_name.trim() ? ` ${authSession.user.user_metadata.display_name.trim().slice(0, 40)}` : ""}.`
+                : "Hello there."}
+            </h2>
+            <p style={{ margin: "0 0 18px", color: "#52675e" }}>
+              {authSession ? "Welcome back to your HIISSA space." : "What's on your mind today?"}
+            </p>
+            <button type="button" onClick={() => document.getElementById("hiissa-conversation")?.scrollIntoView({ behavior: "smooth" })}
+              style={{ display: "block", width: "100%", background: "#245B48", color: "#fff", padding: "14px", borderRadius: "13px", fontWeight: 700 }}>
+              {authSession ? "Continue my conversations" : "Start talking"}
+            </button>
+            {!authSession && (
+              <div style={{ marginTop: "14px", padding: "14px", background: "#fffefa", borderRadius: "14px" }}>
+                <p style={{ margin: "0 0 10px", color: "#52675e" }}>You're chatting as a guest. You can choose to save your conversations to a free account whenever you're ready.</p>
+                <button type="button" onClick={() => { setAuthPanelMode("save"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  style={{ background: "transparent", border: "1px solid #245B48", color: "#245B48", borderRadius: "12px", padding: "11px 14px", width: "100%", fontWeight: 700 }}>
+                  Save my conversations
+                </button>
+              </div>
+            )}
+            {authSession && (
+              <p style={{ margin: "14px 0 0", color: "#52675e", fontSize: "14px" }}>
+                Your account is signed in. Additional home features will appear here as they are tested and activated.
+              </p>
+            )}
+          </section>
+        )}
         <header className="hero">
           <div className="logo">
             H
