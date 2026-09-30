@@ -4359,10 +4359,6 @@ clientCreatedAt: new Date().toISOString(),
               style={{marginTop:"10px",width:"100%",background:"#fffefa",color:"#245b48",padding:"12px",borderRadius:"12px",border:"1px solid #245b48"}}>My Account</button>
           </section>
         )}
- Account</button>
-            )}
-          </section>
-        )}
         <header className="hero">
           <div className="logo">
             H
