@@ -4223,7 +4223,7 @@ clientCreatedAt: new Date().toISOString(),
             </a>
           </div>
         )}
-        {authInitialised && !authSession && (
+        {(!authSession) && (
           <section aria-label="Welcome and account access" style={{
             marginBottom: "22px", padding: "24px",
             border: "1px solid rgba(80, 102, 93, 0.18)", borderRadius: "22px",
