@@ -4372,7 +4372,7 @@ clientCreatedAt: new Date().toISOString(),
           </span>
         </button>
 
-        <section className="chat">
+        <section id="hiissa-conversation" className="chat">
           <div className="chatHead">
             <div className="mini">
               H
