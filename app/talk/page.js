@@ -1621,6 +1621,12 @@ const [authMessage, setAuthMessage] = useState("");
 const [authLoading, setAuthLoading] = useState(false);
 const [showAuthPanel, setShowAuthPanel] = useState(false);
 const [authPanelMode, setAuthPanelMode] = useState("signin");
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("signin")) {
+      setAuthPanelMode("signin");
+      setShowAuthPanel(true);
+    }
+  }, []);
 const [guestEntry, setGuestEntry] = useState(false);
 const [guestMain, setGuestMain] = useState(false);
 const [welcomePlan, setWelcomePlan] = useState(null);
