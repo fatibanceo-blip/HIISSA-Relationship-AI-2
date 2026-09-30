@@ -27,5 +27,5 @@ jobs:
         shell: bash
         run: |
           node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const config=JSON.parse(fs.readFileSync('vercel.json','utf8')); assert.equal(config.git.deploymentEnabled['feature/admin-permissions-package-a'],false)"
-      - name: Run isolated Admin readiness tests
-        run: node --test tests/admin-staging-readiness.test.mjs
+      - name: Run isolated Admin readiness and permission tests
+        run: node --test tests/admin-staging-readiness.test.mjs tests/admin-permission-evaluator.test.mjs
