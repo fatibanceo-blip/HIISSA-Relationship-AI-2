@@ -1623,6 +1623,7 @@ const [showAuthPanel, setShowAuthPanel] = useState(false);
 const [authPanelMode, setAuthPanelMode] = useState("signin");
 const [guestEntry, setGuestEntry] = useState(false);
 const [guestMain, setGuestMain] = useState(false);
+const [welcomePlan, setWelcomePlan] = useState(null);
 const [authError, setAuthError] = useState("");  
 const [guestMigrationChoice, setGuestMigrationChoice] = useState(null);
 const [guestMigrationStatus, setGuestMigrationStatus] = useState("");
@@ -4227,36 +4228,64 @@ clientCreatedAt: new Date().toISOString(),
         )}
         {!guestEntry && !guestMain && (!authInitialised || !authSession || showAuthPanel) && (
           <section aria-label="Welcome and account access" style={{
-            marginBottom: "22px", padding: "24px",
-            border: "1px solid rgba(80, 102, 93, 0.18)", borderRadius: "22px",
-            background: "rgba(255, 253, 248, 0.96)",
-            boxShadow: "0 8px 24px rgba(64, 86, 76, 0.08)"
+            marginBottom:"22px",padding:"clamp(20px,4vw,32px)",border:"1px solid #d6e2d6",borderRadius:"24px",
+            background:"linear-gradient(135deg,#eff7f0,#fffefa 30%,#fffefa 85%,#edf4ed)",
+            boxShadow:"0 12px 35px rgba(33,77,56,.09)",color:"#234735"
           }}>
-            <h2 style={{ textAlign: "center", margin: "0 0 6px", color: "#245B48" }}>
-              Welcome to HIISSA
-            </h2>
-            <p style={{ textAlign: "center", margin: "0 0 20px", color: "#52675e" }}>
-              Your space to talk, heal and grow.
-            </p>
-            {!showAuthPanel ? (
-              <div style={{ display: "grid", gap: "10px" }}>
-                <button type="button" onClick={() => { if (!authSession) { setGuestEntry(true); setShowAuthPanel(false); window.scrollTo({ top: 0, behavior: "smooth" }); } else { document.getElementById("hiissa-conversation")?.scrollIntoView({ behavior: "smooth" }); } }}
-                  style={{ background: "#245B48", color: "#fff", padding: "14px", borderRadius: "13px" }}>
-                  <strong>Start talking</strong><br /><small>{authInitialised && authSession ? "Continue to my conversations" : "Continue as a guest"}</small>
-                </button>
-                {authInitialised && <button type="button" onClick={() => { setAuthPanelMode(authSession ? "account" : "signin"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
-                  style={{ background: "#fff", color: "#245B48", border: "1px solid #245B48", padding: "14px", borderRadius: "13px" }}>
-                  <strong>{authSession ? "My Account" : "Sign in"}</strong><br /><small>{authSession ? "View my sign-in and account options" : "I already have an account"}</small>
-                </button>}
-                {authInitialised && !authSession && <button type="button" onClick={() => { setAuthPanelMode("save"); setShowAuthPanel(true); setAuthError(""); setAuthMessage(""); }}
-                  style={{ background: "#fff", color: "#245B48", border: "1px solid #d0ded5", padding: "14px", borderRadius: "13px" }}>
-                  <strong>Save &amp; Sync My HIISSA</strong><br /><small>Save my guest conversations</small>
-                </button>}
-                {authInitialised && authSession && <p role="status" style={{ textAlign: "center", color: "#245B48" }}>You are signed in to HIISSA. Use My Account to manage your sign-in.</p>}
-                {!authInitialised && <p role="status" style={{ textAlign: "center", color: "#52675e" }}>Checking your account…</p>}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",marginBottom:"clamp(28px,6vw,54px)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+                <span aria-hidden="true" style={{display:"grid",placeItems:"center",width:"52px",height:"52px",borderRadius:"15px",background:"#204b3b",color:"white",fontSize:"31px",fontWeight:800}}>H</span>
+                <span style={{fontWeight:800,fontSize:"20px",color:"#204b3b"}}>HIISSA</span>
               </div>
-            ) : (
+              {authInitialised && !authSession && !showAuthPanel && <button type="button" onClick={()=>{setAuthPanelMode("signin");setShowAuthPanel(true);setAuthError("");setAuthMessage("");}} style={{border:"1px solid #c5d7c8",background:"#fffefa",color:"#204b3b",padding:"11px 17px",borderRadius:"999px",fontWeight:700,cursor:"pointer"}}>Sign in</button>}
+            </div>
+            {!showAuthPanel ? (
               <div>
+                {!welcomePlan ? (<>
+                  <div style={{textAlign:"center",marginBottom:"clamp(28px,5vw,48px)"}}>
+                    <p style={{fontWeight:800,letterSpacing:".055em",color:"#a3854e",margin:"0 0 22px"}}>YOUR SPACE. YOUR PACE.</p>
+                    <h2 style={{fontSize:"clamp(32px,6vw,47px)",lineHeight:1.15,margin:"0 0 20px",color:"#204b3b"}}>Welcome to HIISSA</h2>
+                    <p style={{fontSize:"clamp(19px,3.5vw,25px)",color:"#596d61",margin:"0 0 20px"}}>Your space to talk, heal and grow.</p>
+                    <p style={{fontSize:"clamp(16px,2.5vw,19px)",lineHeight:1.65,color:"#596d61",maxWidth:"560px",margin:"0 auto"}}>Whether you need someone to talk to or want to explore something deeper, you can begin here.</p>
+                  </div>
+                  <div style={{display:"grid",gap:"13px"}}>
+                    <button type="button" onClick={()=>{setGuestEntry(true);setWelcomePlan(null);window.scrollTo({top:0,behavior:"smooth"});}} style={{width:"100%",background:"#204b3b",color:"white",padding:"23px 16px",borderRadius:"20px",border:"none",cursor:"pointer"}}>
+                      <strong style={{display:"block",fontSize:"clamp(20px,3vw,25px)"}}>Start talking</strong>
+                      <span style={{display:"block",fontSize:"clamp(15px,2.5vw,18px)",marginTop:"5px"}}>Continue as a guest — no account needed</span>
+                    </button>
+                    <button type="button" onClick={()=>{setAuthPanelMode("free");setShowAuthPanel(true);setAuthError("");setAuthMessage("");}} style={{width:"100%",background:"#f8fcf8",color:"#204b3b",border:"1px solid #a5c4ad",padding:"22px 14px",borderRadius:"20px",cursor:"pointer"}}>
+                      <strong style={{display:"block",fontSize:"clamp(19px,3vw,23px)"}}>Get started with HIISSA FREE</strong>
+                      <span style={{display:"block",fontSize:"clamp(15px,2.5vw,18px)",marginTop:"5px",color:"#596d61"}}>Create your free account</span>
+                    </button>
+                  </div>
+                  <div style={{height:"1px",background:"#d9e4d9",margin:"36px 0 28px"}}/>
+                  <div style={{background:"#fcf8f1",border:"1px solid #e5d7be",borderRadius:"20px",padding:"clamp(17px,3vw,24px)"}}>
+                    <h3 style={{fontSize:"clamp(21px,3vw,25px)",margin:"0 0 15px",color:"#46513f"}}><span aria-hidden="true" style={{color:"#a3854e"}}>✧ </span>Discover more with HIISSA</h3>
+                    <p style={{fontSize:"17px",lineHeight:1.65,color:"#647060",margin:"0 0 18px"}}>Explore deeper personal experiences and meaningful shared connections.</p>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,220px),1fr))",gap:"13px"}}>
+                      <button type="button" onClick={()=>setWelcomePlan("plus")} style={{textAlign:"left",background:"#fff",border:"1px solid #e2d7c6",borderRadius:"17px",padding:"22px",minHeight:"170px",cursor:"pointer"}}>
+                        <strong style={{display:"block",fontSize:"22px",color:"#204b3b",marginBottom:"12px"}}>HIISSA+</strong>
+                        <span style={{display:"block",fontSize:"16px",color:"#647060",lineHeight:1.5,marginBottom:"16px"}}>More for your personal journey</span>
+                        <span style={{color:"#99733b",fontSize:"17px",fontWeight:800}}>Discover →</span>
+                      </button>
+                      <button type="button" onClick={()=>setWelcomePlan("together")} style={{textAlign:"left",background:"#fff",border:"1px solid #e2d7c6",borderRadius:"17px",padding:"22px",minHeight:"170px",cursor:"pointer"}}>
+                        <strong style={{display:"block",fontSize:"22px",color:"#204b3b",marginBottom:"12px"}}>HIISSA TOGETHER</strong>
+                        <span style={{display:"block",fontSize:"16px",color:"#647060",lineHeight:1.5,marginBottom:"16px"}}>For the relationships that matter</span>
+                        <span style={{color:"#99733b",fontSize:"17px",fontWeight:800}}>Discover →</span>
+                      </button>
+                    </div>
+                  </div>
+                </>) : (
+                  <div style={{maxWidth:"560px",margin:"0 auto",padding:"24px 0"}}>
+                    <button type="button" onClick={()=>setWelcomePlan(null)} style={{border:"none",background:"transparent",color:"#204b3b",cursor:"pointer",marginBottom:"24px"}}>← Back to welcome</button>
+                    <h2 style={{color:"#204b3b",fontSize:"clamp(30px,5vw,42px)"}}>{welcomePlan==="plus"?"HIISSA+":"HIISSA TOGETHER"}</h2>
+                    <p style={{color:"#596d61",fontSize:"19px",lineHeight:1.65}}>{welcomePlan==="plus"?"More for your personal journey.":"For the relationships that matter."}</p>
+                    <p style={{color:"#596d61"}}>Full plan details and access will be introduced after founder review. No purchase is available here yet.</p>
+                    <button type="button" onClick={()=>{setAuthPanelMode("signin");setShowAuthPanel(true);}} style={{background:"#204b3b",color:"white",padding:"15px 22px",borderRadius:"13px",border:"none",cursor:"pointer"}}>Sign in to HIISSA</button>
+                  </div>
+                )}
+              </div>
+
                 {authPanelMode === "account" ? (
                   <div>
                     <h3 style={{ color: "#245B48" }}>My Account</h3>
@@ -4281,7 +4310,7 @@ clientCreatedAt: new Date().toISOString(),
                     <button type="button" onClick={() => { setShowAuthPanel(false); setAuthError(""); }} style={{ marginTop: "12px" }}>Back</button>
                   </div>
                 ) : (<>
-                <h3 style={{ color: "#245B48" }}>{authPanelMode === "signin" ? "Welcome back" : "Take your HIISSA with you 🤍"}</h3>
+                <h3 style={{ color: "#245B48" }}>{authPanelMode === "signin" ? "Welcome back" : authPanelMode === "free" ? "Welcome to HIISSA FREE" : "Take your HIISSA with you 🤍"}</h3>
                 <p>{authPanelMode === "signin"
                   ? "Enter the email address for your existing HIISSA account. We'll send you a secure sign-in link."
                   : "Save your HIISSA space and continue your conversations across devices."}</p>
