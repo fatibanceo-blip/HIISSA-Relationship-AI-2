@@ -1,6 +1,9 @@
 name: A5.2 Staging connection diagnostic (manual only)
 
 on:
+  push:
+    branches:
+      - feature/admin-permissions-package-a
   workflow_dispatch:
 
 permissions:
