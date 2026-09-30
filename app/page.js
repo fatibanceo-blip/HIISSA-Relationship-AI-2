@@ -1622,6 +1622,7 @@ const [authLoading, setAuthLoading] = useState(false);
 const [showAuthPanel, setShowAuthPanel] = useState(false);
 const [authPanelMode, setAuthPanelMode] = useState("signin");
 const [guestEntry, setGuestEntry] = useState(false);
+const [guestMain, setGuestMain] = useState(false);
 const [authError, setAuthError] = useState("");  
 const [guestMigrationChoice, setGuestMigrationChoice] = useState(null);
 const [guestMigrationStatus, setGuestMigrationStatus] = useState("");
@@ -4224,7 +4225,7 @@ clientCreatedAt: new Date().toISOString(),
             </a>
           </div>
         )}
-        {!guestEntry && (!authInitialised || !authSession || showAuthPanel) && (
+        {!guestEntry && !guestMain && (!authInitialised || !authSession || showAuthPanel) && (
           <section aria-label="Welcome and account access" style={{
             marginBottom: "22px", padding: "24px",
             border: "1px solid rgba(80, 102, 93, 0.18)", borderRadius: "22px",
@@ -4306,48 +4307,55 @@ clientCreatedAt: new Date().toISOString(),
                 <button type="button" onClick={() => { setShowAuthPanel(false); setAuthError(""); setAuthMessage(""); }}
                   disabled={authLoading} style={{ marginTop: "12px" }}>Back</button>
                 </>)}
+           {/* Approved guest welcome. Guest choices enter existing HIISSA experiences, never a duplicate menu. */}
+        {authInitialised && !authSession && guestEntry && !showAuthPanel && (
+          <section aria-label="Guest welcome" style={{
+            position: "relative", overflow: "hidden", marginBottom: "22px", padding: "clamp(20px, 5vw, 40px)",
+            border: "1px solid rgba(211, 184, 112, .6)", borderRadius: "30px",
+            background: "radial-gradient(ellipse at 94% 8%, rgba(220,193,119,.42), transparent 40%), radial-gradient(ellipse at 3% 90%, rgba(100,153,121,.34), transparent 45%), linear-gradient(135deg, #e3f0e6 0%, #fffdf0 48%, #d3e5d4 100%)",
+            boxShadow: "0 18px 55px rgba(29,76,58,.17)", color: "#214b3d"
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:"10px",letterSpacing:".13em",fontWeight:800,fontSize:"12px",marginBottom:"30px"}}>
+              <span aria-hidden="true" style={{display:"grid",placeItems:"center",width:"38px",height:"38px",background:"#245b48",color:"#fff",borderRadius:"13px",fontSize:"22px"}}>H</span>
+              HIISSA · RELATIONSHIP AI
+            </div>
+            <div aria-hidden="true" style={{textAlign:"center",color:"#c7a85f",letterSpacing:".6em",marginBottom:"15px"}}>✦ ───── ✦ ───── ✦</div>
+            <h2 style={{textAlign:"center",fontSize:"clamp(29px, 6vw, 45px)",lineHeight:1.16,margin:"0 0 20px",color:"#184a3b"}}>You’re welcome here. 🤍</h2>
+            <p style={{textAlign:"center",maxWidth:"590px",margin:"0 auto 30px",lineHeight:1.65,fontSize:"clamp(16px, 3vw, 19px)",color:"#455f56"}}>You don’t need to have the right words or know exactly what you need. We can begin wherever you are.</p>
+            <div style={{padding:"clamp(16px, 4vw, 30px)",borderRadius:"27px",background:"rgba(255,254,246,.81)",border:"1px solid rgba(255,255,255,.95)",boxShadow:"0 12px 32px rgba(45,81,60,.12)"}}>
+              <h3 style={{fontSize:"clamp(22px, 4vw, 29px)",textAlign:"center",margin:"4px 0 24px",color:"#184a3b"}}>How would you like to begin?</h3>
+              <div style={{display:"grid",gap:"15px"}}>
+                <button type="button" onClick={() => { setGuestEntry(false); setGuestMain(true); window.setTimeout(() => document.getElementById("hiissa-conversation")?.scrollIntoView({behavior:"smooth",block:"start"}), 80); }}
+                  style={{display:"flex",alignItems:"center",gap:"15px",width:"100%",padding:"21px 17px",textAlign:"left",border:"1px solid #5b917a",borderRadius:"22px",background:"linear-gradient(125deg,#194f40,#376f58)",color:"#fff",boxShadow:"0 9px 22px rgba(28,76,56,.23)",cursor:"pointer"}}>
+                  <span aria-hidden="true" style={{flexShrink:0,display:"grid",placeItems:"center",width:"56px",height:"56px",borderRadius:"50%",background:"#f5f2df",color:"#245b48",fontSize:"26px"}}>♡</span>
+                  <span style={{flex:1}}><strong style={{display:"block",fontSize:"21px",marginBottom:"5px"}}>Talk to HIISSA</strong><span style={{lineHeight:1.45}}>Share what’s on your mind, or simply start a conversation.</span></span>
+                  <span aria-hidden="true" style={{fontSize:"29px"}}>→</span>
+                </button>
+                <button type="button" onClick={() => { setGuestEntry(false); setGuestMain(true); setShowExplore(true); }}
+                  style={{display:"flex",alignItems:"center",gap:"15px",width:"100%",padding:"21px 17px",textAlign:"left",border:"1px solid #bfd5c6",borderRadius:"22px",background:"linear-gradient(125deg,#fffefa,#f0f6eb)",color:"#245b48",boxShadow:"0 7px 18px rgba(45,81,60,.10)",cursor:"pointer"}}>
+                  <span aria-hidden="true" style={{flexShrink:0,display:"grid",placeItems:"center",width:"56px",height:"56px",borderRadius:"50%",background:"#e4eee2",color:"#245b48",fontSize:"27px"}}>✧</span>
+                  <span style={{flex:1}}><strong style={{display:"block",fontSize:"21px",marginBottom:"5px"}}>Explore HIISSA</strong><span style={{lineHeight:1.45}}>Discover other ways to talk, listen, reflect and grow.</span></span>
+                  <span aria-hidden="true" style={{fontSize:"29px"}}>→</span>
+                </button>
               </div>
-            )}
+            </div>
+            <div style={{margin:"24px 0 0",textAlign:"center"}}>
+              <button type="button" onClick={() => {setGuestEntry(false);setGuestMain(false);window.scrollTo({top:0,behavior:"smooth"});}}
+                style={{border:0,background:"transparent",color:"#245b48",fontWeight:700,padding:"10px",cursor:"pointer"}}>← Back to welcome</button>
+            </div>
           </section>
         )}
-        {/* One screen at a time: signed-in users see their home; guests see theirs only after choosing Start talking. */}
-        {authInitialised && (authSession || guestEntry) && !showAuthPanel && (
-          <section aria-label={authSession ? "My HIISSA home" : "Guest welcome"} style={{
-            marginBottom: "22px", padding: "24px",
-            border: "1px solid rgba(80, 102, 93, 0.18)", borderRadius: "22px",
-            background: "#edf5ef", color: "#245B48"
-          }}>
-            {!authSession && (
-              <button type="button" onClick={() => { setGuestEntry(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                style={{ background: "transparent", border: 0, color: "#245B48", padding: "0 0 18px", fontWeight: 700 }}>← Back to welcome</button>
-            )}
-            <h2 style={{ margin: "0 0 8px", color: "#245B48" }}>
-              {authSession ? "Welcome back." : "Hello there."}
-            </h2>
-            <p style={{ margin: "0 0 18px", color: "#52675e" }}>
-              {authSession ? "Your HIISSA space is ready whenever you are." : "What's on your mind today?"}
-            </p>
-            {!authSession && (
-              <div style={{ background: "#fffefa", borderRadius: "14px", padding: "15px", marginBottom: "18px" }}>
-                <strong>You're chatting as a guest.</strong>
-                <p style={{ margin: "8px 0 0", color: "#52675e" }}>You can start talking now and choose to save your conversations later.</p>
-              </div>
-            )}
-            {!authSession && (
-              <div style={{ display: "grid", gap: "9px", marginBottom: "16px" }}>
-                {["I need relationship advice", "Help me set boundaries", "I'm feeling overwhelmed", "I just need to talk"].map((topic) => (
-                  <button key={topic} type="button" onClick={() => { setInput(topic); document.getElementById("hiissa-conversation")?.scrollIntoView({ behavior: "smooth" }); }}
-                    style={{ textAlign: "left", padding: "12px 14px", background: "#fffefa", color: "#245B48", border: "1px solid #d0ded5", borderRadius: "12px" }}>{topic}</button>
-                ))}
-              </div>
-            )}
-            <button type="button" onClick={() => document.getElementById("hiissa-conversation")?.scrollIntoView({ behavior: "smooth" })}
-              style={{ display: "block", width: "100%", background: "#245B48", color: "#fff", padding: "14px", borderRadius: "13px", fontWeight: 700 }}>
-              {authSession ? "Continue my conversations" : "Start my conversation"}
-            </button>
-            {authSession && (
-              <button type="button" onClick={() => { setAuthPanelMode("account"); setShowAuthPanel(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                style={{ marginTop: "10px", width: "100%", background: "#fffefa", color: "#245B48", padding: "12px", borderRadius: "12px", border: "1px solid #245B48" }}>My Account</button>
+        {authInitialised && authSession && !showAuthPanel && (
+          <section aria-label="My HIISSA home" style={{marginBottom:"22px",padding:"24px",border:"1px solid #c5d8cc",borderRadius:"22px",background:"#edf5ef",color:"#245b48"}}>
+            <h2 style={{margin:"0 0 8px"}}>Welcome back.</h2>
+            <p>Your HIISSA space is ready whenever you are.</p>
+            <button type="button" onClick={() => document.getElementById("hiissa-conversation")?.scrollIntoView({behavior:"smooth"})}
+              style={{display:"block",width:"100%",background:"#245b48",color:"#fff",padding:"14px",borderRadius:"13px",fontWeight:700}}>Continue my conversations</button>
+            <button type="button" onClick={() => {setAuthPanelMode("account");setShowAuthPanel(true);window.scrollTo({top:0,behavior:"smooth"});}}
+              style={{marginTop:"10px",width:"100%",background:"#fffefa",color:"#245b48",padding:"12px",borderRadius:"12px",border:"1px solid #245b48"}}>My Account</button>
+          </section>
+        )}
+ Account</button>
             )}
           </section>
         )}
