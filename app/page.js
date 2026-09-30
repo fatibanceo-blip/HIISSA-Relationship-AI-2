@@ -4307,7 +4307,11 @@ clientCreatedAt: new Date().toISOString(),
                 <button type="button" onClick={() => { setShowAuthPanel(false); setAuthError(""); setAuthMessage(""); }}
                   disabled={authLoading} style={{ marginTop: "12px" }}>Back</button>
                 </>)}
-           {/* Approved guest welcome. Guest choices enter existing HIISSA experiences, never a duplicate menu. */}
+              </div>
+            )}
+          </section>
+        )}
+        {/* Approved guest welcome. Guest choices enter existing HIISSA experiences, never a duplicate menu. */}
         {authInitialised && !authSession && guestEntry && !showAuthPanel && (
           <section aria-label="Guest welcome" style={{
             position: "relative", overflow: "hidden", marginBottom: "22px", padding: "clamp(20px, 5vw, 40px)",
