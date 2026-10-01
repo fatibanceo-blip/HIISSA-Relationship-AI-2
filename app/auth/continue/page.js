@@ -6,6 +6,7 @@ export default function AuthContinuePage() {
   const [tokenHash, setTokenHash] = useState("");
   const [type, setType] = useState("email");
   const [handoffToken, setHandoffToken] = useState("");
+  const [returnToFree, setReturnToFree] = useState(false);
   const [ready, setReady] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState("");
@@ -37,6 +38,7 @@ export default function AuthContinuePage() {
     setTokenHash(token);
     setType(authType);
     setHandoffToken(guestHandoff);
+    setReturnToFree(query.get("flow") === "free");
     setReady(true);
   }, []);
 
@@ -54,7 +56,7 @@ export default function AuthContinuePage() {
     const params = new URLSearchParams({
       token_hash: tokenHash,
       type,
-      next: "/",
+      next: returnToFree ? "/free" : "/",
     });
 
     if (handoffToken) {
