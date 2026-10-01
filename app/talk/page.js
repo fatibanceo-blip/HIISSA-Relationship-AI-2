@@ -1622,9 +1622,13 @@ const [authLoading, setAuthLoading] = useState(false);
 const [showAuthPanel, setShowAuthPanel] = useState(false);
 const [authPanelMode, setAuthPanelMode] = useState("signin");
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).has("signin")) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("signin")) {
       setAuthPanelMode("signin");
       setShowAuthPanel(true);
+    } else if (params.has("guest")) {
+      setGuestEntry(true);
+      setGuestMain(false);
     }
   }, []);
 const [guestEntry, setGuestEntry] = useState(false);
