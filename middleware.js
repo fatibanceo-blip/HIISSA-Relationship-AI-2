@@ -6,9 +6,19 @@ export async function middleware(request) {
     request,
   });
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  // Public Preview pages must remain accessible if Preview auth is not configured.
+  // Do not attempt to initialise Supabase with missing environment variables.
+  // Authentication still requires valid environment configuration.
+  if (!supabaseUrl || !supabasePublishableKey) {
+    return response;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    supabaseUrl,
+    supabasePublishableKey,
     {
       cookies: {
         getAll() {
