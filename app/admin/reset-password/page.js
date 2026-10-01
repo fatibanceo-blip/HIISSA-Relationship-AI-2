@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-);
+const supabase =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    : null;
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -28,6 +28,10 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    if (!supabase) {
+      setMessage("Password reset is not configured for this environment.");
+      return;
+    }
     setSaving(true);
 
     const { error } = await supabase.auth.updateUser({
