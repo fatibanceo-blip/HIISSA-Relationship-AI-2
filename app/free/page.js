@@ -25,11 +25,11 @@ export default function FreeWelcome() {
       <span style={{border:"1px solid #c4d7c9",borderRadius:99,padding:"8px 17px",background:"#fffefa",fontWeight:800}}>FREE</span>
     </header>
     <h1 style={{fontSize:"clamp(30px,6vw,43px)",lineHeight:1.15,margin:"54px 0 12px",maxWidth:370}}>Welcome to your<br/>HIISSA space. 🌱</h1>
-    <p style={{fontSize:19,lineHeight:1.5,margin:"0 0 30px",maxWidth:380}}>You’ve created your free account.<br/>What would feel right for you today?</p>
+    <p style={{fontSize:19,lineHeight:1.5,margin:"0 0 30px",maxWidth:380}}>{status==="ready"?"You’ve created your free account.":"Explore your HIISSA FREE welcome."}<br/>What would feel right for you today?</p>
     {status==="loading" ? <p role="status">Checking your HIISSA account…</p> : status!=="ready" ? <section style={{...tile,padding:23}}>
        <h2 style={{margin:"0 0 10px",fontSize:23}}>Your FREE welcome is ready</h2>
-       <p style={{lineHeight:1.55}}>{status==="unavailable"?"Account access is not configured in this Preview. No account has been created here.":"Sign in or create your free account to enter your personal HIISSA space."}</p>
-       <Link href="/talk?free=1" style={{...tile,display:"block",textAlign:"center",background:green,color:"#fff",fontWeight:800}}>Get started with HIISSA FREE →</Link>
+       <p style={{lineHeight:1.55}}>{status==="unavailable"?"This is a design Preview. You can enter HIISSA and explore without an account; personal account features are not available here yet.":"Sign in or create your free account to enter your personal HIISSA space."}</p>
+       <Link href={status==="unavailable"?"/talk?freeTalk=1":"/talk?free=1"} style={{...tile,display:"block",textAlign:"center",background:green,color:"#fff",fontWeight:800}}>{status==="unavailable"?"Continue to HIISSA →":"Get started with HIISSA FREE →"}</Link>
        <Link href="/" style={{display:"block",marginTop:18,color:green}}>← Back to main welcome</Link>
      </section> : <>
       <div style={{display:"grid",gap:13}}>
