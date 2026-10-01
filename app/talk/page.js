@@ -1623,7 +1623,17 @@ const [showAuthPanel, setShowAuthPanel] = useState(false);
 const [authPanelMode, setAuthPanelMode] = useState("signin");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.has("signin")) {
+    if (params.has("free")) {
+      setAuthPanelMode("free");
+      setShowAuthPanel(true);
+    } else if (params.has("freeExplore")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(true);
+    } else if (params.has("freeAccount")) {
+      setAuthPanelMode("account");
+      setShowAuthPanel(true);
+    } else if (params.has("signin")) {
       setAuthPanelMode("signin");
       setShowAuthPanel(true);
     } else if (params.has("guest")) {
@@ -3138,7 +3148,7 @@ function saveGuestMigrationChoice(choice) {
 
   try {
   let emailRedirectTo =
-    `${window.location.origin}/auth/continue?flow=auth`;
+    `${window.location.origin}/auth/continue?flow=${authPanelMode === "free" ? "free" : "auth"}`;
 
   if (authPanelMode === "save" && guestMigrationChoice === "save") {
     const savedChats = JSON.parse(
