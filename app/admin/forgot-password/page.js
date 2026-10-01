@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-);
+const supabase =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    : null;
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -16,6 +16,10 @@ export default function ForgotPasswordPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     setMessage("");
+    if (!supabase) {
+      setMessage("Password recovery is not configured for this environment.");
+      return;
+    }
     setSending(true);
 
     const redirectTo = `${window.location.origin}/admin/reset-password`;
