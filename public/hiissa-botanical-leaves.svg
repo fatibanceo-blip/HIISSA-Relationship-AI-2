@@ -1,1 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 550"><defs><radialGradient id="light"><stop stop-color="#ffe5a3" stop-opacity=".95"/><stop offset="1" stop-color="#ffe5a3" stop-opacity="0"/></radialGradient><linearGradient id="leaf" x2="1" y2="1"><stop stop-color="#183f28"/><stop offset=".55" stop-color="#4b7335"/><stop offset="1" stop-color="#a2ad59"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="11"/></filter></defs><circle cx="55" cy="90" r="95" fill="url(#light)" filter="url(#glow)"/><circle cx="310" cy="350" r="90" fill="url(#light)" filter="url(#glow)"/><path d="M-20 70Q130 80 340 400M-20 280Q130 200 230 130" stroke="#5c773e" stroke-width="8" fill="none" opacity=".8"/><g fill="url(#leaf)" stroke="#d5c989" stroke-width="1.5"><path d="M0 40Q140 -12 180 60Q130 128 0 100Z"/><path d="M30 125Q180 78 205 165Q120 220 0 170Z"/><path d="M90 220Q230 130 275 210Q235 300 115 285Z"/><path d="M0 335Q150 220 220 310Q170 420 0 405Z"/><path d="M100 430Q255 320 310 420Q260 530 135 510Z"/></g><g stroke="#d8cf9a" stroke-width="2" fill="none" opacity=".55"><path d="M0 70L180 60M30 150L205 165M100 245L275 210M0 370L220 310M100 470L310 420"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 550" role="img" aria-label="Natural green botanical leaves">
+<defs>
+ <radialGradient id="sun"><stop stop-color="#f6e7ac" stop-opacity=".78"/><stop offset="1" stop-color="#f6e7ac" stop-opacity="0"/></radialGradient>
+ <linearGradient id="leafA" x1=".12" y1=".1" x2=".9" y2=".88"><stop stop-color="#102f20"/><stop offset=".27" stop-color="#315f36"/><stop offset=".58" stop-color="#71945a"/><stop offset=".82" stop-color="#3e713c"/><stop offset="1" stop-color="#153b28"/></linearGradient>
+ <linearGradient id="leafB" x1=".05" y1=".12" x2=".95" y2=".9"><stop stop-color="#22432b"/><stop offset=".38" stop-color="#72935a"/><stop offset=".57" stop-color="#a0af75"/><stop offset=".82" stop-color="#487b4b"/><stop offset="1" stop-color="#214b31"/></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="14"/></filter>
+ <filter id="texture" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="3" seed="7" result="noise"/><feColorMatrix in="noise" type="saturate" values="0" result="gray"/><feComposite in="gray" in2="SourceGraphic" operator="in" result="masked"/><feBlend in="SourceGraphic" in2="masked" mode="soft-light"/></filter>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="2" dy="5" stdDeviation="5" flood-color="#1a4227" flood-opacity=".22"/></filter>
+</defs>
+<ellipse cx="63" cy="105" rx="124" ry="95" fill="url(#sun)" filter="url(#soft)"/><ellipse cx="321" cy="376" rx="110" ry="128" fill="url(#sun)" filter="url(#soft)"/>
+<g fill="none" stroke-linecap="round"><path d="M-24 42C58 85 106 153 148 226S248 377 333 472" stroke="#3c6034" stroke-width="5"/><path d="M-18 291C60 248 102 211 162 133" stroke="#607c45" stroke-width="4"/></g>
+<g filter="url(#shadow)">
+ <path d="M-19 31C41 4 117 10 160 58C125 113 54 132-15 99C5 79 4 52-19 31Z" fill="url(#leafA)" filter="url(#texture)"/>
+ <path d="M20 119C92 79 158 96 202 154C167 211 94 217 0 176C31 156 35 139 20 119Z" fill="url(#leafB)" filter="url(#texture)"/>
+ <path d="M76 219C132 156 212 155 270 209C247 274 188 310 108 282C124 256 111 239 76 219Z" fill="url(#leafA)" filter="url(#texture)"/>
+ <path d="M-20 332C40 271 139 249 217 309C193 377 119 430-19 402C15 377 16 349-20 332Z" fill="url(#leafB)" filter="url(#texture)"/>
+ <path d="M97 432C165 362 253 366 307 420C277 500 209 532 133 507C153 478 143 456 97 432Z" fill="url(#leafA)" filter="url(#texture)"/>
+</g>
+<g fill="none" stroke-linecap="round" opacity=".53"><path d="M-12 76Q72 65 153 60M5 165Q108 151 197 157M110 266Q184 225 261 210M-8 384Q103 340 211 311M138 488Q226 450 301 421" stroke="#e0dca5" stroke-width="1.8"/><path d="M47 69l-16-30m49 24l-1-40m18 37l19-26M71 156l-17-30m54 26l3-42m25 45l24-27M156 241l-9-35m39 21l9-37m-111 167l-7-43m42 30l14-47m47 31l29-33m-34 164l-1-43m39 31l20-39m-129-72l-15 33" stroke="#d9dda6" stroke-width="1"/></g>
+</svg>
