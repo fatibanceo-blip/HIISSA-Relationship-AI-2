@@ -1626,6 +1626,10 @@ const [authPanelMode, setAuthPanelMode] = useState("signin");
     if (params.has("free")) {
       setAuthPanelMode("free");
       setShowAuthPanel(true);
+    } else if (params.has("freeTalk")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(false);
     } else if (params.has("freeExplore")) {
       setGuestEntry(false);
       setGuestMain(true);
