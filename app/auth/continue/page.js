@@ -56,7 +56,7 @@ export default function AuthContinuePage() {
     const params = new URLSearchParams({
       token_hash: tokenHash,
       type,
-      next: returnToFree ? "/free" : "/",
+      next: returnToFree ? "/free/welcome" : "/",
     });
 
     if (handoffToken) {
