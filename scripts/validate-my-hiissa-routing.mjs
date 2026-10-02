@@ -63,6 +63,10 @@ requireText("Talk", talk, 'params.has("myHiissaConversation")');
 forbidText("Talk", talk, "Continue my conversations");
 forbidText("Talk", talk, "Your HIISSA space is ready whenever you are.");
 requireText("Talk", talk, "← Back to My HIISSA");
+requireText("Talk", talk, 'params.has("signin")');
+requireText("Talk", talk, 'from === "plus"');
+requireText("Talk", talk, 'from === "together"');
+requireText("Talk", talk, 'window.location.replace(\n    "/my-hiissa"');
 requireText("Talk", talk, "/api/messages?conversationId=");
 requireText("Talk", talk, "/api/conversations");
 
@@ -91,3 +95,4 @@ console.log("- Normal Sign in routes to My HIISSA");
 console.log("- FREE and Guest Save & Sync destinations remain declared");
 console.log("- One-time normal Continue page uses history replacement");
 console.log("- Obsolete authenticated Talk-home block is absent");
+console.log("- Stale authenticated general Sign-in history redirects to My HIISSA");
