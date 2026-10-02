@@ -2345,6 +2345,35 @@ useEffect(() => {
     subscription.unsubscribe();
   };
 }, []);
+
+useEffect(() => {
+  if (!authInitialised || !authSession) {
+    return;
+  }
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  if (!params.has("signin")) {
+    return;
+  }
+
+  const from = params.get("from");
+
+  if (
+    from === "plus" ||
+    from === "together"
+  ) {
+    return;
+  }
+
+  window.location.replace(
+    "/my-hiissa"
+  );
+}, [authInitialised, authSession]);
+
 useEffect(() => {
   if (
     !authInitialised ||
