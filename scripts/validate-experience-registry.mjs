@@ -81,8 +81,12 @@ for (let index = 0; index < entryMatches.length; index += 1) {
 
   const status = chunk.match(/\bstatus:\s*"([^"]+)"/)?.[1] || "";
 
+  const claimsFounderTested =
+    /(^|-)founder-tested($|-)/i.test(status) &&
+    !/(^|-)not-founder-tested($|-)/i.test(status);
+
   if (
-    /founder-tested/i.test(status) &&
+    claimsFounderTested &&
     !/founderTest:\s*"PASS"/.test(chunk)
   ) {
     fail(
