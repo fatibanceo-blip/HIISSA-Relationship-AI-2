@@ -268,3 +268,21 @@ The current gate therefore:
 The standard `prebuild` and `verify:foundation` commands now include this journey-level gate in addition to the Registry and My HIISSA route gates.
 
 Production remains separately gated and requires explicit Founder approval.
+
+
+## Complete account journey staging implementation checkpoint
+
+The Founder-approved complete account journey is now connected in the isolated staging branch for end-to-end Preview certification.
+
+Implemented staging connections:
+- public Main checks the existing authenticated session;
+- signed-out Main shows the canonical Sign in entry;
+- signed-in Main shows My HIISSA instead of asking the same user to sign in again;
+- successful normal Magic Link authentication routes to My HIISSA;
+- signed-out direct access to My HIISSA, My Account, My Conversations, and My HIISSA Talk/Explore/conversation entries resolves through the same canonical Sign-in door;
+- My HIISSA Account, Conversations, Talk and Explore retain their approved return paths;
+- Back to HIISSA returns to Main without signing the user out;
+- local-device sign out replaces the private Account page with Main in browser history;
+- the obsolete generic Talk authenticated-home block remains prohibited by the automated gate.
+
+This checkpoint is **implemented in staging, not Founder-tested as a complete journey and not Production-released**. The next valid certification evidence is one clean READY Preview build followed by Founder end-to-end testing, including browser Back/Forward behaviour.
