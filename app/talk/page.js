@@ -1654,6 +1654,22 @@ const [entryQueryResolved, setEntryQueryResolved] = useState(false);
       setGuestMain(true);
       setShowExplore(true);
       setTogetherEntry("explore");
+    } else if (params.has("myHiissaTalk")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(false);
+      setMyHiissaEntry("talk");
+    } else if (params.has("myHiissaExplore")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(true);
+      setMyHiissaEntry("explore");
+    } else if (params.has("myHiissaConversation")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(false);
+      setMyHiissaEntry("conversation");
+      setMyHiissaConversationId(params.get("myHiissaConversation") || "");
     } else if (params.has("signin")) {
       setAuthPanelMode("signin");
       const from = params.get("from");
@@ -1671,6 +1687,9 @@ const [guestEntry, setGuestEntry] = useState(false);
 const [guestMain, setGuestMain] = useState(false);
 const [plusEntry, setPlusEntry] = useState(null);
 const [togetherEntry, setTogetherEntry] = useState(null);
+const [myHiissaEntry, setMyHiissaEntry] = useState(null);
+const [myHiissaConversationId, setMyHiissaConversationId] = useState("");
+const [myHiissaEntryError, setMyHiissaEntryError] = useState("");
 const [welcomePlan, setWelcomePlan] = useState(null);
 const [authError, setAuthError] = useState("");  
 const [guestMigrationChoice, setGuestMigrationChoice] = useState(null);
@@ -2613,6 +2632,149 @@ if (!authInitialised) return;
     cancelled = true;
   };
 }, [authInitialised, authSession?.access_token]);
+
+useEffect(() => {
+  if (
+    !authInitialised ||
+    !authSession?.access_token ||
+    !myHiissaConversationId
+  ) {
+    return;
+  }
+
+  let cancelled = false;
+
+  async function loadMyHiissaConversation() {
+    setMyHiissaEntryError("");
+
+    try {
+      const ownedResponse = await fetch(
+        "/api/conversations",
+        {
+          method: "GET",
+          headers: {
+            Authorization:
+              `Bearer ${authSession.access_token}`,
+          },
+        }
+      );
+
+      if (!ownedResponse.ok) {
+        throw new Error(
+          "Unable to verify this conversation."
+        );
+      }
+
+      const ownedData =
+        await ownedResponse.json();
+
+      const ownedConversation =
+        Array.isArray(
+          ownedData?.conversations
+        )
+          ? ownedData.conversations.find(
+              (conversation) =>
+                conversation.id ===
+                myHiissaConversationId
+            )
+          : null;
+
+      if (!ownedConversation) {
+        if (!cancelled) {
+          setMyHiissaEntryError(
+            "This conversation is not available in this HIISSA account."
+          );
+        }
+        return;
+      }
+
+      const response = await fetch(
+        `/api/messages?conversationId=${encodeURIComponent(
+          myHiissaConversationId
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization:
+              `Bearer ${authSession.access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Unable to load this conversation."
+        );
+      }
+
+      const data = await response.json();
+
+      if (
+        !Array.isArray(data.messages)
+      ) {
+        throw new Error(
+          "Invalid conversation response."
+        );
+      }
+
+      if (cancelled) return;
+
+      setMessages(
+        data.messages.map(
+          (message) => ({
+            role: message.role,
+            content:
+              message.original_content,
+          })
+        )
+      );
+
+      setServerConversationId(
+        myHiissaConversationId
+      );
+
+      setActivePreviousChatId(
+        myHiissaConversationId
+      );
+
+      setShowIntentChoices(false);
+      setMyHiissaEntryError("");
+
+      window.setTimeout(() => {
+        document
+          .getElementById(
+            "hiissa-conversation"
+          )
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+      }, 80);
+    } catch (error) {
+      console.error(
+        "HIISSA My Conversations handoff failed:",
+        error
+      );
+
+      if (!cancelled) {
+        setMyHiissaEntryError(
+          "HIISSA couldn't open that conversation right now. Your conversation remains safe."
+        );
+      }
+    }
+  }
+
+  loadMyHiissaConversation();
+
+  return () => {
+    cancelled = true;
+  };
+}, [
+  authInitialised,
+  authSession?.access_token,
+  myHiissaConversationId,
+]);
+
 useEffect(() => {
 if (!authInitialised) return;  
   let cancelled = false;
@@ -4720,7 +4882,7 @@ clientCreatedAt: new Date().toISOString(),
             )}
           </section>
         )}
-        {authInitialised && authSession && !showAuthPanel && !plusEntry && !togetherEntry && (
+        {authInitialised && authSession && !showAuthPanel && !plusEntry && !togetherEntry && !myHiissaEntry && (
           <section aria-label="My HIISSA home" style={{marginBottom:"22px",padding:"24px",border:"1px solid #c5d8cc",borderRadius:"22px",background:"#edf5ef",color:"#245b48"}}>
             <h2 style={{margin:"0 0 8px"}}>Welcome back.</h2>
             <p>Your HIISSA space is ready whenever you are.</p>
@@ -4835,6 +4997,25 @@ clientCreatedAt: new Date().toISOString(),
             <a href="/together/welcome" style={{color:"#6f2943",fontWeight:800,textDecoration:"none"}}>← Back to HIISSA TOGETHER</a>
             <span style={{fontSize:"13px",fontWeight:800,color:"#8a3856"}}>TOGETHER • Explore HIISSA</span>
           </div>
+        )}
+
+        {myHiissaEntry && (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",margin:"0 0 18px",padding:"12px 14px",border:"1px solid rgba(36,91,72,.20)",borderRadius:"14px",background:"rgba(244,249,245,.96)",color:"#245b48"}}>
+            <a href="/my-hiissa" style={{color:"#245b48",fontWeight:800,textDecoration:"none"}}>← Back to My HIISSA</a>
+            <span style={{fontSize:"13px",fontWeight:800,color:"#5f7d6e"}}>
+              {myHiissaEntry === "explore"
+                ? "MY HIISSA • Explore"
+                : myHiissaEntry === "conversation"
+                  ? "MY HIISSA • Conversation"
+                  : "MY HIISSA • Talk"}
+            </span>
+          </div>
+        )}
+
+        {myHiissaEntryError && (
+          <p role="alert" style={{margin:"0 0 14px",padding:"12px 14px",borderRadius:"12px",background:"#fff4f1",border:"1px solid #e8c8bf",color:"#7a3f35"}}>
+            {myHiissaEntryError}
+          </p>
         )}
 
         <section id="hiissa-conversation" className="chat">
