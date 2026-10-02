@@ -267,7 +267,7 @@ export default function TogetherWelcome() {
               fontSize: 12,
             }}
           >
-            <Link href="/" style={{ color: burgundy, textDecoration: "none" }}>
+            <Link href="/?togetherHome=1" style={{ color: burgundy, textDecoration: "none" }}>
               <span aria-hidden="true">⌂</span>
               <br />
               Home
