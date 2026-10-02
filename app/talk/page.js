@@ -1637,6 +1637,16 @@ const [authPanelMode, setAuthPanelMode] = useState("signin");
     } else if (params.has("freeAccount")) {
       setAuthPanelMode("account");
       setShowAuthPanel(true);
+    } else if (params.has("plusTalk")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(false);
+      setPlusEntry("talk");
+    } else if (params.has("plusExplore")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(true);
+      setPlusEntry("explore");
     } else if (params.has("signin")) {
       setAuthPanelMode("signin");
       setShowAuthPanel(true);
@@ -1647,6 +1657,7 @@ const [authPanelMode, setAuthPanelMode] = useState("signin");
   }, []);
 const [guestEntry, setGuestEntry] = useState(false);
 const [guestMain, setGuestMain] = useState(false);
+const [plusEntry, setPlusEntry] = useState(null);
 const [welcomePlan, setWelcomePlan] = useState(null);
 const [authError, setAuthError] = useState("");  
 const [guestMigrationChoice, setGuestMigrationChoice] = useState(null);
@@ -4414,7 +4425,7 @@ clientCreatedAt: new Date().toISOString(),
             )}
           </section>
         )}
-        {authInitialised && authSession && !showAuthPanel && (
+        {authInitialised && authSession && !showAuthPanel && !plusEntry && (
           <section aria-label="My HIISSA home" style={{marginBottom:"22px",padding:"24px",border:"1px solid #c5d8cc",borderRadius:"22px",background:"#edf5ef",color:"#245b48"}}>
             <h2 style={{margin:"0 0 8px"}}>Welcome back.</h2>
             <p>Your HIISSA space is ready whenever you are.</p>
@@ -4424,6 +4435,7 @@ clientCreatedAt: new Date().toISOString(),
               style={{marginTop:"10px",width:"100%",background:"#fffefa",color:"#245b48",padding:"12px",borderRadius:"12px",border:"1px solid #245b48"}}>My Account</button>
           </section>
         )}
+        {!plusEntry && <>
         <header className="hero">
           <div className="logo">
             H
@@ -4513,6 +4525,15 @@ clientCreatedAt: new Date().toISOString(),
             ›
           </span>
         </button>
+
+        </>}
+
+        {plusEntry && (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",margin:"0 0 18px",padding:"12px 14px",border:"1px solid rgba(212,170,82,.35)",borderRadius:"14px",background:"rgba(255,250,239,.92)",color:"#245b48"}}>
+            <a href="/plus/welcome" style={{color:"#245b48",fontWeight:800,textDecoration:"none"}}>← Back to HIISSA+</a>
+            <span style={{fontSize:"13px",fontWeight:800,color:"#8a6a25"}}>{plusEntry === "explore" ? "HIISSA+ • Explore" : "HIISSA+ • Talk"}</span>
+          </div>
+        )}
 
         <section id="hiissa-conversation" className="chat">
           <div className="chatHead">
