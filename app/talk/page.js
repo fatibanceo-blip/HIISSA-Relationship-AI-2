@@ -1621,6 +1621,7 @@ const [authMessage, setAuthMessage] = useState("");
 const [authLoading, setAuthLoading] = useState(false);
 const [showAuthPanel, setShowAuthPanel] = useState(false);
 const [authPanelMode, setAuthPanelMode] = useState("signin");
+const [authReturnContext, setAuthReturnContext] = useState("home");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has("free")) {
@@ -1654,6 +1655,10 @@ const [authPanelMode, setAuthPanelMode] = useState("signin");
       setTogetherEntry("explore");
     } else if (params.has("signin")) {
       setAuthPanelMode("signin");
+      const from = params.get("from");
+      setAuthReturnContext(
+        from === "together" ? "together" : from === "plus" ? "plus" : "home"
+      );
       setShowAuthPanel(true);
     } else if (params.has("guest")) {
       setGuestEntry(true);
@@ -4259,6 +4264,267 @@ clientCreatedAt: new Date().toISOString(),
                 style={{border:0,background:"transparent",color:"#245b48",fontWeight:700,padding:"10px",cursor:"pointer"}}>← Back to welcome</button>
             </div>
           </section>
+        </section>
+      </main>
+    );
+  }
+
+  if (showAuthPanel && authPanelMode === "signin") {
+    const backHref =
+      authReturnContext === "together"
+        ? "/together/welcome"
+        : authReturnContext === "plus"
+          ? "/plus/welcome"
+          : "/";
+    const backLabel =
+      authReturnContext === "together"
+        ? "Back to HIISSA TOGETHER"
+        : authReturnContext === "plus"
+          ? "Back to HIISSA+"
+          : "Back to HIISSA";
+
+    return (
+      <main
+        aria-label="HIISSA secure sign in"
+        style={{
+          minHeight: "100vh",
+          position: "relative",
+          overflow: "hidden",
+          padding: "clamp(18px,5vw,48px)",
+          background:
+            "radial-gradient(circle at 12% 8%,rgba(206,226,207,.72),transparent 28%),radial-gradient(circle at 92% 90%,rgba(238,220,167,.34),transparent 30%),linear-gradient(145deg,#e8f0e9 0%,#f8f7ef 52%,#edf1e7 100%)",
+          fontFamily: "inherit",
+        }}
+      >
+        <img
+          src="/hiissa-botanical-leaves.svg"
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: "-46px",
+            left: "-62px",
+            width: "clamp(150px,25vw,250px)",
+            opacity: 0.34,
+            pointerEvents: "none",
+          }}
+        />
+        <img
+          src="/hiissa-botanical-leaves.svg"
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            right: "-70px",
+            bottom: "-66px",
+            width: "clamp(170px,28vw,280px)",
+            opacity: 0.24,
+            transform: "rotate(180deg)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <section
+          style={{
+            position: "relative",
+            zIndex: 1,
+            maxWidth: 620,
+            margin: "0 auto",
+            borderRadius: 30,
+            padding: "clamp(24px,5vw,42px)",
+            background: "rgba(255,253,247,.97)",
+            border: "1px solid rgba(191,211,197,.92)",
+            boxShadow: "0 22px 65px rgba(32,75,59,.16)",
+            color: "#234735",
+          }}
+        >
+          <header
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: "clamp(32px,6vw,52px)",
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                display: "grid",
+                placeItems: "center",
+                width: 54,
+                height: 54,
+                borderRadius: 16,
+                background: "#204b3b",
+                color: "#fff",
+                fontSize: 31,
+                fontWeight: 900,
+                boxShadow: "0 8px 20px rgba(32,75,59,.18)",
+              }}
+            >
+              H
+            </span>
+            <div>
+              <strong
+                style={{
+                  display: "block",
+                  color: "#204b3b",
+                  fontSize: 21,
+                  letterSpacing: ".02em",
+                }}
+              >
+                HIISSA
+              </strong>
+              <span style={{ fontSize: 13, color: "#6b7a70" }}>
+                Secure account access
+              </span>
+            </div>
+          </header>
+
+          <div style={{ maxWidth: 500 }}>
+            <p
+              style={{
+                margin: "0 0 10px",
+                color: "#9b7b3c",
+                fontWeight: 800,
+                letterSpacing: ".08em",
+                fontSize: 12,
+              }}
+            >
+              WELCOME BACK
+            </p>
+            <h1
+              style={{
+                margin: "0 0 14px",
+                color: "#204b3b",
+                fontSize: "clamp(32px,7vw,48px)",
+                lineHeight: 1.08,
+              }}
+            >
+              Sign in to your HIISSA
+            </h1>
+            <p
+              style={{
+                margin: "0 0 30px",
+                color: "#596d61",
+                fontSize: "clamp(16px,3vw,19px)",
+                lineHeight: 1.65,
+              }}
+            >
+              Enter the email address for your existing HIISSA account.
+              We’ll send you a secure sign-in link.
+            </p>
+
+            <label
+              htmlFor="hiissa-auth-email"
+              style={{
+                display: "block",
+                marginBottom: 8,
+                fontWeight: 800,
+                color: "#2f5444",
+              }}
+            >
+              Email address
+            </label>
+            <input
+              id="hiissa-auth-email"
+              type="email"
+              value={authEmail}
+              onChange={(event) => setAuthEmail(event.target.value)}
+              placeholder="Your email address"
+              autoComplete="email"
+              disabled={authLoading}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "16px 17px",
+                margin: "0 0 14px",
+                borderRadius: 15,
+                border: "1px solid #b8cbbf",
+                background: "#fff",
+                color: "#234735",
+                fontSize: 16,
+                outlineColor: "#245b48",
+              }}
+            />
+
+            <button
+              type="button"
+              onClick={sendMagicLink}
+              disabled={authLoading}
+              style={{
+                width: "100%",
+                border: 0,
+                borderRadius: 15,
+                padding: "16px 18px",
+                background: authLoading ? "#6f8d80" : "#204b3b",
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: 850,
+                cursor: authLoading ? "wait" : "pointer",
+                boxShadow: "0 10px 24px rgba(32,75,59,.18)",
+              }}
+            >
+              {authLoading ? "Sending secure link..." : "Email me a secure sign-in link"}
+            </button>
+
+            <p
+              style={{
+                margin: "12px 0 0",
+                textAlign: "center",
+                color: "#6b7a70",
+                fontSize: 13,
+              }}
+            >
+              🔒 Secure sign-in · No password required
+            </p>
+
+            {authMessage && (
+              <div
+                role="status"
+                style={{
+                  marginTop: 18,
+                  padding: "13px 14px",
+                  borderRadius: 13,
+                  background: "#edf6ef",
+                  border: "1px solid #c7decf",
+                  color: "#245b48",
+                  lineHeight: 1.5,
+                }}
+              >
+                {authMessage}
+              </div>
+            )}
+            {authError && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 18,
+                  padding: "13px 14px",
+                  borderRadius: 13,
+                  background: "#fff2f0",
+                  border: "1px solid #e3c5bf",
+                  color: "#7c3f36",
+                  lineHeight: 1.5,
+                }}
+              >
+                {authError}
+              </div>
+            )}
+
+            <a
+              href={backHref}
+              style={{
+                display: "block",
+                marginTop: 24,
+                textAlign: "center",
+                color: "#245b48",
+                fontWeight: 800,
+                textDecoration: "none",
+              }}
+            >
+              ← {backLabel}
+            </a>
+          </div>
         </section>
       </main>
     );
