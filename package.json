@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run test:registry && next build",
-    "start": "next start",
     "test:registry": "node scripts/validate-experience-registry.mjs",
-    "verify:foundation": "npm run test:registry && next build"
+    "prebuild": "node scripts/validate-experience-registry.mjs",
+    "build": "next build",
+    "verify:foundation": "npm run test:registry && npm run build",
+    "start": "next start"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
@@ -17,4 +18,4 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   }
-}\n
+}
