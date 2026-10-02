@@ -83,26 +83,22 @@ requireText("Talk", talk, "← Back to My HIISSA");
 
 // The Founder has approved the complete journey design, but the remaining
 // navigation connections must not be silently treated as complete.
-const mainAppearsSessionAware =
-  main.includes("auth.getSession") ||
-  main.includes("onAuthStateChange") ||
-  main.includes("My HIISSA");
+requireText("Public Main", main, "createBrowserClient");
+requireText("Public Main", main, "supabase.auth");
+requireText("Public Main", main, ".getSession()");
+requireText("Public Main", main, "onAuthStateChange");
+requireText("Public Main", main, 'authState === "ready"');
+requireText("Public Main", main, 'href="/my-hiissa"');
+requireText("Public Main", main, '>My HIISSA</Link>');
+requireText("Public Main", main, 'authState === "signedout"');
+requireText("Public Main", main, '>Sign in</Link>');
 
-if (!mainAppearsSessionAware) {
-  pending.push(
-    "Public Main is not yet session-aware: signed-in users still need the approved My HIISSA entry behaviour connected."
-  );
-}
-
-const privateHomeHasSignedOutGuard =
-  myHiissa.includes('authState !== "ready"') &&
-  myHiissa.includes("/talk?signin=1&from=home");
-
-if (!privateHomeHasSignedOutGuard) {
-  pending.push(
-    "My HIISSA signed-out protection still needs to be reconciled with the one canonical Sign-in journey."
-  );
-}
+requireText("My HIISSA protection", myHiissa, 'authState === "signedout"');
+requireText(
+  "My HIISSA protection",
+  myHiissa,
+  'window.location.replace(\n      "/talk?signin=1&from=home"'
+);
 
 if (errors.length > 0) {
   console.error("\nHIISSA complete account journey contract: FAIL\n");
@@ -118,6 +114,8 @@ console.log("- Existing Main → Sign in → authentication → My HIISSA handof
 console.log("- My HIISSA child destinations and return paths are represented");
 console.log("- Local-device sign out returns to Main");
 console.log("- The gate distinguishes approved design from completed connection");
+console.log("- Public Main session-aware Sign in / My HIISSA switch is enforced");
+console.log("- Signed-out My HIISSA access is routed through canonical Sign in");
 
 if (pending.length > 0) {
   console.log("\nApproved journey connections still pending Founder-authorised implementation:");
