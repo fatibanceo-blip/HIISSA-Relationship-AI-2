@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const green = "#194f3d";
 
@@ -34,6 +34,7 @@ export default function MyHiissaAccountPage() {
   const [session, setSession] = useState(null);
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState("");
+  const intentionalSignOutRef = useRef(false);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -77,7 +78,7 @@ export default function MyHiissaAccountPage() {
   }, []);
 
   useEffect(() => {
-    if (authState !== "signedout") {
+    if (authState !== "signedout" || intentionalSignOutRef.current) {
       return;
     }
 
@@ -92,6 +93,7 @@ export default function MyHiissaAccountPage() {
 
     if (!window.confirm("Sign out of HIISSA on this device?")) return;
 
+    intentionalSignOutRef.current = true;
     setSigningOut(true);
     setError("");
 
