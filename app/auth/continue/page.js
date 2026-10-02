@@ -60,15 +60,25 @@ export default function AuthContinuePage() {
         ? "/free/welcome"
         : handoffToken
           ? "/"
-          : "/talk",
+          : "/my-hiissa",
     });
 
     if (handoffToken) {
       params.set("handoff", handoffToken);
     }
 
+    const confirmationUrl =
+      `/auth/confirm?${params.toString()}`;
+
+    if (!returnToFree && !handoffToken) {
+      window.location.replace(
+        confirmationUrl
+      );
+      return;
+    }
+
     window.location.assign(
-      `/auth/confirm?${params.toString()}`
+      confirmationUrl
     );
   }
 
