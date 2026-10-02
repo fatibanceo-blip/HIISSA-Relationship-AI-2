@@ -2347,6 +2347,20 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
+  if (
+    !authInitialised ||
+    authSession ||
+    !myHiissaEntry
+  ) {
+    return;
+  }
+
+  window.location.replace(
+    "/talk?signin=1&from=home"
+  );
+}, [authInitialised, authSession, myHiissaEntry]);
+
+useEffect(() => {
   if (!authInitialised || !authSession) {
     return;
   }
