@@ -49,17 +49,36 @@ requireText("My HIISSA home", home, "Not connected yet");
 
 requireText("My Account", account, "session?.user?.email");
 requireText("My Account", account, 'scope: "local"');
+requireText("My Account", account, 'authState === "signedout"');
+requireText("My Account", account, 'window.location.replace("/")');
+requireText(
+  "My Account",
+  account,
+  'window.location.replace(\n      "/talk?signin=1&from=home"'
+);
 forbidText("My Account", account, 'type="email"');
 forbidText("My Account", account, "Email me a secure sign-in link");
 
 requireText("My Conversations", conversations, 'fetch("/api/conversations"');
 requireText("My Conversations", conversations, "myHiissaConversation=");
+requireText("My Conversations", conversations, 'authState === "signedout"');
+requireText(
+  "My Conversations",
+  conversations,
+  'window.location.replace(\n      "/talk?signin=1&from=home"'
+);
 requireText("My Conversations", conversations, "Nothing to continue yet.");
 forbidText("My Conversations", conversations, '<Link href="/talk"');
 
 requireText("Talk", talk, 'params.has("myHiissaTalk")');
 requireText("Talk", talk, 'params.has("myHiissaExplore")');
 requireText("Talk", talk, 'params.has("myHiissaConversation")');
+requireText("Talk", talk, "!myHiissaEntry");
+requireText(
+  "Talk",
+  talk,
+  "}, [authInitialised, authSession, myHiissaEntry]);"
+);
 forbidText("Talk", talk, "Continue my conversations");
 forbidText("Talk", talk, "Your HIISSA space is ready whenever you are.");
 requireText("Talk", talk, "← Back to My HIISSA");
@@ -96,3 +115,5 @@ console.log("- FREE and Guest Save & Sync destinations remain declared");
 console.log("- One-time normal Continue page uses history replacement");
 console.log("- Obsolete authenticated Talk-home block is absent");
 console.log("- Stale authenticated general Sign-in history redirects to My HIISSA");
+console.log("- Signed-out My HIISSA child routes resolve through canonical Sign in");
+console.log("- Local Account sign out replaces private Account history with Main");
