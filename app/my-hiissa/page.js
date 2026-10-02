@@ -112,6 +112,16 @@ export default function MyHiissaPage() {
   }, []);
 
   useEffect(() => {
+    if (authState !== "signedout") {
+      return;
+    }
+
+    window.location.replace(
+      "/talk?signin=1&from=home"
+    );
+  }, [authState]);
+
+  useEffect(() => {
     if (!session?.access_token) {
       setConversations([]);
       setConversationState("idle");
@@ -165,6 +175,23 @@ export default function MyHiissaPage() {
         }}
       >
         <p style={{ fontSize: 18 }}>Opening My HIISSA…</p>
+      </main>
+    );
+  }
+
+  if (authState === "signedout") {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+          background: "linear-gradient(145deg,#e7efe9,#fbf8ee)",
+          color: green,
+          fontFamily: "Arial, Helvetica, sans-serif",
+        }}
+      >
+        <p style={{ fontSize: 18 }}>Taking you to Sign in…</p>
       </main>
     );
   }
