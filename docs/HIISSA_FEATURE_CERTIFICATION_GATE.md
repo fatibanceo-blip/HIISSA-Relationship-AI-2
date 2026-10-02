@@ -210,3 +210,61 @@ Only after this set passes and the Founder approves the rendered behaviour may g
 Preview certification does not authorise Production release.
 
 Production requires separate explicit Founder approval after Preview certification and regression evidence.
+
+
+## Complete account journey certification contract — Founder approved 2 October 2026
+
+The Certification Gate now treats the signed-in account experience as one journey, not as a collection of unrelated pages.
+
+Canonical Registry ID: `account.journey`
+
+Approved journey contract:
+
+SIGNED_OUT_MAIN
+→ SIGN_IN
+→ MAGIC_LINK
+→ CONTINUE_SECURELY
+→ MY_HIISSA_HOME
+→ ACCOUNT / TALK / EXPLORE / CONVERSATIONS
+→ BACK_TO_MY_HIISSA
+→ BACK_TO_MAIN
+→ SIGN_OUT_THIS_DEVICE
+→ SIGNED_OUT_MAIN_AGAIN
+
+### Journey certification rule
+
+A passing individual screen is not enough to certify the account journey.
+
+The journey must preserve all of these truths together:
+- the public Main opening page is the front door;
+- signed-out users use the one canonical HIISSA Sign in;
+- successful normal authentication reaches My HIISSA;
+- My HIISSA is the authenticated account home, not a duplicate product or plan;
+- Account, Talk, Explore and Conversations are connected from My HIISSA;
+- those destinations have clear return paths to My HIISSA;
+- Back to HIISSA returns to the Main opening page without silently signing the user out;
+- the finished connected Main state must distinguish an already-authenticated user from a signed-out user;
+- Sign out on this device uses local-device sign out and returns to the Main opening page in a signed-out state;
+- browser Back/Forward behaviour is part of Founder acceptance evidence;
+- FREE, HIISSA+, HIISSA TOGETHER, Guest Save & Sync, existing authentication confirmation, and Production remain protected unless separately approved.
+
+### Current certification state
+
+The complete journey design is **FOUNDER-APPROVED / DESIGN_APPROVED**.
+
+It is **not yet certified as a complete connected journey**.
+
+The current gate therefore:
+- verifies that one canonical account-journey contract exists;
+- verifies that every required journey state is declared;
+- verifies the already implemented route pieces that belong to the journey;
+- records remaining connection work truthfully rather than pretending it has passed;
+- blocks any Registry claim that the complete journey has moved beyond DESIGN_APPROVED without the contract being deliberately updated and retested.
+
+### Automated command
+
+`npm run test:account-journey`
+
+The standard `prebuild` and `verify:foundation` commands now include this journey-level gate in addition to the Registry and My HIISSA route gates.
+
+Production remains separately gated and requires explicit Founder approval.
