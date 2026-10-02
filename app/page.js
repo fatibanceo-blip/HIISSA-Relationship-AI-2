@@ -1,62 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createBrowserClient } from "@supabase/ssr";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-const supabase =
-  supabaseUrl && supabasePublishableKey
-    ? createBrowserClient(
-        supabaseUrl,
-        supabasePublishableKey,
-        {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true,
-          },
-        }
-      )
-    : null;
 
 // Public landing page only. The existing conversation experience lives at /talk.
 export default function Home() {
   const [plan, setPlan] = useState(null);
   const [togetherReturn, setTogetherReturn] = useState(false);
-  const [authSession, setAuthSession] = useState(null);
-  const [authResolved, setAuthResolved] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setTogetherReturn(params.has("togetherHome"));
-
-    if (!supabase) {
-      setAuthResolved(true);
-      return;
-    }
-
-    let active = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setAuthSession(data?.session || null);
-      setAuthResolved(true);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
-      setAuthSession(session || null);
-      setAuthResolved(true);
-    });
-
-    return () => {
-      active = false;
-      subscription?.unsubscribe();
-    };
   }, []);
   const green = "#204b3b";
   const leaf = "/hiissa-botanical-leaves.svg";
@@ -72,28 +25,7 @@ export default function Home() {
       <section aria-label="HIISSA botanical welcome" style={{maxWidth:1080,margin:"0 auto",padding:"clamp(20px,4vw,38px)",border:"1px solid #d6e2d6",borderRadius:26,backgroundImage:`url(${leaf}),url(${leaf}),radial-gradient(ellipse at 0% 16%,rgba(255,226,154,.42),transparent 29%),linear-gradient(120deg,#fffaf0,#fffef9 45%,#fff7e9)`,backgroundRepeat:"no-repeat",backgroundPosition:"left top,right top,center,center",backgroundSize:"clamp(130px,19vw,280px) auto,clamp(130px,19vw,280px) auto,cover,cover",boxShadow:"0 12px 35px rgba(33,77,56,.09)",color:green}}>
         <header style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:"clamp(36px,6vw,70px)"}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}><span aria-hidden="true" style={{display:"grid",placeItems:"center",width:52,height:52,borderRadius:15,background:green,color:"#fff",fontSize:31,fontWeight:800}}>H</span><strong style={{fontSize:20}}>HIISSA</strong></div>
-          {!authResolved ? (
-            <span
-              aria-label="Checking HIISSA session"
-              style={{border:"1px solid #c5d7c8",background:"#fffefa",color:"#6f7d74",padding:"11px 17px",borderRadius:99,fontWeight:700}}
-            >
-              …
-            </span>
-          ) : authSession ? (
-            <Link
-              href="/talk"
-              style={{border:"1px solid #c5d7c8",background:green,color:"#fff",padding:"11px 17px",borderRadius:99,fontWeight:800,textDecoration:"none"}}
-            >
-              My HIISSA
-            </Link>
-          ) : (
-            <Link
-              href="/talk?signin=1&from=home"
-              style={{border:"1px solid #c5d7c8",background:"#fffefa",color:green,padding:"11px 17px",borderRadius:99,fontWeight:700,textDecoration:"none"}}
-            >
-              Sign in
-            </Link>
-          )}
+          <Link href="/talk?signin=1&from=home" style={{border:"1px solid #c5d7c8",background:"#fffefa",color:green,padding:"11px 17px",borderRadius:99,fontWeight:700,textDecoration:"none"}}>Sign in</Link>
         </header>
         {!plan ? <>
           <div style={{textAlign:"center",marginBottom:"clamp(28px,5vw,48px)"}}>
@@ -114,11 +46,7 @@ export default function Home() {
               <Link href="/together/welcome" style={{textAlign:"left",backgroundImage:`url(${leaf}),linear-gradient(125deg,#fff,#fffdf5)`,backgroundRepeat:"no-repeat",backgroundPosition:"calc(100% + 68px) bottom,center",backgroundSize:"clamp(110px,13vw,155px) auto,cover",border:"1px solid #d8b77e",borderRadius:17,padding:22,minHeight:170,textDecoration:"none",display:"block"}}><strong style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap",fontSize:22,color:green,marginBottom:12}}>HIISSA <span style={{color:"#a57c36"}}>TOGETHER</span><img src="/hiissa-together-approved.jpg" alt="HIISSA Together approved logo" style={{width:"clamp(74px,10vw,125px)",borderRadius:14}} /></strong><span style={{display:"block",fontSize:16,color:"#647060",marginBottom:16}}>For the relationships that matter</span><span style={{display:"inline-block",background:"#a67c35",color:"#fff",padding:"10px 22px",borderRadius:18,fontSize:17,fontWeight:800}}>Discover →</span></Link>
             </div>
           </section>
-        </> : <section style={{maxWidth:560,margin:"0 auto",padding:"24px 0"}}><button type="button" onClick={()=>setPlan(null)} style={{border:0,background:"transparent",color:green,cursor:"pointer",marginBottom:24}}>← Back to welcome</button><h1 style={{color:green}}>HIISSA TOGETHER</h1><p>For the relationships that matter.</p><p>Full plan details and access will be introduced after founder review. No purchase is available here yet.</p>{authSession ? (
-          <Link href="/talk" style={{display:"inline-block",background:green,color:"#fff",padding:"15px 22px",borderRadius:13,textDecoration:"none"}}>Open My HIISSA</Link>
-        ) : (
-          <Link href="/talk?signin=1&from=home" style={{display:"inline-block",background:green,color:"#fff",padding:"15px 22px",borderRadius:13,textDecoration:"none"}}>Sign in to HIISSA</Link>
-        )}</section>}
+        </> : <section style={{maxWidth:560,margin:"0 auto",padding:"24px 0"}}><button type="button" onClick={()=>setPlan(null)} style={{border:0,background:"transparent",color:green,cursor:"pointer",marginBottom:24}}>← Back to welcome</button><h1 style={{color:green}}>HIISSA TOGETHER</h1><p>For the relationships that matter.</p><p>Full plan details and access will be introduced after founder review. No purchase is available here yet.</p><Link href="/talk?signin=1&from=home" style={{display:"inline-block",background:green,color:"#fff",padding:"15px 22px",borderRadius:13,textDecoration:"none"}}>Sign in to HIISSA</Link></section>}
       </section>
     </main>
   );
