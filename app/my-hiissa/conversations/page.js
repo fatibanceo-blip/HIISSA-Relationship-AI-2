@@ -129,10 +129,28 @@ export default function MyHiissaConversationsPage() {
     return () => controller.abort();
   }, [session?.access_token]);
 
+  useEffect(() => {
+    if (authState !== "signedout") {
+      return;
+    }
+
+    window.location.replace(
+      "/talk?signin=1&from=home"
+    );
+  }, [authState]);
+
   if (authState === "checking") {
     return (
       <main style={{minHeight:"100vh",display:"grid",placeItems:"center",background:"#edf3ee",color:green,fontFamily:"Arial, Helvetica, sans-serif"}}>
         <p>Opening your conversations…</p>
+      </main>
+    );
+  }
+
+  if (authState === "signedout") {
+    return (
+      <main style={{minHeight:"100vh",display:"grid",placeItems:"center",background:"linear-gradient(145deg,#edf3ee,#fbf8ee)",color:green,fontFamily:"Arial, Helvetica, sans-serif"}}>
+        <p>Taking you to Sign in…</p>
       </main>
     );
   }
