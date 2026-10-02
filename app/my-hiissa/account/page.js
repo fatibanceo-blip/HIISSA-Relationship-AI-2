@@ -76,6 +76,16 @@ export default function MyHiissaAccountPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (authState !== "signedout") {
+      return;
+    }
+
+    window.location.replace(
+      "/talk?signin=1&from=home"
+    );
+  }, [authState]);
+
   async function signOutThisDevice() {
     const supabase = getSupabase();
     if (!supabase || signingOut) return;
@@ -92,7 +102,7 @@ export default function MyHiissaAccountPage() {
 
       if (signOutError) throw signOutError;
 
-      window.location.assign("/");
+      window.location.replace("/");
     } catch {
       setError("HIISSA couldn't sign out on this device. Please try again.");
       setSigningOut(false);
@@ -103,6 +113,14 @@ export default function MyHiissaAccountPage() {
     return (
       <main style={{minHeight:"100vh",display:"grid",placeItems:"center",background:"#edf3ee",color:green,fontFamily:"Arial, Helvetica, sans-serif"}}>
         <p>Opening your account…</p>
+      </main>
+    );
+  }
+
+  if (authState === "signedout") {
+    return (
+      <main style={{minHeight:"100vh",display:"grid",placeItems:"center",background:"linear-gradient(145deg,#edf3ee,#fbf8ee)",color:green,fontFamily:"Arial, Helvetica, sans-serif"}}>
+        <p>Taking you to Sign in…</p>
       </main>
     );
   }
