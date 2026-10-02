@@ -28,6 +28,7 @@ const requiredFoundationIds = [
   "my-hiissa.conversations",
   "my-hiissa.account",
   "my-hiissa.home",
+  "account.journey",
   "auth.signin",
 ];
 
@@ -147,6 +148,50 @@ if (myHiissaStart < 0) {
   ) {
     fail(
       "My HIISSA must be explicitly recorded as connected in Preview and awaiting Founder retest"
+    );
+  }
+}
+
+const accountJourneyStart = source.indexOf("accountJourney: Object.freeze({");
+if (accountJourneyStart < 0) {
+  fail("Complete account journey Registry entry is missing");
+} else {
+  const accountJourneyEnd = source.indexOf(
+    "canonicalSignIn: Object.freeze({",
+    accountJourneyStart
+  );
+  const accountJourneyChunk = source.slice(
+    accountJourneyStart,
+    accountJourneyEnd > accountJourneyStart
+      ? accountJourneyEnd
+      : source.length
+  );
+
+  const requiredJourneyStates = [
+    "SIGNED_OUT_MAIN",
+    "SIGN_IN",
+    "MAGIC_LINK",
+    "CONTINUE_SECURELY",
+    "MY_HIISSA_HOME",
+    "ACCOUNT",
+    "TALK",
+    "EXPLORE",
+    "CONVERSATIONS",
+    "BACK_TO_MY_HIISSA",
+    "BACK_TO_MAIN",
+    "SIGN_OUT_THIS_DEVICE",
+    "SIGNED_OUT_MAIN_AGAIN",
+  ];
+
+  for (const state of requiredJourneyStates) {
+    if (!accountJourneyChunk.includes(`"${state}"`)) {
+      fail(`Complete account journey is missing required state: ${state}`);
+    }
+  }
+
+  if (!accountJourneyChunk.includes('stage: "DESIGN_APPROVED"')) {
+    fail(
+      "Complete account journey must remain DESIGN_APPROVED until the full connected journey is implemented and retested"
     );
   }
 }
