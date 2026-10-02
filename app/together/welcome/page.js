@@ -57,6 +57,11 @@ export default function TogetherWelcome() {
         style={{
           maxWidth: 760,
           margin: "0 auto 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+          flexWrap: "wrap",
         }}
       >
         <Link
@@ -76,6 +81,24 @@ export default function TogetherWelcome() {
           }}
         >
           ← Back to HIISSA
+        </Link>
+
+        <Link
+          href="/talk?signin=1&from=together"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            padding: "11px 16px",
+            borderRadius: 14,
+            border: "1px solid rgba(126,49,78,.28)",
+            background: "#6f2943",
+            color: "#fff",
+            textDecoration: "none",
+            fontWeight: 800,
+            boxShadow: "0 7px 18px rgba(98,40,61,.12)",
+          }}
+        >
+          Sign in
         </Link>
       </div>
 
