@@ -71,6 +71,23 @@ export default function PlusWelcome() {
             position: "relative",
           }}
         >
+          <Link
+            href="/"
+            aria-label="Back to HIISSA"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 16,
+              color: "#f5d887",
+              textDecoration: "none",
+              fontWeight: 800,
+              fontSize: 14,
+            }}
+          >
+            ← Back to HIISSA
+          </Link>
+
           <header
             style={{
               display: "flex",
