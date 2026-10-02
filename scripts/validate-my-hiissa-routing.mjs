@@ -7,6 +7,7 @@ const files = {
   account: path.join(root, "app", "my-hiissa", "account", "page.js"),
   conversations: path.join(root, "app", "my-hiissa", "conversations", "page.js"),
   talk: path.join(root, "app", "talk", "page.js"),
+  authContinue: path.join(root, "app", "auth", "continue", "page.js"),
 };
 
 const errors = [];
@@ -23,6 +24,7 @@ const home = requireFile("home");
 const account = requireFile("account");
 const conversations = requireFile("conversations");
 const talk = requireFile("talk");
+const authContinue = requireFile("authContinue");
 
 function requireText(label, source, text) {
   if (!source.includes(text)) {
@@ -58,10 +60,18 @@ forbidText("My Conversations", conversations, '<Link href="/talk"');
 requireText("Talk", talk, 'params.has("myHiissaTalk")');
 requireText("Talk", talk, 'params.has("myHiissaExplore")');
 requireText("Talk", talk, 'params.has("myHiissaConversation")');
-requireText("Talk", talk, "!myHiissaEntry && (");
+forbidText("Talk", talk, "Continue my conversations");
+forbidText("Talk", talk, "Your HIISSA space is ready whenever you are.");
 requireText("Talk", talk, "← Back to My HIISSA");
 requireText("Talk", talk, "/api/messages?conversationId=");
 requireText("Talk", talk, "/api/conversations");
+
+requireText("Auth Continue", authContinue, '          : "/my-hiissa",');
+requireText("Auth Continue", authContinue, '        ? "/free/welcome"');
+requireText("Auth Continue", authContinue, '          ? "/"');
+requireText("Auth Continue", authContinue, "window.location.replace(");
+requireText("Auth Continue", authContinue, "window.location.assign(");
+forbidText("Auth Continue", authContinue, '          : "/talk",');
 
 if (errors.length > 0) {
   console.error("\nHIISSA My HIISSA routing contract: FAIL\n");
@@ -77,3 +87,7 @@ console.log("- Dedicated Conversations route present");
 console.log("- Neutral My HIISSA Talk/Explore entries present");
 console.log("- Legacy Account/Conversation shortcuts blocked from My HIISSA home");
 console.log("- Exact conversation handoff route present");
+console.log("- Normal Sign in routes to My HIISSA");
+console.log("- FREE and Guest Save & Sync destinations remain declared");
+console.log("- One-time normal Continue page uses history replacement");
+console.log("- Obsolete authenticated Talk-home block is absent");
