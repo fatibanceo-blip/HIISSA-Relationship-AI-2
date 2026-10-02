@@ -4882,16 +4882,6 @@ clientCreatedAt: new Date().toISOString(),
             )}
           </section>
         )}
-        {authInitialised && authSession && !showAuthPanel && !plusEntry && !togetherEntry && !myHiissaEntry && (
-          <section aria-label="My HIISSA home" style={{marginBottom:"22px",padding:"24px",border:"1px solid #c5d8cc",borderRadius:"22px",background:"#edf5ef",color:"#245b48"}}>
-            <h2 style={{margin:"0 0 8px"}}>Welcome back.</h2>
-            <p>Your HIISSA space is ready whenever you are.</p>
-            <button type="button" onClick={() => document.getElementById("hiissa-conversation")?.scrollIntoView({behavior:"smooth"})}
-              style={{display:"block",width:"100%",background:"#245b48",color:"#fff",padding:"14px",borderRadius:"13px",fontWeight:700}}>Continue my conversations</button>
-            <button type="button" onClick={() => {setAuthPanelMode("account");setShowAuthPanel(true);window.scrollTo({top:0,behavior:"smooth"});}}
-              style={{marginTop:"10px",width:"100%",background:"#fffefa",color:"#245b48",padding:"12px",borderRadius:"12px",border:"1px solid #245b48"}}>My Account</button>
-          </section>
-        )}
         {!plusEntry && !togetherEntry && <>
         <header className="hero">
           <div className="logo">
