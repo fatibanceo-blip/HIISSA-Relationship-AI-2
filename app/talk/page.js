@@ -3175,28 +3175,8 @@ function saveGuestMigrationChoice(choice) {
   setAuthLoading(true);
 
   try {
-  const flow =
-    authPanelMode === "free" ? "free" : "auth";
-
-  const returnContext =
-    authPanelMode === "signin"
-      ? authReturnContext === "together"
-        ? "together"
-        : authReturnContext === "plus"
-          ? "plus"
-          : "main"
-      : "";
-
-  const continueParams = new URLSearchParams({
-    flow,
-  });
-
-  if (returnContext) {
-    continueParams.set("return", returnContext);
-  }
-
   let emailRedirectTo =
-    `${window.location.origin}/auth/continue?${continueParams.toString()}`;
+    `${window.location.origin}/auth/continue?flow=${authPanelMode === "free" ? "free" : "auth"}`;
 
   if (authPanelMode === "save" && guestMigrationChoice === "save") {
     const savedChats = JSON.parse(
