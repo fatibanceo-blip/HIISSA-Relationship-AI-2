@@ -142,11 +142,11 @@ if (myHiissaStart < 0) {
 
   if (
     !myHiissaChunk.includes(
-      'connection: "NOT_CONNECTED_TO_SIGNIN"'
+      'connection: "CONNECTED_IN_PREVIEW_AWAITING_FOUNDER_RETEST"'
     )
   ) {
     fail(
-      "My HIISSA must remain explicitly NOT_CONNECTED_TO_SIGNIN until Founder-tested and regression-approved"
+      "My HIISSA must be explicitly recorded as connected in Preview and awaiting Founder retest"
     );
   }
 }
