@@ -185,15 +185,31 @@ export default function TogetherWelcome() {
           }}
         >
           <div style={{ display: "grid", gap: 12 }}>
+            <div
+              style={{
+                borderRadius: 16,
+                padding: "13px 15px",
+                background: "rgba(255,250,248,.82)",
+                border: "1px solid rgba(126,49,78,.16)",
+                color: burgundy,
+                fontSize: 14,
+                lineHeight: 1.55,
+                textAlign: "center",
+              }}
+            >
+              <strong>Your private HIISSA stays private.</strong>{" "}
+              Nothing enters a shared space unless you choose to share it.
+            </div>
+
             <FeatureCard
               title="Start a shared conversation"
-              subtitle="A shared conversation space will open here once member linking, permissions and consent are ready."
+              subtitle="A shared place to talk, understand each other and move forward together."
               strong
             />
 
             <FeatureCard
               title="Explore TOGETHER"
-              subtitle="Shared experiences will be connected here through the HIISSA Registry after consent-safe mapping."
+              subtitle="Discover ways to connect, understand, laugh and grow together."
             />
 
             <div
@@ -206,19 +222,19 @@ export default function TogetherWelcome() {
             >
               <FeatureCard
                 title="Our Space"
-                subtitle="A future home for material intentionally shared into this relationship space."
+                subtitle="A place for the memories, moments and things you choose to share."
               />
               <FeatureCard
                 title="Relationship Tools"
-                subtitle="Connection and repair tools will be mapped here without duplicating canonical HIISSA experiences."
+                subtitle="Tools to help you communicate, understand each other and reconnect."
               />
               <FeatureCard
                 title="Challenges & Goals"
-                subtitle="Future shared growth, play and goals will stay voluntary and consent-aware."
+                subtitle="Play, grow and work toward meaningful things together."
               />
               <FeatureCard
                 title="Insights"
-                subtitle="Future shared reflection will use only authorised shared material, without scores or diagnosis."
+                subtitle="Notice what you are learning about your connection — without scores or judgment."
               />
             </div>
 
@@ -234,7 +250,7 @@ export default function TogetherWelcome() {
                 fontWeight: 750,
               }}
             >
-              TOGETHER is being prepared carefully. Shared features remain protected until consent and access rules are ready.
+              Built for connection, with your privacy and choices protected.
             </div>
           </div>
 
