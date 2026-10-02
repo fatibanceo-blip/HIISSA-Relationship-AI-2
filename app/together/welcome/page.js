@@ -261,11 +261,14 @@ export default function TogetherWelcome() {
               <br />
               Talk
             </span>
-            <span style={{ color: muted }}>
+            <Link
+              href="/talk?togetherExplore=1"
+              style={{ color: burgundy, textDecoration: "none" }}
+            >
               <span aria-hidden="true">◇</span>
               <br />
               Explore
-            </span>
+            </Link>
             <span style={{ color: muted }}>
               <span aria-hidden="true">◫</span>
               <br />
