@@ -53,6 +53,32 @@ export default function TogetherWelcome() {
         fontFamily: "inherit",
       }}
     >
+      <div
+        style={{
+          maxWidth: 760,
+          margin: "0 auto 14px",
+        }}
+      >
+        <Link
+          href="/"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "11px 14px",
+            borderRadius: 14,
+            border: "1px solid rgba(126,49,78,.22)",
+            background: "rgba(255,250,248,.92)",
+            color: burgundy,
+            textDecoration: "none",
+            fontWeight: 800,
+            boxShadow: "0 7px 18px rgba(98,40,61,.08)",
+          }}
+        >
+          ← Back to HIISSA
+        </Link>
+      </div>
+
       <section
         aria-label="HIISSA TOGETHER welcome"
         style={{
