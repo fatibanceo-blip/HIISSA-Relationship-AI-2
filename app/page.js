@@ -1,15 +1,77 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { createBrowserClient } from "@supabase/ssr";
+
+let browserSupabase = null;
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) return null;
+
+  if (!browserSupabase) {
+    browserSupabase = createBrowserClient(url, key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+  }
+
+  return browserSupabase;
+}
 
 // Public landing page only. The existing conversation experience lives at /talk.
 export default function Home() {
   const [plan, setPlan] = useState(null);
   const [togetherReturn, setTogetherReturn] = useState(false);
+  const [authState, setAuthState] = useState("checking");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setTogetherReturn(params.has("togetherHome"));
+  }, []);
+
+  useEffect(() => {
+    const supabase = getSupabase();
+
+    if (!supabase) {
+      setAuthState("signedout");
+      return;
+    }
+
+    let active = true;
+
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          setAuthState("signedout");
+          return;
+        }
+        setAuthState(data.session ? "ready" : "signedout");
+      })
+      .catch(() => {
+        if (active) setAuthState("signedout");
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setAuthState(session ? "ready" : "signedout");
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
   const green = "#204b3b";
   const leaf = "/hiissa-botanical-leaves.svg";
@@ -25,7 +87,13 @@ export default function Home() {
       <section aria-label="HIISSA botanical welcome" style={{maxWidth:1080,margin:"0 auto",padding:"clamp(20px,4vw,38px)",border:"1px solid #d6e2d6",borderRadius:26,backgroundImage:`url(${leaf}),url(${leaf}),radial-gradient(ellipse at 0% 16%,rgba(255,226,154,.42),transparent 29%),linear-gradient(120deg,#fffaf0,#fffef9 45%,#fff7e9)`,backgroundRepeat:"no-repeat",backgroundPosition:"left top,right top,center,center",backgroundSize:"clamp(130px,19vw,280px) auto,clamp(130px,19vw,280px) auto,cover,cover",boxShadow:"0 12px 35px rgba(33,77,56,.09)",color:green}}>
         <header style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:"clamp(36px,6vw,70px)"}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}><span aria-hidden="true" style={{display:"grid",placeItems:"center",width:52,height:52,borderRadius:15,background:green,color:"#fff",fontSize:31,fontWeight:800}}>H</span><strong style={{fontSize:20}}>HIISSA</strong></div>
-          <Link href="/talk?signin=1&from=home" style={{border:"1px solid #c5d7c8",background:"#fffefa",color:green,padding:"11px 17px",borderRadius:99,fontWeight:700,textDecoration:"none"}}>Sign in</Link>
+          {authState === "ready" ? (
+            <Link href="/my-hiissa" style={{border:"1px solid #c5d7c8",background:"#fffefa",color:green,padding:"11px 17px",borderRadius:99,fontWeight:700,textDecoration:"none"}}>My HIISSA</Link>
+          ) : authState === "signedout" ? (
+            <Link href="/talk?signin=1&from=home" style={{border:"1px solid #c5d7c8",background:"#fffefa",color:green,padding:"11px 17px",borderRadius:99,fontWeight:700,textDecoration:"none"}}>Sign in</Link>
+          ) : (
+            <span aria-label="Checking HIISSA session" style={{minWidth:78,minHeight:42,display:"inline-block"}} />
+          )}
         </header>
         {!plan ? <>
           <div style={{textAlign:"center",marginBottom:"clamp(28px,5vw,48px)"}}>
