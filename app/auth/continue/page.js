@@ -7,7 +7,6 @@ export default function AuthContinuePage() {
   const [type, setType] = useState("email");
   const [handoffToken, setHandoffToken] = useState("");
   const [returnToFree, setReturnToFree] = useState(false);
-  const [returnContext, setReturnContext] = useState("");
   const [ready, setReady] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState("");
@@ -40,16 +39,6 @@ export default function AuthContinuePage() {
     setType(authType);
     setHandoffToken(guestHandoff);
     setReturnToFree(query.get("flow") === "free");
-
-    const requestedReturn = query.get("return") || "";
-    setReturnContext(
-      requestedReturn === "main" ||
-      requestedReturn === "plus" ||
-      requestedReturn === "together"
-        ? requestedReturn
-        : ""
-    );
-
     setReady(true);
   }, []);
 
@@ -64,21 +53,14 @@ export default function AuthContinuePage() {
     setSigningIn(true);
     setError("");
 
-    const approvedDestination =
-      returnToFree
-        ? "/free/welcome"
-        : returnContext === "together"
-          ? "/together/welcome"
-          : returnContext === "plus"
-            ? "/plus/welcome"
-            : returnContext === "main"
-              ? "/talk"
-              : "/";
-
     const params = new URLSearchParams({
       token_hash: tokenHash,
       type,
-      next: approvedDestination,
+      next: returnToFree
+        ? "/free/welcome"
+        : handoffToken
+          ? "/"
+          : "/talk",
     });
 
     if (handoffToken) {
