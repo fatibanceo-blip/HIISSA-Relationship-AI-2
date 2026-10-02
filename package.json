@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "test:registry": "node scripts/validate-experience-registry.mjs",
-    "prebuild": "node scripts/validate-experience-registry.mjs",
+    "prebuild": "npm run test:registry && npm run test:my-hiissa-routing",
     "build": "next build",
-    "verify:foundation": "npm run test:registry && npm run build",
-    "start": "next start"
+    "verify:foundation": "npm run test:registry && npm run test:my-hiissa-routing && npm run build",
+    "start": "next start",
+    "test:my-hiissa-routing": "node scripts/validate-my-hiissa-routing.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
