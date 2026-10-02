@@ -159,7 +159,7 @@ export default function PlusWelcome() {
           }}
         >
           <div style={{ display: "grid", gap: 12 }}>
-            <Link href="/talk" style={{ textDecoration: "none" }}>
+            <Link href="/talk?plusTalk=1" style={{ textDecoration: "none" }}>
               <FeatureCard
                 title="Talk to HIISSA"
                 subtitle="Continue your personal journey."
@@ -167,7 +167,7 @@ export default function PlusWelcome() {
               />
             </Link>
 
-            <Link href="/talk" style={{ textDecoration: "none" }}>
+            <Link href="/talk?plusExplore=1" style={{ textDecoration: "none" }}>
               <FeatureCard
                 title="Explore HIISSA"
                 subtitle="Access and explore existing HIISSA experiences."
@@ -234,12 +234,18 @@ export default function PlusWelcome() {
               <br />
               Home
             </Link>
-            <Link href="/talk" style={{ color: deep, textDecoration: "none" }}>
+            <Link
+              href="/talk?plusTalk=1"
+              style={{ color: deep, textDecoration: "none" }}
+            >
               <span aria-hidden="true">♡</span>
               <br />
               Talk
             </Link>
-            <Link href="/talk" style={{ color: deep, textDecoration: "none" }}>
+            <Link
+              href="/talk?plusExplore=1"
+              style={{ color: deep, textDecoration: "none" }}
+            >
               <span aria-hidden="true">◇</span>
               <br />
               Explore
