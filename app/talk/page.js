@@ -1622,6 +1622,7 @@ const [authLoading, setAuthLoading] = useState(false);
 const [showAuthPanel, setShowAuthPanel] = useState(false);
 const [authPanelMode, setAuthPanelMode] = useState("signin");
 const [authReturnContext, setAuthReturnContext] = useState("home");
+const [entryQueryResolved, setEntryQueryResolved] = useState(false);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has("free")) {
@@ -1664,6 +1665,7 @@ const [authReturnContext, setAuthReturnContext] = useState("home");
       setGuestEntry(true);
       setGuestMain(false);
     }
+    setEntryQueryResolved(true);
   }, []);
 const [guestEntry, setGuestEntry] = useState(false);
 const [guestMain, setGuestMain] = useState(false);
@@ -4221,6 +4223,27 @@ clientCreatedAt: new Date().toISOString(),
 
     setReviewPermissionDismissed(
       true
+    );
+  }
+
+  if (!entryQueryResolved) {
+    return (
+      <main
+        aria-label="HIISSA loading"
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+          background: "linear-gradient(145deg,#e8f0e9 0%,#f8f7ef 52%,#edf1e7 100%)",
+          color: "#204b3b",
+          fontFamily: "inherit",
+        }}
+      >
+        <div style={{display:"flex",alignItems:"center",gap:12,fontWeight:850}}>
+          <span aria-hidden="true" style={{display:"grid",placeItems:"center",width:48,height:48,borderRadius:15,background:"#204b3b",color:"#fff",fontSize:28}}>H</span>
+          HIISSA
+        </div>
+      </main>
     );
   }
 
