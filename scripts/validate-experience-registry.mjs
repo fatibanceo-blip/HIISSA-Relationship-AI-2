@@ -189,9 +189,15 @@ if (accountJourneyStart < 0) {
     }
   }
 
-  if (!accountJourneyChunk.includes('stage: "DESIGN_APPROVED"')) {
+  if (
+    !accountJourneyChunk.includes('stage: "IMPLEMENTED_ISOLATED"') &&
+    !accountJourneyChunk.includes('stage: "AUTOMATED_CHECKS_PASS"') &&
+    !accountJourneyChunk.includes('stage: "PREVIEW_DEPLOYED"') &&
+    !accountJourneyChunk.includes('stage: "FOUNDER_TESTED"') &&
+    !accountJourneyChunk.includes('stage: "REGRESSION_PASS"')
+  ) {
     fail(
-      "Complete account journey must remain DESIGN_APPROVED until the full connected journey is implemented and retested"
+      "Complete account journey has an invalid pre-Production certification stage"
     );
   }
 }
