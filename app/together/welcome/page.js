@@ -1,3 +1,4 @@
+// TOGETHER Preview configuration refresh — branch-only, no Production effect.
 import Link from "next/link";
 
 const burgundy = "#6f2943";
