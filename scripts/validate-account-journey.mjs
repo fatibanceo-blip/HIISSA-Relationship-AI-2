@@ -51,7 +51,25 @@ if (journeyStart < 0 || journeyEnd < 0) {
   const journey = registry.slice(journeyStart, journeyEnd);
 
   requireText("Account journey Registry", journey, 'id: "account.journey"');
-  requireText("Account journey Registry", journey, 'stage: "DESIGN_APPROVED"');
+  const allowedJourneyStages = [
+    "DESIGN_APPROVED",
+    "REGISTRY_REGISTERED",
+    "IMPLEMENTED_ISOLATED",
+    "AUTOMATED_CHECKS_PASS",
+    "PREVIEW_DEPLOYED",
+    "FOUNDER_TESTED",
+    "REGRESSION_PASS",
+  ];
+
+  if (
+    !allowedJourneyStages.some((stage) =>
+      journey.includes(`stage: "${stage}"`)
+    )
+  ) {
+    errors.push(
+      "Account journey Registry: certification stage is invalid for pre-Production journey work"
+    );
+  }
   requireText("Account journey Registry", journey, '"SIGNED_OUT_MAIN"');
   requireText("Account journey Registry", journey, '"SIGN_IN"');
   requireText("Account journey Registry", journey, '"MAGIC_LINK"');
