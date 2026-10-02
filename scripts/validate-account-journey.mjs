@@ -76,10 +76,28 @@ requireText("My HIISSA", myHiissa, 'href="/talk?myHiissaTalk=1#hiissa-conversati
 requireText("My HIISSA", myHiissa, 'href="/talk?myHiissaExplore=1"');
 requireText("My HIISSA", myHiissa, 'href="/"');
 requireText("My Account", account, 'scope: "local"');
-requireText("My Account", account, 'window.location.assign("/")');
+requireText("My Account", account, 'window.location.replace("/")');
 requireText("My Account", account, 'href="/my-hiissa"');
+requireText("My Account", account, 'authState === "signedout"');
+requireText(
+  "My Account",
+  account,
+  'window.location.replace(\n      "/talk?signin=1&from=home"'
+);
 requireText("My Conversations", conversations, 'href="/my-hiissa"');
+requireText("My Conversations", conversations, 'authState === "signedout"');
+requireText(
+  "My Conversations",
+  conversations,
+  'window.location.replace(\n      "/talk?signin=1&from=home"'
+);
 requireText("Talk", talk, "← Back to My HIISSA");
+requireText("Talk", talk, "!myHiissaEntry");
+requireText(
+  "Talk",
+  talk,
+  "}, [authInitialised, authSession, myHiissaEntry]);"
+);
 
 // The Founder has approved the complete journey design, but the remaining
 // navigation connections must not be silently treated as complete.
@@ -116,6 +134,8 @@ console.log("- Local-device sign out returns to Main");
 console.log("- The gate distinguishes approved design from completed connection");
 console.log("- Public Main session-aware Sign in / My HIISSA switch is enforced");
 console.log("- Signed-out My HIISSA access is routed through canonical Sign in");
+console.log("- Signed-out Account, Conversations and My HIISSA Talk/Explore entries use the same Sign-in door");
+console.log("- Local-device sign out replaces Account with signed-out Main in browser history");
 
 if (pending.length > 0) {
   console.log("\nApproved journey connections still pending Founder-authorised implementation:");
