@@ -1,14 +1,27 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 // Public landing page only. The existing conversation experience lives at /talk.
 export default function Home() {
   const [plan, setPlan] = useState(null);
+  const [togetherReturn, setTogetherReturn] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setTogetherReturn(params.has("togetherHome"));
+  }, []);
   const green = "#204b3b";
   const leaf = "/hiissa-botanical-leaves.svg";
   return (
     <main style={{minHeight:"100vh",padding:"clamp(14px,4vw,42px)",background:"linear-gradient(135deg,#e6ede7,#f4f5f0)",fontFamily:"inherit"}}>
+      {togetherReturn && (
+        <div style={{maxWidth:1080,margin:"0 auto 14px"}}>
+          <Link href="/together/welcome" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"11px 14px",borderRadius:14,border:"1px solid #d6c1c9",background:"#fffaf8",color:"#6f2943",textDecoration:"none",fontWeight:800,boxShadow:"0 7px 18px rgba(98,40,61,.08)"}}>
+            ← Back to HIISSA TOGETHER
+          </Link>
+        </div>
+      )}
       <section aria-label="HIISSA botanical welcome" style={{maxWidth:1080,margin:"0 auto",padding:"clamp(20px,4vw,38px)",border:"1px solid #d6e2d6",borderRadius:26,backgroundImage:`url(${leaf}),url(${leaf}),radial-gradient(ellipse at 0% 16%,rgba(255,226,154,.42),transparent 29%),linear-gradient(120deg,#fffaf0,#fffef9 45%,#fff7e9)`,backgroundRepeat:"no-repeat",backgroundPosition:"left top,right top,center,center",backgroundSize:"clamp(130px,19vw,280px) auto,clamp(130px,19vw,280px) auto,cover,cover",boxShadow:"0 12px 35px rgba(33,77,56,.09)",color:green}}>
         <header style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,marginBottom:"clamp(36px,6vw,70px)"}}>
           <div style={{display:"flex",alignItems:"center",gap:12}}><span aria-hidden="true" style={{display:"grid",placeItems:"center",width:52,height:52,borderRadius:15,background:green,color:"#fff",fontSize:31,fontWeight:800}}>H</span><strong style={{fontSize:20}}>HIISSA</strong></div>
