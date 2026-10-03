@@ -59,6 +59,7 @@ if (journeyStart < 0 || journeyEnd < 0) {
     "PREVIEW_DEPLOYED",
     "FOUNDER_TESTED",
     "REGRESSION_PASS",
+    "CONNECTED",
   ];
 
   if (
