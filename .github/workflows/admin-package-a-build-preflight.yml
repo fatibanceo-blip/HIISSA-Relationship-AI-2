@@ -3,7 +3,7 @@ name: Package A build preflight (Staging branch)
 on:
   push:
     branches:
-      - feature/admin-permissions-package-a
+      - feature/founder-control-room-staging
   workflow_dispatch:
 
 permissions:
@@ -11,11 +11,11 @@ permissions:
 
 jobs:
   build-preflight:
-    if: github.ref == 'refs/heads/feature/admin-permissions-package-a'
+    if: github.ref == 'refs/heads/feature/founder-control-room-staging'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Check out isolated Package A branch
+      - name: Check out isolated Founder Control Room branch
         uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -23,8 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify branch-scoped deployment configuration
-        run: node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(fs.readFileSync('vercel.json','utf8')); assert.equal(c.git.deploymentEnabled['feature/admin-permissions-package-a'],true)"
+      - name: Confirm automatic deployment remains blocked during A5.2 isolation
+        run: node --input-type=module -e "import fs from 'node:fs'; import assert from 'node:assert/strict'; const c=JSON.parse(fs.readFileSync('vercel.json','utf8')); assert.equal(c.git.deploymentEnabled['feature/founder-control-room-staging'],false)"
       - name: Install dependencies without deployment
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Run Next.js build with nonfunctional test-only credential
