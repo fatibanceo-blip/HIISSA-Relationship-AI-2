@@ -143,11 +143,11 @@ if (myHiissaStart < 0) {
 
   if (
     !myHiissaChunk.includes(
-      'connection: "CONNECTED_IN_PREVIEW_AWAITING_FOUNDER_RETEST"'
+      'connection: "CONNECTED_IN_PREVIEW_FOUNDER_TESTED_REGRESSION_PASS"'
     )
   ) {
     fail(
-      "My HIISSA must be explicitly recorded as connected in Preview and awaiting Founder retest"
+      "My HIISSA must be explicitly recorded as connected in Preview with Founder test and regression PASS"
     );
   }
 }
@@ -194,7 +194,8 @@ if (accountJourneyStart < 0) {
     !accountJourneyChunk.includes('stage: "AUTOMATED_CHECKS_PASS"') &&
     !accountJourneyChunk.includes('stage: "PREVIEW_DEPLOYED"') &&
     !accountJourneyChunk.includes('stage: "FOUNDER_TESTED"') &&
-    !accountJourneyChunk.includes('stage: "REGRESSION_PASS"')
+    !accountJourneyChunk.includes('stage: "REGRESSION_PASS"') &&
+    !accountJourneyChunk.includes('stage: "CONNECTED"')
   ) {
     fail(
       "Complete account journey has an invalid pre-Production certification stage"
