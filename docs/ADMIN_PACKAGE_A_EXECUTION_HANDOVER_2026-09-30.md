@@ -55,3 +55,13 @@ A5.2 isolation setup on the new branch:
 - No Production deployment, Production Supabase change, database write, Guest Save & Sync change, Magic-Link callback change or user-facing interface change is authorised by this checkpoint.
 
 Current rule: do not enable automatic deployment or mutate Staging/Production infrastructure merely to test. First prove the new branch's offline safety/build/read-only diagnostics. Then determine the narrowest remaining evidence needed to complete A5.2 Staging deployment/environment isolation. A5.3 remains blocked until A5.2 is truthfully accepted.
+
+
+### Read-only A5.2 evidence after branch isolation setup — 3 October 2026
+Connected Vercel evidence now supersedes the older assumption that the custom Staging alias was still on repair/guest-claimed-at-audit. The live existing custom Staging alias currently resolves to deployment dpl_zGhzaZ4QM63PBQ7b71UCrHCNSK6Z, source branch feature/admin-permissions-package-a, commit 9a35cf6fff401bd0b7834a9eee20b4f1c63e63fb. This is read-only evidence; no Vercel setting was changed.
+
+The existing custom Staging diagnostic endpoint was fetched at:
+https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app/api/admin/staging-readiness
+It returned HTTP 200 with status PASS. All five non-secret checks passed: staging-project, not-production, publishable-key, package-a-branch and staging-environment. The read-only Staging Auth health request also passed. This objectively proves the existing custom Staging deployment is using the intended Staging Supabase public configuration and not the Production Supabase URL.
+
+The new protected branch feature/founder-control-room-staging has no Vercel deployment at this checkpoint because automatic deployment is deliberately blocked in vercel.json. Therefore A5.2 is not yet accepted for the new Control Room branch. The remaining isolation gap is narrow and explicit: reassign the EXISTING custom Staging environment/branch routing from the old feature/admin-permissions-package-a branch to feature/founder-control-room-staging, without changing Production or Staging variable values; then perform one controlled Staging deployment and rerun the same read-only diagnostic plus regression checks. Do not remove the deployment block or change the custom Staging branch assignment without the next explicit Founder approval.
