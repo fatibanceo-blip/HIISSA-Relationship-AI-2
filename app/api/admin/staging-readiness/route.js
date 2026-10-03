@@ -10,7 +10,7 @@ export async function GET() {
   const environment = process.env.VERCEL_TARGET_ENV || process.env.VERCEL_ENV || "";
   // This diagnostic must not exist as a usable endpoint outside the
   // approved Package A Staging deployment.
-  if (branch !== "feature/admin-permissions-package-a" || environment !== "staging") {
+  if (branch !== "feature/founder-control-room-staging" || environment !== "staging") {
     return new NextResponse(null, { status: 404 });
   }
 
