@@ -3,7 +3,7 @@ name: A5.2 Staging connection diagnostic
 on:
   push:
     branches:
-      - feature/admin-permissions-package-a
+      - feature/founder-control-room-staging
   workflow_dispatch:
 
 permissions:
@@ -11,18 +11,18 @@ permissions:
 
 jobs:
   staging-connection-check:
-    if: github.ref == 'refs/heads/feature/admin-permissions-package-a'
+    if: github.ref == 'refs/heads/feature/founder-control-room-staging'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Check out the approved Package A branch
+      - name: Check out the approved Founder Control Room branch
         uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Verify branch and diagnostic file
         shell: bash
         run: |
-          test "$GITHUB_REF" = "refs/heads/feature/admin-permissions-package-a"
+          test "$GITHUB_REF" = "refs/heads/feature/founder-control-room-staging"
           test -f scripts/a5_2_staging_connection_check.mjs
       - name: Run existing read-only Staging diagnostic
         env:
