@@ -65,3 +65,26 @@ https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app/a
 It returned HTTP 200 with status PASS. All five non-secret checks passed: staging-project, not-production, publishable-key, package-a-branch and staging-environment. The read-only Staging Auth health request also passed. This objectively proves the existing custom Staging deployment is using the intended Staging Supabase public configuration and not the Production Supabase URL.
 
 The new protected branch feature/founder-control-room-staging has no Vercel deployment at this checkpoint because automatic deployment is deliberately blocked in vercel.json. Therefore A5.2 is not yet accepted for the new Control Room branch. The remaining isolation gap is narrow and explicit: reassign the EXISTING custom Staging environment/branch routing from the old feature/admin-permissions-package-a branch to feature/founder-control-room-staging, without changing Production or Staging variable values; then perform one controlled Staging deployment and rerun the same read-only diagnostic plus regression checks. Do not remove the deployment block or change the custom Staging branch assignment without the next explicit Founder approval.
+
+
+### Controlled A5.2 Staging deployment — 3 October 2026
+Founder manually reassigned the EXISTING Vercel custom Staging environment Branch Tracking from feature/admin-permissions-package-a to feature/founder-control-room-staging after receiving the WHAT / WHY / EFFECT / NON-EFFECT / RISK / ROLLBACK explanation. Founder explicitly approved one controlled Staging-only deployment. Production/main was not changed.
+
+Under that approval, vercel.json was changed on feature/founder-control-room-staging only from deploymentEnabled=false to true in commit 73ff7e2abeb2512661eac2017e06588463402a05 with message "Temporarily allow controlled Staging deployment for A5.2". This caused exactly one new Vercel deployment of the new Control Room branch to the existing custom Staging environment:
+- Deployment: dpl_7iKdp52hfRWUT7DDt4YNmBCr5FZ8
+- Source branch: feature/founder-control-room-staging
+- Source commit: 73ff7e2abeb2512661eac2017e06588463402a05
+- Result: READY
+- Alias: hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app
+- Alias error: none
+- Target: non-Production/custom environment (target null)
+
+Immediately after the controlled deployment reached READY, automatic deployment protection was restored on the Control Room branch in commit 94144e9039ba4389021a81a2ae0b2d26675bc95 with message "Re-protect Control Room branch after controlled A5.2 deployment". vercel.json again sets deploymentEnabled["feature/founder-control-room-staging"] = false. This protective commit did not replace the accepted Staging deployment.
+
+The deployed custom Staging alias was then rechecked. It resolves to dpl_7iKdp52hfRWUT7DDt4YNmBCr5FZ8 from feature/founder-control-room-staging. The read-only /api/admin/staging-readiness endpoint returned HTTP 200 and status PASS. All five checks passed: staging-project, not-production, publishable-key, package-a-branch and staging-environment. authHealthPassed=true. Therefore the deployed Control Room branch is bound to the intended Staging Supabase public configuration and not Production.
+
+Read-only route smoke checks on the same deployment returned HTTP 200 for the main HIISSA welcome route, /plus/welcome, /together/welcome and /my-hiissa. The rendered HTML for Main, PLUS and TOGETHER is present on the same deployment. /my-hiissa returned its expected client-side opening state ("Opening My HIISSA…"), so this server fetch confirms route/build presence but is not a substitute for a signed-in browser interaction test.
+
+No Production deployment, main-branch change, Production Supabase change, database write, Guest Save & Sync rewrite, Magic-Link callback rewrite, subscription/payment activation or user-facing feature redesign occurred in this controlled deployment step.
+
+A5.2 deployed branch/environment isolation is now evidenced as PASS for the new Control Room branch. Before treating the broader Control Room implementation as release-ready, continue with the already approved staged sequence and preserve the distinction between infrastructure isolation PASS and later signed-in/browser regression, permissions, data-model and Admin journey testing.
