@@ -6,7 +6,7 @@ import { assessAdminStagingReadiness } from "../lib/admin/staging-readiness.js";
 const valid = {
   supabaseUrl: "https://upcssfmilewwshyxyvdf.supabase.co",
   publishableKey: "sb_publishable_TEST_PLACEHOLDER_NOT_A_REAL_KEY",
-  deploymentBranch: "feature/admin-permissions-package-a",
+  deploymentBranch: "feature/founder-control-room-staging",
   environmentName: "staging",
 };
 
