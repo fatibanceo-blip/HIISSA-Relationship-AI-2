@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET(request) {
-  if (process.env.VERCEL_GIT_COMMIT_REF !== "feature/admin-permissions-package-a" ||
+  if (process.env.VERCEL_GIT_COMMIT_REF !== "feature/founder-control-room-staging" ||
       process.env.VERCEL_ENV === "production") {
     return new NextResponse(null, { status: 404 });
   }
