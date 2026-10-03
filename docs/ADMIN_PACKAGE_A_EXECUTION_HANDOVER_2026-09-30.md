@@ -38,3 +38,20 @@ A5.3 Staging Admin readiness; A5.4 six additive Staging-only tables: admin_role_
 
 ## Controlled chat close
 At chat close, update and preserve ALL five authoritative continuity/design documents plus the dedicated Mandatory Continuation & Handover Protocol, additively and in full, with today's commits, run IDs, outcomes, failure and resolution, rationale, environment IDs, unverified gates and exact next action. This GitHub file is an extra technical execution ledger, not a substitute for updating the six documents. Do not claim full document reconciliation or A5.2 acceptance unless actually performed and verified. Do not ask the Founder to reconstruct information already here.
+
+
+## Additive continuation checkpoint — 3 October 2026 — Founder Control Room staging branch
+Founder explicitly approved the post-interface-closure Control Room direction: preserve the tested interface baseline, keep the Experience Registry as permanent HIISSA infrastructure, and resume Admin/Founder Control Room work without touching Production. The Founder also approved the permanent rule that every substantial HIISSA capability must have one canonical Registry identity, an evidence-based Certification state and an appropriate Operational Intelligence / Founder Control Room contract. Existing working features are backfilled additively without rewriting their working core; new features receive those foundations from the beginning. This approval must be carried into the final continuity documents.
+
+The protected interface checkpoint immediately before this branch was commit d8091799a44d25ce8ef4f460ad96f122be3087e3 on feature/together-welcome-isolated-staging. A new dedicated branch, feature/founder-control-room-staging, was created directly from that exact commit so Control Room work does not mutate the passed interface checkpoint.
+
+A5.2 isolation setup on the new branch:
+- vercel.json now blocks automatic deployment for feature/founder-control-room-staging.
+- The offline Admin safety workflow is retargeted to this branch and asserts that automatic deployment remains disabled.
+- The A5.2 read-only Staging connection diagnostic workflow is retargeted to this branch.
+- The build preflight is retargeted to this branch and now confirms deployment remains blocked during isolation before running the non-deploying build check.
+- Temporary staging-readiness and Admin identity-check routes are branch-bound to feature/founder-control-room-staging and remain unusable outside the intended non-Production branch context.
+- The staging-readiness helper and its tests now expect the new branch identity.
+- No Production deployment, Production Supabase change, database write, Guest Save & Sync change, Magic-Link callback change or user-facing interface change is authorised by this checkpoint.
+
+Current rule: do not enable automatic deployment or mutate Staging/Production infrastructure merely to test. First prove the new branch's offline safety/build/read-only diagnostics. Then determine the narrowest remaining evidence needed to complete A5.2 Staging deployment/environment isolation. A5.3 remains blocked until A5.2 is truthfully accepted.
