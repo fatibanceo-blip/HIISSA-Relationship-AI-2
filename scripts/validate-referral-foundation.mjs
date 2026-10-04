@@ -78,8 +78,8 @@ for (const required of [
 
 for (const required of [
   'id: "hiissa.share-referral-foundation"',
-  'status: "founder-tested-stage-2-share-handoffs-pass"',
-  'stage: "FOUNDER_TESTED"',
+  'status: "founder-tested-stage-2-regression-pass-protected"',
+  'stage: "REGRESSION_PASS"',
   'PASS_STAGE_2_ALL_SIX_SHARE_HANDOFFS_2026_10_04',
   "30-day eligibility window for later account attribution",
   "self-referral blocking",
