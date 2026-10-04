@@ -12,6 +12,7 @@ import {
   ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD,
   ADMIN_STAFF_ONBOARDING_WORKFLOW,
   FOUNDER_ADMIN_AUTHORITY_AND_STAFF_ACTION_GATE,
+  FOUNDER_CONTROL_ROOM_STRENGTHENING_PACKAGE,
   STAFF_ACCESS_SUSPENSION_AND_OFFBOARDING_STANDARD,
   STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD,
 } from "../../../lib/experience-registry.js";
@@ -717,6 +718,53 @@ function AdminSecurityAuditModule({ module, onOverview }) {
       </section>
 
       <StaffAccessControlPrototype />
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>FOUNDER CONTROL ROOM STRENGTHENING PACKAGE</div>
+            <h3>Shared Founder capabilities approved for the Control Room</h3>
+          </div>
+          <StatusPill label="FOUNDER APPROVED · STAGED" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          These are shared capabilities that strengthen the existing ten-module
+          Control Room. They do not create Module 11, do not duplicate operational
+          truth, and are not yet live controls unless separately certified.
+        </p>
+
+        <div className={styles.featureList}>
+          {FOUNDER_CONTROL_ROOM_STRENGTHENING_PACKAGE.capabilities.map((capability) => (
+            <article className={styles.featureCard} key={capability.id}>
+              <div className={styles.featureTop}>
+                <strong>{capability.name}</strong>
+                <StatusPill label={capability.status.replaceAll("_", " ")} compact />
+              </div>
+              <p>{capability.purpose}</p>
+              <div className={styles.featureMeta}>
+                {capability.modules.map((moduleId) => (
+                  <span key={moduleId}>
+                    {MODULES.find((item) => item.id === moduleId)?.label || moduleId}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className={styles.prototypeReviewBlock}>
+          <strong>Permanent Founder principle</strong>
+          <p>{FOUNDER_CONTROL_ROOM_STRENGTHENING_PACKAGE.principle}</p>
+        </div>
+
+        <div className={styles.featureMeta}>
+          <span>NO MODULE 11 CREATED</span>
+          <span>ONE SOURCE OF TRUTH</span>
+          <span>MINIMUM-NECESSARY OPERATIONAL VISIBILITY</span>
+          <span>TEMPORARY DEPUTY MODE: RESERVED · NOT ENABLED</span>
+        </div>
+      </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
