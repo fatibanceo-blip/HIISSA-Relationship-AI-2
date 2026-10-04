@@ -257,41 +257,28 @@ export default function ShareHiissaPreviewPage() {
   async function openEmail() {
     setActionError("");
 
-    let fallbackStarted = false;
+    const isAndroid =
+      typeof navigator !== "undefined" &&
+      /Android/i.test(navigator.userAgent || "");
 
-    const startFallback = async () => {
-      if (fallbackStarted || document.visibilityState !== "visible") return;
-      fallbackStarted = true;
-
-      if (!navigator.share) {
-        setActionError(
-          "Your phone did not open an email app automatically. Please use Phone Share and choose your email app."
-        );
-        return;
-      }
-
+    if (isAndroid && navigator.share) {
       try {
         await navigator.share({
           title: emailSubject,
           text: sampleMessage,
         });
+        return;
       } catch (error) {
-        if (error?.name !== "AbortError") {
-          setActionError(
-            "Your phone could not open the email handoff. Nothing was sent. Please use Copy Link or Phone Share."
-          );
-        }
+        if (error?.name === "AbortError") return;
+
+        setActionError(
+          "Your phone could not open the email chooser. Nothing was sent. Please use Copy Link or Phone Share."
+        );
+        return;
       }
-    };
+    }
 
-    const emailLink = document.createElement("a");
-    emailLink.href = emailHref;
-    emailLink.style.display = "none";
-    document.body.appendChild(emailLink);
-    emailLink.click();
-    document.body.removeChild(emailLink);
-
-    window.setTimeout(startFallback, 1400);
+    window.location.assign(emailHref);
   }
 
   function openWhatsApp() {
@@ -622,7 +609,7 @@ export default function ShareHiissaPreviewPage() {
                     Open email with invitation
                   </button>
                   <p style={{ margin: "12px 0 0", color: "#6c7a72", fontSize: 13 }}>
-                    HIISSA first tries your email app directly. If your phone blocks that handoff, HIISSA opens the phone share sheet so you can choose Gmail, Outlook or another email app. You still add the recipient and press Send.
+                    On Android, HIISSA opens your phone’s share chooser so you can select Gmail, Outlook or another email app. On supported devices, HIISSA opens the email composer directly. You still add the recipient and press Send.
                   </p>
                 </>
               ) : null}
