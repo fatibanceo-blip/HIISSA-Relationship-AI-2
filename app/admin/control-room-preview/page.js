@@ -10,6 +10,7 @@ import {
   EXPERIENCE_REGISTRY,
   FEATURE_OPERATIONAL_VISIBILITY_STANDARD,
   ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD,
+  ADMIN_STAFF_ONBOARDING_WORKFLOW,
 } from "../../../lib/experience-registry.js";
 
 const MODULES = [
@@ -727,6 +728,132 @@ function AdminSecurityAuditModule({ module, onOverview }) {
           Invitation and staff-management controls are intentionally not active yet.
           The approved governance contract is now registered first so the later
           workflow can be built and certified without bypassing security.
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>DETAILED WORKFLOW PREVIEW — NOT LIVE</div>
+            <h3>How a future staff application will move through HIISSA</h3>
+          </div>
+          <StatusPill label="DESIGN PREVIEW ONLY" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          This preview defines the future experience before any invitation,
+          approval or access-changing control is activated.
+        </p>
+
+        <div className={styles.featureList}>
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>1. Founder invitation</strong>
+              <StatusPill label="NO ACCESS GRANTED" compact />
+            </div>
+            <p>
+              You start the request from the Control Room. The invitation records
+              who is being invited, the proposed role, department, environment,
+              reason for access and any approved time limit.
+            </p>
+            <div className={styles.contractGrid}>
+              {ADMIN_STAFF_ONBOARDING_WORKFLOW.invitation.requiredInputs.map((item) => (
+                <div className={styles.contractItem} key={item}>✓ {item.replaceAll("-", " ")}</div>
+              ))}
+            </div>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>2. Staff onboarding form</strong>
+              <StatusPill label="IDENTITY FIRST" compact />
+            </div>
+            <p>
+              The invited person completes only the information needed for
+              identity, work context, policy routing and access administration.
+            </p>
+            <div className={styles.contractGrid}>
+              {ADMIN_STAFF_ONBOARDING_WORKFLOW.applicantForm.requiredFields.map((item) => (
+                <div className={styles.contractItem} key={item}>✓ {item.replaceAll("-", " ")}</div>
+              ))}
+            </div>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>3. Policy & role acceptance</strong>
+              <StatusPill label="EVIDENCED" compact />
+            </div>
+            <p>
+              HIISSA records the exact policy versions shown and the authenticated
+              acceptance time. Different obligations are not hidden inside one
+              vague checkbox.
+            </p>
+            <div className={styles.contractGrid}>
+              {ADMIN_STAFF_ONBOARDING_WORKFLOW.policyAcceptance.commonPolicySet.map((item) => (
+                <div className={styles.contractItem} key={item}>✓ {item}</div>
+              ))}
+            </div>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>4. Founder review</strong>
+              <StatusPill label="L3 APPROVAL" compact />
+            </div>
+            <p>
+              Before activation, you see the verified identity, proposed role,
+              requested environment, policy evidence, role checks, permission
+              preview, denied boundaries and any warnings.
+            </p>
+            <div className={styles.featureMeta}>
+              <span>APPROVE — proceed to controlled provisioning</span>
+              <span>RETURN — send back for correction or missing evidence</span>
+              <span>REJECT — close without granting access</span>
+            </div>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>5. Activation & verification</strong>
+              <StatusPill label="NO PARTIAL SUCCESS" compact />
+            </div>
+            <p>
+              Approval does not mean the job is finished. HIISSA must provision
+              the intended role and environment, verify that allowed access works,
+              verify denied boundaries stay denied, write the audit event, and
+              only then confirm activation.
+            </p>
+            <div className={styles.contractGrid}>
+              {ADMIN_STAFF_ONBOARDING_WORKFLOW.activation.order.map((item) => (
+                <div className={styles.contractItem} key={item}>✓ {item}</div>
+              ))}
+            </div>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>6. Review, suspension & offboarding</strong>
+              <StatusPill label="ACCESS MUST END SAFELY" compact />
+            </div>
+            <p>
+              Access is reviewed while the person works with HIISSA and must be
+              reduced, suspended or removed when their duties or authorisation
+              change. Removal is verified rather than assumed.
+            </p>
+            <div className={styles.contractGrid}>
+              {ADMIN_STAFF_ONBOARDING_WORKFLOW.offboarding.actions.map((item) => (
+                <div className={styles.contractItem} key={item}>✓ {item}</div>
+              ))}
+            </div>
+          </article>
+        </div>
+
+        <div className={styles.emptyState}>
+          No invitation, approval, provisioning, suspension or offboarding button
+          on this preview can change access. Real actions remain disabled until
+          their security, audit, notification and rollback paths are separately
+          implemented and certified in Staging.
         </div>
       </section>
 
