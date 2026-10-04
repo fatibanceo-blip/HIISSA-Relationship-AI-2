@@ -147,6 +147,19 @@ for (const required of [
   "APPLICANT STATUS — SIMULATION",
   "AWAITING FOUNDER REVIEW",
   "Switch to Founder Review",
+  "FOUNDER CONTROL ROOM STRENGTHENING PACKAGE",
+  "Shared Founder capabilities approved for the Control Room",
+  "Founder Command / Approval Inbox",
+  "Founder Emergency Pause Controls",
+  "Staff Session & Device Control",
+  "Preview as Role",
+  "Founder Decision Pack",
+  "Customer Communication & Service-Level Centre",
+  "Staff Trust, Training & Access Review",
+  "Security Anomaly Alerts",
+  "Daily Founder Brief",
+  "Founder Continuity / Temporary Deputy Mode",
+  "TEMPORARY DEPUTY MODE: RESERVED · NOT ENABLED",
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
@@ -194,6 +207,19 @@ for (const registryRule of [
   "export const STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD",
   "saveAndResumeRequired: true",
   "SUBMIT_FOR_FOUNDER_REVIEW",
+  "export const FOUNDER_CONTROL_ROOM_STRENGTHENING_PACKAGE",
+  "The Founder should never have to discover a serious Admin problem accidentally.",
+  "founder-approval-inbox",
+  "founder-emergency-pause",
+  "staff-session-device-control",
+  "preview-as-role",
+  "founder-decision-pack",
+  "customer-communication-service-level-centre",
+  "staff-trust-training-access-review",
+  "admin-security-anomaly-alerts",
+  "daily-founder-brief",
+  "temporary-deputy-mode",
+  "RESERVED_NOT_ENABLED",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
@@ -215,3 +241,4 @@ console.log("- Interactive no-access staff onboarding prototype is present");
 console.log("- Invitation preview, simulated send/status, resend and revoke journey is present");
 console.log("- Founder authority, staff suspension and secure invitee onboarding contracts are registered");
 console.log("- Applicant save/resume, review, submission and Founder-review handoff prototype is present");
+console.log("- Founder Control Room strengthening package is registered and surfaced without creating Module 11");
