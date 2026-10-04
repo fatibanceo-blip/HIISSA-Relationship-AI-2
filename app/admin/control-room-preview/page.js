@@ -167,7 +167,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             {activeId === CONTROL_ROOM_MODULES.overview ? (
               <Overview registeredFeatures={registeredFeatures} authenticated={authenticated} />
             ) : (
-              <ModuleFoundation module={activeModule} authenticated={authenticated} />
+              <ModuleFoundation module={activeModule} authenticated={authenticated} onOverview={() => chooseModule(CONTROL_ROOM_MODULES.overview)} />
             )}
           </section>
         </div>
@@ -179,6 +179,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
 function Overview({ registeredFeatures, authenticated }) {
   return (
     <>
+      <button type="button" className={styles.overviewBack} onClick={onOverview}>
+        ← Control Room Overview
+      </button>
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>OVERVIEW / CONTROL ROOM</div>
@@ -271,9 +274,9 @@ function Overview({ registeredFeatures, authenticated }) {
   );
 }
 
-function ModuleFoundation({ module, authenticated }) {
+function ModuleFoundation({ module, authenticated, onOverview }) {
   if (module.id === CONTROL_ROOM_MODULES.feedbackRecommendations && authenticated) {
-    return <FeedbackRecommendationsModule module={module} />;
+    return <FeedbackRecommendationsModule module={module} onOverview={onOverview} />;
   }
 
   const special =
@@ -287,6 +290,9 @@ function ModuleFoundation({ module, authenticated }) {
 
   return (
     <>
+      <button type="button" className={styles.overviewBack} onClick={onOverview}>
+        ← Control Room Overview
+      </button>
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>CURRENT MODULE / PAGE</div>
@@ -327,7 +333,7 @@ function ModuleFoundation({ module, authenticated }) {
   );
 }
 
-function FeedbackRecommendationsModule({ module }) {
+function FeedbackRecommendationsModule({ module, onOverview }) {
   const [loading, setLoading] = useState(true);
   const [health, setHealth] = useState("Checking");
   const [stats, setStats] = useState(null);
