@@ -34,7 +34,7 @@ for (const required of [
   "← Back to HIISSA",
   "Sign out",
   "ISOLATED PREVIEW",
-  "No fake health numbers.",
+  "no fake health numbers.",
   "FEATURE OPERATIONAL VISIBILITY",
   "SHARED DETAIL VIEW — FOUNDATION",
 ]) requireText("Control Room shell", page, required);
