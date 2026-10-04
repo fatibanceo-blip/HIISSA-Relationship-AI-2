@@ -30,6 +30,9 @@ const requiredFoundationIds = [
   "my-hiissa.home",
   "account.journey",
   "auth.signin",
+  "young-hiissa",
+  "hiissa.rest",
+  "hiissa.alongside",
 ];
 
 for (const id of requiredFoundationIds) {
@@ -200,6 +203,34 @@ if (accountJourneyStart < 0) {
     fail(
       "Complete account journey has an invalid pre-Production certification stage"
     );
+  }
+}
+
+if (!source.includes("export const CONTROL_ROOM_MODULE_REGISTRY")) {
+  fail("CONTROL_ROOM_MODULE_REGISTRY definition is missing");
+} else {
+  const requiredControlRoomRegistryRules = [
+    "currentModuleCount: 10",
+    "currentModulesLocked: true",
+    "futureExpansionAllowed: true",
+    "noModule11ExistsToday: true",
+    "founderApprovalRequiredForNewModule: true",
+  ];
+
+  for (const rule of requiredControlRoomRegistryRules) {
+    if (!source.includes(rule)) {
+      fail(`Control Room Module Registry is missing required rule: ${rule}`);
+    }
+  }
+}
+
+for (const requiredExploreExperience of [
+  'publicLabel: "Young HIISSA"',
+  'publicLabel: "HIISSA Rest"',
+  'publicLabel: "HIISSA Alongside"',
+]) {
+  if (!source.includes(requiredExploreExperience)) {
+    fail(`Approved Explore experience is missing from the Registry: ${requiredExploreExperience}`);
   }
 }
 
