@@ -5,15 +5,16 @@
   "scripts": {
     "dev": "next dev",
     "test:registry": "node scripts/validate-experience-registry.mjs",
-    "prebuild": "npm run test:registry && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow",
+    "prebuild": "npm run test:registry && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation",
     "build": "next build",
-    "verify:foundation": "npm run test:registry && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run build",
+    "verify:foundation": "npm run test:registry && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run build",
     "start": "next start",
     "test:my-hiissa-routing": "node scripts/validate-my-hiissa-routing.mjs",
     "test:account-journey": "node scripts/validate-account-journey.mjs",
     "test:free-navigation": "node scripts/validate-free-navigation.mjs",
     "test:control-room-shell": "node scripts/validate-control-room-shell.mjs",
-    "test:recommendation-flow": "node scripts/validate-recommendation-flow.mjs"
+    "test:recommendation-flow": "node scripts/validate-recommendation-flow.mjs",
+    "test:referral-foundation": "node scripts/validate-referral-foundation.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
