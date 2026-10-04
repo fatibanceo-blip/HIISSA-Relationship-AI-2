@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -74,6 +75,15 @@ const MODULES = [
 ];
 
 const FEATURE_KEYS = ["youngHiissa", "hiissaRest", "hiissaAlongside"];
+
+const adminDataClient =
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    ? createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+      )
+    : null;
 
 function statusLabel(value) {
   return String(value || "unknown").replaceAll("-", " ").toUpperCase();
@@ -262,6 +272,10 @@ function Overview({ registeredFeatures, authenticated }) {
 }
 
 function ModuleFoundation({ module, authenticated }) {
+  if (module.id === CONTROL_ROOM_MODULES.feedbackRecommendations && authenticated) {
+    return <FeedbackRecommendationsModule module={module} />;
+  }
+
   const special =
     module.id === CONTROL_ROOM_MODULES.feedbackRecommendations
       ? "Existing private feedback and separately-permissioned public-review foundations will be preserved and connected here; private feedback is never automatically public."
@@ -308,6 +322,195 @@ function ModuleFoundation({ module, authenticated }) {
         ].map((label) => (
           <div key={label}>{label}<span>Defined before module activation</span></div>
         ))}
+      </section>
+    </>
+  );
+}
+
+function FeedbackRecommendationsModule({ module }) {
+  const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState("Checking");
+  const [stats, setStats] = useState(null);
+  const [distribution, setDistribution] = useState([]);
+  const [writtenFeedback, setWrittenFeedback] = useState([]);
+  const [publicReviews, setPublicReviews] = useState([]);
+  const [errors, setErrors] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      if (!adminDataClient) {
+        if (active) {
+          setErrors(["Admin data connection is not configured for this environment."]);
+          setHealth("Unavailable");
+          setLoading(false);
+        }
+        return;
+      }
+
+      const nextErrors = [];
+
+      const [
+        statsResult,
+        distributionResult,
+        writtenResult,
+        publicResult,
+      ] = await Promise.all([
+        adminDataClient.rpc("get_hiissa_feedback_stats"),
+        adminDataClient.rpc("get_hiissa_rating_distribution"),
+        adminDataClient.rpc("get_hiissa_written_feedback"),
+        adminDataClient.rpc("get_hiissa_admin_public_reviews"),
+      ]);
+
+      if (!active) return;
+
+      if (statsResult.error) nextErrors.push("Feedback statistics could not be loaded.");
+      else if (statsResult.data?.length) setStats(statsResult.data[0]);
+
+      if (distributionResult.error) nextErrors.push("Rating distribution could not be loaded.");
+      else setDistribution(distributionResult.data || []);
+
+      if (writtenResult.error) nextErrors.push("Private written feedback could not be loaded.");
+      else setWrittenFeedback(writtenResult.data || []);
+
+      if (publicResult.error) nextErrors.push("Authorised public reviews could not be loaded.");
+      else setPublicReviews(publicResult.data || []);
+
+      setErrors(nextErrors);
+      setHealth(nextErrors.length === 0 ? "Healthy" : nextErrors.length < 4 ? "Needs Attention" : "Unavailable");
+      setLoading(false);
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const totalFeedback = stats?.total_feedback ?? (loading ? "…" : 0);
+  const average =
+    stats?.average_rating == null
+      ? "—"
+      : `${Number(stats.average_rating).toFixed(2)} / 5`;
+  const helpful =
+    stats?.helpful_percentage == null
+      ? "—"
+      : `${Number(stats.helpful_percentage).toFixed(1)}%`;
+
+  return (
+    <>
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>MODULE 4 — LIVE STAGING READ-ONLY</div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill label={loading ? "CHECKING" : health.toUpperCase()} />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>One feedback source of truth.</strong>
+        <p>
+          This module reads the existing HIISSA feedback and public-review permission sources. It does not create a second feedback store, and private feedback is never treated as permission to publish.
+        </p>
+      </section>
+
+      {errors.length > 0 ? (
+        <section className={styles.errorPanel}>
+          <strong>Needs attention</strong>
+          {errors.map((error) => <div key={error}>{error}</div>)}
+        </section>
+      ) : null}
+
+      <div className={styles.grid}>
+        <InfoCard title="SOURCE HEALTH" value={loading ? "Checking…" : health} detail="Real read-only Staging calls to the existing feedback functions." />
+        <InfoCard title="TOTAL FEEDBACK" value={String(totalFeedback)} detail="Genuine feedback records reported by the existing feedback statistics function." />
+        <InfoCard title="AVERAGE RATING" value={average} detail="No value is fabricated when there is not enough data." />
+        <InfoCard title="HELPFUL" value={helpful} detail="Existing aggregate helpfulness signal." />
+      </div>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>RATING DISTRIBUTION</div>
+            <h3>Current genuine ratings</h3>
+          </div>
+        </div>
+        {distribution.length === 0 ? (
+          <div className={styles.emptyState}>No rating distribution is currently available.</div>
+        ) : (
+          <div className={styles.ratingList}>
+            {distribution.map((item) => (
+              <div className={styles.ratingRow} key={item.rating}>
+                <strong>{Number(item.rating)} star</strong>
+                <span>{Number(item.rating_count)} {Number(item.rating_count) === 1 ? "response" : "responses"}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>PRIVATE FEEDBACK</div>
+            <h3>Written feedback</h3>
+          </div>
+          <StatusPill label={`${writtenFeedback.length} RECORDS`} compact />
+        </div>
+        {writtenFeedback.length === 0 ? (
+          <div className={styles.emptyState}>No written feedback has been submitted yet.</div>
+        ) : (
+          <div className={styles.feedbackList}>
+            {writtenFeedback.slice(0, 10).map((item) => (
+              <article className={styles.feedbackItem} key={item.id}>
+                <div className={styles.featureMeta}>
+                  <span>Rating: {item.rating ?? "—"} / 5</span>
+                  <span>{item.helpful ? "Helpful" : "Not marked helpful"}</span>
+                </div>
+                {item.feedback_text ? <p>{item.feedback_text}</p> : null}
+                {item.suggestion_text ? <p><strong>Suggestion:</strong> {item.suggestion_text}</p> : null}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>PUBLIC REVIEWS</div>
+            <h3>Separate permission only</h3>
+          </div>
+          <StatusPill label={`${publicReviews.length} PERMITTED`} compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          Only wording for which separate public-sharing permission exists appears here. Private feedback remains private.
+        </p>
+        {publicReviews.length === 0 ? (
+          <div className={styles.emptyState}>No reviews currently have permission for public display.</div>
+        ) : (
+          <div className={styles.feedbackList}>
+            {publicReviews.slice(0, 10).map((item) => (
+              <article className={styles.feedbackItem} key={item.id}>
+                <div className={styles.featureMeta}>
+                  <span>PUBLIC PERMISSION</span>
+                  <span>Rating: {item.rating ?? "—"} / 5</span>
+                </div>
+                <p>“{item.public_display_text}”</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.detailBlueprint}>
+        <div className={styles.kicker}>MODULE 4 OPERATIONAL DETAIL</div>
+        <div>SOURCE STATUS<span>{loading ? "Checking real Staging source" : health}</span></div>
+        <div>PRIVATE / PUBLIC BOUNDARY<span>Separate permission required</span></div>
+        <div>RECOMMENDATIONS<span>Existing suggestion field preserved; dedicated review workflow comes next</span></div>
+        <div>AUDIT / PERMISSION HISTORY<span>Will connect only from verified source evidence</span></div>
       </section>
     </>
   );
