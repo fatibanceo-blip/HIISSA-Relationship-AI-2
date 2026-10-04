@@ -630,6 +630,115 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
 
 function SystemOperationsModule({ module, onOverview }) {
   const providers = FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD.providerRegister;
+  const [openAiLoading, setOpenAiLoading] = useState(true);
+  const [openAiSummary, setOpenAiSummary] = useState(null);
+  const [openAiError, setOpenAiError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadOpenAiProviderSummary() {
+      if (!adminDataClient) {
+        if (active) {
+          setOpenAiError("The protected Admin data connection is not configured for this environment.");
+          setOpenAiLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token) {
+          if (active) {
+            setOpenAiError("Your Admin session could not be confirmed for OpenAI provider telemetry.");
+            setOpenAiLoading(false);
+          }
+          return;
+        }
+
+        const response = await fetch("/api/admin/control-room/openai-provider-summary", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setOpenAiError("The protected OpenAI provider summary could not be loaded.");
+          setOpenAiLoading(false);
+          return;
+        }
+
+        setOpenAiSummary(data);
+        setOpenAiLoading(false);
+      } catch {
+        if (!active) return;
+        setOpenAiError("The protected OpenAI provider summary could not be loaded.");
+        setOpenAiLoading(false);
+      }
+    }
+
+    loadOpenAiProviderSummary();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  function formatNumber(value) {
+    return typeof value === "number" && Number.isFinite(value)
+      ? new Intl.NumberFormat("en-GB").format(value)
+      : "—";
+  }
+
+  function formatCosts(costs) {
+    if (!Array.isArray(costs) || costs.length === 0) return "—";
+
+    return costs
+      .map((item) => {
+        const currency = String(item.currency || "").toUpperCase();
+        const value = Number(item.value);
+        if (!currency || !Number.isFinite(value)) return null;
+
+        try {
+          return new Intl.NumberFormat("en-GB", {
+            style: "currency",
+            currency,
+            maximumFractionDigits: 4,
+          }).format(value);
+        } catch {
+          return `${currency} ${value.toFixed(4)}`;
+        }
+      })
+      .filter(Boolean)
+      .join(" · ") || "—";
+  }
+
+  const openAiStatus = openAiLoading
+    ? "CHECKING"
+    : openAiError
+      ? "UNAVAILABLE"
+      : openAiSummary?.status || "UNKNOWN";
+
+  const openAiStatusDetail =
+    openAiSummary?.status === "HEALTHY"
+      ? "Protected organization usage and cost telemetry is connected."
+      : openAiSummary?.status === "PARTIAL"
+        ? "One protected OpenAI organization source is currently unavailable."
+        : openAiSummary?.status === "SOURCE_NOT_CONFIGURED"
+          ? "HIISSA runtime is connected; a separate API Platform organization Admin key is still required for usage/cost telemetry."
+          : openAiSummary?.status === "ADMIN_KEY_REJECTED"
+            ? "The protected organization Admin credential was rejected; no runtime key was exposed or changed."
+            : openAiSummary?.status === "RATE_LIMITED"
+              ? "The protected OpenAI organization source is temporarily rate limited."
+              : openAiError || "Protected OpenAI organization telemetry is not yet available.";
 
   const verificationSnapshot = [
     {
@@ -649,8 +758,8 @@ function SystemOperationsModule({ module, onOverview }) {
     },
     {
       label: "OpenAI API",
-      value: "RUNTIME CONNECTED",
-      detail: "The current environment has the OpenAI API connection configured. Live credit/billing balance is not yet connected to this Control Room.",
+      value: openAiLoading ? "CHECKING PROTECTED SOURCE" : openAiStatus.replaceAll("_", " "),
+      detail: openAiStatusDetail,
     },
   ];
 
@@ -685,9 +794,9 @@ function SystemOperationsModule({ module, onOverview }) {
           detail="Current approved provider/business-tool register. New providers can be added later without creating a new Control Room module."
         />
         <InfoCard
-          title="OPENAI CREDIT / CAPACITY"
-          value="LIVE FEED PENDING"
-          detail="The runtime connection exists; billing/credit telemetry still needs a separate secure source."
+          title="OPENAI ORGANIZATION TELEMETRY"
+          value={openAiStatus.replaceAll("_", " ")}
+          detail={openAiStatusDetail}
         />
         <InfoCard
           title="RENEWAL TRACKING"
@@ -704,10 +813,134 @@ function SystemOperationsModule({ module, onOverview }) {
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
+            <div className={styles.kicker}>OPENAI PROVIDER CONNECTION — PROTECTED STAGING SOURCE</div>
+            <h3>Runtime health, usage and cost without exposing credentials</h3>
+          </div>
+          <StatusPill label={openAiStatus.replaceAll("_", " ")} compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          HIISSA’s normal OpenAI runtime key remains separate from the API Platform
+          organization Admin credential required for organization usage and cost
+          telemetry. Neither key is returned to this browser.
+        </p>
+
+        {openAiError ? (
+          <section className={styles.errorPanel}>
+            <strong>Needs attention</strong>
+            <div>{openAiError}</div>
+          </section>
+        ) : null}
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="RUNTIME CONNECTION"
+            value={
+              openAiLoading
+                ? "Checking…"
+                : openAiSummary?.runtimeApiKeyConfigured
+                  ? "CONFIGURED"
+                  : "NOT CONFIRMED"
+            }
+            detail="This is the existing HIISSA model-runtime connection, not the organization billing/usage credential."
+          />
+          <InfoCard
+            title="ORGANIZATION ADMIN SOURCE"
+            value={
+              openAiLoading
+                ? "Checking…"
+                : openAiSummary?.adminTelemetryKeyConfigured
+                  ? "CONFIGURED"
+                  : "SETUP REQUIRED"
+            }
+            detail="A separate API Platform organization Admin key is required for the protected organization usage/cost source."
+          />
+          <InfoCard
+            title="MONTH-TO-DATE COST"
+            value={
+              openAiSummary?.status === "SOURCE_NOT_CONFIGURED"
+                ? "SETUP REQUIRED"
+                : formatCosts(openAiSummary?.costs)
+            }
+            detail="Verified organization cost results only. HIISSA does not estimate or convert currencies."
+          />
+          <InfoCard
+            title="MODEL REQUESTS"
+            value={formatNumber(openAiSummary?.usage?.requests)}
+            detail="Month-to-date requests returned by the protected organization completions-usage source."
+          />
+          <InfoCard
+            title="INPUT TOKENS"
+            value={formatNumber(openAiSummary?.usage?.inputTokens)}
+            detail="Verified month-to-date organization input-token usage from the connected source."
+          />
+          <InfoCard
+            title="OUTPUT TOKENS"
+            value={formatNumber(openAiSummary?.usage?.outputTokens)}
+            detail="Verified month-to-date organization output-token usage from the connected source."
+          />
+          <InfoCard
+            title="CACHED INPUT TOKENS"
+            value={formatNumber(openAiSummary?.usage?.cachedInputTokens)}
+            detail="Shown only when returned by the organization usage source."
+          />
+          <InfoCard
+            title="CREDIT / PREPAID BALANCE"
+            value="BILLING PAGE SOURCE"
+            detail="No balance is invented. Credit-grant/prepaid-balance details remain on the official OpenAI Billing source until a reliable supported API source is connected."
+          />
+        </div>
+
+        <div className={styles.prototypeReviewBlock}>
+          <strong>Evidence and refresh</strong>
+          <p>
+            Source: {openAiSummary?.evidenceSource || "OpenAI API Platform organization Admin API"}.
+            Last protected refresh: {openAiSummary?.refreshedAt
+              ? new Date(openAiSummary.refreshedAt).toLocaleString()
+              : openAiLoading
+                ? " checking…"
+                : " not available"}.
+          </p>
+        </div>
+
+        <div className={styles.prototypeDecisionActions}>
+          <a
+            className={styles.prototypeSecondary}
+            href={openAiSummary?.officialLinks?.usage || "https://platform.openai.com/usage"}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open OpenAI Usage ↗
+          </a>
+          <a
+            className={styles.prototypeSecondary}
+            href={
+              openAiSummary?.officialLinks?.billing ||
+              "https://platform.openai.com/settings/organization/billing/overview"
+            }
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open OpenAI Billing ↗
+          </a>
+        </div>
+
+        <div className={styles.featureMeta}>
+          <span>READ ONLY</span>
+          <span>STAGING ONLY</span>
+          <span>ADMIN AUTH REQUIRED</span>
+          <span>NO RAW KEYS RETURNED</span>
+          <span>NO AUTOMATIC TOP-UP OR PURCHASE</span>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
             <div className={styles.kicker}>VERIFIED DEVELOPMENT SNAPSHOT — 4 OCTOBER 2026</div>
             <h3>What we can already confirm</h3>
           </div>
-          <StatusPill label="SNAPSHOT · NOT LIVE FEED" compact />
+          <StatusPill label="SNAPSHOT + PROTECTED SOURCE" compact />
         </div>
 
         <div className={styles.featureList}>
@@ -742,9 +975,13 @@ function SystemOperationsModule({ module, onOverview }) {
                   <div className={styles.featureId}>{provider.category}</div>
                 </div>
                 <StatusPill
-                  label={provider.currentFinancialSource.includes("NOT YET") || provider.currentFinancialSource.includes("REQUIRES")
-                    ? "SOURCE TO CONNECT"
-                    : "SOURCE PARTIAL"}
+                  label={
+                    provider.id === "openai-api"
+                      ? openAiStatus.replaceAll("_", " ")
+                      : provider.currentFinancialSource.includes("NOT YET") || provider.currentFinancialSource.includes("REQUIRES")
+                        ? "SOURCE TO CONNECT"
+                        : "SOURCE PARTIAL"
+                  }
                   compact
                 />
               </div>
