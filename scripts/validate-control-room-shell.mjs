@@ -94,6 +94,25 @@ for (const required of [
 ]) requireText("Feedback & Recommendations module", page, required);
 
 for (const required of [
+  "MODULE 9 — STAGING PROVIDER & SPEND REGISTER",
+  "Founder business visibility — no fabricated money data.",
+  "VERIFIED DEVELOPMENT SNAPSHOT — 4 OCTOBER 2026",
+  "PROVIDER, SUBSCRIPTION & SPEND REGISTER",
+  "API CREDIT & CAPACITY PROTECTION",
+  "Warn before a provider stops HIISSA",
+  "OpenAI API",
+  "Vercel",
+  "Supabase",
+  "Resend",
+  "Cloudflare",
+  "hiissa.com domain",
+  "GitHub",
+  "ChatGPT",
+  "MONEY MOVEMENT",
+  "FOUNDER GATED",
+]) requireText("System & Operations provider/spend module", page, required);
+
+for (const required of [
   "MODULE 10 — LIVE STAGING READ-ONLY",
   'fetch("/api/admin/control-room/security-summary"',
   "CURRENT ADMIN GATE",
@@ -233,6 +252,27 @@ for (const registryRule of [
   "one underlying approval record",
   "APPROVED_PENDING_EXECUTION",
   "approval is not the same as verified completion",
+  "export const UNIVERSAL_FOUNDER_SUBMISSION_GATE",
+  "Submit for processing",
+  "Submitted for processing",
+  "Every human staff work item",
+  "export const STAFF_WORKSPACE_SHELL_STANDARD",
+  "founder-approved-fictional-staging-design-to-build",
+  "technical_operations",
+  "customer_support",
+  "finance_subscriptions",
+  "safety_safeguarding",
+  "privacy_data_protection",
+  "content_moderation",
+  "product_quality",
+  "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
+  "Founder Provider, Subscription & Spend Register",
+  "25% remaining",
+  "10% remaining",
+  "5% remaining",
+  "Automatic purchase, top-up, plan upgrade",
+  "openai-api",
+  "hiissa-domain",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
@@ -256,3 +296,5 @@ console.log("- Founder authority, staff suspension and secure invitee onboarding
 console.log("- Applicant save/resume, review, submission and Founder-review handoff prototype is present");
 console.log("- Founder Control Room strengthening package is registered and surfaced without creating Module 11");
 console.log("- Founder Approval Inbox decision-pack simulation is present and explicitly non-live");
+console.log("- Universal Founder submission gate and seven fictional staff workspace families are registered");
+console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
