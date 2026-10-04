@@ -895,10 +895,10 @@ function AdminSecurityAuditModule({ module, onOverview }) {
         </div>
 
         <p className={styles.sectionCopy}>
-          Staff can work only inside their approved roles. Routine internal work
-          may proceed within those boundaries, but consequential staff actions
-          stop at the configured Founder approval gate before material or external
-          effect. Ordinary staff cannot create, suspend, demote or override Founder authority.
+          Staff can work only inside their approved roles. They may investigate,
+          prepare, draft and save authorised work, but every completed human staff
+          submission must pass automatically through the Founder gate before final
+          execution. Ordinary staff cannot create, suspend, demote or override Founder authority.
         </p>
 
         <div className={styles.contractGrid}>
@@ -909,7 +909,7 @@ function AdminSecurityAuditModule({ module, onOverview }) {
 
         <div className={styles.featureMeta}>
           <span>FOUNDER: FULL AUTHORISED CONTROL ROOM OVERSIGHT</span>
-          <span>CONSEQUENTIAL STAFF ACTIONS: FOUNDER GATE</span>
+          <span>EVERY COMPLETED STAFF SUBMISSION: FOUNDER GATE</span>
           <span>STAFF SELF-APPROVAL: BLOCKED</span>
           <span>HIISSA SAFE AUTO-RECOVERY: CONTINUES WITHIN APPROVED BOUNDS</span>
         </div>
@@ -1283,7 +1283,9 @@ function FounderApprovalInboxPrototype() {
       </div>
 
       <p className={styles.sectionCopy}>
-        This is the shared Founder queue for consequential staff actions. These
+        This is the shared Founder queue for completed human staff submissions.
+        Staff can prepare work inside their authorised role, but “Submit for
+        processing” routes the finished work here before final execution. These
         two items are fictional test examples only. No customer message, access
         change, payment, publication or Production action can occur from this prototype.
       </p>
@@ -1374,6 +1376,7 @@ function FounderApprovalInboxPrototype() {
       </div>
 
       <div className={styles.featureMeta}>
+        <span>{UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmitLabel.toUpperCase()} → FOUNDER GATE</span>
         <span>ONE SHARED APPROVAL RECORD</span>
         <span>STAFF SELF-APPROVAL BLOCKED</span>
         <span>APPROVAL ≠ VERIFIED COMPLETION</span>
