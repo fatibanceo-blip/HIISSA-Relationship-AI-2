@@ -174,7 +174,9 @@ function Overview({ registeredFeatures, authenticated }) {
           <div className={styles.kicker}>OVERVIEW / CONTROL ROOM</div>
           <h2>Founder operational picture</h2>
           <p>
-            {authenticated\n              ? "This authenticated Staging shell establishes the navigation, Registry-driven feature visibility and information hierarchy while live operational feeds are connected only through separate certification."\n              : "This isolated shell proves the navigation, Registry-driven feature visibility and information hierarchy before live operational feeds are connected."}
+            {authenticated
+              ? "This authenticated Staging shell establishes the navigation, Registry-driven feature visibility and information hierarchy while live operational feeds are connected only through separate certification."
+              : "This isolated shell proves the navigation, Registry-driven feature visibility and information hierarchy before live operational feeds are connected."}
           </p>
         </div>
         <StatusPill label="FOUNDATION" />
@@ -265,7 +267,9 @@ function ModuleFoundation({ module, authenticated }) {
       ? "Existing private feedback and separately-permissioned public-review foundations will be preserved and connected here; private feedback is never automatically public."
       : module.id === CONTROL_ROOM_MODULES.adminSecurityAudit
         ? "Routine role assignment will ultimately be managed here through permissions and audit controls rather than by editing code for every staff member."
-        : authenticated\n          ? "Live controls and data are connected to this Staging shell only after their individual source, permission and certification checks pass."\n          : "Live controls and data are intentionally not wired in this isolated shell yet.";
+        : authenticated
+          ? "Live controls and data are connected to this Staging shell only after their individual source, permission and certification checks pass."
+          : "Live controls and data are intentionally not wired in this isolated shell yet.";
 
   return (
     <>
