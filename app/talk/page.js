@@ -1632,10 +1632,12 @@ const [entryQueryResolved, setEntryQueryResolved] = useState(false);
       setGuestEntry(false);
       setGuestMain(true);
       setShowExplore(false);
+      setFreeEntry("talk");
     } else if (params.has("freeExplore")) {
       setGuestEntry(false);
       setGuestMain(true);
       setShowExplore(true);
+      setFreeEntry("explore");
     } else if (params.has("freeAccount")) {
       setAuthPanelMode("account");
       setShowAuthPanel(true);
@@ -1685,6 +1687,7 @@ const [entryQueryResolved, setEntryQueryResolved] = useState(false);
   }, []);
 const [guestEntry, setGuestEntry] = useState(false);
 const [guestMain, setGuestMain] = useState(false);
+const [freeEntry, setFreeEntry] = useState(null);
 const [plusEntry, setPlusEntry] = useState(null);
 const [togetherEntry, setTogetherEntry] = useState(null);
 const [myHiissaEntry, setMyHiissaEntry] = useState(null);
@@ -4925,6 +4928,13 @@ clientCreatedAt: new Date().toISOString(),
             )}
           </section>
         )}
+        {freeEntry && (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",margin:"0 0 18px",padding:"12px 14px",border:"1px solid rgba(36,91,72,.20)",borderRadius:"14px",background:"rgba(244,249,245,.96)",color:"#245b48"}}>
+            <a href="/free/welcome" style={{color:"#245b48",fontWeight:800,textDecoration:"none"}}>← Back to HIISSA FREE</a>
+            <span style={{fontSize:"13px",fontWeight:800,color:"#5f7d6e"}}>{freeEntry === "explore" ? "HIISSA FREE • Explore" : "HIISSA FREE • Talk"}</span>
+          </div>
+        )}
+
         {!plusEntry && !togetherEntry && <>
         <header className="hero">
           <div className="logo">
