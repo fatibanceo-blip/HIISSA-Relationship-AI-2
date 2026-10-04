@@ -106,6 +106,15 @@ for (const required of [
   "FOUNDER APPROVED · NOT YET LIVE",
   "VERBAL-ONLY ACCESS: NOT ALLOWED",
   "FOUNDER APPROVAL: REQUIRED BEFORE ACTIVATION",
+  "DETAILED WORKFLOW PREVIEW — NOT LIVE",
+  "Founder invitation",
+  "Staff onboarding form",
+  "Policy & role acceptance",
+  "Founder review",
+  "Activation & verification",
+  "Review, suspension & offboarding",
+  "DESIGN PREVIEW ONLY",
+  "NO PARTIAL SUCCESS",
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
@@ -139,6 +148,10 @@ for (const registryRule of [
   "export const ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD",
   "founderApprovalBeforeActivation: true",
   "adminGateChangesOnlyAfterApprovedActivation: true",
+  "export const ADMIN_STAFF_ONBOARDING_WORKFLOW",
+  "single-purpose, time-bounded, revocable",
+  "permission preview for the proposed role",
+  "Partial provisioning must not be treated as success.",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
@@ -155,3 +168,4 @@ console.log("- Young HIISSA, HIISSA Rest and HIISSA Alongside are surfaced from 
 console.log("- Future Control Room module expansion remains enabled without creating Module 11 today");
 console.log("- Admin Security & Audit read-only Staging summary is protected and certified");
 console.log("- Founder-approved staff onboarding, operational intelligence and alert-gateway contracts are registered");
+console.log("- Detailed non-live Admin staff onboarding workflow preview is present");
