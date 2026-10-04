@@ -101,7 +101,7 @@ for (const required of [
   "Phone Share",
   "referral email is not a Magic Link",
   "Your invitation stays private",
-  "STAGING PREVIEW · NO REAL REFERRAL SENT",
+  "STAGING HANDOFF TEST · NOTHING SENDS AUTOMATICALLY",
 ]) requireText("Share HIISSA preview", sharePreview, required);
 
 for (const required of [
