@@ -126,6 +126,13 @@ for (const required of [
   "Reject — no access",
   "NO REAL CHANGE OCCURRED",
   "ADMIN GATE UNCHANGED",
+  "FOUNDER INVITATION PREVIEW",
+  "Review before sending",
+  "Simulate Send Secure Invitation",
+  "INVITATION STATUS — SIMULATION",
+  "SIMULATED DELIVERED",
+  "Simulate resend",
+  "Simulate revoke",
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
@@ -159,10 +166,13 @@ for (const registryRule of [
   "export const ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD",
   "founderApprovalBeforeActivation: true",
   "adminGateChangesOnlyAfterApprovedActivation: true",
+  "founderRoleNotAssignableThroughOrdinaryStaffInvitation: true",
   "export const ADMIN_STAFF_ONBOARDING_WORKFLOW",
   "single-purpose, time-bounded, revocable",
   "permission preview for the proposed role",
   "Partial provisioning must not be treated as success.",
+  "previewRequiredBeforeSend: true",
+  "resendAndRevokeControlsRequired: true",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
@@ -181,3 +191,4 @@ console.log("- Admin Security & Audit read-only Staging summary is protected and
 console.log("- Founder-approved staff onboarding, operational intelligence and alert-gateway contracts are registered");
 console.log("- Detailed non-live Admin staff onboarding workflow preview is present");
 console.log("- Interactive no-access staff onboarding prototype is present");
+console.log("- Invitation preview, simulated send/status, resend and revoke journey is present");
