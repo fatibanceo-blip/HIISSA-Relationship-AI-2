@@ -9,6 +9,7 @@ import {
   CONTROL_ROOM_MODULE_REGISTRY,
   EXPERIENCE_REGISTRY,
   FEATURE_OPERATIONAL_VISIBILITY_STANDARD,
+  ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD,
 } from "../../../lib/experience-registry.js";
 
 const MODULES = [
@@ -678,6 +679,54 @@ function AdminSecurityAuditModule({ module, onOverview }) {
           {!loading && (summary?.supportedRoles || []).length === 0 ? (
             <div className={styles.emptyState}>Role definitions are not currently available.</div>
           ) : null}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>ADMIN ACCESS & STAFF ONBOARDING</div>
+            <h3>{ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD.canonicalName}</h3>
+          </div>
+          <StatusPill label="FOUNDER APPROVED · NOT YET LIVE" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          Future Admin access will be managed from the Control Room rather than by
+          editing code for every person. An invitation starts the process but does
+          not grant access. Identity verification, evidenced policy acceptance,
+          role requirements and Founder approval must complete before access can
+          become active.
+        </p>
+
+        <div className={styles.contractGrid}>
+          {[
+            "1. Founder sends secure invitation",
+            "2. Staff member completes onboarding form",
+            "3. Identity and work contact are verified",
+            "4. Required HIISSA policies are accepted with version evidence",
+            "5. Role-specific training/checks are completed where applicable",
+            "6. Founder reviews and approves, rejects or returns the application",
+            "7. Approved role and environment access are deliberately activated",
+            "8. Material access actions are audited",
+            "9. Access is periodically reviewed",
+            "10. Role changes, suspension and offboarding revoke or adjust access safely",
+          ].map((item) => (
+            <div className={styles.contractItem} key={item}>✓ {item}</div>
+          ))}
+        </div>
+
+        <div className={styles.featureMeta}>
+          <span>VERBAL-ONLY ACCESS: NOT ALLOWED</span>
+          <span>SELF-GRANT: BLOCKED</span>
+          <span>FOUNDER APPROVAL: REQUIRED BEFORE ACTIVATION</span>
+          <span>PRODUCTION ACCESS: SEPARATE AUTHORITY</span>
+        </div>
+
+        <div className={styles.emptyState}>
+          Invitation and staff-management controls are intentionally not active yet.
+          The approved governance contract is now registered first so the later
+          workflow can be built and certified without bypassing security.
         </div>
       </section>
 
