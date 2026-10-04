@@ -229,9 +229,9 @@ export default function FreeAccessPage() {
             </a>
 
             <Card
-              href="/plus/welcome"
+              href="/access"
               title="More when you’re ready"
-              text="Discover deeper HIISSA experiences without pressure."
+              text="Explore all HIISSA access options and choose what fits you."
               icon="★"
             />
           </div>
