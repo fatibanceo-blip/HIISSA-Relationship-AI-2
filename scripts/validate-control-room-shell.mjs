@@ -104,10 +104,6 @@ for (const required of [
   "Vercel",
   "Supabase",
   "Resend",
-  "Cloudflare",
-  "hiissa.com domain",
-  "GitHub",
-  "ChatGPT",
   "MONEY MOVEMENT",
   "FOUNDER GATED",
 ]) requireText("System & Operations provider/spend module", page, required);
@@ -273,6 +269,10 @@ for (const registryRule of [
   "Automatic purchase, top-up, plan upgrade",
   "openai-api",
   "hiissa-domain",
+  "Cloudflare",
+  "hiissa.com domain",
+  "GitHub",
+  "ChatGPT",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
