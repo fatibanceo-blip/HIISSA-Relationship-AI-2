@@ -101,12 +101,15 @@ for (const required of [
   "NO CHANGES ENABLED",
   "SELF-GRANT",
   "Blocked",
+  'Authorization: `Bearer ${session.access_token}`',
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
   'branch !== "feature/founder-control-room-staging"',
   'environment === "production"',
-  '"is_hiissa_admin"',
+  'request.headers.get("authorization")',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
   "SUPABASE_SECRET_KEY",
   'managementControlsEnabled: false',
   'noSelfGrant: true',
