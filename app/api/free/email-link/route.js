@@ -85,8 +85,8 @@ export async function POST(request) {
     body: JSON.stringify({
       from: process.env.HIISSA_FREE_EMAIL_FROM,
       to: [email],
-      subject: "Your HIISSA FREE sign-in link",
-      html: `<h2>Welcome to HIISSA FREE</h2><p>Open this link in the browser you want to use. You will choose when to complete sign-in.</p><p><a href="${safeLink}">Continue to HIISSA FREE</a></p><p>If you did not request this, you can ignore this email.</p>`,
+      subject: "Your HIISSA Guest sign-in link",
+      html: `<h2>Welcome to HIISSA Guest</h2><p>Open this link in the browser you want to use. You will choose when to complete sign-in.</p><p><a href="${safeLink}">Continue to HIISSA Guest</a></p><p>If you did not request this, you can ignore this email.</p>`,
     }),
     cache: "no-store",
   }).catch(() => null);
