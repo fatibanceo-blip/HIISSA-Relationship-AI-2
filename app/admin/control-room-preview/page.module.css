@@ -223,3 +223,55 @@
   .detailBlueprint>div:not(.kicker){display:block;}
   .detailBlueprint span{display:block;text-align:left;margin-top:4px;font-weight:500;}
 }
+
+.errorPanel{
+  margin:0 0 18px;
+  padding:15px 16px;
+  border-radius:16px;
+  border:1px solid #dfc6bc;
+  background:#fff5f1;
+  color:#754f45;
+}
+.errorPanel strong{display:block;margin-bottom:7px;}
+.errorPanel div{font-size:13px;line-height:1.5;margin-top:3px;}
+.emptyState{
+  padding:14px 15px;
+  border-radius:14px;
+  background:#f5f8f3;
+  border:1px solid #dfe7df;
+  color:#68766e;
+  font-size:13px;
+}
+.ratingList{display:grid;gap:8px;}
+.ratingRow{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  align-items:center;
+  padding:11px 13px;
+  border-radius:13px;
+  background:#f6f8f4;
+  border:1px solid #dfe7df;
+}
+.ratingRow strong{color:#315f4c;}
+.ratingRow span{color:#6c786f;font-size:12px;}
+.feedbackList{display:grid;gap:10px;}
+.feedbackItem{
+  padding:15px;
+  border-radius:15px;
+  background:#fffefa;
+  border:1px solid rgba(49,91,70,.14);
+}
+.feedbackItem p{
+  margin:10px 0 0;
+  color:#56665d;
+  line-height:1.55;
+  font-size:13px;
+  overflow-wrap:anywhere;
+}
+.sectionCopy{
+  color:#637168;
+  font-size:13px;
+  line-height:1.55;
+  margin:-4px 0 14px;
+}
