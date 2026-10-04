@@ -123,9 +123,8 @@ export async function GET(request) {
       .eq("is_active", true),
     adminClient
       .from("admin_access_grants")
-      .select("*", { count: "exact", head: true })
-      .is("revoked_at", null)
-      .or(`expires_at.is.null,expires_at.gt.${now}`),
+      .select("expires_at")
+      .is("revoked_at", null),
     adminClient
       .from("admin_approval_requests")
       .select("*", { count: "exact", head: true })
@@ -149,27 +148,40 @@ export async function GET(request) {
   ]);
 
   const sources = [
-    legacyAdmins,
-    activeRoles,
-    activeRules,
-    activeGrants,
-    pendingApprovals,
-    auditCount,
-    roleRows,
-    recentAudit,
+    ["admin-gate", legacyAdmins],
+    ["role-assignments", activeRoles],
+    ["permission-rules", activeRules],
+    ["access-grants", activeGrants],
+    ["approval-requests", pendingApprovals],
+    ["audit-count", auditCount],
+    ["role-assignment-list", roleRows],
+    ["recent-audit", recentAudit],
   ];
 
-  const errors = sources.filter((item) => item.error).map((item) => item.error.message);
+  const failedSources = sources
+    .filter(([, result]) => result.error)
+    .map(([label]) => label);
+
+  const activeAccessGrantCount = (activeGrants.data || []).filter(
+    (grant) => !grant.expires_at || new Date(grant.expires_at) > new Date(now)
+  ).length;
+
+  if (failedSources.length) {
+    console.error(
+      "Control Room Admin Security summary partial-source failure:",
+      failedSources.join(",")
+    );
+  }
 
   const response = NextResponse.json(
     {
-      status: errors.length ? "NEEDS_ATTENTION" : "HEALTHY",
+      status: failedSources.length ? "NEEDS_ATTENTION" : "HEALTHY",
       scope: "read-only-staging-admin-security-summary",
       counts: {
         legacyAdminAccounts: legacyAdmins.count ?? null,
         activeRoleAssignments: activeRoles.count ?? null,
         activePermissionRules: activeRules.count ?? null,
-        activeAccessGrants: activeGrants.count ?? null,
+        activeAccessGrants: activeGrants.error ? null : activeAccessGrantCount,
         pendingApprovals: pendingApprovals.count ?? null,
         auditEvents: auditCount.count ?? null,
       },
@@ -183,10 +195,13 @@ export async function GET(request) {
         founderApprovalForL3: true,
         productionChangesEnabled: false,
       },
-      errors: errors.length ? errors.map(() => "A protected Admin source could not be read.") : [],
+      failedSources,
+      errors: failedSources.map(
+        () => "A protected Admin source could not be read."
+      ),
     },
     {
-      status: errors.length ? 503 : 200,
+      status: 200,
       headers: { "Cache-Control": "no-store" },
     }
   );
