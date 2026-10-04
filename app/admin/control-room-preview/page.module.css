@@ -295,3 +295,33 @@
   background:#f1f7f1;
   border-color:#b9cdbd;
 }
+
+.roleGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+.roleItem{
+  padding:13px 14px;
+  border-radius:14px;
+  background:#f6f8f4;
+  border:1px solid #dfe7df;
+}
+.roleItem strong{
+  display:block;
+  color:#315f4c;
+  font-size:13px;
+  margin-bottom:4px;
+}
+.roleItem span{
+  display:block;
+  color:#7a867e;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  overflow-wrap:anywhere;
+}
+
+@media(max-width:800px){
+  .roleGrid{grid-template-columns:1fr;}
+}
