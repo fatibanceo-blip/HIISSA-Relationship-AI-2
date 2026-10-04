@@ -78,8 +78,8 @@ for (const required of [
 
 for (const required of [
   'id: "hiissa.share-referral-foundation"',
-  'status: "founder-approved-preview-deployed-testing-pending"',
-  'stage: "PREVIEW_DEPLOYED"',
+  'status: "founder-approved-stage-2-implemented-testing-pending"',
+  'stage: "IMPLEMENTED_ISOLATED"',
   "30-day eligibility window for later account attribution",
   "self-referral blocking",
   "do not add IP-address collection to the Stage 1 referral foundation",
@@ -103,4 +103,5 @@ console.log("- Referral and Magic-Link authentication remain separate");
 console.log("- Later account attribution claim is connected");
 console.log("- Founder aggregate referral visibility is present");
 console.log("- Founder-approved referral privacy wording is present");
+console.log("- Stage 1 attribution foundation remains preserved under the Stage 2 Staging handoff implementation");
 console.log("- Rewards, ambassador features and Production remain disabled");
