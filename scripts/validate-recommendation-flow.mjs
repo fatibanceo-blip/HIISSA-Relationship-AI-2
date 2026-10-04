@@ -67,8 +67,8 @@ for (const required of [
   'makeRecommendation: Object.freeze({',
   "Existing public.feedback source of truth",
   "Do not rewrite the feedback trigger",
-  'stage: "IMPLEMENTED_ISOLATED"',
-  'founderTest: "NOT_RUN"',
+  'stage: "PREVIEW_DEPLOYED"',
+  'founderTest: "PASS_USER_FACING_JOURNEY_2026_10_04"',
 ]) {
   requireText("Recommendation Registry contract", registry, required);
 }
