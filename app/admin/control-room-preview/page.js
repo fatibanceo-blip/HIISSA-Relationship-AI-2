@@ -12,6 +12,7 @@ import {
   ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD,
   ADMIN_STAFF_ONBOARDING_WORKFLOW,
   FOUNDER_ADMIN_AUTHORITY_AND_STAFF_ACTION_GATE,
+  FOUNDER_APPROVAL_INBOX_STANDARD,
   FOUNDER_CONTROL_ROOM_STRENGTHENING_PACKAGE,
   STAFF_ACCESS_SUSPENSION_AND_OFFBOARDING_STANDARD,
   STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD,
@@ -717,6 +718,8 @@ function AdminSecurityAuditModule({ module, onOverview }) {
         </div>
       </section>
 
+      <FounderApprovalInboxPrototype />
+
       <StaffAccessControlPrototype />
 
       <section className={styles.section}>
@@ -1020,6 +1023,166 @@ function AdminSecurityAuditModule({ module, onOverview }) {
         <div>STAFF MANAGEMENT<span>Read-only now; controlled dashboard actions come after certification</span></div>
       </section>
     </>
+  );
+}
+
+function FounderApprovalInboxPrototype() {
+  const items = [
+    {
+      id: "support-reply",
+      title: "Customer Support reply",
+      module: "Customer Support / Feedback & Recommendations",
+      preparedBy: "Sample Customer Support Worker",
+      request: "Send a prepared response to a customer support enquiry.",
+      reason: "The customer asked for help and a human response is ready.",
+      affected: "One customer and the related support case.",
+      risk: "The response leaves HIISSA and becomes an external communication.",
+      evidence: "Sample support case summary and draft response — fictional prototype data only.",
+      checked: "Role boundary present; no private unrelated conversation content included; no access expansion requested.",
+      approvedEffect: "Move the sample response to a controlled send stage.",
+      reversible: "The send itself cannot be unsent; correction/follow-up would require a new attributable action.",
+      rejectedEffect: "Nothing is sent. The sample proposal closes as rejected.",
+      recommendation: "Review wording and context before approving an external response.",
+    },
+    {
+      id: "access-change",
+      title: "Staff access change",
+      module: "Admin Security & Audit",
+      preparedBy: "Sample Technical Operations Worker",
+      request: "Reduce a sample worker from Product & Quality to Customer Support scope.",
+      reason: "The sample worker's duties have changed.",
+      affected: "One fictional Admin identity and its permitted Control Room scope.",
+      risk: "Incorrect scope could either over-grant or remove access needed for work.",
+      evidence: "Prototype role-change request and current-role summary only.",
+      checked: "Self-grant blocked; Founder role excluded; Production authority not included.",
+      approvedEffect: "Authorise a later controlled re-provisioning and denied-boundary verification stage.",
+      reversible: "A later approved role change can restore appropriate scope; audit history remains.",
+      rejectedEffect: "Existing sample role remains unchanged.",
+      recommendation: "Approve only after the intended duties and permission preview match.",
+    },
+  ];
+  const [selectedId, setSelectedId] = useState(items[0].id);
+  const [decision, setDecision] = useState("");
+  const [note, setNote] = useState("");
+  const selected = items.find((item) => item.id === selectedId) || items[0];
+
+  function decide(nextDecision) {
+    setDecision(nextDecision);
+  }
+
+  function reset() {
+    setDecision("");
+    setNote("");
+  }
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>FOUNDER COMMAND / APPROVAL INBOX — SIMULATION ONLY</div>
+          <h3>Needs Your Approval</h3>
+        </div>
+        <StatusPill label="NO REAL ACTIONS" compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        This is the shared Founder queue for consequential staff actions. These
+        two items are fictional test examples only. No customer message, access
+        change, payment, publication or Production action can occur from this prototype.
+      </p>
+
+      <div className={styles.approvalInboxLayout}>
+        <div className={styles.approvalQueue}>
+          {items.map((item) => (
+            <button
+              type="button"
+              key={item.id}
+              className={selectedId === item.id ? styles.approvalQueueActive : styles.approvalQueueItem}
+              onClick={() => {
+                setSelectedId(item.id);
+                reset();
+              }}
+            >
+              <span className={styles.approvalQueueStatus}>PENDING · FICTIONAL</span>
+              <strong>{item.title}</strong>
+              <small>{item.module}</small>
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>FOUNDER DECISION PACK</div>
+              <h4>{selected.title}</h4>
+            </div>
+            <StatusPill label={decision || "PENDING"} compact />
+          </div>
+
+          <div className={styles.prototypeReviewGrid}>
+            <InfoCard title="PREPARED BY" value={selected.preparedBy} detail="Fictional prototype identity" />
+            <InfoCard title="ORIGIN" value={selected.module} detail="Shared queue; one approval record in the live design" />
+          </div>
+
+          <div className={styles.decisionPack}>
+            <div><strong>What is being requested?</strong><p>{selected.request}</p></div>
+            <div><strong>Why?</strong><p>{selected.reason}</p></div>
+            <div><strong>Who or what may be affected?</strong><p>{selected.affected}</p></div>
+            <div><strong>Risk / warning</strong><p>{selected.risk}</p></div>
+            <div><strong>Authorised evidence</strong><p>{selected.evidence}</p></div>
+            <div><strong>What has HIISSA already checked?</strong><p>{selected.checked}</p></div>
+            <div><strong>What changes if I approve?</strong><p>{selected.approvedEffect}</p></div>
+            <div><strong>Can it be reversed?</strong><p>{selected.reversible}</p></div>
+            <div><strong>What happens if I reject?</strong><p>{selected.rejectedEffect}</p></div>
+            <div><strong>HIISSA recommendation</strong><p>{selected.recommendation}</p></div>
+          </div>
+
+          <label className={styles.prototypeField}>
+            <span>Founder decision note (simulation)</span>
+            <textarea
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              rows={3}
+              placeholder="Optional instruction or reason"
+            />
+          </label>
+
+          <div className={styles.prototypeDecisionActions}>
+            <button type="button" className={styles.prototypeApprove} onClick={() => decide("APPROVED PENDING EXECUTION")}>
+              Approve
+            </button>
+            <button type="button" className={styles.prototypeReturn} onClick={() => decide("RETURNED FOR CHANGES")}>
+              Return for Changes
+            </button>
+            <button type="button" className={styles.prototypeReject} onClick={() => decide("REJECTED")}>
+              Reject
+            </button>
+          </div>
+
+          {decision ? (
+            <div className={styles.prototypeSuccess}>
+              <strong>Simulated Founder decision: {decision}</strong>
+              <p>
+                No real consequential action occurred. In the live certified flow,
+                approval would authorise the next controlled execution stage only;
+                it would not be treated as verified completion.
+              </p>
+              {note ? <p><strong>Founder note:</strong> {note}</p> : null}
+              <button type="button" className={styles.prototypeSecondary} onClick={reset}>
+                Reset this simulation
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className={styles.featureMeta}>
+        <span>ONE SHARED APPROVAL RECORD</span>
+        <span>STAFF SELF-APPROVAL BLOCKED</span>
+        <span>APPROVAL ≠ VERIFIED COMPLETION</span>
+        <span>ATTRIBUTABLE AUDIT REQUIRED WHEN LIVE</span>
+      </div>
+    </section>
   );
 }
 
