@@ -155,9 +155,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
 
           <section className={styles.content}>
             {activeId === CONTROL_ROOM_MODULES.overview ? (
-              <Overview registeredFeatures={registeredFeatures} />
+              <Overview registeredFeatures={registeredFeatures} authenticated={authenticated} />
             ) : (
-              <ModuleFoundation module={activeModule} />
+              <ModuleFoundation module={activeModule} authenticated={authenticated} />
             )}
           </section>
         </div>
@@ -166,7 +166,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   );
 }
 
-function Overview({ registeredFeatures }) {
+function Overview({ registeredFeatures, authenticated }) {
   return (
     <>
       <div className={styles.pageHeading}>
@@ -174,7 +174,7 @@ function Overview({ registeredFeatures }) {
           <div className={styles.kicker}>OVERVIEW / CONTROL ROOM</div>
           <h2>Founder operational picture</h2>
           <p>
-            This isolated shell proves the navigation, Registry-driven feature visibility and information hierarchy before live operational feeds are connected.
+            {authenticated\n              ? "This authenticated Staging shell establishes the navigation, Registry-driven feature visibility and information hierarchy while live operational feeds are connected only through separate certification."\n              : "This isolated shell proves the navigation, Registry-driven feature visibility and information hierarchy before live operational feeds are connected."}
           </p>
         </div>
         <StatusPill label="FOUNDATION" />
@@ -252,20 +252,20 @@ function Overview({ registeredFeatures }) {
           "AUDIT HISTORY",
           "TECHNICAL DETAILS — EXPAND",
         ].map((label) => (
-          <div key={label}>{label}<span>Not connected in isolated Preview</span></div>
+          <div key={label}>{label}<span>{authenticated ? "Not yet live-wired in Staging" : "Not connected in isolated Preview"}</span></div>
         ))}
       </section>
     </>
   );
 }
 
-function ModuleFoundation({ module }) {
+function ModuleFoundation({ module, authenticated }) {
   const special =
     module.id === CONTROL_ROOM_MODULES.feedbackRecommendations
       ? "Existing private feedback and separately-permissioned public-review foundations will be preserved and connected here; private feedback is never automatically public."
       : module.id === CONTROL_ROOM_MODULES.adminSecurityAudit
         ? "Routine role assignment will ultimately be managed here through permissions and audit controls rather than by editing code for every staff member."
-        : "Live controls and data are intentionally not wired in this isolated shell yet.";
+        : authenticated\n          ? "Live controls and data are connected to this Staging shell only after their individual source, permission and certification checks pass."\n          : "Live controls and data are intentionally not wired in this isolated shell yet.";
 
   return (
     <>
@@ -285,7 +285,7 @@ function ModuleFoundation({ module }) {
 
       <div className={styles.grid}>
         <InfoCard title="MODULE ID" value={module.id} detail="Canonical current-module identity." />
-        <InfoCard title="LIVE DATA" value="Not wired" detail="No metric is fabricated for this Preview." />
+        <InfoCard title="LIVE DATA" value="Not wired" detail={authenticated ? "No metric is fabricated; certified Staging sources will be connected one at a time." : "No metric is fabricated for this Preview."} />
         <InfoCard title="PERMISSIONS" value="Enforcement foundation exists" detail="Deny-by-default and role-aware implementation will govern connected actions." />
         <InfoCard title="AUDIT" value="Required" detail="Material Admin actions must remain attributable and reviewable." />
       </div>
