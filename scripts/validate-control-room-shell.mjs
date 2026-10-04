@@ -4,6 +4,15 @@ import path from "node:path";
 const root = process.cwd();
 const pagePath = path.join(root, "app", "admin", "control-room-preview", "page.js");
 const registryPath = path.join(root, "lib", "experience-registry.js");
+const securitySummaryPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "security-summary",
+  "route.js"
+);
 
 const errors = [];
 
@@ -12,6 +21,7 @@ function requireText(label, source, text) {
 }
 
 if (!fs.existsSync(pagePath)) errors.push("Founder Control Room preview page is missing.");
+if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security summary endpoint is missing.");
 
 const authenticatedPagePath = path.join(root, "app", "admin", "control-room", "page.js");
 const authenticatedClientPath = path.join(root, "app", "admin", "control-room", "AuthenticatedControlRoom.js");
@@ -42,6 +52,9 @@ if (!fs.existsSync(registryPath)) errors.push("Experience Registry is missing.")
 
 const page = fs.existsSync(pagePath) ? fs.readFileSync(pagePath, "utf8") : "";
 const registry = fs.existsSync(registryPath) ? fs.readFileSync(registryPath, "utf8") : "";
+const securitySummary = fs.existsSync(securitySummaryPath)
+  ? fs.readFileSync(securitySummaryPath, "utf8")
+  : "";
 
 for (const label of [
   "Overview",
@@ -80,6 +93,26 @@ for (const required of [
   "Separate permission only",
 ]) requireText("Feedback & Recommendations module", page, required);
 
+for (const required of [
+  "MODULE 10 — LIVE STAGING READ-ONLY",
+  'fetch("/api/admin/control-room/security-summary"',
+  "CURRENT ADMIN GATE",
+  "PENDING FOUNDER APPROVALS",
+  "NO CHANGES ENABLED",
+  "SELF-GRANT",
+  "Blocked",
+]) requireText("Admin Security & Audit module", page, required);
+
+for (const required of [
+  'branch !== "feature/founder-control-room-staging"',
+  'environment === "production"',
+  '"is_hiissa_admin"',
+  "SUPABASE_SECRET_KEY",
+  'managementControlsEnabled: false',
+  'noSelfGrant: true',
+  'productionChangesEnabled: false',
+]) requireText("Protected Admin Security summary", securitySummary, required);
+
 for (const registryRule of [
   "export const CONTROL_ROOM_MODULE_REGISTRY",
   "futureExpansionAllowed: true",
@@ -99,3 +132,4 @@ console.log("- Current shell is explicitly isolated and non-live");
 console.log("- Registry-driven operational visibility is present");
 console.log("- Young HIISSA, HIISSA Rest and HIISSA Alongside are surfaced from Registry");
 console.log("- Future Control Room module expansion remains enabled without creating Module 11 today");
+console.log("- Admin Security & Audit read-only Staging summary is protected and certified");
