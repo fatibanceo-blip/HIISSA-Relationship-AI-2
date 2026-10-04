@@ -33,7 +33,7 @@ for (const required of [
 }
 
 for (const required of [
-  "Suggest & Invite",
+  "Suggest &amp; Invite",
   "Make a recommendation",
   "Invite someone to HIISSA",
   '"submit_recommendation"',
@@ -64,7 +64,7 @@ for (const required of [
 for (const required of [
   "export const MAKE_RECOMMENDATION_STANDARD",
   'id: "hiissa.make-recommendation"',
-  'makeRecommendation: MAKE_RECOMMENDATION_STANDARD',
+  'makeRecommendation: Object.freeze({',
   "Existing public.feedback source of truth",
   "Do not rewrite the feedback trigger",
   'stage: "IMPLEMENTED_ISOLATED"',
