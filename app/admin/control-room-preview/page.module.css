@@ -325,3 +325,142 @@
 @media(max-width:800px){
   .roleGrid{grid-template-columns:1fr;}
 }
+
+.prototypeSteps{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin:0 0 16px;
+}
+.prototypeStep,.prototypeStepActive{
+  padding:7px 9px;
+  border-radius:999px;
+  border:1px solid #d8e1da;
+  font-size:10px;
+  font-weight:850;
+}
+.prototypeStep{background:#f5f7f4;color:#738077;}
+.prototypeStepActive{background:#245b48;color:#fff;border-color:#245b48;}
+.prototypePanel{
+  padding:18px;
+  border-radius:18px;
+  border:1px solid rgba(49,91,70,.16);
+  background:#fffefa;
+}
+.prototypeHeading{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  margin-bottom:15px;
+}
+.prototypeHeading h4{
+  margin:5px 0 0;
+  color:#29493d;
+  font-size:21px;
+}
+.prototypeFormGrid,.prototypeReviewGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.prototypeField{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#52635a;
+  font-size:12px;
+  font-weight:800;
+}
+.prototypeFieldWide{grid-column:1/-1;}
+.prototypeField input,.prototypeField select,.prototypeField textarea{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #cfdacf;
+  border-radius:12px;
+  background:#fff;
+  color:#263a32;
+  padding:11px 12px;
+  font:inherit;
+  font-weight:500;
+}
+.prototypeField input[readonly]{
+  background:#f3f6f2;
+  color:#69766f;
+}
+.prototypeSafetyNote,.prototypeSuccess{
+  margin-top:14px;
+  padding:13px 14px;
+  border-radius:13px;
+  border:1px solid #d9e3da;
+  background:#f3f8f3;
+  color:#52645b;
+  font-size:12px;
+  line-height:1.5;
+}
+.prototypeSuccess strong{display:block;color:#315f4c;margin-bottom:4px;}
+.prototypeSuccess p{margin:0;}
+.prototypeActions,.prototypeDecisionActions{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:15px;
+}
+.prototypePrimary,.prototypeSecondary,.prototypeApprove,.prototypeReturn,.prototypeReject{
+  border-radius:12px;
+  padding:10px 12px;
+  font:inherit;
+  font-size:12px;
+  font-weight:850;
+  cursor:pointer;
+}
+.prototypePrimary,.prototypeApprove{
+  background:#245b48;
+  color:#fff;
+  border:1px solid #245b48;
+}
+.prototypeSecondary,.prototypeReturn{
+  background:#fff;
+  color:#315f4c;
+  border:1px solid #cbd9cd;
+}
+.prototypeReject{
+  background:#fff7f3;
+  color:#7b5044;
+  border:1px solid #dec8be;
+}
+.prototypePrimary:disabled{
+  cursor:not-allowed;
+  opacity:.45;
+}
+.prototypeChecklist{display:grid;gap:8px;}
+.prototypeCheck{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:11px 12px;
+  border-radius:12px;
+  background:#f5f8f3;
+  border:1px solid #dfe7df;
+  color:#516158;
+  font-size:12px;
+  line-height:1.45;
+}
+.prototypeCheck input{margin-top:2px;}
+.prototypeReviewBlock{
+  margin-top:12px;
+  padding:13px 14px;
+  border-radius:13px;
+  background:#f7f8f5;
+  border:1px solid #dfe5df;
+}
+.prototypeReviewBlock strong{color:#315f4c;}
+.prototypeReviewBlock p{margin:6px 0 0;color:#5e6d65;font-size:12px;line-height:1.5;}
+
+@media(max-width:800px){
+  .prototypeFormGrid,.prototypeReviewGrid{grid-template-columns:1fr;}
+  .prototypeFieldWide{grid-column:auto;}
+  .prototypeHeading{display:block;}
+  .prototypeHeading .pillCompact{margin-top:8px;}
+  .prototypeDecisionActions button,.prototypeActions button{width:100%;}
+}
