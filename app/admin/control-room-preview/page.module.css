@@ -275,3 +275,23 @@
   line-height:1.55;
   margin:-4px 0 14px;
 }
+
+.overviewBack{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin:0 0 16px;
+  padding:9px 12px;
+  border:1px solid #cad9cc;
+  border-radius:12px;
+  background:#fffefa;
+  color:#245b48;
+  font:inherit;
+  font-size:13px;
+  font-weight:850;
+  cursor:pointer;
+}
+.overviewBack:hover{
+  background:#f1f7f1;
+  border-color:#b9cdbd;
+}
