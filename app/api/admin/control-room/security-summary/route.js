@@ -1,4 +1,3 @@
-import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -42,38 +41,37 @@ export async function GET(request) {
     );
   }
 
-  let authResponse = NextResponse.next();
-  const sessionClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (items) => {
-          for (const { name, value, options } of items) {
-            authResponse.cookies.set(name, value, options);
-          }
-        },
-      },
-    }
-  );
+  const authorization = request.headers.get("authorization") || "";
+  const accessToken = authorization.startsWith("Bearer ")
+    ? authorization.slice("Bearer ".length).trim()
+    : "";
 
-  const { data: userData, error: userError } = await sessionClient.auth.getUser();
-  if (userError || !userData?.user) {
+  if (!accessToken) {
     return NextResponse.json(
       { status: "UNAUTHENTICATED" },
       { status: 401, headers: { "Cache-Control": "no-store" } }
     );
   }
 
-  const { data: isAdmin, error: adminError } = await sessionClient.rpc(
-    "is_hiissa_admin"
+  const verificationClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    }
   );
 
-  if (adminError || !isAdmin) {
+  const { data: userData, error: userError } =
+    await verificationClient.auth.getUser(accessToken);
+
+  if (userError || !userData?.user) {
     return NextResponse.json(
-      { status: "FORBIDDEN" },
-      { status: 403, headers: { "Cache-Control": "no-store" } }
+      { status: "UNAUTHENTICATED" },
+      { status: 401, headers: { "Cache-Control": "no-store" } }
     );
   }
 
@@ -88,6 +86,19 @@ export async function GET(request) {
       },
     }
   );
+
+  const { data: adminRecord, error: adminError } = await adminClient
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", userData.user.id)
+    .maybeSingle();
+
+  if (adminError || !adminRecord) {
+    return NextResponse.json(
+      { status: "FORBIDDEN" },
+      { status: 403, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 
   const now = new Date().toISOString();
 
@@ -179,10 +190,6 @@ export async function GET(request) {
       headers: { "Cache-Control": "no-store" },
     }
   );
-
-  for (const cookie of authResponse.cookies.getAll()) {
-    response.cookies.set(cookie);
-  }
 
   return response;
 }
