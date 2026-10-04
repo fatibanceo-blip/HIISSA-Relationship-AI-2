@@ -16,6 +16,9 @@ import {
   FOUNDER_CONTROL_ROOM_STRENGTHENING_PACKAGE,
   STAFF_ACCESS_SUSPENSION_AND_OFFBOARDING_STANDARD,
   STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD,
+  UNIVERSAL_FOUNDER_SUBMISSION_GATE,
+  STAFF_WORKSPACE_SHELL_STANDARD,
+  FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD,
 } from "../../../lib/experience-registry.js";
 
 const MODULES = [
@@ -287,6 +290,10 @@ function ModuleFoundation({ module, authenticated, onOverview }) {
     return <AdminSecurityAuditModule module={module} onOverview={onOverview} />;
   }
 
+  if (module.id === CONTROL_ROOM_MODULES.systemOperations && authenticated) {
+    return <SystemOperationsModule module={module} onOverview={onOverview} />;
+  }
+
   const special =
     module.id === CONTROL_ROOM_MODULES.feedbackRecommendations
       ? "Existing private feedback and separately-permissioned public-review foundations will be preserved and connected here; private feedback is never automatically public."
@@ -528,6 +535,196 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
         <div>PRIVATE / PUBLIC BOUNDARY<span>Separate permission required</span></div>
         <div>RECOMMENDATIONS<span>Existing suggestion field preserved; dedicated review workflow comes next</span></div>
         <div>AUDIT / PERMISSION HISTORY<span>Will connect only from verified source evidence</span></div>
+      </section>
+    </>
+  );
+}
+
+function SystemOperationsModule({ module, onOverview }) {
+  const providers = FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD.providerRegister;
+
+  const verificationSnapshot = [
+    {
+      label: "Vercel",
+      value: "BILLING DATA VERIFIED",
+      detail: "Authorised development tooling returned real HIISSA team billing/usage records for the current period. The Control Room live feed still needs its own secure connection.",
+    },
+    {
+      label: "Supabase",
+      value: "FREE PLAN · 2 ACTIVE PROJECTS",
+      detail: "HIISSA organisation plan was verified as Free; Production and Staging projects were ACTIVE_HEALTHY at the latest check.",
+    },
+    {
+      label: "Resend",
+      value: "DOMAIN + USAGE VERIFIED",
+      detail: "hiissa.com is verified for sending. Latest development check showed 42 / 3000 monthly emails and 3 / 100 daily emails.",
+    },
+    {
+      label: "OpenAI API",
+      value: "RUNTIME CONNECTED",
+      detail: "The current environment has the OpenAI API connection configured. Live credit/billing balance is not yet connected to this Control Room.",
+    },
+  ];
+
+  return (
+    <>
+      <button type="button" className={styles.overviewBack} onClick={onOverview}>
+        ← Control Room Overview
+      </button>
+
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>MODULE 9 — STAGING PROVIDER & SPEND REGISTER</div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill label="PARTIAL · VERIFIED SNAPSHOT" />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>Founder business visibility — no fabricated money data.</strong>
+        <p>
+          HIISSA will bring provider subscriptions, API capacity, recurring costs,
+          renewal dates and service health into one Founder view. A cost, balance,
+          plan or renewal date appears only when its source is verified.
+        </p>
+      </section>
+
+      <div className={styles.grid}>
+        <InfoCard
+          title="KNOWN CURRENT SERVICES"
+          value={String(providers.length)}
+          detail="Current approved provider/business-tool register. New providers can be added later without creating a new Control Room module."
+        />
+        <InfoCard
+          title="OPENAI CREDIT / CAPACITY"
+          value="LIVE FEED PENDING"
+          detail="The runtime connection exists; billing/credit telemetry still needs a separate secure source."
+        />
+        <InfoCard
+          title="RENEWAL TRACKING"
+          value="APPROVED"
+          detail="30 / 14 / 7 / 1-day warnings are part of the permanent provider-spend contract."
+        />
+        <InfoCard
+          title="MONEY MOVEMENT"
+          value="FOUNDER GATED"
+          detail="Monitoring can be automatic; top-ups, upgrades and other money-moving actions are not automatically authorised."
+        />
+      </div>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>VERIFIED DEVELOPMENT SNAPSHOT — 4 OCTOBER 2026</div>
+            <h3>What we can already confirm</h3>
+          </div>
+          <StatusPill label="SNAPSHOT · NOT LIVE FEED" compact />
+        </div>
+
+        <div className={styles.featureList}>
+          {verificationSnapshot.map((item) => (
+            <article className={styles.featureCard} key={item.label}>
+              <div className={styles.featureTop}>
+                <div>
+                  <strong>{item.label}</strong>
+                </div>
+                <StatusPill label={item.value} compact />
+              </div>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>PROVIDER, SUBSCRIPTION & SPEND REGISTER</div>
+            <h3>Everything HIISSA depends on — one Founder view</h3>
+          </div>
+        </div>
+
+        <div className={styles.featureList}>
+          {providers.map((provider) => (
+            <article className={styles.featureCard} key={provider.id}>
+              <div className={styles.featureTop}>
+                <div>
+                  <strong>{provider.label}</strong>
+                  <div className={styles.featureId}>{provider.category}</div>
+                </div>
+                <StatusPill
+                  label={provider.currentFinancialSource.includes("NOT YET") || provider.currentFinancialSource.includes("REQUIRES")
+                    ? "SOURCE TO CONNECT"
+                    : "SOURCE PARTIAL"}
+                  compact
+                />
+              </div>
+              <p><strong>Current evidence:</strong> {provider.evidence}</p>
+              <p><strong>Billing / usage source:</strong> {provider.currentFinancialSource}</p>
+              <p><strong>Founder view will include:</strong> {provider.requiredView}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>API CREDIT & CAPACITY PROTECTION</div>
+            <h3>Warn before a provider stops HIISSA</h3>
+          </div>
+          <StatusPill label="FOUNDER APPROVED" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          When a provider exposes reliable usage, quota or credit data, HIISSA should
+          monitor it and warn at 25%, 10%, 5% remaining and at exhaustion. If a
+          provider does not expose a reliable balance, HIISSA must use verified
+          usage/limit/failure evidence instead of inventing a number.
+        </p>
+
+        <div className={styles.contractGrid}>
+          {FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD.alertPolicy.billingSignals.map((item) => (
+            <div className={styles.contractItem} key={item}>✓ {item}</div>
+          ))}
+        </div>
+
+        <div className={styles.prototypeReviewBlock}>
+          <strong>Founder alert route</strong>
+          <p>{FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD.alertPolicy.founderChannels}</p>
+        </div>
+
+        <div className={styles.prototypeReviewBlock}>
+          <strong>Important money-safety rule</strong>
+          <p>{FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD.moneySafety}</p>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>FUTURE FOUNDER / FINANCE CONTROL</div>
+            <h3>Add new subscriptions without redesigning HIISSA</h3>
+          </div>
+          <StatusPill label="DESIGN APPROVED · NOT ACTIVE" compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          As HIISSA subscribes to another provider, a controlled Founder/Finance
+          interface will add it to this register with its purpose, plan, cost,
+          billing cycle, renewal date, currency, usage source and alert thresholds.
+          New records stay unverified until supporting evidence is connected.
+        </p>
+      </section>
+
+      <section className={styles.detailBlueprint}>
+        <div className={styles.kicker}>MODULE 9 PROVIDER / SPEND OPERATIONAL CONTRACT</div>
+        <div>PRIMARY HOME<span>System & Operations</span></div>
+        <div>FAILED PAYMENT / CREDIT EXHAUSTION<span>Failures & Reliability</span></div>
+        <div>AI COST / PROVIDER QUALITY<span>HIISSA AI & Product Intelligence</span></div>
+        <div>CUSTOMER PLAN ENTITLEMENTS<span>Subscriptions & Access</span></div>
+        <div>URGENT FOUNDER ACTION<span>Overview / Needs Your Attention</span></div>
+        <div>SECRETS / PAYMENT CARDS<span>Never shown raw</span></div>
       </section>
     </>
   );
