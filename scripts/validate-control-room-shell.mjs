@@ -115,6 +115,17 @@ for (const required of [
   "Review, suspension & offboarding",
   "DESIGN PREVIEW ONLY",
   "NO PARTIAL SUCCESS",
+  "INTERACTIVE STAGING PROTOTYPE — NO REAL ACCESS CHANGES",
+  "Try the complete staff-onboarding journey",
+  "SIMULATION ONLY",
+  "Preview applicant experience",
+  "Continue to policies",
+  "Send to Founder Review",
+  "Approve — simulate controlled provisioning",
+  "Return for correction",
+  "Reject — no access",
+  "NO REAL CHANGE OCCURRED",
+  "ADMIN GATE UNCHANGED",
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
@@ -169,3 +180,4 @@ console.log("- Future Control Room module expansion remains enabled without crea
 console.log("- Admin Security & Audit read-only Staging summary is protected and certified");
 console.log("- Founder-approved staff onboarding, operational intelligence and alert-gateway contracts are registered");
 console.log("- Detailed non-live Admin staff onboarding workflow preview is present");
+console.log("- Interactive no-access staff onboarding prototype is present");
