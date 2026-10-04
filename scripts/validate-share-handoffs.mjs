@@ -61,8 +61,10 @@ for (const required of [
   'HIISSA does not ask for or store a recipient WhatsApp number to perform the handoff',
   'HIISSA does not press Send or silently transmit the invitation',
   'Production activation requires separate Founder approval after Stage 2 testing and regression',
-  'status: "founder-approved-stage-2-preview-deployed-testing-pending"',
-  'stage: "PREVIEW_DEPLOYED"',
+  'status: "founder-tested-stage-2-share-handoffs-pass"',
+  'stage: "FOUNDER_TESTED"',
+  'WhatsApp, Messages/Text, Email handoff and receipt, Copy Link, QR Code, and Native Phone Share all passed',
+  'PASS_STAGE_2_ALL_SIX_SHARE_HANDOFFS_2026_10_04',
 ]) {
   requireText("Stage 2 Registry authority", registry, required);
 }
