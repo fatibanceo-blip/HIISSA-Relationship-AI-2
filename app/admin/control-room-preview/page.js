@@ -179,9 +179,6 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
 function Overview({ registeredFeatures, authenticated }) {
   return (
     <>
-      <button type="button" className={styles.overviewBack} onClick={onOverview}>
-        ← Control Room Overview
-      </button>
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>OVERVIEW / CONTROL ROOM</div>
@@ -406,6 +403,9 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
 
   return (
     <>
+      <button type="button" className={styles.overviewBack} onClick={onOverview}>
+        ← Control Room Overview
+      </button>
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>MODULE 4 — LIVE STAGING READ-ONLY</div>
