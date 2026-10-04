@@ -143,7 +143,7 @@ for (const required of [
   "Start onboarding",
   "Simulate Save & Resume",
   "INVITED PERSON — REVIEW APPLICATION",
-  "SUBMIT_FOR_FOUNDER_REVIEW",
+  "Submit for Founder Review",
   "APPLICANT STATUS — SIMULATION",
   "AWAITING FOUNDER REVIEW",
   "Switch to Founder Review",
@@ -193,7 +193,7 @@ for (const registryRule of [
   "block Admin Gate eligibility",
   "export const STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD",
   "saveAndResumeRequired: true",
-  "Submit for Founder Review",
+  "SUBMIT_FOR_FOUNDER_REVIEW",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
