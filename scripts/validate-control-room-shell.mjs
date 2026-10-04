@@ -12,6 +12,32 @@ function requireText(label, source, text) {
 }
 
 if (!fs.existsSync(pagePath)) errors.push("Founder Control Room preview page is missing.");
+
+const authenticatedPagePath = path.join(root, "app", "admin", "control-room", "page.js");
+const authenticatedClientPath = path.join(root, "app", "admin", "control-room", "AuthenticatedControlRoom.js");
+
+if (!fs.existsSync(authenticatedPagePath)) errors.push("Authenticated Control Room page is missing.");
+if (!fs.existsSync(authenticatedClientPath)) errors.push("Authenticated Control Room client gate is missing.");
+
+const authenticatedPage = fs.existsSync(authenticatedPagePath)
+  ? fs.readFileSync(authenticatedPagePath, "utf8")
+  : "";
+const authenticatedClient = fs.existsSync(authenticatedClientPath)
+  ? fs.readFileSync(authenticatedClientPath, "utf8")
+  : "";
+
+for (const required of [
+  'process.env.VERCEL_ENV === "production"',
+  "notFound()",
+]) requireText("Authenticated Control Room route", authenticatedPage, required);
+
+for (const required of [
+  'supabase.auth.getSession()',
+  '"is_hiissa_admin"',
+  'environmentLabel="STAGING — TEST"',
+  'supabase.auth.signOut()',
+]) requireText("Authenticated Control Room gate", authenticatedClient, required);
+
 if (!fs.existsSync(registryPath)) errors.push("Experience Registry is missing.");
 
 const page = fs.existsSync(pagePath) ? fs.readFileSync(pagePath, "utf8") : "";
