@@ -731,6 +731,8 @@ function AdminSecurityAuditModule({ module, onOverview }) {
         </div>
       </section>
 
+      <StaffOnboardingPrototype roles={summary?.supportedRoles || []} />
+
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
@@ -925,6 +927,444 @@ function AdminSecurityAuditModule({ module, onOverview }) {
         <div>STAFF MANAGEMENT<span>Read-only now; controlled dashboard actions come after certification</span></div>
       </section>
     </>
+  );
+}
+
+function StaffOnboardingPrototype({ roles }) {
+  const policyItems = ADMIN_STAFF_ONBOARDING_WORKFLOW.policyAcceptance.commonPolicySet;
+  const [step, setStep] = useState("invite");
+  const [decisionNote, setDecisionNote] = useState("");
+  const [form, setForm] = useState({
+    workEmail: "",
+    proposedRole: "customer_support",
+    department: "Customer Support",
+    environment: "Staging",
+    reason: "",
+    legalName: "",
+    preferredName: "",
+    workPhone: "",
+    jobTitle: "",
+    jurisdiction: "",
+    conflictDeclaration: "No conflict declared",
+    supportNeeds: "",
+  });
+  const [acceptedPolicies, setAcceptedPolicies] = useState({});
+
+  const allPoliciesAccepted =
+    policyItems.length > 0 &&
+    policyItems.every((item) => acceptedPolicies[item] === true);
+
+  const inviteReady =
+    form.workEmail.trim() &&
+    form.proposedRole &&
+    form.department.trim() &&
+    form.environment &&
+    form.reason.trim();
+
+  const applicantReady =
+    form.legalName.trim() &&
+    form.workEmail.trim() &&
+    form.jobTitle.trim() &&
+    form.department.trim() &&
+    form.jurisdiction.trim();
+
+  const roleLabel =
+    roles.find((role) => role.id === form.proposedRole)?.label ||
+    form.proposedRole.replaceAll("_", " ");
+
+  function update(field, value) {
+    setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function resetPrototype() {
+    setStep("invite");
+    setDecisionNote("");
+    setAcceptedPolicies({});
+    setForm({
+      workEmail: "",
+      proposedRole: "customer_support",
+      department: "Customer Support",
+      environment: "Staging",
+      reason: "",
+      legalName: "",
+      preferredName: "",
+      workPhone: "",
+      jobTitle: "",
+      jurisdiction: "",
+      conflictDeclaration: "No conflict declared",
+      supportNeeds: "",
+    });
+  }
+
+  const stepLabels = [
+    ["invite", "1 Invite"],
+    ["applicant", "2 Applicant"],
+    ["policies", "3 Policies"],
+    ["review", "4 Founder Review"],
+    ["activation", "5 Simulated Result"],
+  ];
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>INTERACTIVE STAGING PROTOTYPE — NO REAL ACCESS CHANGES</div>
+          <h3>Try the complete staff-onboarding journey</h3>
+        </div>
+        <StatusPill label="SIMULATION ONLY" compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        Use this prototype to test the journey as a Founder. It does not send a
+        real invitation, create an Admin account, change the Admin Gate, assign a
+        real role or write a real approval.
+      </p>
+
+      <div className={styles.prototypeSteps} aria-label="Onboarding prototype steps">
+        {stepLabels.map(([id, label]) => (
+          <span
+            className={step === id ? styles.prototypeStepActive : styles.prototypeStep}
+            key={id}
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+
+      {step === "invite" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>FOUNDER SIDE</div>
+              <h4>Invite Staff Member</h4>
+            </div>
+            <StatusPill label="DOES NOT SEND" compact />
+          </div>
+
+          <div className={styles.prototypeFormGrid}>
+            <label className={styles.prototypeField}>
+              <span>Work email</span>
+              <input
+                type="email"
+                value={form.workEmail}
+                onChange={(event) => update("workEmail", event.target.value)}
+                placeholder="name@company.com"
+              />
+            </label>
+
+            <label className={styles.prototypeField}>
+              <span>Proposed role</span>
+              <select
+                value={form.proposedRole}
+                onChange={(event) => update("proposedRole", event.target.value)}
+              >
+                {(roles.length ? roles : [
+                  { id: "customer_support", label: "Customer Support" },
+                  { id: "technical_operations", label: "Technical Operations" },
+                ]).map((role) => (
+                  <option value={role.id} key={role.id}>{role.label}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className={styles.prototypeField}>
+              <span>Department or function</span>
+              <input
+                value={form.department}
+                onChange={(event) => update("department", event.target.value)}
+              />
+            </label>
+
+            <label className={styles.prototypeField}>
+              <span>Environment</span>
+              <select
+                value={form.environment}
+                onChange={(event) => update("environment", event.target.value)}
+              >
+                <option>Staging</option>
+                <option disabled>Production — separate authority required</option>
+              </select>
+            </label>
+
+            <label className={styles.prototypeField + " " + styles.prototypeFieldWide}>
+              <span>Reason for access</span>
+              <textarea
+                value={form.reason}
+                onChange={(event) => update("reason", event.target.value)}
+                placeholder="Why does this person need this role?"
+                rows={3}
+              />
+            </label>
+          </div>
+
+          <div className={styles.prototypeSafetyNote}>
+            This would create an invitation request only. It would not place the
+            person through the Admin Gate.
+          </div>
+
+          <div className={styles.prototypeActions}>
+            <button
+              type="button"
+              className={styles.prototypePrimary}
+              disabled={!inviteReady}
+              onClick={() => setStep("applicant")}
+            >
+              Preview applicant experience →
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "applicant" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>INVITED PERSON SIDE</div>
+              <h4>Complete HIISSA staff onboarding</h4>
+            </div>
+            <StatusPill label="MOCK FORM" compact />
+          </div>
+
+          <div className={styles.prototypeFormGrid}>
+            <label className={styles.prototypeField}>
+              <span>Legal or contractual name</span>
+              <input value={form.legalName} onChange={(e) => update("legalName", e.target.value)} />
+            </label>
+            <label className={styles.prototypeField}>
+              <span>Preferred display name</span>
+              <input value={form.preferredName} onChange={(e) => update("preferredName", e.target.value)} />
+            </label>
+            <label className={styles.prototypeField}>
+              <span>Verified work email</span>
+              <input value={form.workEmail} readOnly />
+            </label>
+            <label className={styles.prototypeField}>
+              <span>Work contact number</span>
+              <input value={form.workPhone} onChange={(e) => update("workPhone", e.target.value)} />
+            </label>
+            <label className={styles.prototypeField}>
+              <span>Job title / contractor function</span>
+              <input value={form.jobTitle} onChange={(e) => update("jobTitle", e.target.value)} />
+            </label>
+            <label className={styles.prototypeField}>
+              <span>Department / team</span>
+              <input value={form.department} onChange={(e) => update("department", e.target.value)} />
+            </label>
+            <label className={styles.prototypeField}>
+              <span>Country / working jurisdiction</span>
+              <input value={form.jurisdiction} onChange={(e) => update("jurisdiction", e.target.value)} />
+            </label>
+            <label className={styles.prototypeField}>
+              <span>Proposed role</span>
+              <input value={roleLabel} readOnly />
+            </label>
+            <label className={styles.prototypeField + " " + styles.prototypeFieldWide}>
+              <span>Conflict or access concern declaration</span>
+              <textarea
+                value={form.conflictDeclaration}
+                onChange={(e) => update("conflictDeclaration", e.target.value)}
+                rows={2}
+              />
+            </label>
+            <label className={styles.prototypeField + " " + styles.prototypeFieldWide}>
+              <span>Accessibility or onboarding support needs (optional)</span>
+              <textarea
+                value={form.supportNeeds}
+                onChange={(e) => update("supportNeeds", e.target.value)}
+                rows={2}
+              />
+            </label>
+          </div>
+
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("invite")}>
+              ← Back
+            </button>
+            <button
+              type="button"
+              className={styles.prototypePrimary}
+              disabled={!applicantReady}
+              onClick={() => setStep("policies")}
+            >
+              Continue to policies →
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "policies" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>POLICY ACCEPTANCE</div>
+              <h4>Review and accept each required policy area</h4>
+            </div>
+            <StatusPill label="VERSION EVIDENCE REQUIRED LIVE" compact />
+          </div>
+
+          <p className={styles.sectionCopy}>
+            In the real workflow, each item will open the current policy and record
+            exactly which version was accepted. This prototype records nothing.
+          </p>
+
+          <div className={styles.prototypeChecklist}>
+            {policyItems.map((item) => (
+              <label className={styles.prototypeCheck} key={item}>
+                <input
+                  type="checkbox"
+                  checked={acceptedPolicies[item] === true}
+                  onChange={(event) =>
+                    setAcceptedPolicies((current) => ({
+                      ...current,
+                      [item]: event.target.checked,
+                    }))
+                  }
+                />
+                <span>{item}</span>
+              </label>
+            ))}
+          </div>
+
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("applicant")}>
+              ← Back
+            </button>
+            <button
+              type="button"
+              className={styles.prototypePrimary}
+              disabled={!allPoliciesAccepted}
+              onClick={() => setStep("review")}
+            >
+              Send to Founder Review →
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "review" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>FOUNDER REVIEW — L3</div>
+              <h4>Review before any access could be activated</h4>
+            </div>
+            <StatusPill label="STEP-UP REQUIRED WHEN LIVE" compact />
+          </div>
+
+          <div className={styles.prototypeReviewGrid}>
+            <InfoCard title="APPLICANT" value={form.preferredName || form.legalName} detail={form.workEmail} />
+            <InfoCard title="ROLE" value={roleLabel} detail={form.department} />
+            <InfoCard title="ENVIRONMENT" value={form.environment} detail="Production remains separate authority." />
+            <InfoCard title="POLICIES" value={policyItems.length + "/" + policyItems.length + " accepted"} detail="Prototype only — no evidence written." />
+          </div>
+
+          <div className={styles.prototypeReviewBlock}>
+            <strong>Reason for access</strong>
+            <p>{form.reason}</p>
+          </div>
+
+          <div className={styles.prototypeReviewBlock}>
+            <strong>Permission boundary preview</strong>
+            <p>
+              Proposed role receives only its authorised modules/actions. Founder
+              authority is not inherited. Self-grant stays blocked. Specialist and
+              NEVER ACCESS boundaries remain enforced.
+            </p>
+          </div>
+
+          <label className={styles.prototypeField}>
+            <span>Founder decision note (prototype)</span>
+            <textarea
+              value={decisionNote}
+              onChange={(e) => setDecisionNote(e.target.value)}
+              rows={3}
+              placeholder="Optional reason or instruction"
+            />
+          </label>
+
+          <div className={styles.prototypeDecisionActions}>
+            <button
+              type="button"
+              className={styles.prototypeApprove}
+              onClick={() => setStep("activation")}
+            >
+              Approve — simulate controlled provisioning
+            </button>
+            <button
+              type="button"
+              className={styles.prototypeReturn}
+              onClick={() => setStep("applicant")}
+            >
+              Return for correction
+            </button>
+            <button
+              type="button"
+              className={styles.prototypeReject}
+              onClick={() => setStep("rejected")}
+            >
+              Reject — no access
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "activation" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>SIMULATED ACTIVATION RESULT</div>
+              <h4>What HIISSA must verify before saying “Access Active”</h4>
+            </div>
+            <StatusPill label="NO REAL CHANGE OCCURRED" compact />
+          </div>
+
+          <div className={styles.contractGrid}>
+            {ADMIN_STAFF_ONBOARDING_WORKFLOW.activation.order.map((item) => (
+              <div className={styles.contractItem} key={item}>✓ SIMULATED — {item}</div>
+            ))}
+          </div>
+
+          <div className={styles.prototypeSuccess}>
+            <strong>Prototype journey complete.</strong>
+            <p>
+              In a live certified workflow, HIISSA would only mark the person active
+              after both allowed access and denied boundaries are verified. This
+              prototype has changed nothing in the Admin Gate or role tables.
+            </p>
+          </div>
+
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypePrimary} onClick={resetPrototype}>
+              Start prototype again
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "rejected" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>SIMULATED DECISION</div>
+              <h4>Application rejected — no access granted</h4>
+            </div>
+            <StatusPill label="ADMIN GATE UNCHANGED" compact />
+          </div>
+          <div className={styles.prototypeSuccess}>
+            <strong>Safe failure state.</strong>
+            <p>
+              A live rejection would record the decision and close the request
+              without provisioning Admin eligibility, role assignment or environment access.
+            </p>
+          </div>
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypePrimary} onClick={resetPrototype}>
+              Start prototype again
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </section>
   );
 }
 
