@@ -114,6 +114,8 @@ for (const required of [
   'managementControlsEnabled: false',
   'noSelfGrant: true',
   'productionChangesEnabled: false',
+  "failedSources",
+  "activeAccessGrantCount",
 ]) requireText("Protected Admin Security summary", securitySummary, required);
 
 for (const registryRule of [
