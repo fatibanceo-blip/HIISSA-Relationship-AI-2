@@ -254,6 +254,46 @@ export default function ShareHiissaPreviewPage() {
     setActionError("");
   }
 
+  async function openEmail() {
+    setActionError("");
+
+    let fallbackStarted = false;
+
+    const startFallback = async () => {
+      if (fallbackStarted || document.visibilityState !== "visible") return;
+      fallbackStarted = true;
+
+      if (!navigator.share) {
+        setActionError(
+          "Your phone did not open an email app automatically. Please use Phone Share and choose your email app."
+        );
+        return;
+      }
+
+      try {
+        await navigator.share({
+          title: emailSubject,
+          text: sampleMessage,
+        });
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          setActionError(
+            "Your phone could not open the email handoff. Nothing was sent. Please use Copy Link or Phone Share."
+          );
+        }
+      }
+    };
+
+    const emailLink = document.createElement("a");
+    emailLink.href = emailHref;
+    emailLink.style.display = "none";
+    document.body.appendChild(emailLink);
+    emailLink.click();
+    document.body.removeChild(emailLink);
+
+    window.setTimeout(startFallback, 1400);
+  }
+
   function openWhatsApp() {
     setActionError("");
     window.location.assign(
@@ -563,13 +603,11 @@ export default function ShareHiissaPreviewPage() {
                   <div style={{ marginTop: 14, padding: 14, borderRadius: 15, background: "#f7f1df", color: "#6e5d31" }}>
                     <strong>Important:</strong> this referral email is not a Magic Link. If the recipient later chooses an account, HIISSA uses the separate secure Magic-Link sign-in flow.
                   </div>
-                  <a
-                    href={emailHref}
-                    onClick={() => setActionError("")}
+                  <button
+                    type="button"
+                    onClick={openEmail}
                     style={{
-                      display: "block",
                       width: "100%",
-                      boxSizing: "border-box",
                       marginTop: 14,
                       border: 0,
                       borderRadius: 15,
@@ -579,14 +617,12 @@ export default function ShareHiissaPreviewPage() {
                       fontWeight: 900,
                       fontSize: 16,
                       cursor: "pointer",
-                      textAlign: "center",
-                      textDecoration: "none",
                     }}
                   >
                     Open email with invitation
-                  </a>
+                  </button>
                   <p style={{ margin: "12px 0 0", color: "#6c7a72", fontSize: 13 }}>
-                    Your email app opens with the subject and invitation prepared. You add the recipient and press Send.
+                    HIISSA first tries your email app directly. If your phone blocks that handoff, HIISSA opens the phone share sheet so you can choose Gmail, Outlook or another email app. You still add the recipient and press Send.
                   </p>
                 </>
               ) : null}
