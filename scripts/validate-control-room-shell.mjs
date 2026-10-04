@@ -71,6 +71,14 @@ for (const feature of [
   "hiissaAlongside",
 ]) requireText("Registry-driven feature visibility", page, feature);
 
+for (const required of [
+  "MODULE 4 — LIVE STAGING READ-ONLY",
+  'adminDataClient.rpc("get_hiissa_feedback_stats")',
+  'adminDataClient.rpc("get_hiissa_written_feedback")',
+  'adminDataClient.rpc("get_hiissa_admin_public_reviews")',
+  "Separate permission only",
+]) requireText("Feedback & Recommendations module", page, required);
+
 for (const registryRule of [
   "export const CONTROL_ROOM_MODULE_REGISTRY",
   "futureExpansionAllowed: true",
