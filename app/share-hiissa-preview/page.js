@@ -553,10 +553,10 @@ export default function ShareHiissaPreviewPage() {
               }}
             >
               <strong style={{ display: "block", marginBottom: 7, color: "#6c5727" }}>
-                Referral growth layer — approved, not active yet
+                Your invitation stays private
               </strong>
               <span style={{ color: "#716d62", lineHeight: 1.55 }}>
-                A future signed-in user may receive a privacy-safe personal invitation identity so HIISSA can measure genuine referral visits and joins. Rewards and ambassador features remain later controlled stages.
+                If you’re signed in, HIISSA can recognise when someone visits through your invitation and whether they later join HIISSA. Your conversations, reflections and private activity are never shared. Referral rewards are not active yet.
               </span>
             </div>
           </div>
