@@ -536,10 +536,25 @@ function AdminSecurityAuditModule({ module, onOverview }) {
 
     async function load() {
       try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token) {
+          if (active) {
+            setError("Your Admin session could not be confirmed for this protected module.");
+            setLoading(false);
+          }
+          return;
+        }
+
         const response = await fetch("/api/admin/control-room/security-summary", {
           method: "GET",
           cache: "no-store",
           credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         });
 
         const data = await response.json().catch(() => null);
