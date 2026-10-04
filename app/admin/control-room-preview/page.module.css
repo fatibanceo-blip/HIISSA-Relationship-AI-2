@@ -464,3 +464,77 @@
   .prototypeHeading .pillCompact{margin-top:8px;}
   .prototypeDecisionActions button,.prototypeActions button{width:100%;}
 }
+
+.approvalInboxLayout{
+  display:grid;
+  grid-template-columns:minmax(190px,.7fr) minmax(0,1.8fr);
+  gap:14px;
+}
+.approvalQueue{
+  display:grid;
+  align-content:start;
+  gap:9px;
+}
+.approvalQueueItem,.approvalQueueActive{
+  width:100%;
+  text-align:left;
+  border-radius:14px;
+  border:1px solid #dce5dd;
+  padding:13px;
+  font:inherit;
+  cursor:pointer;
+}
+.approvalQueueItem{
+  background:#f7f9f6;
+  color:#52635a;
+}
+.approvalQueueActive{
+  background:#eaf3ec;
+  border-color:#acc9b5;
+  color:#244f3f;
+}
+.approvalQueueItem strong,.approvalQueueActive strong{
+  display:block;
+  margin:6px 0 5px;
+  font-size:13px;
+}
+.approvalQueueItem small,.approvalQueueActive small{
+  display:block;
+  color:#76827b;
+  font-size:10px;
+  line-height:1.4;
+}
+.approvalQueueStatus{
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+.decisionPack{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin:14px 0;
+}
+.decisionPack>div{
+  padding:12px 13px;
+  border:1px solid #dfe6df;
+  border-radius:13px;
+  background:#f7f9f6;
+}
+.decisionPack strong{
+  color:#315f4c;
+  font-size:11px;
+}
+.decisionPack p{
+  margin:5px 0 0;
+  color:#647169;
+  font-size:12px;
+  line-height:1.45;
+}
+.prototypeSuccess .prototypeSecondary{
+  margin-top:10px;
+}
+@media(max-width:800px){
+  .approvalInboxLayout{grid-template-columns:1fr;}
+  .decisionPack{grid-template-columns:1fr;}
+}
