@@ -120,7 +120,7 @@ for (const required of [
   "SIMULATION ONLY",
   "Review invitation",
   "Continue to policies",
-  "Send to Founder Review",
+  "Review application",
   "Approve — simulate controlled provisioning",
   "Return for correction",
   "Reject — no access",
@@ -133,6 +133,20 @@ for (const required of [
   "SIMULATED DELIVERED",
   "Simulate resend",
   "Simulate revoke",
+  "FOUNDER AUTHORITY & STAFF ACTION GATE",
+  "FOUNDER APPROVED · MANDATORY",
+  "FOUNDER STAFF ACCESS CONTROL — SIMULATION ONLY",
+  "Simulate Suspend Access",
+  "Simulate Change Role",
+  "Simulate Remove Access",
+  "INVITED PERSON — SECURE ONBOARDING ENTRY",
+  "Start onboarding",
+  "Simulate Save & Resume",
+  "INVITED PERSON — REVIEW APPLICATION",
+  "Submit for Founder Review",
+  "APPLICANT STATUS — SIMULATION",
+  "AWAITING FOUNDER REVIEW",
+  "Switch to Founder Review",
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
@@ -173,6 +187,13 @@ for (const registryRule of [
   "Partial provisioning must not be treated as success.",
   "previewRequiredBeforeSend: true",
   "resendAndRevokeControlsRequired: true",
+  "export const FOUNDER_ADMIN_AUTHORITY_AND_STAFF_ACTION_GATE",
+  "CONSEQUENTIAL",
+  "export const STAFF_ACCESS_SUSPENSION_AND_OFFBOARDING_STANDARD",
+  "block Admin Gate eligibility",
+  "export const STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD",
+  "saveAndResumeRequired: true",
+  "Submit for Founder Review",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
@@ -192,3 +213,5 @@ console.log("- Founder-approved staff onboarding, operational intelligence and a
 console.log("- Detailed non-live Admin staff onboarding workflow preview is present");
 console.log("- Interactive no-access staff onboarding prototype is present");
 console.log("- Invitation preview, simulated send/status, resend and revoke journey is present");
+console.log("- Founder authority, staff suspension and secure invitee onboarding contracts are registered");
+console.log("- Applicant save/resume, review, submission and Founder-review handoff prototype is present");
