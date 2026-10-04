@@ -234,6 +234,10 @@ for (const requiredExploreExperience of [
   }
 }
 
+if (!source.includes("export const FEATURE_OPERATIONAL_VISIBILITY_STANDARD")) {
+  errors.push("FEATURE_OPERATIONAL_VISIBILITY_STANDARD definition is missing");
+}
+
 if (!source.includes("export const FEATURE_CERTIFICATION_GATE")) {
   fail("FEATURE_CERTIFICATION_GATE definition is missing");
 }
