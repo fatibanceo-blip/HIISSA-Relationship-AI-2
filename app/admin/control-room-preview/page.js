@@ -110,7 +110,14 @@ export default function FounderControlRoomPreview() {
 
           <div className={styles.headerActions}>
             <Link href="/" className={styles.backLink}>← Back to HIISSA</Link>
-            <Link href="/admin/login" className={styles.signOutPreview}>Sign out</Link>
+            <button
+              type="button"
+              className={styles.signOutPreview}
+              disabled
+              title="Sign out will be connected only after the authenticated Control Room shell is approved."
+            >
+              Sign out
+            </button>
           </div>
         </header>
 
