@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+import { useEffect, useMemo, useState } from "react";
 
 const green = "#1f5a46";
 const deepGreen = "#173f32";
@@ -19,11 +20,15 @@ const channels = [
   { id: "native", icon: "•••", label: "Phone Share", short: "Phone Share" },
 ];
 
-const sampleLink = "https://hiissa.com/invite/ABC123";
-const sampleMessage =
-  "Hey! 👋\n\nI wanted to share something with you that I think you might really like.\n\nIt’s called HIISSA — a safe and supportive space for real conversations, personal growth and healthier relationships.\n\nYou can explore it here:\n" +
-  sampleLink +
-  "\n\nHope you find it as helpful as I do! 💚";
+const publicHiissaLink = "https://hiissa.com";
+
+function buildInvitationMessage(invitationLink) {
+  return (
+    "Hey! 👋\n\nI wanted to share something with you that I think you might really like.\n\nIt’s called HIISSA — a safe and supportive space for real conversations, personal growth and healthier relationships.\n\nYou can explore it here:\n" +
+    invitationLink +
+    "\n\nHope you find it as helpful as I do! 💚"
+  );
+}
 
 function Card({ children, style = {} }) {
   return (
@@ -131,6 +136,65 @@ function QrPreview() {
 export default function ShareHiissaPreviewPage() {
   const [selected, setSelected] = useState("whatsapp");
   const [copied, setCopied] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+
+  const supabase = useMemo(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!url || !key) return null;
+
+    return createBrowserClient(url, key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadReferralIdentity() {
+      if (!supabase) return;
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!active || !session?.user) return;
+
+      const { data, error } = await supabase.rpc(
+        "get_or_create_my_referral_code"
+      );
+
+      if (
+        active &&
+        !error &&
+        typeof data === "string" &&
+        /^[A-Z0-9]{10}$/.test(data)
+      ) {
+        setReferralCode(data);
+      }
+    }
+
+    loadReferralIdentity();
+
+    return () => {
+      active = false;
+    };
+  }, [supabase]);
+
+  const sampleLink = referralCode
+    ? `https://hiissa.com/invite/${referralCode}`
+    : publicHiissaLink;
+
+  const sampleMessage = useMemo(
+    () => buildInvitationMessage(sampleLink),
+    [sampleLink]
+  );
 
   const selectedChannel = channels.find((item) => item.id === selected);
 
