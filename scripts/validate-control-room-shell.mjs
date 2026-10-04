@@ -118,7 +118,7 @@ for (const required of [
   "INTERACTIVE STAGING PROTOTYPE — NO REAL ACCESS CHANGES",
   "Try the complete staff-onboarding journey",
   "SIMULATION ONLY",
-  "Preview applicant experience",
+  "Review invitation",
   "Continue to policies",
   "Send to Founder Review",
   "Approve — simulate controlled provisioning",
