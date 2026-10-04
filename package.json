@@ -5,12 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "test:registry": "node scripts/validate-experience-registry.mjs",
-    "prebuild": "npm run test:registry && npm run test:my-hiissa-routing && npm run test:account-journey",
+    "prebuild": "npm run test:registry && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation",
     "build": "next build",
-    "verify:foundation": "npm run test:registry && npm run test:my-hiissa-routing && npm run test:account-journey && npm run build",
+    "verify:foundation": "npm run test:registry && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run build",
     "start": "next start",
     "test:my-hiissa-routing": "node scripts/validate-my-hiissa-routing.mjs",
-    "test:account-journey": "node scripts/validate-account-journey.mjs"
+    "test:account-journey": "node scripts/validate-account-journey.mjs",
+    "test:free-navigation": "node scripts/validate-free-navigation.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
