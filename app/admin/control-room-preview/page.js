@@ -276,6 +276,10 @@ function ModuleFoundation({ module, authenticated, onOverview }) {
     return <FeedbackRecommendationsModule module={module} onOverview={onOverview} />;
   }
 
+  if (module.id === CONTROL_ROOM_MODULES.adminSecurityAudit && authenticated) {
+    return <AdminSecurityAuditModule module={module} onOverview={onOverview} />;
+  }
+
   const special =
     module.id === CONTROL_ROOM_MODULES.feedbackRecommendations
       ? "Existing private feedback and separately-permissioned public-review foundations will be preserved and connected here; private feedback is never automatically public."
@@ -517,6 +521,217 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
         <div>PRIVATE / PUBLIC BOUNDARY<span>Separate permission required</span></div>
         <div>RECOMMENDATIONS<span>Existing suggestion field preserved; dedicated review workflow comes next</span></div>
         <div>AUDIT / PERMISSION HISTORY<span>Will connect only from verified source evidence</span></div>
+      </section>
+    </>
+  );
+}
+
+function AdminSecurityAuditModule({ module, onOverview }) {
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      try {
+        const response = await fetch("/api/admin/control-room/security-summary", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The protected Admin security summary could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setSummary(data);
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The protected Admin security summary could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const counts = summary?.counts || {};
+  const status = loading
+    ? "CHECKING"
+    : error || summary?.status === "NEEDS_ATTENTION"
+      ? "NEEDS ATTENTION"
+      : "HEALTHY";
+
+  return (
+    <>
+      <button type="button" className={styles.overviewBack} onClick={onOverview}>
+        ← Control Room Overview
+      </button>
+
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>MODULE 10 — LIVE STAGING READ-ONLY</div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill label={status} />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>See first. Change later.</strong>
+        <p>
+          This first Admin Security view shows the real Staging access, role,
+          permission, approval and audit foundation. Staff-management controls
+          are deliberately disabled until their permission and audit rules are
+          separately certified.
+        </p>
+      </section>
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>Needs attention</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+
+      <div className={styles.grid}>
+        <InfoCard
+          title="CURRENT ADMIN GATE"
+          value={loading ? "Checking…" : String(counts.legacyAdminAccounts ?? "—")}
+          detail="Accounts currently authorised by the existing protected Admin gate."
+        />
+        <InfoCard
+          title="ACTIVE ROLE ASSIGNMENTS"
+          value={loading ? "Checking…" : String(counts.activeRoleAssignments ?? "—")}
+          detail="Assignments in the newer role-based administration foundation."
+        />
+        <InfoCard
+          title="ACTIVE PERMISSION RULES"
+          value={loading ? "Checking…" : String(counts.activePermissionRules ?? "—")}
+          detail="Explicit active role/resource/action permission rules."
+        />
+        <InfoCard
+          title="PENDING FOUNDER APPROVALS"
+          value={loading ? "Checking…" : String(counts.pendingApprovals ?? "—")}
+          detail="Sensitive actions waiting for an approval decision."
+        />
+        <InfoCard
+          title="ACTIVE ACCESS GRANTS"
+          value={loading ? "Checking…" : String(counts.activeAccessGrants ?? "—")}
+          detail="Temporary or specific active access grants."
+        />
+        <InfoCard
+          title="AUDIT EVENTS"
+          value={loading ? "Checking…" : String(counts.auditEvents ?? "—")}
+          detail="Recorded Admin security/action events in the new audit foundation."
+        />
+      </div>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>ADMIN ROLES</div>
+            <h3>Roles the Control Room is designed to support</h3>
+          </div>
+          <StatusPill label="NO CHANGES ENABLED" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          These are administrative responsibilities, not automatic access.
+          A person receives only the permissions that are deliberately assigned
+          and allowed for their role and environment.
+        </p>
+
+        <div className={styles.roleGrid}>
+          {(summary?.supportedRoles || []).map((role) => (
+            <div className={styles.roleItem} key={role.id}>
+              <strong>{role.label}</strong>
+              <span>{role.id.replaceAll("_", " ")}</span>
+            </div>
+          ))}
+          {!loading && (summary?.supportedRoles || []).length === 0 ? (
+            <div className={styles.emptyState}>Role definitions are not currently available.</div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>CURRENT ASSIGNMENTS</div>
+            <h3>Active role assignments</h3>
+          </div>
+        </div>
+
+        {(summary?.activeRoleAssignments || []).length === 0 ? (
+          <div className={styles.emptyState}>
+            No newer role assignments are active yet. Your current Founder/Admin
+            access is still being recognised through the existing protected Admin gate.
+          </div>
+        ) : (
+          <div className={styles.feedbackList}>
+            {summary.activeRoleAssignments.map((item, index) => (
+              <article className={styles.feedbackItem} key={`${item.role_id}-${item.assigned_at}-${index}`}>
+                <div className={styles.featureMeta}>
+                  <span>{item.environment || "unknown environment"}</span>
+                  <span>ACTIVE</span>
+                </div>
+                <p><strong>{item.role_id.replaceAll("_", " ")}</strong></p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>RECENT AUDIT</div>
+            <h3>Recent Admin security activity</h3>
+          </div>
+        </div>
+
+        {(summary?.recentAuditEvents || []).length === 0 ? (
+          <div className={styles.emptyState}>
+            No events have yet been written to the newer Admin audit foundation.
+          </div>
+        ) : (
+          <div className={styles.feedbackList}>
+            {summary.recentAuditEvents.map((event, index) => (
+              <article className={styles.feedbackItem} key={`${event.occurred_at}-${index}`}>
+                <div className={styles.featureMeta}>
+                  <span>{event.environment || "unknown environment"}</span>
+                  <span>{event.outcome || "unknown outcome"}</span>
+                  {event.oversight_level != null ? <span>L{event.oversight_level}</span> : null}
+                </div>
+                <p>
+                  <strong>{event.event_type || "Admin event"}</strong>
+                  {event.action_id ? ` — ${event.action_id}` : ""}
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.detailBlueprint}>
+        <div className={styles.kicker}>MODULE 10 OPERATIONAL DETAIL</div>
+        <div>ACCESS MODEL<span>Deny by default</span></div>
+        <div>SELF-GRANT<span>Blocked</span></div>
+        <div>L3 SENSITIVE ACTIONS<span>Founder approval required</span></div>
+        <div>PRODUCTION CHANGES<span>Not enabled from this Staging module</span></div>
+        <div>STAFF MANAGEMENT<span>Read-only now; controlled dashboard actions come after certification</span></div>
       </section>
     </>
   );
