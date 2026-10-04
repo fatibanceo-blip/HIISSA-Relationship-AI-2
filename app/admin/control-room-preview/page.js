@@ -1615,6 +1615,15 @@ function FounderApprovalInboxPrototype() {
         change, payment, publication or Production action can occur from this prototype.
       </p>
 
+      <div className={styles.prototypeDecisionActions}>
+        <a
+          className={styles.prototypeSecondary}
+          href="/staff-workspace-preview"
+        >
+          Open fictional Customer Support workspace →
+        </a>
+      </div>
+
       <div className={styles.approvalInboxLayout}>
         <div className={styles.approvalQueue}>
           {items.map((item) => (
