@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const pagePath = path.join(root, "app", "admin", "control-room-preview", "page.js");
 const registryPath = path.join(root, "lib", "experience-registry.js");
+const sharePreviewPath = path.join(root, "app", "share-hiissa-preview", "page.js");
 const securitySummaryPath = path.join(
   root,
   "app",
@@ -49,9 +50,11 @@ for (const required of [
 ]) requireText("Authenticated Control Room gate", authenticatedClient, required);
 
 if (!fs.existsSync(registryPath)) errors.push("Experience Registry is missing.");
+if (!fs.existsSync(sharePreviewPath)) errors.push("Share HIISSA Staging preview is missing.");
 
 const page = fs.existsSync(pagePath) ? fs.readFileSync(pagePath, "utf8") : "";
 const registry = fs.existsSync(registryPath) ? fs.readFileSync(registryPath, "utf8") : "";
+const sharePreview = fs.existsSync(sharePreviewPath) ? fs.readFileSync(sharePreviewPath, "utf8") : "";
 const securitySummary = fs.existsSync(securitySummaryPath)
   ? fs.readFileSync(securitySummaryPath, "utf8")
   : "";
@@ -84,6 +87,22 @@ for (const feature of [
   "hiissaRest",
   "hiissaAlongside",
 ]) requireText("Registry-driven feature visibility", page, feature);
+
+
+for (const required of [
+  "INVITE SOMEONE TO HIISSA",
+  "Share something meaningful.",
+  "Share HIISSA. Never your story.",
+  "WhatsApp",
+  "Messages / Text",
+  "Email",
+  "Copy Link",
+  "QR Code",
+  "Phone Share",
+  "referral email is not a Magic Link",
+  "Referral growth layer — approved, not active yet",
+  "STAGING PREVIEW · NO REAL REFERRAL SENT",
+]) requireText("Share HIISSA preview", sharePreview, required);
 
 for (const required of [
   "MODULE 4 — LIVE STAGING READ-ONLY",
@@ -273,6 +292,14 @@ for (const registryRule of [
   "hiissa.com domain",
   "GitHub",
   "ChatGPT",
+  "export const RECOMMEND_SHARE_REFERRAL_STANDARD",
+  "Recommend / Share HIISSA + Referral",
+  "Invite someone to HIISSA",
+  "Share HIISSA. Never your story.",
+  "WHATSAPP",
+  "MESSAGES_TEXT",
+  "NATIVE_PHONE_SHARE",
+  "Referral/invitation links bring the recipient to HIISSA.",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
@@ -298,3 +325,4 @@ console.log("- Founder Control Room strengthening package is registered and surf
 console.log("- Founder Approval Inbox decision-pack simulation is present and explicitly non-live");
 console.log("- Universal Founder submission gate and seven fictional staff workspace families are registered");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
+console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
