@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { getContinuityContext } from "../../lib/hiissa/continuity";
+import SuggestInvitePanel from "./SuggestInvitePanel";
 
 const starters = [
   ["💔", "I'm struggling to let someone go."],
@@ -6997,6 +6998,10 @@ setServerConversationId(
                     </button>
                   </div>
                 </>
+              )}
+
+              {!feedbackFormOpen && (
+                <SuggestInvitePanel supabase={supabase} />
               )}
             </div>
           )}
