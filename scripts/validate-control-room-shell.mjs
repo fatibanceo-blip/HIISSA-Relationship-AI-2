@@ -58,6 +58,7 @@ for (const label of [
 
 for (const required of [
   "← Back to HIISSA",
+  "← Control Room Overview",
   "Sign out",
   "ISOLATED PREVIEW",
   "no fake health numbers.",
