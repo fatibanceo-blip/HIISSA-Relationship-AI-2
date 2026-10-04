@@ -355,6 +355,7 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
   const [distribution, setDistribution] = useState([]);
   const [writtenFeedback, setWrittenFeedback] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [referralStats, setReferralStats] = useState(null);
   const [publicReviews, setPublicReviews] = useState([]);
   const [errors, setErrors] = useState([]);
 
@@ -378,12 +379,14 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
         distributionResult,
         writtenResult,
         recommendationResult,
+        referralResult,
         publicResult,
       ] = await Promise.all([
         adminDataClient.rpc("get_hiissa_feedback_stats"),
         adminDataClient.rpc("get_hiissa_rating_distribution"),
         adminDataClient.rpc("get_hiissa_written_feedback"),
         adminDataClient.rpc("get_hiissa_recommendations"),
+        adminDataClient.rpc("get_hiissa_referral_stats"),
         adminDataClient.rpc("get_hiissa_admin_public_reviews"),
       ]);
 
@@ -400,6 +403,9 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
 
       if (recommendationResult.error) nextErrors.push("Recommendations could not be loaded.");
       else setRecommendations(recommendationResult.data || []);
+
+      if (referralResult.error) nextErrors.push("Referral growth statistics could not be loaded.");
+      else if (referralResult.data?.length) setReferralStats(referralResult.data[0]);
 
       if (publicResult.error) nextErrors.push("Authorised public reviews could not be loaded.");
       else setPublicReviews(publicResult.data || []);
@@ -539,6 +545,52 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
+            <div className={styles.kicker}>REFERRAL GROWTH — STAGE 1 FOUNDATION</div>
+            <h3>Privacy-safe invitation attribution</h3>
+          </div>
+          <StatusPill label="STAGING FOUNDATION" compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          These are aggregate referral signals only. This view does not expose referrer names,
+          recipient identities, private conversations, relationship history, reflections,
+          message contents, or authentication secrets.
+        </p>
+        <div className={styles.grid}>
+          <InfoCard
+            title="ACTIVE REFERRERS"
+            value={String(referralStats?.active_referrers ?? (loading ? "…" : 0))}
+            detail="Signed-in Staging accounts with a privacy-safe referral identity."
+          />
+          <InfoCard
+            title="REFERRAL VISITS"
+            value={String(referralStats?.total_visits ?? (loading ? "…" : 0))}
+            detail="Recorded privacy-safe invitation arrivals."
+          />
+          <InfoCard
+            title="VISITS · LAST 30 DAYS"
+            value={String(referralStats?.visits_last_30_days ?? (loading ? "…" : 0))}
+            detail="The current referral-attribution eligibility window is 30 days."
+          />
+          <InfoCard
+            title="SUCCESSFUL JOINS"
+            value={String(referralStats?.successful_joins ?? (loading ? "…" : 0))}
+            detail="Accounts later attributed to an eligible invitation arrival."
+          />
+          <InfoCard
+            title="JOIN CONVERSION"
+            value={
+              referralStats?.join_conversion_percentage == null
+                ? "—"
+                : `${Number(referralStats.join_conversion_percentage).toFixed(1)}%`
+            }
+            detail="Successful attributed joins divided by recorded referral visits."
+          />
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
             <div className={styles.kicker}>PUBLIC REVIEWS</div>
             <h3>Separate permission only</h3>
           </div>
@@ -569,6 +621,7 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
         <div>SOURCE STATUS<span>{loading ? "Checking real Staging source" : health}</span></div>
         <div>PRIVATE / PUBLIC BOUNDARY<span>Separate permission required</span></div>
         <div>RECOMMENDATIONS<span>Connected Staging submission + read-only Module 4 view</span></div>
+        <div>REFERRAL FOUNDATION<span>Signed-in identity + visit + later join attribution; rewards remain off</span></div>
         <div>AUDIT / PERMISSION HISTORY<span>Will connect only from verified source evidence</span></div>
       </section>
     </>
