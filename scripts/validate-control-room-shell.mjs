@@ -149,16 +149,6 @@ for (const required of [
   "Switch to Founder Review",
   "FOUNDER CONTROL ROOM STRENGTHENING PACKAGE",
   "Shared Founder capabilities approved for the Control Room",
-  "Founder Command / Approval Inbox",
-  "Founder Emergency Pause Controls",
-  "Staff Session & Device Control",
-  "Preview as Role",
-  "Founder Decision Pack",
-  "Customer Communication & Service-Level Centre",
-  "Staff Trust, Training & Access Review",
-  "Security Anomaly Alerts",
-  "Daily Founder Brief",
-  "Founder Continuity / Temporary Deputy Mode",
   "TEMPORARY DEPUTY MODE: RESERVED · NOT ENABLED",
 ]) requireText("Admin Security & Audit module", page, required);
 
@@ -220,6 +210,16 @@ for (const registryRule of [
   "daily-founder-brief",
   "temporary-deputy-mode",
   "RESERVED_NOT_ENABLED",
+  "Founder Command / Approval Inbox",
+  "Founder Emergency Pause Controls",
+  "Staff Session & Device Control",
+  "Preview as Role",
+  "Founder Decision Pack",
+  "Customer Communication & Service-Level Centre",
+  "Staff Trust, Training & Access Review",
+  "Security Anomaly Alerts",
+  "Daily Founder Brief",
+  "Founder Continuity / Temporary Deputy Mode",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
