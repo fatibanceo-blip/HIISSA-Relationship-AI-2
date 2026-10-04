@@ -14,6 +14,15 @@ const securitySummaryPath = path.join(
   "security-summary",
   "route.js"
 );
+const openAiProviderSummaryPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "openai-provider-summary",
+  "route.js"
+);
 
 const errors = [];
 
@@ -23,6 +32,7 @@ function requireText(label, source, text) {
 
 if (!fs.existsSync(pagePath)) errors.push("Founder Control Room preview page is missing.");
 if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security summary endpoint is missing.");
+if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI provider summary endpoint is missing.");
 
 const authenticatedPagePath = path.join(root, "app", "admin", "control-room", "page.js");
 const authenticatedClientPath = path.join(root, "app", "admin", "control-room", "AuthenticatedControlRoom.js");
@@ -57,6 +67,9 @@ const registry = fs.existsSync(registryPath) ? fs.readFileSync(registryPath, "ut
 const sharePreview = fs.existsSync(sharePreviewPath) ? fs.readFileSync(sharePreviewPath, "utf8") : "";
 const securitySummary = fs.existsSync(securitySummaryPath)
   ? fs.readFileSync(securitySummaryPath, "utf8")
+  : "";
+const openAiProviderSummary = fs.existsSync(openAiProviderSummaryPath)
+  ? fs.readFileSync(openAiProviderSummaryPath, "utf8")
   : "";
 
 for (const label of [
@@ -125,6 +138,14 @@ for (const required of [
   "Resend",
   "MONEY MOVEMENT",
   "FOUNDER GATED",
+  "OPENAI PROVIDER CONNECTION — PROTECTED STAGING SOURCE",
+  "ORGANIZATION ADMIN SOURCE",
+  "MONTH-TO-DATE COST",
+  "CREDIT / PREPAID BALANCE",
+  "BILLING PAGE SOURCE",
+  'fetch("/api/admin/control-room/openai-provider-summary"',
+  "NO RAW KEYS RETURNED",
+  "NO AUTOMATIC TOP-UP OR PURCHASE",
 ]) requireText("System & Operations provider/spend module", page, required);
 
 for (const required of [
@@ -209,6 +230,24 @@ for (const required of [
   "activeAccessGrantCount",
 ]) requireText("Protected Admin Security summary", securitySummary, required);
 
+for (const required of [
+  'branch !== "feature/founder-control-room-staging"',
+  'environment === "production"',
+  'request.headers.get("authorization")',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
+  "OPENAI_ADMIN_API_KEY",
+  "OPENAI_API_KEY",
+  "https://api.openai.com/v1/organization/costs",
+  "https://api.openai.com/v1/organization/usage/completions",
+  'bucket_width: "1d"',
+  'limit: "31"',
+  "SOURCE_NOT_CONFIGURED",
+  "NOT_EXPOSED_BY_CONNECTED_SOURCE",
+  "moneyMovementEnabled: false",
+  '"Cache-Control": "no-store"',
+]) requireText("Protected OpenAI provider summary", openAiProviderSummary, required);
+
 for (const registryRule of [
   "export const CONTROL_ROOM_MODULE_REGISTRY",
   "futureExpansionAllowed: true",
@@ -282,6 +321,12 @@ for (const registryRule of [
   "product_quality",
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
   "Founder Provider, Subscription & Spend Register",
+  "openAiProviderConnection",
+  "IMPLEMENTED_ISOLATED_DEPLOY_PENDING",
+  "OPENAI_ADMIN_API_KEY",
+  "GET /v1/organization/costs",
+  "GET /v1/organization/usage/completions",
+  "Do not infer or fabricate remaining prepaid credit.",
   "25% remaining",
   "10% remaining",
   "5% remaining",
@@ -325,4 +370,5 @@ console.log("- Founder Control Room strengthening package is registered and surf
 console.log("- Founder Approval Inbox decision-pack simulation is present and explicitly non-live");
 console.log("- Universal Founder submission gate and seven fictional staff workspace families are registered");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
+console.log("- Module 9 protected OpenAI provider connection layer is Staging-only, Admin-gated and read-only");
 console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
