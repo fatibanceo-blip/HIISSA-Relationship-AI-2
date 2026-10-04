@@ -11,6 +11,9 @@ import {
   FEATURE_OPERATIONAL_VISIBILITY_STANDARD,
   ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD,
   ADMIN_STAFF_ONBOARDING_WORKFLOW,
+  FOUNDER_ADMIN_AUTHORITY_AND_STAFF_ACTION_GATE,
+  STAFF_ACCESS_SUSPENSION_AND_OFFBOARDING_STANDARD,
+  STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD,
 } from "../../../lib/experience-registry.js";
 
 const MODULES = [
@@ -686,6 +689,38 @@ function AdminSecurityAuditModule({ module, onOverview }) {
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
+            <div className={styles.kicker}>FOUNDER AUTHORITY & STAFF ACTION GATE</div>
+            <h3>Founder remains the final Control Room authority</h3>
+          </div>
+          <StatusPill label="FOUNDER APPROVED · MANDATORY" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          Staff can work only inside their approved roles. Routine internal work
+          may proceed within those boundaries, but consequential staff actions
+          stop at the configured Founder approval gate before material or external
+          effect. Ordinary staff cannot create, suspend, demote or override Founder authority.
+        </p>
+
+        <div className={styles.contractGrid}>
+          {FOUNDER_ADMIN_AUTHORITY_AND_STAFF_ACTION_GATE.founderControls.map((item) => (
+            <div className={styles.contractItem} key={item}>✓ {item.replaceAll("_", " ")}</div>
+          ))}
+        </div>
+
+        <div className={styles.featureMeta}>
+          <span>FOUNDER: FULL AUTHORISED CONTROL ROOM OVERSIGHT</span>
+          <span>CONSEQUENTIAL STAFF ACTIONS: FOUNDER GATE</span>
+          <span>STAFF SELF-APPROVAL: BLOCKED</span>
+          <span>HIISSA SAFE AUTO-RECOVERY: CONTINUES WITHIN APPROVED BOUNDS</span>
+        </div>
+      </section>
+
+      <StaffAccessControlPrototype />
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
             <div className={styles.kicker}>ADMIN ACCESS & STAFF ONBOARDING</div>
             <h3>{ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD.canonicalName}</h3>
           </div>
@@ -699,6 +734,16 @@ function AdminSecurityAuditModule({ module, onOverview }) {
           role requirements and Founder approval must complete before access can
           become active.
         </p>
+
+        <div className={styles.prototypeReviewBlock}>
+          <strong>What the invited person receives</strong>
+          <p>
+            The invitation email contains a secure “{STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD.invitationCta}”
+            doorway. It opens the protected onboarding journey only — not the Admin
+            Control Room. The invitee can verify identity, complete the checklist,
+            save and resume progress, review the application and submit it for Founder review.
+          </p>
+        </div>
 
         <div className={styles.contractGrid}>
           {[
