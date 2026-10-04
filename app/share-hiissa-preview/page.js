@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
+import QRCode from "qrcode";
 import { useEffect, useMemo, useState } from "react";
 
 const green = "#1f5a46";
@@ -92,44 +93,89 @@ function ShareChoice({ item, active, onClick }) {
   );
 }
 
-function QrPreview() {
-  const cells = useMemo(() => {
-    const pattern = [];
-    for (let row = 0; row < 13; row += 1) {
-      for (let col = 0; col < 13; col += 1) {
-        const finder =
-          (row < 4 && col < 4) ||
-          (row < 4 && col > 8) ||
-          (row > 8 && col < 4);
-        const fill = finder || ((row * 7 + col * 11 + row * col) % 5 < 2);
-        pattern.push({ row, col, fill });
+function RealQrCode({ value }) {
+  const [dataUrl, setDataUrl] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function createQr() {
+      try {
+        const nextUrl = await QRCode.toDataURL(value, {
+          errorCorrectionLevel: "M",
+          margin: 2,
+          width: 420,
+        });
+
+        if (active) {
+          setDataUrl(nextUrl);
+          setError("");
+        }
+      } catch {
+        if (active) {
+          setDataUrl("");
+          setError("HIISSA could not create the QR code right now.");
+        }
       }
     }
-    return pattern;
-  }, []);
+
+    createQr();
+
+    return () => {
+      active = false;
+    };
+  }, [value]);
+
+  if (error) {
+    return (
+      <div
+        role="alert"
+        style={{
+          margin: "12px auto 18px",
+          padding: 14,
+          borderRadius: 14,
+          background: "#fff1f1",
+          color: "#864646",
+          textAlign: "center",
+        }}
+      >
+        {error}
+      </div>
+    );
+  }
+
+  if (!dataUrl) {
+    return (
+      <div
+        style={{
+          margin: "12px auto 18px",
+          padding: 18,
+          color: "#66766f",
+          textAlign: "center",
+        }}
+      >
+        Creating your QR code…
+      </div>
+    );
+  }
 
   return (
-    <div
-      aria-label="Prototype QR code preview"
+    <img
+      src={dataUrl}
+      alt="Scannable HIISSA invitation QR code"
+      width={210}
+      height={210}
       style={{
         width: 210,
-        aspectRatio: "1",
+        height: 210,
+        display: "block",
+        margin: "8px auto 18px",
         background: "#fff",
         border: "10px solid #fff",
         boxShadow: "0 0 0 1px #d8e1d8",
-        display: "grid",
-        gridTemplateColumns: "repeat(13,1fr)",
-        gap: 1,
-        margin: "8px auto 18px",
       }}
-    >
-      {cells.map((cell) => (
-        <span
-          key={cell.row + "-" + cell.col}
-          style={{ background: cell.fill ? "#111" : "#fff" }}
-        />
-      ))}
-    </div>
+    />
   );
 }
 
@@ -137,6 +183,7 @@ export default function ShareHiissaPreviewPage() {
   const [selected, setSelected] = useState("whatsapp");
   const [copied, setCopied] = useState(false);
   const [referralCode, setReferralCode] = useState("");
+  const [actionError, setActionError] = useState("");
 
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -201,6 +248,83 @@ export default function ShareHiissaPreviewPage() {
   function choose(id) {
     setSelected(id);
     setCopied(false);
+    setActionError("");
+  }
+
+  function openWhatsApp() {
+    setActionError("");
+    window.location.assign(
+      `https://wa.me/?text=${encodeURIComponent(sampleMessage)}`
+    );
+  }
+
+  function openMessages() {
+    setActionError("");
+    window.location.assign(
+      `sms:?body=${encodeURIComponent(sampleMessage)}`
+    );
+  }
+
+  function openEmail() {
+    setActionError("");
+    const subject = "You might like HIISSA 💚";
+    window.location.assign(
+      `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(sampleMessage)}`
+    );
+  }
+
+  async function copyInvitationLink() {
+    setActionError("");
+
+    try {
+      await navigator.clipboard.writeText(sampleLink);
+      setCopied(true);
+      return;
+    } catch {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = sampleLink;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copiedOk = document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        if (!copiedOk) throw new Error("Copy failed");
+        setCopied(true);
+      } catch {
+        setCopied(false);
+        setActionError(
+          "HIISSA could not copy the link automatically on this device. You can press and hold the link above to copy it."
+        );
+      }
+    }
+  }
+
+  async function openPhoneShare() {
+    setActionError("");
+
+    if (!navigator.share) {
+      setActionError(
+        "Your browser does not support the phone share sheet here. You can use WhatsApp, Messages, Email or Copy Link instead."
+      );
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title: "HIISSA",
+        text: sampleMessage,
+      });
+    } catch (error) {
+      if (error?.name !== "AbortError") {
+        setActionError(
+          "The phone share sheet could not be opened. Nothing was sent."
+        );
+      }
+    }
   }
 
   return (
@@ -253,7 +377,7 @@ export default function ShareHiissaPreviewPage() {
               letterSpacing: ".06em",
             }}
           >
-            STAGING PREVIEW · NO REAL REFERRAL SENT
+            STAGING HANDOFF TEST · NOTHING SENDS AUTOMATICALLY
           </span>
         </div>
 
@@ -375,7 +499,7 @@ export default function ShareHiissaPreviewPage() {
                   color: "#6b7d73",
                 }}
               >
-                {selectedChannel?.short?.toUpperCase()} · PROTOTYPE
+                {selectedChannel?.short?.toUpperCase()} · STAGING HANDOFF
               </p>
 
               {selected === "whatsapp" || selected === "messages" ? (
@@ -394,8 +518,28 @@ export default function ShareHiissaPreviewPage() {
                   >
                     {sampleMessage}
                   </div>
-                  <p style={{ margin: "14px 0 0", color: "#6c7a72", fontSize: 13 }}>
-                    In the certified live version, HIISSA opens the chosen messaging app with the invitation prepared. The user remains in control of pressing Send.
+                  <button
+                    type="button"
+                    onClick={selected === "whatsapp" ? openWhatsApp : openMessages}
+                    style={{
+                      width: "100%",
+                      marginTop: 14,
+                      border: 0,
+                      borderRadius: 15,
+                      padding: "15px 18px",
+                      background: green,
+                      color: "#fff",
+                      fontWeight: 900,
+                      fontSize: 16,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {selected === "whatsapp"
+                      ? "Open WhatsApp with invitation"
+                      : "Open Messages with invitation"}
+                  </button>
+                  <p style={{ margin: "12px 0 0", color: "#6c7a72", fontSize: 13 }}>
+                    HIISSA prepares the message and referral link. You still choose the recipient and press Send in the messaging app.
                   </p>
                 </>
               ) : null}
@@ -424,6 +568,27 @@ export default function ShareHiissaPreviewPage() {
                   <div style={{ marginTop: 14, padding: 14, borderRadius: 15, background: "#f7f1df", color: "#6e5d31" }}>
                     <strong>Important:</strong> this referral email is not a Magic Link. If the recipient later chooses an account, HIISSA uses the separate secure Magic-Link sign-in flow.
                   </div>
+                  <button
+                    type="button"
+                    onClick={openEmail}
+                    style={{
+                      width: "100%",
+                      marginTop: 14,
+                      border: 0,
+                      borderRadius: 15,
+                      padding: "15px 18px",
+                      background: green,
+                      color: "#fff",
+                      fontWeight: 900,
+                      fontSize: 16,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Open email with invitation
+                  </button>
+                  <p style={{ margin: "12px 0 0", color: "#6c7a72", fontSize: 13 }}>
+                    Your email app opens with the subject and invitation prepared. You add the recipient and press Send.
+                  </p>
                 </>
               ) : null}
 
@@ -446,7 +611,7 @@ export default function ShareHiissaPreviewPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setCopied(true)}
+                    onClick={copyInvitationLink}
                     style={{
                       width: "100%",
                       border: 0,
@@ -459,10 +624,10 @@ export default function ShareHiissaPreviewPage() {
                       cursor: "pointer",
                     }}
                   >
-                    {copied ? "✓ Copied in this simulation" : "Copy invitation link"}
+                    {copied ? "✓ Invitation link copied" : "Copy invitation link"}
                   </button>
                   <p style={{ margin: "13px 0 0", color: "#6b7a72", fontSize: 13 }}>
-                    This Staging preview does not copy or create a live referral record.
+                    This copies the current invitation link to your clipboard. Copying does not send it to anyone.
                   </p>
                 </>
               ) : null}
@@ -475,14 +640,14 @@ export default function ShareHiissaPreviewPage() {
                   <p style={{ margin: "0 0 8px", textAlign: "center", color: "#66766f" }}>
                     Let someone scan this to visit HIISSA.
                   </p>
-                  <QrPreview />
+                  <RealQrCode value={sampleLink} />
                   <div style={{ padding: 14, borderRadius: 15, background: pink, textAlign: "center" }}>
                     <strong>HIISSA</strong>
                     <div style={{ marginTop: 4, color: "#6b6f69" }}>A safer, kinder space for real conversations.</div>
                   </div>
                   <button
                     type="button"
-                    onClick={() => choose("copy")}
+                    onClick={copyInvitationLink}
                     style={{
                       width: "100%",
                       marginTop: 12,
@@ -495,7 +660,7 @@ export default function ShareHiissaPreviewPage() {
                       cursor: "pointer",
                     }}
                   >
-                    Copy link instead
+                    {copied ? "✓ Invitation link copied" : "Copy link instead"}
                   </button>
                 </>
               ) : null}
@@ -536,10 +701,45 @@ export default function ShareHiissaPreviewPage() {
                       ))}
                     </div>
                   </div>
-                  <p style={{ margin: "14px 0 0", color: "#6b7a72", fontSize: 13 }}>
-                    In the certified live version, this opens the device's normal native share sheet. HIISSA does not silently send anything.
+                  <button
+                    type="button"
+                    onClick={openPhoneShare}
+                    style={{
+                      width: "100%",
+                      marginTop: 14,
+                      border: 0,
+                      borderRadius: 15,
+                      padding: "15px 18px",
+                      background: green,
+                      color: "#fff",
+                      fontWeight: 900,
+                      fontSize: 16,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Open phone share
+                  </button>
+                  <p style={{ margin: "12px 0 0", color: "#6b7a72", fontSize: 13 }}>
+                    This opens your device's normal share sheet with the invitation prepared. HIISSA does not silently send anything.
                   </p>
                 </>
+              ) : null}
+
+              {actionError ? (
+                <div
+                  role="alert"
+                  style={{
+                    marginTop: 14,
+                    padding: "12px 14px",
+                    borderRadius: 14,
+                    background: "#fff1f1",
+                    color: "#864646",
+                    lineHeight: 1.45,
+                    fontSize: 13,
+                  }}
+                >
+                  {actionError}
+                </div>
               ) : null}
             </Card>
 
