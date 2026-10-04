@@ -86,5 +86,48 @@ export async function GET(request) {
     );
   }
 
+  // Referral attribution is deliberately separate from
+  // authentication. A referral cookie never authenticates
+  // anyone. Only after the normal Magic-Link verification
+  // succeeds do we attempt to connect an eligible referral
+  // arrival to the authenticated account.
+  const referralCode =
+    request.cookies.get(
+      "hiissa_referral_code"
+    )?.value || "";
+
+  const referralVisit =
+    request.cookies.get(
+      "hiissa_referral_visit"
+    )?.value || "";
+
+  if (
+    /^[A-Z0-9]{10}$/.test(referralCode) &&
+    /^[0-9a-fA-F-]{36}$/.test(referralVisit)
+  ) {
+    const { error: referralError } =
+      await supabase.rpc(
+        "claim_referral_attribution",
+        {
+          p_code: referralCode,
+          p_visit_token: referralVisit,
+        }
+      );
+
+    // Clear the short-lived attribution cookies once the
+    // claim was processed. If the database call itself
+    // fails, preserve them so a later secure sign-in can
+    // retry rather than silently losing attribution.
+    if (!referralError) {
+      response.cookies.delete(
+        "hiissa_referral_code"
+      );
+
+      response.cookies.delete(
+        "hiissa_referral_visit"
+      );
+    }
+  }
+
   return response;
 }
