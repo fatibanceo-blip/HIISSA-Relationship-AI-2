@@ -30,6 +30,7 @@ const requiredFoundationIds = [
   "my-hiissa.home",
   "account.journey",
   "auth.signin",
+  "guest.save-sync",
   "young-hiissa",
   "hiissa.rest",
   "hiissa.alongside",
