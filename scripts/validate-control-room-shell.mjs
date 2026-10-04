@@ -100,7 +100,7 @@ for (const required of [
   "QR Code",
   "Phone Share",
   "referral email is not a Magic Link",
-  "Referral growth layer — approved, not active yet",
+  "Your invitation stays private",
   "STAGING PREVIEW · NO REAL REFERRAL SENT",
 ]) requireText("Share HIISSA preview", sharePreview, required);
 
