@@ -934,6 +934,7 @@ function StaffOnboardingPrototype({ roles }) {
   const policyItems = ADMIN_STAFF_ONBOARDING_WORKFLOW.policyAcceptance.commonPolicySet;
   const [step, setStep] = useState("invite");
   const [decisionNote, setDecisionNote] = useState("");
+  const [invitationNotice, setInvitationNotice] = useState("");
   const [form, setForm] = useState({
     workEmail: "",
     proposedRole: "customer_support",
@@ -968,8 +969,9 @@ function StaffOnboardingPrototype({ roles }) {
     form.department.trim() &&
     form.jurisdiction.trim();
 
+  const staffRoles = roles.filter((role) => role.id !== "founder");
   const roleLabel =
-    roles.find((role) => role.id === form.proposedRole)?.label ||
+    staffRoles.find((role) => role.id === form.proposedRole)?.label ||
     form.proposedRole.replaceAll("_", " ");
 
   function update(field, value) {
@@ -979,6 +981,7 @@ function StaffOnboardingPrototype({ roles }) {
   function resetPrototype() {
     setStep("invite");
     setDecisionNote("");
+    setInvitationNotice("");
     setAcceptedPolicies({});
     setForm({
       workEmail: "",
@@ -997,11 +1000,13 @@ function StaffOnboardingPrototype({ roles }) {
   }
 
   const stepLabels = [
-    ["invite", "1 Invite"],
-    ["applicant", "2 Applicant"],
-    ["policies", "3 Policies"],
-    ["review", "4 Founder Review"],
-    ["activation", "5 Simulated Result"],
+    ["invite", "1 Prepare"],
+    ["invitePreview", "2 Preview"],
+    ["inviteSent", "3 Sent"],
+    ["applicant", "4 Applicant"],
+    ["policies", "5 Policies"],
+    ["review", "6 Founder Review"],
+    ["activation", "7 Result"],
   ];
 
   return (
@@ -1058,7 +1063,7 @@ function StaffOnboardingPrototype({ roles }) {
                 value={form.proposedRole}
                 onChange={(event) => update("proposedRole", event.target.value)}
               >
-                {(roles.length ? roles : [
+                {(staffRoles.length ? staffRoles : [
                   { id: "customer_support", label: "Customer Support" },
                   { id: "technical_operations", label: "Technical Operations" },
                 ]).map((role) => (
@@ -1107,9 +1112,149 @@ function StaffOnboardingPrototype({ roles }) {
               type="button"
               className={styles.prototypePrimary}
               disabled={!inviteReady}
+              onClick={() => setStep("invitePreview")}
+            >
+              Review invitation →
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "invitePreview" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>FOUNDER INVITATION PREVIEW</div>
+              <h4>Review before sending</h4>
+            </div>
+            <StatusPill label="NOT SENT" compact />
+          </div>
+
+          <div className={styles.prototypeReviewGrid}>
+            <InfoCard title="TO" value={form.workEmail} detail="Proposed staff recipient" />
+            <InfoCard title="PROPOSED ROLE" value={roleLabel} detail={form.department} />
+            <InfoCard title="ENVIRONMENT" value={form.environment} detail="No Production authority is included." />
+            <InfoCard title="INVITED BY" value="HIISSA Founder" detail="Invitation alone grants no Admin access." />
+          </div>
+
+          <div className={styles.prototypeReviewBlock}>
+            <strong>Invitation email preview</strong>
+            <p><strong>You’ve been invited to complete HIISSA staff onboarding</strong></p>
+            <p>
+              You have been invited to apply for authorised HIISSA Administration
+              access as <strong>{roleLabel}</strong>. This invitation does not give
+              you Admin access. You must verify your identity, complete the required
+              onboarding information, review and accept the policies that apply to
+              your role, and complete any required checks. Your application will
+              then be reviewed by the HIISSA Founder before any access can become active.
+            </p>
+            <p>
+              <strong>Secure invitation expiry:</strong> the live system will show
+              the exact expiry date and time here.
+            </p>
+          </div>
+
+          <div className={styles.prototypeSafetyNote}>
+            This is a preview only. The button below simulates sending and cannot
+            send an email, create an account or change Admin access.
+          </div>
+
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("invite")}>
+              ← Edit invitation
+            </button>
+            <button
+              type="button"
+              className={styles.prototypePrimary}
+              onClick={() => {
+                setInvitationNotice("Simulated invitation sent successfully.");
+                setStep("inviteSent");
+              }}
+            >
+              Simulate Send Secure Invitation →
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "inviteSent" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>INVITATION STATUS — SIMULATION</div>
+              <h4>Invitation prepared and simulated as sent</h4>
+            </div>
+            <StatusPill label="NO REAL EMAIL SENT" compact />
+          </div>
+
+          <div className={styles.prototypeReviewGrid}>
+            <InfoCard title="RECIPIENT" value={form.workEmail} detail="Simulation only" />
+            <InfoCard title="ROLE" value={roleLabel} detail={form.department} />
+            <InfoCard title="SEND STATUS" value="SIMULATED SENT" detail="No external message was transmitted." />
+            <InfoCard title="DELIVERY STATUS" value="SIMULATED DELIVERED" detail="Live delivery evidence will come from the email provider." />
+          </div>
+
+          <div className={styles.prototypeReviewBlock}>
+            <strong>Applicant journey status</strong>
+            <p>
+              In the live system this area will show Sent, Delivered, Opened,
+              Started, Expired or Revoked using verified evidence. The secure
+              onboarding link will be single-purpose, time-bounded and revocable.
+            </p>
+          </div>
+
+          {invitationNotice ? (
+            <div className={styles.prototypeSuccess}>
+              <strong>{invitationNotice}</strong>
+              <p>No real email, Admin account, role assignment or access change occurred.</p>
+            </div>
+          ) : null}
+
+          <div className={styles.prototypeDecisionActions}>
+            <button
+              type="button"
+              className={styles.prototypePrimary}
               onClick={() => setStep("applicant")}
             >
-              Preview applicant experience →
+              Open applicant experience →
+            </button>
+            <button
+              type="button"
+              className={styles.prototypeReturn}
+              onClick={() => setInvitationNotice("Simulated invitation resent.")}
+            >
+              Simulate resend
+            </button>
+            <button
+              type="button"
+              className={styles.prototypeReject}
+              onClick={() => setStep("inviteRevoked")}
+            >
+              Simulate revoke
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "inviteRevoked" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>INVITATION STATUS — SIMULATION</div>
+              <h4>Invitation revoked</h4>
+            </div>
+            <StatusPill label="ADMIN GATE UNCHANGED" compact />
+          </div>
+          <div className={styles.prototypeSuccess}>
+            <strong>Safe revoked state.</strong>
+            <p>
+              A live revoked invitation would stop that invitation from being used,
+              record who revoked it and when, and would not grant any Admin access.
+            </p>
+          </div>
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypePrimary} onClick={resetPrototype}>
+              Start prototype again
             </button>
           </div>
         </div>
@@ -1177,8 +1322,8 @@ function StaffOnboardingPrototype({ roles }) {
           </div>
 
           <div className={styles.prototypeActions}>
-            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("invite")}>
-              ← Back
+            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("inviteSent")}>
+              ← Back to invitation status
             </button>
             <button
               type="button"
