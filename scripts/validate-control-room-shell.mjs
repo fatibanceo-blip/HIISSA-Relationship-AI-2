@@ -102,6 +102,10 @@ for (const required of [
   "SELF-GRANT",
   "Blocked",
   'Authorization: `Bearer ${session.access_token}`',
+  "ADMIN ACCESS & STAFF ONBOARDING",
+  "FOUNDER APPROVED · NOT YET LIVE",
+  "VERBAL-ONLY ACCESS: NOT ALLOWED",
+  "FOUNDER APPROVAL: REQUIRED BEFORE ACTIVATION",
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
@@ -123,6 +127,18 @@ for (const registryRule of [
   "futureExpansionAllowed: true",
   "export const FEATURE_OPERATIONAL_VISIBILITY_STANDARD",
   "controlRoomConnectionRequired: true",
+  "export const HIISSA_OPERATIONAL_INTELLIGENCE_MANDATE",
+  '"MONITOR"',
+  '"SAFELY_RECOVER"',
+  '"VERIFY"',
+  '"RECORD"',
+  '"REPORT"',
+  "export const FOUNDER_ALERT_GATEWAY_STANDARD",
+  "SMS_TO_DEDICATED_HIISSA_FOUNDER_NUMBER",
+  "FOUNDER_EMAIL",
+  "export const ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD",
+  "founderApprovalBeforeActivation: true",
+  "adminGateChangesOnlyAfterApprovedActivation: true",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
@@ -138,3 +154,4 @@ console.log("- Registry-driven operational visibility is present");
 console.log("- Young HIISSA, HIISSA Rest and HIISSA Alongside are surfaced from Registry");
 console.log("- Future Control Room module expansion remains enabled without creating Module 11 today");
 console.log("- Admin Security & Audit read-only Staging summary is protected and certified");
+console.log("- Founder-approved staff onboarding, operational intelligence and alert-gateway contracts are registered");
