@@ -153,7 +153,7 @@ export default function AccessDiscoveryPage() {
               badge="SHARED"
               title="HIISSA TOGETHER"
               heading="Grow together."
-              body="Explore shared conversations, relationship tools, shared experiences, goals and insights designed for two people."
+              body="Explore shared conversations, relationship tools, experiences, goals and insights for the relationships that matter to you — partners, family, close friends and other trusted connections."
               href="/together/welcome"
               cta="Discover HIISSA TOGETHER"
               tone="together"
@@ -182,7 +182,7 @@ export default function AccessDiscoveryPage() {
               <p style={{margin:"0 0 7px",lineHeight:1.55,color:"#627168"}}><strong>HIISSA FREE</strong> — explore without an account.</p>
               <p style={{margin:"0 0 7px",lineHeight:1.55,color:"#627168"}}><strong>HIISSA Guest</strong> — create your free personal HIISSA account space.</p>
               <p style={{margin:"0 0 7px",lineHeight:1.55,color:"#627168"}}><strong>HIISSA+</strong> — go deeper in your individual journey.</p>
-              <p style={{margin:0,lineHeight:1.55,color:"#627168"}}><strong>HIISSA TOGETHER</strong> — explore and grow with another person.</p>
+              <p style={{margin:0,lineHeight:1.55,color:"#627168"}}><strong>HIISSA TOGETHER</strong> — connect, explore and grow with the people who matter to you.</p>
             </section>
 
             <Link href="/free-access" style={{
