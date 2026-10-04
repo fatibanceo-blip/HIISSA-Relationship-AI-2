@@ -975,6 +975,97 @@ function AdminSecurityAuditModule({ module, onOverview }) {
   );
 }
 
+function StaffAccessControlPrototype() {
+  const [state, setState] = useState("ACTIVE");
+  const [notice, setNotice] = useState("");
+
+  function act(nextState, message) {
+    setState(nextState);
+    setNotice(message);
+  }
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>FOUNDER STAFF ACCESS CONTROL — SIMULATION ONLY</div>
+          <h3>Suspend, change or remove staff access</h3>
+        </div>
+        <StatusPill label="NO REAL ACCESS CHANGES" compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        This demonstrates the Founder control that will be available after a staff
+        member is onboarded. The real control will be permission-gated, audited,
+        step-up protected where appropriate, and verified after each change.
+      </p>
+
+      <div className={styles.prototypeReviewGrid}>
+        <InfoCard title="TEST STAFF MEMBER" value="Sample Customer Support Worker" detail="Prototype identity only" />
+        <InfoCard title="CURRENT ROLE" value="Customer Support" detail="Staging example" />
+        <InfoCard title="ACCESS STATE" value={state.replaceAll("_", " ")} detail="Simulation only" />
+        <InfoCard title="FOUNDER CONTROL" value="AVAILABLE IN DESIGN" detail="Real control not activated yet" />
+      </div>
+
+      <div className={styles.prototypeReviewBlock}>
+        <strong>What each action means</strong>
+        <p>
+          Suspend = temporary lockout while you investigate. Change role = replace
+          the person’s permitted role/scope without carrying old permissions forward.
+          Remove access = end Admin eligibility and revoke active role/access grants.
+        </p>
+      </div>
+
+      <div className={styles.prototypeDecisionActions}>
+        <button
+          type="button"
+          className={styles.prototypeReturn}
+          onClick={() => act("SUSPENDED", "Simulated suspension applied.")}
+        >
+          Simulate Suspend Access
+        </button>
+        <button
+          type="button"
+          className={styles.prototypeSecondary}
+          onClick={() => act("ROLE_CHANGE_PENDING", "Simulated role change sent for controlled review.")}
+        >
+          Simulate Change Role
+        </button>
+        <button
+          type="button"
+          className={styles.prototypeReject}
+          onClick={() => act("ACCESS_REMOVED", "Simulated Admin access removal completed.")}
+        >
+          Simulate Remove Access
+        </button>
+        <button
+          type="button"
+          className={styles.prototypePrimary}
+          onClick={() => act("ACTIVE", "Prototype reset to active staff access.")}
+        >
+          Reset Simulation
+        </button>
+      </div>
+
+      {notice ? (
+        <div className={styles.prototypeSuccess}>
+          <strong>{notice}</strong>
+          <p>
+            No real Admin Gate eligibility, session, role assignment or permission
+            was changed. A live action must write audit evidence and verify the final access state.
+          </p>
+        </div>
+      ) : null}
+
+      <div className={styles.featureMeta}>
+        {STAFF_ACCESS_SUSPENSION_AND_OFFBOARDING_STANDARD.suspensionMust.slice(0, 4).map((item) => (
+          <span key={item}>{item.toUpperCase()}</span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function StaffOnboardingPrototype({ roles }) {
   const policyItems = ADMIN_STAFF_ONBOARDING_WORKFLOW.policyAcceptance.commonPolicySet;
   const [step, setStep] = useState("invite");
@@ -1048,10 +1139,13 @@ function StaffOnboardingPrototype({ roles }) {
     ["invite", "1 Prepare"],
     ["invitePreview", "2 Preview"],
     ["inviteSent", "3 Sent"],
-    ["applicant", "4 Applicant"],
-    ["policies", "5 Policies"],
-    ["review", "6 Founder Review"],
-    ["activation", "7 Result"],
+    ["applicantWelcome", "4 Secure Entry"],
+    ["applicant", "5 Applicant"],
+    ["policies", "6 Policies"],
+    ["applicantReview", "7 Review"],
+    ["submitted", "8 Submitted"],
+    ["review", "9 Founder Review"],
+    ["activation", "10 Result"],
   ];
 
   return (
@@ -1259,9 +1353,9 @@ function StaffOnboardingPrototype({ roles }) {
             <button
               type="button"
               className={styles.prototypePrimary}
-              onClick={() => setStep("applicant")}
+              onClick={() => setStep("applicantWelcome")}
             >
-              Open applicant experience →
+              Open secure onboarding doorway →
             </button>
             <button
               type="button"
@@ -1300,6 +1394,54 @@ function StaffOnboardingPrototype({ roles }) {
           <div className={styles.prototypeActions}>
             <button type="button" className={styles.prototypePrimary} onClick={resetPrototype}>
               Start prototype again
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "applicantWelcome" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>INVITED PERSON — SECURE ONBOARDING ENTRY</div>
+              <h4>Welcome to HIISSA staff onboarding</h4>
+            </div>
+            <StatusPill label="ADMIN ACCESS NOT GRANTED" compact />
+          </div>
+
+          <div className={styles.prototypeReviewBlock}>
+            <strong>You have been invited to complete onboarding for {roleLabel}.</strong>
+            <p>
+              This secure invitation gives access only to this onboarding journey.
+              It does not give access to the HIISSA Admin Control Room. Your
+              application must be completed, submitted and approved before any
+              Admin access can become active.
+            </p>
+          </div>
+
+          <div className={styles.prototypeReviewGrid}>
+            <InfoCard title="INTENDED EMAIL" value={form.workEmail} detail="Would be verified in the live flow" />
+            <InfoCard title="PROPOSED ROLE" value={roleLabel} detail={form.department} />
+            <InfoCard title="JOURNEY STATUS" value="OPENED" detail="Simulation only" />
+            <InfoCard title="SAVE & RESUME" value="SUPPORTED IN DESIGN" detail="Progress stays with this invitation" />
+          </div>
+
+          <div className={styles.prototypeReviewBlock}>
+            <strong>Your onboarding checklist</strong>
+            <p>{STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD.checklist.join(" → ")}</p>
+          </div>
+
+          <div className={styles.prototypeSafetyNote}>
+            A live version will verify that the person using the link is the intended
+            invitee before protected onboarding information can continue.
+          </div>
+
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("inviteSent")}>
+              ← Back to invitation status
+            </button>
+            <button type="button" className={styles.prototypePrimary} onClick={() => setStep("applicant")}>
+              Start onboarding →
             </button>
           </div>
         </div>
@@ -1367,8 +1509,15 @@ function StaffOnboardingPrototype({ roles }) {
           </div>
 
           <div className={styles.prototypeActions}>
-            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("inviteSent")}>
-              ← Back to invitation status
+            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("applicantWelcome")}>
+              ← Back
+            </button>
+            <button
+              type="button"
+              className={styles.prototypeReturn}
+              onClick={() => setInvitationNotice("Simulated progress saved. You could safely resume later in the live journey.")}
+            >
+              Simulate Save & Resume
             </button>
             <button
               type="button"
@@ -1379,6 +1528,11 @@ function StaffOnboardingPrototype({ roles }) {
               Continue to policies →
             </button>
           </div>
+          {invitationNotice?.startsWith("Simulated progress saved") ? (
+            <div className={styles.prototypeSuccess}>
+              <strong>{invitationNotice}</strong>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -1423,9 +1577,77 @@ function StaffOnboardingPrototype({ roles }) {
               type="button"
               className={styles.prototypePrimary}
               disabled={!allPoliciesAccepted}
-              onClick={() => setStep("review")}
+              onClick={() => setStep("applicantReview")}
             >
-              Send to Founder Review →
+              Review application →
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "applicantReview" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>INVITED PERSON — REVIEW APPLICATION</div>
+              <h4>Check everything before submitting</h4>
+            </div>
+            <StatusPill label="NO ADMIN ACCESS YET" compact />
+          </div>
+
+          <div className={styles.prototypeReviewGrid}>
+            <InfoCard title="NAME" value={form.preferredName || form.legalName} detail={form.workEmail} />
+            <InfoCard title="ROLE" value={roleLabel} detail={form.department} />
+            <InfoCard title="WORKING JURISDICTION" value={form.jurisdiction} detail="Used only where needed for policy routing" />
+            <InfoCard title="POLICIES" value={policyItems.length + "/" + policyItems.length + " accepted"} detail="Simulation only" />
+          </div>
+
+          <div className={styles.prototypeReviewBlock}>
+            <strong>Reason for access</strong>
+            <p>{form.reason}</p>
+          </div>
+
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypeSecondary} onClick={() => setStep("policies")}>
+              ← Back to policies
+            </button>
+            <button type="button" className={styles.prototypePrimary} onClick={() => setStep("submitted")}>
+              Submit for Founder Review →
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {step === "submitted" ? (
+        <div className={styles.prototypePanel}>
+          <div className={styles.prototypeHeading}>
+            <div>
+              <div className={styles.kicker}>APPLICANT STATUS — SIMULATION</div>
+              <h4>Onboarding submitted successfully</h4>
+            </div>
+            <StatusPill label="AWAITING FOUNDER REVIEW" compact />
+          </div>
+
+          <div className={styles.prototypeSuccess}>
+            <strong>Your HIISSA onboarding has been submitted successfully.</strong>
+            <p>
+              No Admin access has been granted yet. Your application is awaiting
+              Founder review.
+            </p>
+          </div>
+
+          <div className={styles.prototypeReviewBlock}>
+            <strong>What the applicant would see next</strong>
+            <p>
+              Status can move through Submitted, Under Review, Returned for Changes,
+              Approved Pending Activation, Access Active or Rejected. If returned,
+              the applicant resumes from the relevant section instead of starting again.
+            </p>
+          </div>
+
+          <div className={styles.prototypeActions}>
+            <button type="button" className={styles.prototypePrimary} onClick={() => setStep("review")}>
+              Switch to Founder Review →
             </button>
           </div>
         </div>
@@ -1483,7 +1705,7 @@ function StaffOnboardingPrototype({ roles }) {
             <button
               type="button"
               className={styles.prototypeReturn}
-              onClick={() => setStep("applicant")}
+              onClick={() => setStep("applicantReview")}
             >
               Return for correction
             </button>
@@ -1520,6 +1742,8 @@ function StaffOnboardingPrototype({ roles }) {
               In a live certified workflow, HIISSA would only mark the person active
               after both allowed access and denied boundaries are verified. This
               prototype has changed nothing in the Admin Gate or role tables.
+              A live successful activation would then send the applicant an access-active
+              notice with secure Admin sign-in instructions.
             </p>
           </div>
 
