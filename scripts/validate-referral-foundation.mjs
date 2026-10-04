@@ -36,7 +36,7 @@ for (const required of [
   "QR Code",
   "Phone Share",
   "Share HIISSA. Never your story.",
-  "Referral growth layer — approved, not active yet",
+  "Your invitation stays private",
 ]) {
   requireText("Approved Share interface + referral identity", share, required);
 }
@@ -102,4 +102,5 @@ console.log("- First-touch 30-day referral arrival path is present");
 console.log("- Referral and Magic-Link authentication remain separate");
 console.log("- Later account attribution claim is connected");
 console.log("- Founder aggregate referral visibility is present");
+console.log("- Founder-approved referral privacy wording is present");
 console.log("- Rewards, ambassador features and Production remain disabled");
