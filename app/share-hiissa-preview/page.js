@@ -243,6 +243,9 @@ export default function ShareHiissaPreviewPage() {
     [sampleLink]
   );
 
+  const emailSubject = "You might like HIISSA 💚";
+  const emailHref = `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(sampleMessage)}`;
+
   const selectedChannel = channels.find((item) => item.id === selected);
 
   function choose(id) {
@@ -262,14 +265,6 @@ export default function ShareHiissaPreviewPage() {
     setActionError("");
     window.location.assign(
       `sms:?body=${encodeURIComponent(sampleMessage)}`
-    );
-  }
-
-  function openEmail() {
-    setActionError("");
-    const subject = "You might like HIISSA 💚";
-    window.location.assign(
-      `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(sampleMessage)}`
     );
   }
 
@@ -568,11 +563,13 @@ export default function ShareHiissaPreviewPage() {
                   <div style={{ marginTop: 14, padding: 14, borderRadius: 15, background: "#f7f1df", color: "#6e5d31" }}>
                     <strong>Important:</strong> this referral email is not a Magic Link. If the recipient later chooses an account, HIISSA uses the separate secure Magic-Link sign-in flow.
                   </div>
-                  <button
-                    type="button"
-                    onClick={openEmail}
+                  <a
+                    href={emailHref}
+                    onClick={() => setActionError("")}
                     style={{
+                      display: "block",
                       width: "100%",
+                      boxSizing: "border-box",
                       marginTop: 14,
                       border: 0,
                       borderRadius: 15,
@@ -582,10 +579,12 @@ export default function ShareHiissaPreviewPage() {
                       fontWeight: 900,
                       fontSize: 16,
                       cursor: "pointer",
+                      textAlign: "center",
+                      textDecoration: "none",
                     }}
                   >
                     Open email with invitation
-                  </button>
+                  </a>
                   <p style={{ margin: "12px 0 0", color: "#6c7a72", fontSize: 13 }}>
                     Your email app opens with the subject and invitation prepared. You add the recipient and press Send.
                   </p>
