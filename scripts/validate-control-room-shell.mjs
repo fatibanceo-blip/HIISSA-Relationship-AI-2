@@ -150,6 +150,15 @@ for (const required of [
   "FOUNDER CONTROL ROOM STRENGTHENING PACKAGE",
   "Shared Founder capabilities approved for the Control Room",
   "TEMPORARY DEPUTY MODE: RESERVED · NOT ENABLED",
+  "FOUNDER COMMAND / APPROVAL INBOX — SIMULATION ONLY",
+  "Needs Your Approval",
+  "FOUNDER DECISION PACK",
+  "Customer Support reply",
+  "Staff access change",
+  "Approve",
+  "Return for Changes",
+  "Reject",
+  "APPROVAL ≠ VERIFIED COMPLETION",
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
@@ -220,6 +229,10 @@ for (const registryRule of [
   "Security Anomaly Alerts",
   "Daily Founder Brief",
   "Founder Continuity / Temporary Deputy Mode",
+  "export const FOUNDER_APPROVAL_INBOX_STANDARD",
+  "one underlying approval record",
+  "APPROVED_PENDING_EXECUTION",
+  "approval is not the same as verified completion",
 ]) requireText("Registry", registry, registryRule);
 
 if (errors.length) {
@@ -242,3 +255,4 @@ console.log("- Invitation preview, simulated send/status, resend and revoke jour
 console.log("- Founder authority, staff suspension and secure invitee onboarding contracts are registered");
 console.log("- Applicant save/resume, review, submission and Founder-review handoff prototype is present");
 console.log("- Founder Control Room strengthening package is registered and surfaced without creating Module 11");
+console.log("- Founder Approval Inbox decision-pack simulation is present and explicitly non-live");
