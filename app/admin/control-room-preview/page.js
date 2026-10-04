@@ -79,7 +79,7 @@ function statusLabel(value) {
   return String(value || "unknown").replaceAll("-", " ").toUpperCase();
 }
 
-export default function FounderControlRoomPreview() {
+export default function FounderControlRoomPreview({ authenticated = false, onSignOut = null, environmentLabel = "ISOLATED PREVIEW", environmentNote = "Structure and Registry wiring only — no fabricated live metrics" } = {}) {
   const [activeId, setActiveId] = useState(CONTROL_ROOM_MODULES.overview);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -103,8 +103,8 @@ export default function FounderControlRoomPreview() {
             <div className={styles.kicker}>HIISSA — FOUNDER CONTROL ROOM</div>
             <h1>Control Room</h1>
             <div className={styles.environmentRow}>
-              <span className={styles.environment}>ISOLATED PREVIEW</span>
-              <span className={styles.environmentNote}>Structure and Registry wiring only — no fabricated live metrics</span>
+              <span className={styles.environment}>{environmentLabel}</span>
+              <span className={styles.environmentNote}>{environmentNote}</span>
             </div>
           </div>
 
@@ -113,8 +113,9 @@ export default function FounderControlRoomPreview() {
             <button
               type="button"
               className={styles.signOutPreview}
-              disabled
-              title="Sign out will be connected only after the authenticated Control Room shell is approved."
+              disabled={!authenticated || typeof onSignOut !== "function"}
+              onClick={authenticated && typeof onSignOut === "function" ? onSignOut : undefined}
+              title={authenticated ? "Sign out of this Admin session." : "Sign out will be connected only after the authenticated Control Room shell is approved."}
             >
               Sign out
             </button>
