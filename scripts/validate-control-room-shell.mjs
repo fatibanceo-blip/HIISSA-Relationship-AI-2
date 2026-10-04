@@ -322,7 +322,7 @@ for (const registryRule of [
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
   "Founder Provider, Subscription & Spend Register",
   "openAiProviderConnection",
-  "IMPLEMENTED_ISOLATED_DEPLOY_PENDING",
+  "STAGING_BUILD_VERIFIED_ADMIN_CREDENTIAL_PENDING",
   "OPENAI_ADMIN_API_KEY",
   "GET /v1/organization/costs",
   "GET /v1/organization/usage/completions",
