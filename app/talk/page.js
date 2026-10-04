@@ -1628,6 +1628,26 @@ const [entryQueryResolved, setEntryQueryResolved] = useState(false);
     if (params.has("free")) {
       setAuthPanelMode("free");
       setShowAuthPanel(true);
+    } else if (params.has("freeAccessTalk")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(false);
+      setFreeAccessEntry("talk");
+    } else if (params.has("freeAccessExplore")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(true);
+      setFreeAccessEntry("explore");
+    } else if (params.has("guestAccountTalk")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(false);
+      setGuestAccountEntry("talk");
+    } else if (params.has("guestAccountExplore")) {
+      setGuestEntry(false);
+      setGuestMain(true);
+      setShowExplore(true);
+      setGuestAccountEntry("explore");
     } else if (params.has("freeTalk")) {
       setGuestEntry(false);
       setGuestMain(true);
@@ -1687,6 +1707,8 @@ const [entryQueryResolved, setEntryQueryResolved] = useState(false);
   }, []);
 const [guestEntry, setGuestEntry] = useState(false);
 const [guestMain, setGuestMain] = useState(false);
+const [freeAccessEntry, setFreeAccessEntry] = useState(null);
+const [guestAccountEntry, setGuestAccountEntry] = useState(null);
 const [freeEntry, setFreeEntry] = useState(null);
 const [plusEntry, setPlusEntry] = useState(null);
 const [togetherEntry, setTogetherEntry] = useState(null);
@@ -4928,6 +4950,20 @@ clientCreatedAt: new Date().toISOString(),
             )}
           </section>
         )}
+        {freeAccessEntry && (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",margin:"0 0 18px",padding:"12px 14px",border:"1px solid rgba(36,91,72,.20)",borderRadius:"14px",background:"rgba(244,249,245,.96)",color:"#245b48"}}>
+            <a href="/free-access" style={{color:"#245b48",fontWeight:800,textDecoration:"none"}}>← Back to HIISSA FREE</a>
+            <span style={{fontSize:"13px",fontWeight:800,color:"#5f7d6e"}}>{freeAccessEntry === "explore" ? "FREE • Explore" : "FREE • Talk"}</span>
+          </div>
+        )}
+
+        {guestAccountEntry && (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",margin:"0 0 18px",padding:"12px 14px",border:"1px solid rgba(36,91,72,.20)",borderRadius:"14px",background:"rgba(255,250,239,.96)",color:"#245b48"}}>
+            <a href="/free/welcome" style={{color:"#245b48",fontWeight:800,textDecoration:"none"}}>← Back to HIISSA Guest</a>
+            <span style={{fontSize:"13px",fontWeight:800,color:"#8a6a25"}}>{guestAccountEntry === "explore" ? "GUEST • Explore" : "GUEST • Talk"}</span>
+          </div>
+        )}
+
         {freeEntry && (
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"12px",margin:"0 0 18px",padding:"12px 14px",border:"1px solid rgba(36,91,72,.20)",borderRadius:"14px",background:"rgba(244,249,245,.96)",color:"#245b48"}}>
             <a href="/free/welcome" style={{color:"#245b48",fontWeight:800,textDecoration:"none"}}>← Back to HIISSA FREE</a>
