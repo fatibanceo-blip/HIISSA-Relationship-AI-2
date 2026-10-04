@@ -78,8 +78,8 @@ for (const required of [
 
 for (const required of [
   'id: "hiissa.share-referral-foundation"',
-  'status: "founder-approved-implemented-isolated-testing-pending"',
-  'stage: "IMPLEMENTED_ISOLATED"',
+  'status: "founder-approved-preview-deployed-testing-pending"',
+  'stage: "PREVIEW_DEPLOYED"',
   "30-day eligibility window for later account attribution",
   "self-referral blocking",
   "do not add IP-address collection to the Stage 1 referral foundation",
