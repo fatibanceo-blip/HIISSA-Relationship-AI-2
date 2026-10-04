@@ -354,6 +354,7 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
   const [stats, setStats] = useState(null);
   const [distribution, setDistribution] = useState([]);
   const [writtenFeedback, setWrittenFeedback] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [publicReviews, setPublicReviews] = useState([]);
   const [errors, setErrors] = useState([]);
 
@@ -376,11 +377,13 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
         statsResult,
         distributionResult,
         writtenResult,
+        recommendationResult,
         publicResult,
       ] = await Promise.all([
         adminDataClient.rpc("get_hiissa_feedback_stats"),
         adminDataClient.rpc("get_hiissa_rating_distribution"),
         adminDataClient.rpc("get_hiissa_written_feedback"),
+        adminDataClient.rpc("get_hiissa_recommendations"),
         adminDataClient.rpc("get_hiissa_admin_public_reviews"),
       ]);
 
@@ -394,6 +397,9 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
 
       if (writtenResult.error) nextErrors.push("Private written feedback could not be loaded.");
       else setWrittenFeedback(writtenResult.data || []);
+
+      if (recommendationResult.error) nextErrors.push("Recommendations could not be loaded.");
+      else setRecommendations(recommendationResult.data || []);
 
       if (publicResult.error) nextErrors.push("Authorised public reviews could not be loaded.");
       else setPublicReviews(publicResult.data || []);
@@ -504,6 +510,35 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
+            <div className={styles.kicker}>RECOMMENDATIONS</div>
+            <h3>User ideas and improvements</h3>
+          </div>
+          <StatusPill label={`${recommendations.length} RECORDS`} compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          Recommendations are private product-improvement submissions. They are not public reviews and are not mixed into feedback ratings.
+        </p>
+        {recommendations.length === 0 ? (
+          <div className={styles.emptyState}>No recommendations have been submitted yet.</div>
+        ) : (
+          <div className={styles.feedbackList}>
+            {recommendations.slice(0, 10).map((item) => (
+              <article className={styles.feedbackItem} key={item.id}>
+                <div className={styles.featureMeta}>
+                  <span>RECOMMENDATION</span>
+                  <span>{item.suggestion_area || "No area selected"}</span>
+                </div>
+                <p><strong>Idea:</strong> {item.suggestion_text}</p>
+                {item.suggestion_why ? <p><strong>Why helpful:</strong> {item.suggestion_why}</p> : null}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
             <div className={styles.kicker}>PUBLIC REVIEWS</div>
             <h3>Separate permission only</h3>
           </div>
@@ -533,7 +568,7 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
         <div className={styles.kicker}>MODULE 4 OPERATIONAL DETAIL</div>
         <div>SOURCE STATUS<span>{loading ? "Checking real Staging source" : health}</span></div>
         <div>PRIVATE / PUBLIC BOUNDARY<span>Separate permission required</span></div>
-        <div>RECOMMENDATIONS<span>Existing suggestion field preserved; dedicated review workflow comes next</span></div>
+        <div>RECOMMENDATIONS<span>Connected Staging submission + read-only Module 4 view</span></div>
         <div>AUDIT / PERMISSION HISTORY<span>Will connect only from verified source evidence</span></div>
       </section>
     </>
