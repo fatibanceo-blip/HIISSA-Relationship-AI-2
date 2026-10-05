@@ -79,7 +79,7 @@ for (const required of [
 
 for (const required of [
   "is_hiissa_admin",
-  "Founder Preview only",
+  "FOUNDER PREVIEW ONLY",
   "STAGING · HIBERNATED",
   "Built · Hibernated",
   "Assigned Work",
