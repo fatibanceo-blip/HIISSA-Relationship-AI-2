@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { prepareGentleCheckIn } from "../../../lib/people-experience/gentle-checkin.js";
 
 export const dynamic = "force-dynamic";
 
@@ -445,6 +446,20 @@ async function staffWelcomePayload(actor, request) {
     };
   }
 
+  const checkIn = await prepareGentleCheckIn({
+    adminClient: actor.adminClient,
+    actorUserId: actor.userId,
+    moduleId: MODULE_ID,
+    actorMode: actor.mode,
+    contextLabel:
+      actor.mode === "FOUNDER_PREVIEW"
+        ? "Founder Preview · Customer Support"
+        : "Customer Support",
+    localDate,
+    welcomeMode: mode,
+    isFounderPreview: actor.mode === "FOUNDER_PREVIEW",
+  });
+
   return {
     status: "READY",
     scope: "customer-support-staff-welcome-staging",
@@ -459,6 +474,7 @@ async function staffWelcomePayload(actor, request) {
     showFullWelcome: mode !== "QUIET_RETURN",
     isFounderPreview: actor.mode === "FOUNDER_PREVIEW",
     previousVisitMinutesAgo: minutesSincePrevious,
+    checkIn,
     privacy: {
       emotionalCheckinRecorded: false,
       performanceScoreRecorded: false,
