@@ -102,33 +102,33 @@ const FOUNDER_WORKSPACE_ROUTES = Object.freeze({
   }),
   technical_operations: Object.freeze({
     href: "/staff-workspace-preview?workspace=technical_operations&founderReturn=staff",
-    status: "STAGING BUILT · HIBERNATED",
-    note: "Founder-preview-only Technical Operations workspace is built in Staging. Ordinary staff access and external execution remain disabled.",
+    status: "STAGING BUILT · FOUNDER TESTING",
+    note: "Founder-preview-only Technical Operations workspace is built in Staging for Founder testing. Production hibernation deployment, ordinary staff access and external execution remain separately gated.",
   }),
   finance_subscriptions: Object.freeze({
     href: "/staff-workspace-preview?workspace=finance_subscriptions&founderReturn=staff",
-    status: "STAGING BUILT · HIBERNATED",
-    note: "Founder-preview-only Finance & Subscriptions workspace is built in Staging. Real payment execution and ordinary staff access remain disabled.",
+    status: "STAGING BUILT · FOUNDER TESTING",
+    note: "Founder-preview-only Finance & Subscriptions workspace is built in Staging for Founder testing. Production hibernation deployment, real payment execution and ordinary staff access remain separately gated.",
   }),
   safety_safeguarding: Object.freeze({
     href: "/staff-workspace-preview?workspace=safety_safeguarding&founderReturn=staff",
-    status: "STAGING BUILT · HIBERNATED",
-    note: "Founder-preview-only Safety & Safeguarding workspace is built in Staging. Exceptional Access and reserved emergency escalation are not activated.",
+    status: "STAGING BUILT · FOUNDER TESTING",
+    note: "Founder-preview-only Safety & Safeguarding workspace is built in Staging for Founder testing. Production hibernation deployment, Exceptional Access and reserved emergency escalation remain separately gated.",
   }),
   privacy_data_protection: Object.freeze({
     href: "/staff-workspace-preview?workspace=privacy_data_protection&founderReturn=staff",
-    status: "STAGING BUILT · HIBERNATED",
-    note: "Founder-preview-only Privacy & Data Protection workspace is built in Staging. Real rights execution and ordinary staff access remain disabled.",
+    status: "STAGING BUILT · FOUNDER TESTING",
+    note: "Founder-preview-only Privacy & Data Protection workspace is built in Staging for Founder testing. Production hibernation deployment, real rights execution and ordinary staff access remain separately gated.",
   }),
   content_moderation: Object.freeze({
     href: "/staff-workspace-preview?workspace=content_moderation&founderReturn=staff",
-    status: "STAGING BUILT · HIBERNATED",
-    note: "Founder-preview-only Content & Moderation workspace is built in Staging. No real content action, publication or ordinary staff access is activated.",
+    status: "STAGING BUILT · FOUNDER TESTING",
+    note: "Founder-preview-only Content & Moderation workspace is built in Staging for Founder testing. Production hibernation deployment, real content action, publication and ordinary staff access remain separately gated.",
   }),
   product_quality: Object.freeze({
     href: "/staff-workspace-preview?workspace=product_quality&founderReturn=staff",
-    status: "STAGING BUILT · HIBERNATED",
-    note: "Founder-preview-only Product & Quality workspace is built in Staging. It reuses approved quality principles without activating release authority.",
+    status: "STAGING BUILT · FOUNDER TESTING",
+    note: "Founder-preview-only Product & Quality workspace is built in Staging for Founder testing. Production hibernation deployment and release authority remain separately gated.",
   }),
 });
 
