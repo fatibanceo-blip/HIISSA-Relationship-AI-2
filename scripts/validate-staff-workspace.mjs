@@ -33,6 +33,18 @@ const gentleCheckInStylePath = path.join(
   "people-experience",
   "GentleCheckIn.module.css"
 );
+const automaticGentleCheckInPath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "AutomaticGentleCheckIn.js"
+);
+const automaticGentleCheckInStylePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "AutomaticGentleCheckIn.module.css"
+);
 const workdayCloseComponentPath = path.join(
   root,
   "components",
@@ -102,6 +114,8 @@ for (const [label, file] of [
   ["Gentle check-in policy", gentleCheckInPolicyPath],
   ["Gentle check-in component", gentleCheckInComponentPath],
   ["Gentle check-in styles", gentleCheckInStylePath],
+  ["Automatic Gentle Check-In controller", automaticGentleCheckInPath],
+  ["Automatic Gentle Check-In styles", automaticGentleCheckInStylePath],
   ["Workday Close component", workdayCloseComponentPath],
   ["Workday Close styles", workdayCloseStylePath],
   ["Private Appreciation component", privateAppreciationComponentPath],
@@ -119,6 +133,8 @@ const css = read(cssPath);
 const gentleCheckInPolicy = read(gentleCheckInPolicyPath);
 const gentleCheckInComponent = read(gentleCheckInComponentPath);
 const gentleCheckInStyles = read(gentleCheckInStylePath);
+const automaticGentleCheckIn = read(automaticGentleCheckInPath);
+const automaticGentleCheckInStyles = read(automaticGentleCheckInStylePath);
 const workdayCloseComponent = read(workdayCloseComponentPath);
 const workdayCloseStyles = read(workdayCloseStylePath);
 const privateAppreciationComponent = read(privateAppreciationComponentPath);
@@ -264,6 +280,12 @@ for (const required of [
   '"WORKDAY_CLOSE_READY"',
   "externalEffectPerformed: false",
   "productionEffectPerformed: false",
+  '"CARE_CHECK_READY"',
+  'searchParams.get("care") === "1"',
+  '"checkin_snooze"',
+  '"checkin_resolve"',
+  "recordGentleCheckInState",
+  "answerRecorded: false",
 ]) requireText("Protected staff workspace API", staffApi, required);
 
 for (const forbidden of [
@@ -331,16 +353,29 @@ for (const required of [
   'visitAuditEvent: "staff_workspace_visit"',
   "antiRepeatMessages: true",
   "founderTypographyLeak: false",
-  "FOUNDER_AND_CUSTOMER_SUPPORT_STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
+  "FOUNDER_APPROVED_AUTOMATIC_TIMED_CARE_IMPLEMENTED_ON_STAGING_BRANCH_BUILD_PENDING",
   "activeRule: \"DAYPART_CARE\"",
   "maximumOpportunitiesPerActiveDay: 3",
+  "typicalOpportunitiesPerActiveDay: 2",
   "maximumPerDaypart: 1",
   "minimumGapMinutes: 180",
+  "automaticWhileActive: true",
+  "forcedEmotionalDisclosure: false",
+  "snoozeCreatesExtraCheckIn: false",
   "historical48HourRule",
+  "automaticTimedCare",
+  "ignoredBehaviour",
+  "safeMomentRule",
+  "activeWorkDelayMinutes: 30",
+  "snoozeMinutes: 30",
+  "eligibilityPollMinutes: 15",
+  "founderPreviewAcceleratedDelaySeconds: 8",
   "answerRecordedInAdminAudit: false",
   "performanceScoreCreated: false",
   "managerSignalCreated: false",
   'auditOfferEvent: "people_experience_checkin_offered"',
+  'auditSnoozeEvent: "people_experience_checkin_snoozed"',
+  'auditResolvedEvent: "people_experience_checkin_resolved"',
   "Customer Support calmer start opens Assigned Work first",
   "export const HIISSA_PEOPLE_EXPERIENCE_CAPABILITY_REGISTRY",
   "hiissa.people-experience.daypart-care-cadence",
@@ -422,18 +457,28 @@ for (const required of [
   "HISTORICAL_PEOPLE_CHECKIN_MIN_HOURS = 48",
   'PEOPLE_CHECKIN_ACTIVE_CADENCE = "DAYPART_CARE"',
   "PEOPLE_CHECKIN_MIN_GAP_MINUTES = 180",
+  "PEOPLE_CHECKIN_MAX_PER_ACTIVE_DAY = 3",
+  "PEOPLE_CHECKIN_SNOOZE_MINUTES = 30",
+  "PEOPLE_CHECKIN_ACTIVE_WORK_DELAY_MINUTES = 30",
+  "PEOPLE_CHECKIN_POLL_MINUTES = 15",
   "peopleCheckInDaypart",
   '"people_experience_checkin_offered"',
-  '"DAYPART_ALREADY_OFFERED"',
+  '"people_experience_checkin_snoozed"',
+  '"people_experience_checkin_resolved"',
+  '"DAILY_MAXIMUM_REACHED"',
   '"MINIMUM_GAP_NOT_MET"',
-  "care_daypart: daypart",
-  "active_cadence: PEOPLE_CHECKIN_ACTIVE_CADENCE",
+  '"DAYPART_ALREADY_RESOLVED"',
+  '"SNOOZE_COMPLETE"',
+  '"OFFER_PENDING"',
+  "maximum_per_active_day: PEOPLE_CHECKIN_MAX_PER_ACTIVE_DAY",
   "answer_recorded: false",
+  "answer_value_recorded: false",
   "emotional_score_created: false",
   "performance_score_created: false",
   "manager_signal_created: false",
   "explicit_support_escalation_created: false",
   'welcomeMode === "QUIET_RETURN"',
+  "recordGentleCheckInState",
 ]) requireText("Gentle check-in privacy policy", gentleCheckInPolicy, required);
 
 for (const required of [
@@ -448,7 +493,8 @@ for (const required of [
   "I could use a calmer start",
   "Private by default.",
   "Give me a calmer start",
-  "records only that a check-in was offered, not which answer you chose",
+  "onResponded?.()",
+  "if (onNotNow) onNotNow()",
   "Founder Preview — this demonstrates the staff check-in experience.",
 ]) requireText("Shared gentle check-in component", gentleCheckInComponent, required);
 
@@ -466,6 +512,41 @@ for (const required of [
   "@media (prefers-reduced-motion: reduce)",
   "font-family: Arial, Helvetica, sans-serif;",
 ]) requireText("Shared gentle check-in styles", gentleCheckInStyles, required);
+
+for (const required of [
+  "PREVIEW_AUTO_DELAY_MS = 8000",
+  "DEFAULT_ACTIVE_WORK_DELAY_MS = 30 * 60 * 1000",
+  "DEFAULT_POLL_MS = 15 * 60 * 1000",
+  "DEFAULT_SNOOZE_MS = 30 * 60 * 1000",
+  "AUTO_MINIMISE_MS = 60 * 1000",
+  "RECENT_ACTIVITY_WINDOW_MS = 5 * 60 * 1000",
+  "SAFE_MOMENT_RETRY_MS = 2 * 60 * 1000",
+  "document.activeElement",
+  "recentlyActive",
+  "editing",
+  "A gentle check-in is waiting",
+  "Gentle check-in snoozed",
+  "Respond now",
+  "Not now",
+  "recordState(\"resolved\"",
+  "recordState(\"snoozed\"",
+  "manualRequestKey",
+]) requireText("Automatic Gentle Check-In controller", automaticGentleCheckIn, required);
+
+for (const forbidden of [
+  "localStorage",
+  "sessionStorage",
+]) forbidText("Automatic Gentle Check-In controller", automaticGentleCheckIn, forbidden);
+
+for (const required of [
+  ".reminder",
+  ".reminderActions",
+  ".respond",
+  ".snooze",
+  "@media(max-width:640px)",
+  "@media(prefers-reduced-motion:reduce)",
+]) requireText("Automatic Gentle Check-In reminder styles", automaticGentleCheckInStyles, required);
+
 
 for (const forbidden of [
   "ui-serif",
@@ -603,6 +684,11 @@ console.log("- Real staff identity comes from authorised profile metadata; Found
 console.log("- Staff welcome motivation rotates without performance scoring or mood surveillance");
 console.log("- Founder-only premium typography is blocked from staff welcome styles");
 console.log("- Daypart Care offers at most one morning, afternoon and evening check-in while active");
+console.log("- Automatic timed Daypart Care pops up while actively working; staff do not need to navigate to it");
+console.log("- Maximum three per active day is explicit; snooze/reminder does not create extra check-ins");
+console.log("- Ignored prompts minimise to a persistent reminder; Not now snoozes the same opportunity");
+console.log("- Care waits for safer moments rather than interrupting active typing or protected busy states");
+console.log("- Audit records offer/snooze/resolved delivery state only; emotional answer values remain private");
 console.log("- Daypart Care enforces a 180-minute minimum gap and suppresses quiet returns");
 console.log("- Historical 48-hour cadence remains preserved as superseded design evidence");
 console.log("- Check-in answers are not written to the Admin audit trail or performance/manager signals");
