@@ -33,6 +33,16 @@ const founderWelcomePath = path.join(
   "founder-welcome",
   "route.js"
 );
+const activityTimelinePath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "activity-timeline",
+  "route.js"
+);
+const recordTimePath = path.join(root, "lib", "hiissa-record-time.js");
 
 const errors = [];
 
@@ -45,6 +55,8 @@ if (!fs.existsSync(stylePath)) errors.push("Founder Control Room stylesheet is m
 if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security summary endpoint is missing.");
 if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI provider summary endpoint is missing.");
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
+if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activity timeline endpoint is missing.");
+if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
 
 const authenticatedPagePath = path.join(root, "app", "admin", "control-room", "page.js");
 const authenticatedClientPath = path.join(root, "app", "admin", "control-room", "AuthenticatedControlRoom.js");
@@ -86,6 +98,12 @@ const openAiProviderSummary = fs.existsSync(openAiProviderSummaryPath)
   : "";
 const founderWelcome = fs.existsSync(founderWelcomePath)
   ? fs.readFileSync(founderWelcomePath, "utf8")
+  : "";
+const activityTimeline = fs.existsSync(activityTimelinePath)
+  ? fs.readFileSync(activityTimelinePath, "utf8")
+  : "";
+const recordTime = fs.existsSync(recordTimePath)
+  ? fs.readFileSync(recordTimePath, "utf8")
   : "";
 
 for (const label of [
@@ -136,6 +154,15 @@ for (const required of [
   "alertBadgeCritical",
   "criticalAlertToast",
   "Open Alerts",
+  "FOUNDER ACTIVITY TIMELINE",
+  "What happened, and exactly when",
+  'fetch("/api/admin/control-room/activity-timeline"',
+  "formatHiissaRecordTime",
+  "formatHiissaFullRecordTime",
+  "Approval record created",
+  "Submitted for processing",
+  "recordTimeGrid",
+  "HIISSA timestamp rule:",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
@@ -146,6 +173,12 @@ for (const required of [
   ".criticalAlertToast",
   ".contextBack",
   "grid-template-columns:repeat(2,minmax(0,1fr));",
+  ".activityTimelineSection",
+  ".activityEvent",
+  ".activityTime",
+  ".recordTimeGrid",
+  ".approvalQueueTime",
+  ".timestampStandardNote",
 ]) requireText("Founder Control Room styles", styles, required);
 
 const welcomeNameStart = styles.indexOf(".welcomeName{");
@@ -350,6 +383,32 @@ for (const required of [
   '"Cache-Control": "no-store"',
 ]) requireText("Founder welcome intelligence endpoint", founderWelcome, required);
 
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
+  '.from("admin_audit_events")',
+  '"occurred_at"',
+  '.order("occurred_at", { ascending: false })',
+  'storage: "UTC_AUTHORITATIVE_DATABASE_TIMESTAMP"',
+  'display: "BROWSER_LOCAL_TIME"',
+  "immutableOriginalRequired: true",
+  "createdAndUpdatedRemainDistinct: true",
+  "privacy-safe operational metadata only",
+  '"Cache-Control": "no-store"',
+]) requireText("Founder activity timeline endpoint", activityTimeline, required);
+
+for (const required of [
+  "formatHiissaRecordTime",
+  "formatHiissaFullRecordTime",
+  "hiissaTimestampRecord",
+  'hour12: true',
+  '"Today ·',
+  "toISOString()",
+  "hiissaResolvedTimeZone",
+]) requireText("Shared HIISSA record time formatter", recordTime, required);
+
 for (const registryRule of [
   "export const CONTROL_ROOM_MODULE_REGISTRY",
   "futureExpansionAllowed: true",
@@ -426,6 +485,20 @@ for (const registryRule of [
   "privacy_data_protection",
   "content_moderation",
   "product_quality",
+  "export const HIISSA_UNIVERSAL_TIMESTAMP_ACTIVITY_STANDARD",
+  "hiissa.universal-timestamp-activity",
+  "HIISSA Universal Timestamp & Activity Record Standard",
+  "Every meaningful dashboard event",
+  "originalEventTimeMustNotBeOverwritten: true",
+  "createdAndUpdatedRemainDistinct: true",
+  "DETECTED_AT",
+  "ACTION_STARTED_AT",
+  "ACTION_COMPLETED_AT",
+  "VERIFIED_AT",
+  "Do not invent a historical date/time",
+  "Founder Activity Timeline reads real Staging admin_audit_events",
+  "timestampActivity",
+  "STAGING_TIMESTAMP_ACTIVITY_IMPLEMENTATION_BUILD_PENDING",
   "export const HIISSA_PEOPLE_EXPERIENCE_LAYER",
   "hiissa.people-experience",
   "HIISSA People Experience Layer",
@@ -507,6 +580,10 @@ console.log("- Founder Back navigation history is present across Overview, Modul
 console.log("- Mobile primary navigation is protected against clipped destinations");
 console.log("- Alert number badges and verified-critical-only red interruption are protected");
 console.log("- Founder motivation uses anti-repeat rotation");
+console.log("- Universal Timestamp & Activity Record Standard is registered");
+console.log("- Founder Activity Timeline reads real Staging audit timestamps");
+console.log("- Approval and staff records use the shared local-time display formatter");
+console.log("- Created/updated/history preservation and no-fabricated-time rules are protected");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
 console.log("- Module 9 protected OpenAI provider connection layer is Staging-only, Admin-gated and read-only");
 console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
