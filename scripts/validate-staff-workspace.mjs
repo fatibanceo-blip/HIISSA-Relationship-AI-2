@@ -407,6 +407,18 @@ for (const forbidden of [
 ]) forbidText("Staff welcome styles", css, forbidden);
 
 for (const required of [
+  "STAFF WORKSPACE INTERACTION ACKNOWLEDGEMENT SWEEP",
+  ".primaryButton:not(:disabled):active",
+  ".secondaryButton:not(:disabled):active",
+  ".navItem:active",
+  ".navActive:active",
+  ".staffWelcomeEnter:active",
+  ".staffWelcomeSkip:active",
+  ".primaryButton:disabled",
+  ".secondaryButton:disabled",
+]) requireText("Staff workspace interaction feedback", css, required);
+
+for (const required of [
   "HISTORICAL_PEOPLE_CHECKIN_MIN_HOURS = 48",
   'PEOPLE_CHECKIN_ACTIVE_CADENCE = "DAYPART_CARE"',
   "PEOPLE_CHECKIN_MIN_GAP_MINUTES = 180",
@@ -598,6 +610,7 @@ console.log("- Staff Calm Start begins with Assigned Work without changing workl
 console.log("- Customer Support Workday Close records a close event without mutating case state");
 console.log("- Workday Close warns when browser draft/note differs from the persisted Staging record");
 console.log("- Editable unsaved work offers Save before leaving");
+console.log("- Working staff buttons and navigation visibly acknowledge touch/press while disabled controls remain honestly disabled");
 console.log("- Private Appreciation remains nested inside Staff & Workspaces, not added as a top-level dashboard button");
 console.log("- Expanded Staging foundation supports fictional one/bulk/cross-department recipient selection");
 console.log("- Write it myself / Help me write it and multiple HIISSA-aligned suggestions are present without a live AI service");
