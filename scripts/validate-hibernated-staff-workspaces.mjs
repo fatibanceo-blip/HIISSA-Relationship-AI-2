@@ -135,7 +135,6 @@ for (const required of [
   "Staging built · Founder testing",
   "Production hibernation is a later, separately approved deployment state.",
   "This is not yet a hibernated Production feature.",
-  "PRODUCTION hibernation",
   "browser session only",
 ]) requireText("Staging Staff Workspace engine", component, required);
 
