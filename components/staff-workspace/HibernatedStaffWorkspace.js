@@ -280,7 +280,7 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
     return (
       <main className={styles.page}>
         <section className={styles.gateCard}>
-          <div className={styles.kicker}>HIISSA STAFF WORKSPACE · HIBERNATED</div>
+          <div className={styles.kicker}>HIISSA STAFF WORKSPACE · STAGING PREVIEW</div>
           <h1>Founder sign-in required</h1>
           <p>
             This workspace is built for Staging review but remains hibernated. Ordinary staff access is not activated.
@@ -302,11 +302,11 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
     return (
       <main className={styles.page}>
         <section className={styles.gateCard}>
-          <div className={styles.kicker}>HIISSA STAFF WORKSPACE · HIBERNATED</div>
-          <h1>Hibernated workspace access unavailable</h1>
+          <div className={styles.kicker}>HIISSA STAFF WORKSPACE · STAGING PREVIEW</div>
+          <h1>Staging workspace preview access unavailable</h1>
           <p>
             {authState === "blocked"
-              ? "This signed-in account does not have authorised Founder/Admin access to the hibernated Staging workspace."
+              ? "This signed-in account does not have authorised Founder/Admin access to this Staging workspace preview."
               : "Admin authentication is not available in this environment."}
           </p>
           <Link className={styles.secondaryButton} href="/admin/login">
@@ -344,9 +344,9 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
     },
     {
       label: "Activation state",
-      value: "HIBERNATED · NOT ACTIVATED",
+      value: "STAGING BUILT · PRODUCTION NOT DEPLOYED",
       detail:
-        "No ordinary staff access, real employee record, external execution or Production effect is enabled.",
+        "Founder Preview only. Production hibernation has not yet been reached; ordinary staff access and real operational effects remain disabled.",
       tone: "good",
     },
   ];
@@ -359,11 +359,11 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
             <div className={styles.kicker}>HIISSA STAFF WORKSPACE</div>
             <h1>{workspace.label}</h1>
             <p>
-              Complete fictional Staging interface for Founder review. The workspace is built under the shared Staff Workspace Shell and remains hibernated until separate activation approval.
+              Complete fictional Staging interface for Founder review. The workspace is built under the shared Staff Workspace Shell and is still in Staging. Production hibernation is a later, separately approved deployment state.
             </p>
           </div>
           <div className={styles.heroPills}>
-            <StatusPill tone="hibernated">STAGING · HIBERNATED</StatusPill>
+            <StatusPill tone="working">STAGING · BUILT</StatusPill>
             <StatusPill>FOUNDER PREVIEW ONLY</StatusPill>
           </div>
         </header>
@@ -423,18 +423,18 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
           />
           <InfoCard
             label="Activation boundary"
-            value="Built · Hibernated"
-            detail="Ordinary staff access and real operational effects remain disabled."
+            value="Staging built · Founder testing"
+            detail="Production deployment has not been approved. Ordinary staff access and real operational effects remain disabled."
           />
         </section>
 
         <section className={styles.hibernationNotice}>
           <div>
-            <span className={styles.kicker}>BUILD COMPLETE THEN HIBERNATE</span>
-            <strong>This interface is built so HIISSA is ready before activation.</strong>
+            <span className={styles.kicker}>STAGING BUILD → TEST → PRODUCTION HIBERNATION</span>
+            <strong>This interface is built in Staging so it can be fully tested before any Production deployment.</strong>
           </div>
           <p>
-            Hibernation means the workspace can be inspected and tested by the Founder in Staging, while real staff access, real data and final external/material actions stay switched off.
+            This is not yet a hibernated Production feature. After Staging completion, certification and Founder practical PASS, a separate Founder approval is required before the finished feature may be deployed into Production with activation OFF. That later state is HIISSA hibernation.
           </p>
         </section>
 
@@ -778,11 +778,11 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
 
         <section className={styles.activationFooter}>
           <div>
-            <span className={styles.kicker}>HIBERNATION BOUNDARY</span>
-            <strong>Built for review. Not activated for ordinary staff.</strong>
+            <span className={styles.kicker}>STAGING / PRODUCTION BOUNDARY</span>
+            <strong>Built in Staging for review. Not yet deployed to Production.</strong>
           </div>
           <p>
-            Real employee onboarding, real role assignment, persistent department work records, live notifications, external execution and Production release remain separate Founder-controlled gates.
+            Real employee onboarding, real role assignment, persistent department work records, live notifications, external execution, Production hibernation deployment and later activation remain separate Founder-controlled gates.
           </p>
         </section>
       </section>
@@ -813,7 +813,7 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
             ? "There is text in the Work in Progress editor that has not been saved into the preview's Saved Draft state."
             : ""
         }
-        sourceNote="Hibernated Founder Preview · browser session only · no Staging database write · no Production effect."
+        sourceNote="Staging Founder Preview · browser session only · no Staging database write · no Production effect."
         actions={[
           {
             label: "Return to current work",
