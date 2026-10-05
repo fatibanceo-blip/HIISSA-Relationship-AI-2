@@ -25,14 +25,15 @@
   margin-top: 8px;
 }
 
-.surfaceHeading h3 {
+.surfaceHeading h3,
+.finalReview h4 {
   margin: 0;
   color: #244f3e;
 }
 
 .surfaceHeading p {
   margin: 7px 0 0;
-  max-width: 720px;
+  max-width: 760px;
   color: #62756c;
   line-height: 1.55;
 }
@@ -48,46 +49,310 @@
   font-weight: 800;
 }
 
-.previewGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr);
-  gap: 18px;
-  margin-top: 20px;
+.identityNotice,
+.appreciationMoment,
+.selectionSummary,
+.globalEvidence,
+.deliveryBoundary,
+.boundaryNote {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f1f5ef;
+  color: #52675d;
+  line-height: 1.5;
 }
 
-.composePanel,
-.recipientPreview,
-.emptyState {
+.identityNotice {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(36, 79, 62, 0.12);
+}
+
+.identityNotice strong,
+.appreciationMoment strong,
+.selectionSummary strong,
+.globalEvidence strong,
+.deliveryBoundary strong,
+.boundaryNote strong {
+  color: #315b49;
+}
+
+.appreciationMoment {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  background: linear-gradient(145deg, #f5f8f1, #fffaf2);
+  border: 1px solid rgba(36, 79, 62, 0.12);
+}
+
+.appreciationMoment > div {
+  display: grid;
+  gap: 6px;
+}
+
+.appreciationMoment > span {
+  color: #718078;
+  font-size: 0.8rem;
+}
+
+.sectionBlock {
+  margin-top: 20px;
   padding: 18px;
   border: 1px solid rgba(23, 61, 49, 0.11);
-  border-radius: 14px;
+  border-radius: 16px;
   background: #fff;
 }
 
-.composePanel label {
-  display: block;
-  margin-bottom: 8px;
+.stepHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.stepHeading > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: #285b46;
+  color: #fff;
+  font-weight: 800;
+}
+
+.stepHeading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.stepHeading strong {
+  color: #315b49;
+  font-size: 1rem;
+}
+
+.stepHeading small {
+  color: #718078;
+  line-height: 1.45;
+}
+
+.departmentChips,
+.modeRow,
+.messageMode,
+.directoryTools,
+.draftRow,
+.suggestionHeader,
+.savedGroups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+}
+
+.departmentChips,
+.modeRow {
+  margin-top: 16px;
+}
+
+.choice,
+.choiceActive,
+.secondaryButton,
+.textButton,
+.previewButton {
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.choice,
+.choiceActive {
+  padding: 8px 11px;
+  border: 1px solid rgba(36, 79, 62, 0.17);
+  background: #fff;
+  color: #4d655a;
+  font-weight: 700;
+}
+
+.choiceActive {
+  border-color: rgba(36, 79, 62, 0.35);
+  background: #e7f0e8;
+  color: #244f3e;
+}
+
+.secondaryButton {
+  padding: 8px 11px;
+  border: 1px solid rgba(36, 79, 62, 0.18);
+  background: #eef4ee;
   color: #315b49;
   font-weight: 800;
 }
 
-.composePanel textarea {
-  width: 100%;
+.textButton {
+  padding: 7px 4px;
+  border: 0;
+  background: transparent;
+  color: #315b49;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.directoryTools {
+  margin-top: 14px;
+}
+
+.directoryTools input,
+.helpControls select,
+.composePanel textarea,
+.personalisedList textarea,
+.founderNote textarea {
   box-sizing: border-box;
-  resize: vertical;
-  padding: 12px;
   border: 1px solid rgba(23, 61, 49, 0.2);
   border-radius: 11px;
   background: #fff;
   color: #243b32;
   font: inherit;
-  line-height: 1.5;
 }
 
-.composePanel textarea:focus-visible,
-.previewButton:focus-visible {
-  outline: 3px solid rgba(50, 102, 79, 0.2);
-  outline-offset: 2px;
+.directoryTools input {
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.peopleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.personCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(23, 61, 49, 0.11);
+  border-radius: 12px;
+  background: #fbfcf9;
+  cursor: pointer;
+}
+
+.personCard input {
+  margin-top: 3px;
+  accent-color: #285b46;
+}
+
+.personCard span {
+  display: grid;
+  gap: 2px;
+}
+
+.personCard strong {
+  color: #315b49;
+}
+
+.personCard small {
+  color: #718078;
+  line-height: 1.35;
+}
+
+.selectionSummary {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.savedGroups {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(23, 61, 49, 0.1);
+}
+
+.savedGroups small {
+  flex-basis: 100%;
+  color: #718078;
+}
+
+.writingHelp {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #f8faf6;
+  border: 1px solid rgba(23, 61, 49, 0.1);
+}
+
+.helpControls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.helpControls label {
+  display: grid;
+  gap: 6px;
+  color: #315b49;
+  font-weight: 800;
+}
+
+.helpControls select {
+  width: 100%;
+  padding: 10px 12px;
+}
+
+.suggestionHeader {
+  justify-content: space-between;
+  margin-top: 14px;
+}
+
+.suggestionHeader strong {
+  color: #315b49;
+}
+
+.suggestionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.suggestionCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(23, 61, 49, 0.1);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.suggestionCard p {
+  margin: 0;
+  color: #52675d;
+  line-height: 1.55;
+}
+
+.composePanel {
+  margin-top: 16px;
+}
+
+.composePanel label,
+.founderNote {
+  display: grid;
+  gap: 7px;
+  color: #315b49;
+  font-weight: 800;
+}
+
+.composePanel textarea,
+.personalisedList textarea,
+.founderNote textarea {
+  width: 100%;
+  padding: 12px;
+  resize: vertical;
+  line-height: 1.5;
 }
 
 .composeMeta {
@@ -99,16 +364,64 @@
   font-size: 0.75rem;
 }
 
+.messageMode {
+  margin-top: 15px;
+}
+
+.messageMode > span {
+  color: #60736a;
+  font-weight: 800;
+}
+
+.personalisedList {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.personalisedList details {
+  border: 1px solid rgba(23, 61, 49, 0.11);
+  border-radius: 11px;
+  padding: 10px 12px;
+  background: #fbfcf9;
+}
+
+.personalisedList summary {
+  cursor: pointer;
+  color: #315b49;
+  font-weight: 800;
+}
+
+.personalisedList textarea {
+  margin-top: 10px;
+}
+
+.founderNote {
+  margin-top: 15px;
+}
+
+.founderNote small {
+  color: #718078;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.draftRow {
+  margin-top: 12px;
+}
+
+.draftRow span {
+  color: #60736a;
+  font-size: 0.82rem;
+}
+
 .previewButton {
   margin-top: 14px;
   padding: 10px 14px;
   border: 0;
-  border-radius: 10px;
   background: #285b46;
   color: #fff;
-  font: inherit;
   font-weight: 800;
-  cursor: pointer;
 }
 
 .previewButton:disabled {
@@ -117,7 +430,6 @@
 }
 
 .safetyNote,
-.boundaryNote,
 .emptyState p,
 .emptyState small {
   color: #65776e;
@@ -129,48 +441,77 @@
   font-size: 0.82rem;
 }
 
-.recipientPreview {
+.finalReview {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(36, 79, 62, 0.14);
+  border-radius: 14px;
   background: linear-gradient(145deg, #f5f8f1, #fffaf2);
 }
 
-.appreciationCard {
-  margin-top: 12px;
-  padding: 18px;
-  border: 1px solid rgba(36, 79, 62, 0.14);
-  border-radius: 14px;
+.reviewTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.reviewTop > div {
+  display: grid;
+  gap: 6px;
+}
+
+.recipientReviewList {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.recipientReviewList article {
+  padding: 14px;
+  border: 1px solid rgba(23, 61, 49, 0.1);
+  border-radius: 12px;
   background: #fff;
 }
 
-.appreciationCard p {
-  margin: 10px 0 12px;
-  color: #32483e;
-  font-size: 1rem;
-  line-height: 1.6;
+.recipientReviewList article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.appreciationCard small {
-  color: #6a7b72;
-}
-
-.previewPlaceholder {
-  margin-top: 12px;
-  padding: 24px 18px;
-  border: 1px dashed rgba(36, 79, 62, 0.2);
-  border-radius: 12px;
+.recipientReviewList article > div span,
+.recipientReviewList small {
   color: #718078;
-  text-align: center;
+  font-size: 0.78rem;
 }
 
-.boundaryNote {
-  margin-top: 16px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #f1f5ef;
-  font-size: 0.84rem;
+.recipientReviewList p {
+  margin: 10px 0;
+  color: #3c5348;
+  line-height: 1.55;
+}
+
+.globalEvidence,
+.deliveryBoundary {
+  display: grid;
+  gap: 5px;
+}
+
+.globalEvidence small,
+.deliveryBoundary p {
+  margin: 0;
+  color: #65776e;
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .emptyState {
   margin-top: 16px;
+  padding: 18px;
+  border: 1px solid rgba(23, 61, 49, 0.11);
+  border-radius: 14px;
+  background: #fff;
 }
 
 .emptyState strong {
@@ -185,18 +526,60 @@
   display: block;
 }
 
+.choice:focus-visible,
+.choiceActive:focus-visible,
+.secondaryButton:focus-visible,
+.textButton:focus-visible,
+.previewButton:focus-visible,
+.directoryTools input:focus-visible,
+.helpControls select:focus-visible,
+.composePanel textarea:focus-visible,
+.personalisedList textarea:focus-visible,
+.founderNote textarea:focus-visible,
+.personCard input:focus-visible {
+  outline: 3px solid rgba(50, 102, 79, 0.2);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .suggestionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 760px) {
+  .founderSurface,
+  .recipientSurface {
+    padding: 16px;
+  }
+
   .surfaceHeading,
+  .appreciationMoment,
+  .selectionSummary,
+  .reviewTop,
+  .recipientReviewList article > div,
   .composeMeta {
     flex-direction: column;
   }
 
-  .previewGrid {
+  .peopleGrid,
+  .helpControls {
     grid-template-columns: 1fr;
   }
 
   .foundationPill {
     align-self: flex-start;
+  }
+
+  .departmentChips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: thin;
+  }
+
+  .departmentChips button {
+    flex: 0 0 auto;
   }
 }
 
