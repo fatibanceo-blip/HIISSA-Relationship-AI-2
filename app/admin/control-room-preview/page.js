@@ -8,6 +8,7 @@ import {
   formatHiissaRecordTime,
 } from "../../../lib/hiissa-record-time.js";
 import GentleCheckIn from "../../../components/people-experience/GentleCheckIn.js";
+import WorkdayClose from "../../../components/people-experience/WorkdayClose.js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -1000,6 +1001,126 @@ function FounderActivityTimeline({ authenticated }) {
   );
 }
 
+function FounderWorkdayClose({
+  authenticated,
+  open,
+  onClose,
+  onOpenApprovals,
+  onOpenAlerts,
+}) {
+  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!open || !authenticated || !adminDataClient) return;
+
+    let active = true;
+
+    async function loadCloseSummary() {
+      setLoading(true);
+      setError("");
+
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder session could not be verified.");
+          setLoading(false);
+          return;
+        }
+
+        const now = new Date();
+        const localDate = [
+          now.getFullYear(),
+          String(now.getMonth() + 1).padStart(2, "0"),
+          String(now.getDate()).padStart(2, "0"),
+        ].join("-");
+
+        const response = await fetch("/api/admin/control-room/workday-close", {
+          method: "POST",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            localDate,
+            localHour: now.getHours(),
+            timeZone:
+              Intl.DateTimeFormat().resolvedOptions().timeZone || "local-device",
+          }),
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The verified Founder closing summary could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setSummary(data);
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The verified Founder closing summary could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    loadCloseSummary();
+
+    return () => {
+      active = false;
+    };
+  }, [authenticated, open]);
+
+  return (
+    <WorkdayClose
+      open={open}
+      identity="FATI BANCE · FOUNDER"
+      heading="Before you finish for now…"
+      intro="HIISSA is checking the connected Staging sources so you can leave with a clear picture of what is recorded and what may still need you."
+      loading={loading}
+      error={error}
+      items={summary?.items || []}
+      caution={summary?.caution || ""}
+      sourceNote={summary?.sourceNote || ""}
+      actions={[
+        {
+          label: "Open Approvals",
+          primary: Boolean(
+            summary?.items?.find(
+              (item) =>
+                item.label === "Founder approvals waiting" &&
+                Number(item.value) > 0
+            )
+          ),
+          onClick: () => {
+            onClose();
+            onOpenApprovals();
+          },
+        },
+        {
+          label: "Open Alerts",
+          primary: false,
+          onClick: () => {
+            onClose();
+            onOpenAlerts();
+          },
+        },
+      ]}
+      onClose={onClose}
+    />
+  );
+}
+
 function Overview({
   registeredFeatures,
   authenticated,
@@ -1010,6 +1131,7 @@ function Overview({
   onOpenApprovals,
   onShowFullOverview,
 }) {
+  const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
   if (calmStart) {
     return (
       <>
@@ -1032,12 +1154,22 @@ function Overview({
             <button type="button" onClick={onShowFullOverview}>
               Show full Overview
             </button>
+            <button type="button" onClick={() => setWorkdayCloseOpen(true)}>
+              Finish for now
+            </button>
           </div>
           <div className={styles.calmStartPrivacy}>
             Your check-in answer was not sent to the Founder/Admin audit trail.
             This calmer presentation exists only for your current browser experience.
           </div>
         </section>
+        <FounderWorkdayClose
+          authenticated={authenticated}
+          open={workdayCloseOpen}
+          onClose={() => setWorkdayCloseOpen(false)}
+          onOpenApprovals={onOpenApprovals}
+          onOpenAlerts={onOpenAlerts}
+        />
       </>
     );
   }
@@ -1055,7 +1187,16 @@ function Overview({
               : "This isolated shell proves the navigation, Registry-driven feature visibility and information hierarchy before live operational feeds are connected."}
           </p>
         </div>
-        <StatusPill label="FOUNDATION" />
+        <div className={styles.overviewHeadingActions}>
+          <StatusPill label="FOUNDATION" />
+          <button
+            type="button"
+            className={styles.finishForNowButton}
+            onClick={() => setWorkdayCloseOpen(true)}
+          >
+            Finish for now
+          </button>
+        </div>
       </div>
 
       <section className={styles.notice}>
@@ -2507,6 +2648,13 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         <div>PRODUCTION CHANGES<span>Not enabled from this Staging module</span></div>
         <div>STAFF MANAGEMENT<span>Read-only now; controlled dashboard actions come after certification</span></div>
       </section>
+      <FounderWorkdayClose
+        authenticated={authenticated}
+        open={workdayCloseOpen}
+        onClose={() => setWorkdayCloseOpen(false)}
+        onOpenApprovals={onOpenApprovals}
+        onOpenAlerts={onOpenAlerts}
+      />
     </>
   );
 }
