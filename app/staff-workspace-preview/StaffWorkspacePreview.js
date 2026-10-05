@@ -68,6 +68,13 @@ function statusText(value) {
   return String(value || "unknown").replaceAll("_", " ").toUpperCase();
 }
 
+function localDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function suggestedTab(status) {
   if (status === "in_progress") return "in-progress";
   if (status === "saved_draft") return "drafts";
@@ -103,6 +110,8 @@ export default function StaffWorkspacePreview() {
   const [activeTab, setActiveTab] = useState("assigned");
   const [draft, setDraft] = useState("");
   const [internalNote, setInternalNote] = useState("");
+  const [welcome, setWelcome] = useState(null);
+  const [welcomeVisible, setWelcomeVisible] = useState(false);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -152,17 +161,35 @@ export default function StaffWorkspacePreview() {
 
   useEffect(() => {
     if (!session?.access_token) return;
-    loadWorkspace(session.access_token, true);
+    loadWorkspace(session.access_token, true, true);
   }, [session?.access_token]);
 
-  async function loadWorkspace(accessToken = session?.access_token, chooseTab = false) {
+  async function loadWorkspace(
+    accessToken = session?.access_token,
+    chooseTab = false,
+    includeWelcome = false
+  ) {
     if (!accessToken) return;
 
     setLoading(true);
     setError("");
 
     try {
-      const response = await fetch("/api/staff-workspace", {
+      let endpoint = "/api/staff-workspace";
+
+      if (includeWelcome) {
+        const now = new Date();
+        const params = new URLSearchParams({
+          welcome: "1",
+          localDate: localDateString(now),
+          localHour: String(now.getHours()),
+          timeZone:
+            Intl.DateTimeFormat().resolvedOptions().timeZone || "local-device",
+        });
+        endpoint += `?${params.toString()}`;
+      }
+
+      const response = await fetch(endpoint, {
         method: "GET",
         cache: "no-store",
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -180,6 +207,10 @@ export default function StaffWorkspacePreview() {
       }
 
       setActor(data.actor);
+      if (includeWelcome && data.welcome?.status === "READY") {
+        setWelcome(data.welcome);
+        setWelcomeVisible(Boolean(data.welcome.showFullWelcome));
+      }
       setItem(data.item);
       setDraft(data.item.draftResponse || "");
       setInternalNote(data.item.internalNote || "");
@@ -260,6 +291,8 @@ export default function StaffWorkspacePreview() {
     setAuthState("signedout");
     setItem(null);
     setActor(null);
+    setWelcome(null);
+    setWelcomeVisible(false);
     setLoading(false);
   }
 
@@ -312,7 +345,7 @@ export default function StaffWorkspacePreview() {
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={() => loadWorkspace(session.access_token, true)}
+              onClick={() => loadWorkspace(session.access_token, true, true)}
             >
               Retry
             </button>
@@ -333,7 +366,19 @@ export default function StaffWorkspacePreview() {
 
   return (
     <main className={styles.page}>
+      <StaffWelcomeMoment
+        welcome={welcome}
+        visible={welcomeVisible}
+        onDismiss={() => setWelcomeVisible(false)}
+      />
       <section className={styles.shell}>
+        {welcome && !welcomeVisible && welcome.mode === "QUIET_RETURN" ? (
+          <div className={styles.staffQuietWelcome} role="status">
+            <span>{welcome.greeting},</span>
+            <strong>{welcome.displayName}</strong>
+            <span className={styles.staffQuietRole}>{welcome.roleLabel}</span>
+          </div>
+        ) : null}
         <header className={styles.header}>
           <div>
             <div className={styles.kicker}>HIISSA STAFF WORKSPACE</div>
@@ -354,7 +399,7 @@ export default function StaffWorkspacePreview() {
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={() => loadWorkspace(session.access_token, true)}
+              onClick={() => loadWorkspace(session.access_token, true, false)}
               disabled={Boolean(busy)}
             >
               Refresh
@@ -517,6 +562,52 @@ export default function StaffWorkspacePreview() {
         </footer>
       </section>
     </main>
+  );
+}
+
+function StaffWelcomeMoment({ welcome, visible, onDismiss }) {
+  if (!welcome || !visible) return null;
+
+  return (
+    <div
+      className={styles.staffWelcomeOverlay}
+      role="dialog"
+      aria-modal="true"
+      aria-label="HIISSA staff welcome"
+    >
+      <section className={styles.staffWelcomeCard}>
+        <div className={styles.staffWelcomeAccent} aria-hidden="true" />
+        <div className={styles.staffWelcomeKicker}>HIISSA · PEOPLE EXPERIENCE</div>
+        {welcome.isFounderPreview ? (
+          <div className={styles.staffPreviewNotice}>
+            Founder Preview — staff identity is not being impersonated
+          </div>
+        ) : null}
+        <div className={styles.staffWelcomeGreeting}>{welcome.greeting}</div>
+        <div className={styles.staffWelcomeName}>{welcome.displayName}</div>
+        <div className={styles.staffWelcomeRole}>{welcome.roleLabel}</div>
+        <p className={styles.staffWelcomeMessage}>{welcome.motivation}</p>
+        {welcome.mode === "WELCOME_BACK" ? (
+          <p className={styles.staffWelcomeReturn}>
+            Good to have you back. Your authorised workspace is ready where you left it.
+          </p>
+        ) : null}
+        <button
+          type="button"
+          className={styles.staffWelcomeEnter}
+          onClick={onDismiss}
+        >
+          Enter workspace →
+        </button>
+        <button
+          type="button"
+          className={styles.staffWelcomeSkip}
+          onClick={onDismiss}
+        >
+          Skip welcome
+        </button>
+      </section>
+    </div>
   );
 }
 
