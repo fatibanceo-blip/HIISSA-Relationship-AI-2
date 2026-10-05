@@ -14,7 +14,7 @@ import {
 import {
   getHibernatedStaffWorkspace,
 } from "../../lib/hibernated-staff-workspaces.js";
-import GentleCheckIn from "../people-experience/GentleCheckIn.js";
+import AutomaticGentleCheckIn from "../people-experience/AutomaticGentleCheckIn.js";
 import WorkdayClose from "../people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../people-experience/PrivateAppreciation.js";
 import styles from "./HibernatedStaffWorkspace.module.css";
@@ -121,7 +121,7 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [lastActionAt, setLastActionAt] = useState(() => new Date());
-  const [checkInOpen, setCheckInOpen] = useState(false);
+  const [checkInManualKey, setCheckInManualKey] = useState(0);
   const [calmStart, setCalmStart] = useState(false);
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
 
@@ -383,9 +383,9 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
           <button
             type="button"
             className={styles.secondaryButton}
-            onClick={() => setCheckInOpen(true)}
+            onClick={() => setCheckInManualKey((value) => value + 1)}
           >
-            Gentle check-in preview
+            Replay gentle check-in preview
           </button>
           <button
             type="button"
@@ -778,14 +778,14 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
         </section>
       </section>
 
-      <GentleCheckIn
-        open={checkInOpen}
+      <AutomaticGentleCheckIn
+        enabled={authState === "ready"}
         displayName="FATI BANCE"
         roleLabel={`FOUNDER PREVIEW · ${workspace.label.toUpperCase()}`}
         previewOnly
-        daypart={currentDaypart()}
         privacyText="This Founder Preview selection is not staff data and is not used as a performance score or manager signal."
-        onClose={() => setCheckInOpen(false)}
+        pause={workdayCloseOpen}
+        manualRequestKey={checkInManualKey}
         onCalmStart={() => setCalmStart(true)}
       />
 
