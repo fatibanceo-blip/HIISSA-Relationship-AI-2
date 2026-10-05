@@ -496,7 +496,7 @@ for (const required of [
   "earlier local-only approval prototype remains preserved in source",
   "FOUNDER ACCESS CENTRE",
   "Departments & staff workspaces",
-  "Open in Founder Preview",
+  "Open {workspace.label} workspace",
   "founderReturn=staff",
   "STAFF DIRECTORY — FOUNDER SIDE",
   "NO STAFF PASSWORD REQUIRED",
