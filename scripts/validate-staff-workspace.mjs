@@ -133,7 +133,7 @@ for (const required of [
   'branch !== "feature/founder-control-room-staging"',
   'environment === "production"',
   "notFound()",
-  "<StaffWorkspacePreview />",
+  "<StaffWorkspacePreview workspaceId={workspaceId} />",
 ]) requireText("Staff workspace protected route", route, required);
 
 for (const required of [
