@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import styles from "./CalmerStartMode.module.css";
 
 export default function CalmerStartMode({
@@ -14,10 +15,35 @@ export default function CalmerStartMode({
   onShowAll,
   onExit,
 }) {
+  const modeRef = useRef(null);
+
+  useEffect(() => {
+    if (!active) return undefined;
+
+    const frame = window.requestAnimationFrame(() => {
+      const node = modeRef.current;
+      if (!node) return;
+
+      const reduceMotion = window.matchMedia?.(
+        "(prefers-reduced-motion: reduce)"
+      )?.matches;
+
+      node.focus({ preventScroll: true });
+      node.scrollIntoView({
+        block: "start",
+        behavior: reduceMotion ? "auto" : "smooth",
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [active]);
+
   if (!active) return null;
 
   return (
     <section
+      ref={modeRef}
+      tabIndex={-1}
       className={styles.mode}
       role="status"
       aria-label="HIISSA Calmer Start mode"
