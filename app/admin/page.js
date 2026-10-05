@@ -146,6 +146,36 @@ export default function AdminPage() {
           </p>
         </div>
 
+        <a
+          href="/admin/control-room"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            marginTop: "18px",
+            padding: "12px 16px",
+            borderRadius: "13px",
+            background: "#245b48",
+            color: "#fffdf8",
+            textDecoration: "none",
+            fontSize: "14px",
+            fontWeight: "850",
+          }}
+        >
+          Open Founder Control Room →
+        </a>
+
+        <p
+          style={{
+            margin: "10px 0 0",
+            color: "#6c7771",
+            fontSize: "13px",
+            lineHeight: "1.55",
+          }}
+        >
+          Your Founder Control Room is the central HIISSA HQ for departments,
+          staff oversight, approvals, operations and Founder-only access.
+        </p>
+
         {statsError ? <p style={errorStyle}>{statsError}</p> : null}
 
         {stats ? (
