@@ -353,8 +353,8 @@ export default function StaffWorkspacePreview() {
           <div className={styles.headerActions}>
             <StatusPill>STAGING · WORKING TEST</StatusPill>
             {actor?.mode === "FOUNDER_PREVIEW" ? (
-              <Link className={styles.secondaryButton} href="/admin/control-room">
-                ← Founder Control Room
+              <Link className={styles.secondaryButton} href="/admin/control-room?view=staff">
+                ← Back to Staff & Workspaces
               </Link>
             ) : null}
             <button
