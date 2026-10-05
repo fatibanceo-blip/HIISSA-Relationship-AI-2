@@ -100,6 +100,36 @@ const FOUNDER_WORKSPACE_ROUTES = Object.freeze({
     status: "WORKING STAGING",
     note: "Persistent Customer Support workflow and Founder submission gate are connected in Staging.",
   }),
+  technical_operations: Object.freeze({
+    href: "/staff-workspace-preview?workspace=technical_operations&founderReturn=staff",
+    status: "STAGING BUILT · HIBERNATED",
+    note: "Founder-preview-only Technical Operations workspace is built in Staging. Ordinary staff access and external execution remain disabled.",
+  }),
+  finance_subscriptions: Object.freeze({
+    href: "/staff-workspace-preview?workspace=finance_subscriptions&founderReturn=staff",
+    status: "STAGING BUILT · HIBERNATED",
+    note: "Founder-preview-only Finance & Subscriptions workspace is built in Staging. Real payment execution and ordinary staff access remain disabled.",
+  }),
+  safety_safeguarding: Object.freeze({
+    href: "/staff-workspace-preview?workspace=safety_safeguarding&founderReturn=staff",
+    status: "STAGING BUILT · HIBERNATED",
+    note: "Founder-preview-only Safety & Safeguarding workspace is built in Staging. Exceptional Access and reserved emergency escalation are not activated.",
+  }),
+  privacy_data_protection: Object.freeze({
+    href: "/staff-workspace-preview?workspace=privacy_data_protection&founderReturn=staff",
+    status: "STAGING BUILT · HIBERNATED",
+    note: "Founder-preview-only Privacy & Data Protection workspace is built in Staging. Real rights execution and ordinary staff access remain disabled.",
+  }),
+  content_moderation: Object.freeze({
+    href: "/staff-workspace-preview?workspace=content_moderation&founderReturn=staff",
+    status: "STAGING BUILT · HIBERNATED",
+    note: "Founder-preview-only Content & Moderation workspace is built in Staging. No real content action, publication or ordinary staff access is activated.",
+  }),
+  product_quality: Object.freeze({
+    href: "/staff-workspace-preview?workspace=product_quality&founderReturn=staff",
+    status: "STAGING BUILT · HIBERNATED",
+    note: "Founder-preview-only Product & Quality workspace is built in Staging. It reuses approved quality principles without activating release authority.",
+  }),
 });
 
 const adminDataClient =
