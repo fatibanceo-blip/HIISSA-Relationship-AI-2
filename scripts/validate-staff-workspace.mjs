@@ -161,7 +161,7 @@ for (const required of [
   "export const STAFF_WORKSPACE_SHELL_STANDARD",
   'status: "founder-approved-fictional-staging-persistent-workflow-implementation-in-progress"',
   "customerSupportPrototype",
-  'status: "PERSISTENT_STAGING_WORKFLOW_IMPLEMENTED_BUILD_PENDING"',
+  'status: "STAGING_BUILD_VERIFIED_FOUNDER_END_TO_END_TEST_PENDING"',
   'route: "/staff-workspace-preview"',
   'workspaceId: "customer_support"',
   "persistentWorkflow",
