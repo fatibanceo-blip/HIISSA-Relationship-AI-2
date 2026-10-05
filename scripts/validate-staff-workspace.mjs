@@ -15,6 +15,24 @@ const cssPath = path.join(
   "staff-workspace-preview",
   "page.module.css"
 );
+const gentleCheckInPolicyPath = path.join(
+  root,
+  "lib",
+  "people-experience",
+  "gentle-checkin.js"
+);
+const gentleCheckInComponentPath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "GentleCheckIn.js"
+);
+const gentleCheckInStylePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "GentleCheckIn.module.css"
+);
 const staffApiPath = path.join(root, "app", "api", "staff-workspace", "route.js");
 const founderApiPath = path.join(
   root,
@@ -56,6 +74,9 @@ for (const [label, file] of [
   ["Staff workspace route", routePath],
   ["Staff workspace client", clientPath],
   ["Staff workspace styles", cssPath],
+  ["Gentle check-in policy", gentleCheckInPolicyPath],
+  ["Gentle check-in component", gentleCheckInComponentPath],
+  ["Gentle check-in styles", gentleCheckInStylePath],
   ["Staff workspace API", staffApiPath],
   ["Founder staff approval API", founderApiPath],
   ["Experience Registry", registryPath],
@@ -65,6 +86,9 @@ for (const [label, file] of [
 const route = read(routePath);
 const client = read(clientPath);
 const css = read(cssPath);
+const gentleCheckInPolicy = read(gentleCheckInPolicyPath);
+const gentleCheckInComponent = read(gentleCheckInComponentPath);
+const gentleCheckInStyles = read(gentleCheckInStylePath);
 const staffApi = read(staffApiPath);
 const founderApi = read(founderApiPath);
 const registry = read(registryPath);
@@ -127,6 +151,14 @@ for (const required of [
   "localDate",
   "localHour",
   "timeZone",
+  "GentleCheckIn",
+  "checkInVisible",
+  "welcome?.checkIn?.due",
+  "Give me a calmer start",
+  "calmStart",
+  "CALM START",
+  "Starting with Assigned Work only.",
+  "workload, priority and performance",
 ]) requireText("Working Customer Support workspace", client, required);
 
 for (const forbidden of [
@@ -178,6 +210,9 @@ for (const required of [
   "performance_score_recorded: false",
   "managerMoodSignalCreated: false",
   "productionEffectEnabled: false",
+  "prepareGentleCheckIn",
+  "checkIn,",
+  '"Founder Preview · Customer Support"',
 ]) requireText("Protected staff workspace API", staffApi, required);
 
 for (const forbidden of [
@@ -238,13 +273,20 @@ for (const required of [
   "export const UNIVERSAL_FOUNDER_SUBMISSION_GATE",
   "HIISSA_PEOPLE_EXPERIENCE_LAYER",
   'implementationStatus:',
-  "CUSTOMER_SUPPORT_STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
+  "CUSTOMER_SUPPORT_STAGING_FOUNDER_PRACTICAL_TEST_PASS",
   'firstImplementedWorkspace: "customer_support"',
   "Founder Preview uses its own role-aware encouragement",
   "preferred_name / display_name / full_name / name",
   'visitAuditEvent: "staff_workspace_visit"',
   "antiRepeatMessages: true",
   "founderTypographyLeak: false",
+  "FOUNDER_AND_CUSTOMER_SUPPORT_STAGING_IMPLEMENTED_BUILD_PENDING",
+  "minimumHoursBetweenOffers: 48",
+  "answerRecordedInAdminAudit: false",
+  "performanceScoreCreated: false",
+  "managerSignalCreated: false",
+  'auditOfferEvent: "people_experience_checkin_offered"',
+  "Customer Support calmer start opens Assigned Work first",
 ]) requireText("Persistent staff workspace Registry contract", registry, required);
 
 for (const required of [
@@ -256,6 +298,7 @@ for (const required of [
   ".staffQuietWelcome",
   "@media (prefers-reduced-motion: reduce)",
   "font-family: Arial, Helvetica, sans-serif;",
+  ".calmStartNotice",
 ]) requireText("Staff welcome styles", css, required);
 
 for (const forbidden of [
@@ -263,6 +306,51 @@ for (const forbidden of [
   'font-family: Georgia',
   '"Times New Roman"',
 ]) forbidText("Staff welcome styles", css, forbidden);
+
+for (const required of [
+  "PEOPLE_CHECKIN_MIN_HOURS = 48",
+  '"people_experience_checkin_offered"',
+  "answer_recorded: false",
+  "emotional_score_created: false",
+  "performance_score_created: false",
+  "manager_signal_created: false",
+  "explicit_support_escalation_created: false",
+  'welcomeMode === "QUIET_RETURN"',
+  "CADENCE_NOT_DUE",
+]) requireText("Gentle check-in privacy policy", gentleCheckInPolicy, required);
+
+for (const required of [
+  "HIISSA · GENTLE CHECK-IN",
+  "How are you doing today",
+  "I'm doing well",
+  "I'm okay",
+  "It's a heavy day",
+  "I could use a calmer start",
+  "Private by default.",
+  "Give me a calmer start",
+  "records only that a check-in was offered, not which answer you chose",
+  "Founder Preview — this demonstrates the staff check-in experience.",
+]) requireText("Shared gentle check-in component", gentleCheckInComponent, required);
+
+for (const forbidden of [
+  "fetch(",
+  "localStorage",
+  "sessionStorage",
+]) forbidText("Shared gentle check-in component", gentleCheckInComponent, forbidden);
+
+for (const required of [
+  ".overlay",
+  ".card",
+  ".choices",
+  ".privacy",
+  "@media (prefers-reduced-motion: reduce)",
+  "font-family: Arial, Helvetica, sans-serif;",
+]) requireText("Shared gentle check-in styles", gentleCheckInStyles, required);
+
+for (const forbidden of [
+  "ui-serif",
+  '"Times New Roman"',
+]) forbidText("Shared gentle check-in styles", gentleCheckInStyles, forbidden);
 
 for (const required of [
   "<WorkingStaffApprovalInbox />",
@@ -314,3 +402,6 @@ console.log("- Customer Support staff welcome uses time-aware first/return/quiet
 console.log("- Real staff identity comes from authorised profile metadata; Founder Preview preserves FATI BANCE as Founder");
 console.log("- Staff welcome motivation rotates without performance scoring or mood surveillance");
 console.log("- Founder-only premium typography is blocked from staff welcome styles");
+console.log("- Shared gentle check-in is cadence-limited to 48 hours and suppressed on quiet return");
+console.log("- Check-in answers are not written to the Admin audit trail or performance/manager signals");
+console.log("- Staff Calm Start begins with Assigned Work without changing workload or removing tabs");
