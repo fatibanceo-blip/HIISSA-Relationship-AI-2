@@ -262,6 +262,38 @@ function publicItem(item) {
   };
 }
 
+function workdayCloseSummary(item) {
+  const status = String(item?.status || "");
+
+  const statusDetail =
+    status === "saved_draft"
+      ? "The saved draft is persisted in the Staging database."
+      : status === "submitted_for_processing"
+        ? "This item is submitted and remains in the Founder processing queue."
+        : status === "returned_for_changes"
+          ? "This item is safely persisted as returned for changes and still needs revision before resubmission."
+          : status === "approved_pending_execution"
+            ? "Founder approval is recorded, but external execution is still disabled and approval is not verified completion."
+            : status === "verified_complete"
+              ? "This item is recorded as verified complete."
+              : status === "in_progress"
+                ? "The work-item state is persisted. Any unsaved text still open in the browser must be saved separately."
+                : "This item remains assigned and persisted in Staging.";
+
+  return {
+    persistedStatus: status,
+    statusLabel: status.replaceAll("_", " ").toUpperCase(),
+    statusDetail,
+    updatedAt: item?.updated_at || null,
+    submittedAt: item?.submitted_at || null,
+    returnedAt: item?.returned_at || null,
+    approvedAt: item?.approved_at || null,
+    verifiedCompletedAt: item?.verified_completed_at || null,
+    approvalRequestId: item?.approval_request_id || null,
+    externalEffectEnabled: Boolean(item?.external_effect_enabled),
+  };
+}
+
 function actorPayload(actor) {
   return {
     mode: actor.mode,
@@ -564,7 +596,9 @@ export async function POST(request) {
         ? "save_draft"
         : action === "submit"
           ? "submit_for_processing"
-          : "";
+          : action === "workday_close"
+            ? "view_assigned_work"
+            : "";
 
   if (!permissionAction || !itemId) {
     return noStoreJson({ status: "INVALID_STAFF_ACTION" }, 400);
@@ -578,6 +612,44 @@ export async function POST(request) {
   const owned = await getOwnedItem(actor.adminClient, actor, itemId);
   if (owned.error || !owned.data) {
     return noStoreJson({ status: "STAFF_WORK_ITEM_FORBIDDEN" }, 403);
+  }
+
+  if (action === "workday_close") {
+    const closeSummary = workdayCloseSummary(owned.data);
+    const { error: closeRecordError } = await actor.adminClient
+      .from("admin_audit_events")
+      .insert({
+        event_type: "people_experience_workday_close_opened",
+        actor_user_id: actor.userId,
+        module_id: MODULE_ID,
+        resource_id: owned.data.id,
+        action_id: "finish_for_now",
+        outcome: "recorded",
+        oversight_level: actor.mode === "FOUNDER_PREVIEW" ? 3 : 1,
+        environment: "staging",
+        details: {
+          case_code: owned.data.case_code,
+          work_item_status: owned.data.status,
+          work_item_updated_at: owned.data.updated_at,
+          approval_request_id: owned.data.approval_request_id,
+          actor_mode: actor.mode,
+          external_effect_enabled: false,
+          production_effect_enabled: false,
+        },
+      });
+
+    if (closeRecordError) {
+      return noStoreJson({ status: "WORKDAY_CLOSE_RECORD_FAILED" }, 500);
+    }
+
+    return noStoreJson({
+      status: "WORKDAY_CLOSE_READY",
+      actor: actorPayload(actor),
+      item: publicItem(owned.data),
+      workdayClose: closeSummary,
+      externalEffectPerformed: false,
+      productionEffectPerformed: false,
+    });
   }
 
   if (action === "save") {
