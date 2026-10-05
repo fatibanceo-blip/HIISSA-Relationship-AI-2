@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "test:registry": "node scripts/validate-experience-registry.mjs",
-    "prebuild": "npm run test:registry && npm run test:protected-core && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run test:share-handoffs",
+    "prebuild": "npm run test:registry && npm run test:protected-core && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run test:share-handoffs && npm run test:staff-workspace",
     "build": "next build",
-    "verify:foundation": "npm run test:registry && npm run test:protected-core && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run test:share-handoffs && npm run build",
+    "verify:foundation": "npm run test:registry && npm run test:protected-core && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run test:share-handoffs && npm run test:staff-workspace && npm run build",
     "start": "next start",
     "test:my-hiissa-routing": "node scripts/validate-my-hiissa-routing.mjs",
     "test:account-journey": "node scripts/validate-account-journey.mjs",
@@ -16,7 +16,8 @@
     "test:recommendation-flow": "node scripts/validate-recommendation-flow.mjs",
     "test:referral-foundation": "node scripts/validate-referral-foundation.mjs",
     "test:protected-core": "node scripts/validate-protected-core.mjs",
-    "test:share-handoffs": "node scripts/validate-share-handoffs.mjs"
+    "test:share-handoffs": "node scripts/validate-share-handoffs.mjs",
+    "test:staff-workspace": "node scripts/validate-staff-workspace.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
