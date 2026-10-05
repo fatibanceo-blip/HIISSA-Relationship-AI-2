@@ -33,6 +33,18 @@ const gentleCheckInStylePath = path.join(
   "people-experience",
   "GentleCheckIn.module.css"
 );
+const workdayCloseComponentPath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "WorkdayClose.js"
+);
+const workdayCloseStylePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "WorkdayClose.module.css"
+);
 const staffApiPath = path.join(root, "app", "api", "staff-workspace", "route.js");
 const founderApiPath = path.join(
   root,
@@ -77,6 +89,8 @@ for (const [label, file] of [
   ["Gentle check-in policy", gentleCheckInPolicyPath],
   ["Gentle check-in component", gentleCheckInComponentPath],
   ["Gentle check-in styles", gentleCheckInStylePath],
+  ["Workday Close component", workdayCloseComponentPath],
+  ["Workday Close styles", workdayCloseStylePath],
   ["Staff workspace API", staffApiPath],
   ["Founder staff approval API", founderApiPath],
   ["Experience Registry", registryPath],
@@ -89,6 +103,8 @@ const css = read(cssPath);
 const gentleCheckInPolicy = read(gentleCheckInPolicyPath);
 const gentleCheckInComponent = read(gentleCheckInComponentPath);
 const gentleCheckInStyles = read(gentleCheckInStylePath);
+const workdayCloseComponent = read(workdayCloseComponentPath);
+const workdayCloseStyles = read(workdayCloseStylePath);
 const staffApi = read(staffApiPath);
 const founderApi = read(founderApiPath);
 const registry = read(registryPath);
@@ -158,6 +174,13 @@ for (const required of [
   "CALM START",
   "Starting with Assigned Work only.",
   "workload, priority and performance",
+  "WorkdayClose",
+  "Finish for now",
+  "openWorkdayClose",
+  'action: "workday_close"',
+  "unsavedLocalChanges",
+  "Save before leaving",
+  "Before you finish for now…",
 ]) requireText("Working Customer Support workspace", client, required);
 
 for (const forbidden of [
@@ -212,6 +235,14 @@ for (const required of [
   "prepareGentleCheckIn",
   "checkIn,",
   '"Founder Preview · Customer Support"',
+  'action === "workday_close"',
+  '? "view_assigned_work"',
+  "workdayCloseSummary",
+  '"people_experience_workday_close_opened"',
+  '"finish_for_now"',
+  '"WORKDAY_CLOSE_READY"',
+  "externalEffectPerformed: false",
+  "productionEffectPerformed: false",
 ]) requireText("Protected staff workspace API", staffApi, required);
 
 for (const forbidden of [
@@ -302,6 +333,11 @@ for (const required of [
   "hiissa.people-experience.speak-up-ideas",
   "hiissa.people-experience.milestones-seasons-human-moments",
   "hiissa.people-experience.since-you-were-away",
+  "components/people-experience/WorkdayClose.js",
+  "/api/admin/control-room/workday-close",
+  "POST /api/staff-workspace action=workday_close",
+  "staffUnsavedChangeRule",
+  "people_experience_workday_close_opened",
 ]) requireText("Persistent staff workspace Registry contract", registry, required);
 
 for (const required of [
@@ -377,6 +413,29 @@ for (const forbidden of [
 ]) forbidText("Shared gentle check-in styles", gentleCheckInStyles, forbidden);
 
 for (const required of [
+  "HIISSA · WORKDAY CLOSE",
+  "Checking verified work state…",
+  "Before you leave",
+  "Close for now",
+]) requireText("Shared Workday Close component", workdayCloseComponent, required);
+
+for (const forbidden of [
+  "fetch(",
+  "localStorage",
+  "sessionStorage",
+]) forbidText("Shared Workday Close component", workdayCloseComponent, forbidden);
+
+for (const required of [
+  ".overlay",
+  ".card",
+  ".items",
+  ".itemAttention",
+  ".sourceNote",
+  "@media (prefers-reduced-motion: reduce)",
+  "font-family: Arial, Helvetica, sans-serif;",
+]) requireText("Shared Workday Close styles", workdayCloseStyles, required);
+
+for (const required of [
   "<WorkingStaffApprovalInbox />",
   "FOUNDER COMMAND / APPROVAL INBOX — WORKING STAGING QUEUE",
   'fetch("/api/admin/control-room/staff-approval-inbox"',
@@ -431,3 +490,6 @@ console.log("- Daypart Care enforces a 180-minute minimum gap and suppresses qui
 console.log("- Historical 48-hour cadence remains preserved as superseded design evidence");
 console.log("- Check-in answers are not written to the Admin audit trail or performance/manager signals");
 console.log("- Staff Calm Start begins with Assigned Work without changing workload or removing tabs");
+console.log("- Customer Support Workday Close records a close event without mutating case state");
+console.log("- Workday Close warns when browser draft/note differs from the persisted Staging record");
+console.log("- Editable unsaved work offers Save before leaving");
