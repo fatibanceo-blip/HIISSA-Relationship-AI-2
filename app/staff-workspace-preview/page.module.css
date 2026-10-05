@@ -121,6 +121,32 @@
   color: #665a25;
 }
 
+.calmStartNotice {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin: 18px 0 0;
+  padding: 16px 18px;
+  border: 1px solid #d8e3d9;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #f2f7f1, #fffaf0);
+}
+
+.calmStartNotice strong {
+  display: block;
+  margin-top: 4px;
+  color: #245b48;
+  font-size: 1rem;
+}
+
+.calmStartNotice p {
+  margin: 6px 0 0;
+  color: #65756d;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 .workspaceGrid {
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
@@ -738,6 +764,11 @@
 }
 
 @media (max-width: 620px) {
+  .calmStartNotice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .staffQuietWelcome {
     flex-wrap: wrap;
     justify-content: flex-start;
