@@ -6,6 +6,22 @@ export const dynamic = "force-dynamic";
 
 const WORKSPACE_ID = "customer_support";
 const ROLE_ID = "customer_support";
+
+const QUIET_RETURN_MINUTES = 20;
+const STAFF_WELCOME_MESSAGES = Object.freeze([
+  "The care you bring to someone’s difficult moment matters.",
+  "Clear support can turn confusion into relief. Thank you for bringing patience to the work.",
+  "Your work helps people feel heard, guided and respected.",
+  "Steady, thoughtful support makes a real difference.",
+  "You do not have to solve everything at once. Start with the person in front of you.",
+  "Thank you for bringing care, clarity and professionalism to HIISSA today.",
+]);
+const FOUNDER_PREVIEW_MESSAGES = Object.freeze([
+  "Strong teams are supported by clear systems, thoughtful oversight and room to do good work.",
+  "You are viewing the Customer Support experience with Founder oversight while staff identity remains protected.",
+  "A calm staff experience helps people focus on the human being behind each support request.",
+  "Good operational design should make careful work easier, not heavier.",
+]);
 const MODULE_ID = "customer_support";
 const RESOURCE_ID = "staff_work_items";
 
@@ -120,6 +136,7 @@ async function verifyActor(request, actionId = "view_assigned_work") {
       roleId: "founder",
       permission: { effect: "allow", oversight_level: 3 },
       adminClient: clients.adminClient,
+      user,
     };
   }
 
@@ -153,6 +170,7 @@ async function verifyActor(request, actionId = "view_assigned_work") {
     roleId: assignment.role_id,
     permission,
     adminClient: clients.adminClient,
+    user,
   };
 }
 
@@ -260,6 +278,196 @@ function actorPayload(actor) {
   };
 }
 
+function preferredDisplayName(user) {
+  const metadata =
+    user?.user_metadata && typeof user.user_metadata === "object"
+      ? user.user_metadata
+      : {};
+  const candidates = [
+    metadata.preferred_name,
+    metadata.display_name,
+    metadata.full_name,
+    metadata.name,
+  ];
+
+  const found = candidates.find(
+    (value) => typeof value === "string" && value.trim().length > 0
+  );
+
+  return found ? found.trim().slice(0, 80) : "Customer Support colleague";
+}
+
+function welcomePeriod(hour) {
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "afternoon";
+  return "evening";
+}
+
+function seededMessageIndex(localDate, poolLength) {
+  const source = String(localDate || "");
+  let total = 0;
+  for (const char of source) total += char.charCodeAt(0);
+  return poolLength > 0 ? total % poolLength : 0;
+}
+
+function rotatedMessageIndex({ localDate, mode, previousIndex, poolLength }) {
+  const seeded = seededMessageIndex(localDate, poolLength);
+  const safePrevious = Number.isInteger(previousIndex) ? previousIndex : null;
+
+  if (mode === "WELCOME_BACK" && safePrevious !== null) {
+    return (safePrevious + 1) % poolLength;
+  }
+
+  if (mode === "QUIET_RETURN" && safePrevious !== null) {
+    return safePrevious;
+  }
+
+  if (safePrevious !== null && seeded === safePrevious) {
+    return (seeded + 1) % poolLength;
+  }
+
+  return seeded;
+}
+
+async function staffWelcomePayload(actor, request) {
+  const url = new URL(request.url);
+  if (url.searchParams.get("welcome") !== "1") return null;
+
+  const localDate = String(url.searchParams.get("localDate") || "").slice(0, 10);
+  const timeZone = String(url.searchParams.get("timeZone") || "").slice(0, 100);
+  const localHour = Number(url.searchParams.get("localHour"));
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(localDate) ||
+    !Number.isInteger(localHour) ||
+    localHour < 0 ||
+    localHour > 23
+  ) {
+    return {
+      status: "INVALID_LOCAL_CONTEXT",
+      showFullWelcome: false,
+    };
+  }
+
+  const { data: previousRows, error: previousError } = await actor.adminClient
+    .from("admin_audit_events")
+    .select("occurred_at,details")
+    .eq("event_type", "staff_workspace_visit")
+    .eq("actor_user_id", actor.userId)
+    .eq("module_id", MODULE_ID)
+    .eq("environment", "staging")
+    .order("occurred_at", { ascending: false })
+    .limit(1);
+
+  if (previousError) {
+    return {
+      status: "STAFF_WELCOME_READ_FAILED",
+      showFullWelcome: false,
+    };
+  }
+
+  const previous = previousRows?.[0] || null;
+  const previousLocalDate = String(previous?.details?.local_date || "");
+  const previousAt = previous?.occurred_at ? new Date(previous.occurred_at) : null;
+  const minutesSincePrevious =
+    previousAt && Number.isFinite(previousAt.getTime())
+      ? Math.max(0, Math.floor((Date.now() - previousAt.getTime()) / 60000))
+      : null;
+
+  let mode = "FIRST_VISIT_TODAY";
+  if (previous && previousLocalDate === localDate) {
+    mode =
+      minutesSincePrevious !== null && minutesSincePrevious < QUIET_RETURN_MINUTES
+        ? "QUIET_RETURN"
+        : "WELCOME_BACK";
+  }
+
+  const pool =
+    actor.mode === "FOUNDER_PREVIEW"
+      ? FOUNDER_PREVIEW_MESSAGES
+      : STAFF_WELCOME_MESSAGES;
+  const previousMessageIndexRaw = Number(previous?.details?.message_index);
+  const previousMessageIndex = Number.isInteger(previousMessageIndexRaw)
+    ? previousMessageIndexRaw
+    : null;
+  const messageIndex = rotatedMessageIndex({
+    localDate,
+    mode,
+    previousIndex: previousMessageIndex,
+    poolLength: pool.length,
+  });
+
+  const displayName =
+    actor.mode === "FOUNDER_PREVIEW"
+      ? "FATI BANCE"
+      : preferredDisplayName(actor.user);
+  const roleLabel =
+    actor.mode === "FOUNDER_PREVIEW"
+      ? "FOUNDER PREVIEW · CUSTOMER SUPPORT"
+      : "CUSTOMER SUPPORT";
+  const period = welcomePeriod(localHour);
+  const greeting =
+    mode === "FIRST_VISIT_TODAY"
+      ? `Good ${period}`
+      : "Welcome back";
+
+  const { error: insertError } = await actor.adminClient
+    .from("admin_audit_events")
+    .insert({
+      event_type: "staff_workspace_visit",
+      actor_user_id: actor.userId,
+      module_id: MODULE_ID,
+      resource_id: "staff-workspace-welcome",
+      action_id: "enter_staff_workspace",
+      outcome: "recorded",
+      oversight_level: actor.mode === "FOUNDER_PREVIEW" ? 3 : 1,
+      environment: "staging",
+      details: {
+        local_date: localDate,
+        time_zone: timeZone || null,
+        local_hour: localHour,
+        welcome_mode: mode,
+        message_index: messageIndex,
+        message_rotation: "ANTI_REPEAT",
+        actor_mode: actor.mode,
+        role_id: actor.roleId,
+        workspace_id: WORKSPACE_ID,
+        emotional_checkin_recorded: false,
+        performance_score_recorded: false,
+        external_effect_enabled: false,
+      },
+    });
+
+  if (insertError) {
+    return {
+      status: "STAFF_WELCOME_RECORD_FAILED",
+      showFullWelcome: false,
+    };
+  }
+
+  return {
+    status: "READY",
+    scope: "customer-support-staff-welcome-staging",
+    greeting,
+    period,
+    mode,
+    displayName,
+    roleLabel,
+    motivation: pool[messageIndex],
+    messageIndex,
+    rotation: "ANTI_REPEAT",
+    showFullWelcome: mode !== "QUIET_RETURN",
+    isFounderPreview: actor.mode === "FOUNDER_PREVIEW",
+    previousVisitMinutesAgo: minutesSincePrevious,
+    privacy: {
+      emotionalCheckinRecorded: false,
+      performanceScoreRecorded: false,
+      managerMoodSignalCreated: false,
+    },
+    productionEffectEnabled: false,
+  };
+}
+
 function normaliseRpcRow(data) {
   if (Array.isArray(data)) return data[0] || null;
   return data || null;
@@ -296,10 +504,13 @@ export async function GET(request) {
     );
   }
 
+  const welcome = await staffWelcomePayload(actor, request);
+
   return noStoreJson({
     status: "READY",
     scope: "working-fictional-customer-support-staging",
     actor: actorPayload(actor),
+    welcome,
     item: publicItem(result.data),
     submissionGate: {
       staffAction: "Submit for processing",
