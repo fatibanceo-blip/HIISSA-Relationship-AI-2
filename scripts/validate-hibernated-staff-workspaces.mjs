@@ -97,7 +97,6 @@ for (const required of [
   "is_hiissa_admin",
   "FOUNDER PREVIEW ONLY",
   "STAGING · BUILT",
-  "Built · Hibernated",
   "Assigned Work",
   "Work in Progress",
   "Saved Drafts",
