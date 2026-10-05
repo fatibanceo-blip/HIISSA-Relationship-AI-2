@@ -14,6 +14,7 @@ import {
 import GentleCheckIn from "../../components/people-experience/GentleCheckIn.js";
 import WorkdayClose from "../../components/people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../../components/people-experience/PrivateAppreciation.js";
+import HibernatedStaffWorkspace from "../../components/staff-workspace/HibernatedStaffWorkspace.js";
 import styles from "./page.module.css";
 
 const TABS = [
@@ -93,7 +94,15 @@ function suggestedTab(status) {
   return "assigned";
 }
 
-export default function StaffWorkspacePreview() {
+export default function StaffWorkspacePreview({ workspaceId = "customer_support" }) {
+  if (workspaceId !== "customer_support") {
+    return <HibernatedStaffWorkspace workspaceId={workspaceId} />;
+  }
+
+  return <CustomerSupportWorkspacePreview />;
+}
+
+function CustomerSupportWorkspacePreview() {
   const workspace = useMemo(
     () =>
       STAFF_WORKSPACE_SHELL_STANDARD.workspaces.find(
