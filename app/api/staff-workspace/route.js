@@ -481,20 +481,14 @@ async function staffWelcomePayload(actor, request) {
     };
   }
 
-  const checkIn = await prepareGentleCheckIn({
-    adminClient: actor.adminClient,
-    actorUserId: actor.userId,
-    moduleId: MODULE_ID,
-    actorMode: actor.mode,
-    contextLabel:
-      actor.mode === "FOUNDER_PREVIEW"
-        ? "Founder Preview · Customer Support"
-        : "Customer Support",
-    localDate,
-    localHour,
-    welcomeMode: mode,
-    isFounderPreview: actor.mode === "FOUNDER_PREVIEW",
-  });
+  const checkIn = {
+    due: false,
+    reason: "TIMED_ACTIVE_WORK_ONLY",
+    privacy:
+      "The staff welcome does not trigger an emotional check-in. Daypart Care is evaluated separately after active work begins.",
+    previewOnly: actor.mode === "FOUNDER_PREVIEW",
+    productionEffectEnabled: false,
+  };
 
   return {
     status: "READY",
