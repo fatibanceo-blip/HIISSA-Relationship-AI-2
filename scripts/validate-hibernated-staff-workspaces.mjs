@@ -58,7 +58,11 @@ for (const required of [
   "HIISSA_BUILD_COMPLETE_THEN_HIBERNATE_STANDARD",
   "FOUNDER_APPROVED_PERMANENT_MANDATORY_HIISSA_WIDE_STANDARD",
   "Not activated must never be used as a reason to leave an approved interface half-built",
-  "BUILT_HIBERNATED_NOT_ACTIVATED",
+  "STAGING_VERIFIED_READY_FOR_PRODUCTION_HIBERNATION_DECISION",
+  "PRODUCTION_DEPLOYED_HIBERNATED_NOT_ACTIVATED",
+  "definitiveVisualReference",
+  "Explore HIISSA",
+  "Production deployment and Production activation are two different Founder-controlled decisions",
   "approvedHibernateBuildQueue",
   "mandatory build targets, not indefinite placeholders",
   "automaticTimedCare",
@@ -103,15 +107,24 @@ for (const required of [
   "Preview verified completed outcome",
   "Replay gentle check-in preview",
   "AutomaticGentleCheckIn",
+  "CalmerStartMode",
+  "calmStartExpanded",
+  "Continue with this task",
+  "Return to normal workspace",
   'enabled={authState === "ready"}',
   "manualRequestKey={checkInManualKey}",
   "pause={workdayCloseOpen}",
   "Finish for now",
   "PrivateAppreciation",
   "No real-world effect",
-  "HIBERNATED · NOT ACTIVATED",
+  "STAGING BUILT · PRODUCTION NOT DEPLOYED",
+  "STAGING · BUILT",
+  "Staging built · Founder testing",
+  "Production hibernation is a later, separately approved deployment state.",
+  "This is not yet a hibernated Production feature.",
+  "PRODUCTION hibernation",
   "browser session only",
-]) requireText("Hibernated Staff Workspace engine", component, required);
+]) requireText("Staging Staff Workspace engine", component, required);
 
 for (const forbidden of [
   "fetch(",
@@ -121,13 +134,13 @@ for (const forbidden of [
   "mailto:",
   "sms:",
   "wa.me",
-]) forbidText("Hibernated Staff Workspace engine", component, forbidden);
+]) forbidText("Staging Staff Workspace engine", component, forbidden);
 
 for (const required of [
   "searchParams",
   "workspaceId",
   "environment === \"production\"",
-]) requireText("Hibernated workspace Staging route", page, required);
+]) requireText("Staging workspace route", page, required);
 
 for (const required of [
   "HibernatedStaffWorkspace",
@@ -136,14 +149,14 @@ for (const required of [
 ]) requireText("Staff Workspace shared-shell wrapper", wrapper, required);
 
 for (const required of [
-  "STAGING BUILT · HIBERNATED",
+  "STAGING BUILT · FOUNDER TESTING",
   "technical_operations",
   "finance_subscriptions",
   "safety_safeguarding",
   "privacy_data_protection",
   "content_moderation",
   "product_quality",
-]) requireText("Founder Access Centre hibernated status", controlRoom, required);
+]) requireText("Founder Access Centre Staging status", controlRoom, required);
 
 for (const required of [
   ".hero",
@@ -158,14 +171,15 @@ for (const required of [
   "@media (prefers-reduced-motion:reduce)",
 ]) requireText("Hibernated Staff Workspace styles", styles, required);
 
-console.log("HIISSA hibernated staff workspace certification: PASS");
+console.log("HIISSA Staging staff workspace certification: PASS");
 console.log("- Six remaining approved departments use one shared Staff Workspace engine");
 console.log("- Every department has role-specific authorised work and protected boundaries");
-console.log("- Founder/Admin verification gates hibernated previews; ordinary staff activation remains off");
+console.log("- Founder/Admin verification gates Staging previews; Production hibernation and ordinary staff activation remain separate later gates");
 console.log("- Shared journey includes Assigned → In Progress → Draft → Submitted → Returned/Completed preview branches → Notifications");
 console.log("- Universal Founder submission gate remains visible; scenario controls do not grant staff Founder authority");
 console.log("- Gentle Check-In, Workday Close and Private Appreciation receiving surfaces are present");
-console.log("- Hibernated Founder previews auto-offer Gentle Check-In after a short test delay and keep manual replay only as a test control");
+console.log("- Calmer Start reduces the workspace to one next step, then allows deliberate expansion or return to normal workspace");
+console.log("- Staging Founder previews auto-offer Gentle Check-In after a short test delay and keep manual replay only as a test control");
 console.log("- The same maximum-three/daypart/snooze/privacy contract is inherited from the shared People Experience Registry");
-console.log("- No database persistence, external execution or Production effect is introduced by the hibernated preview engine");
+console.log("- No database persistence, external execution, Production deployment or Production effect is introduced by the Staging preview engine");
 console.log("- Global/mobile/reduced-motion presentation protections are present");
