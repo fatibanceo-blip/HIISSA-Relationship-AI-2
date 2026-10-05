@@ -43,6 +43,18 @@ const activityTimelinePath = path.join(
   "route.js"
 );
 const recordTimePath = path.join(root, "lib", "hiissa-record-time.js");
+const gentleCheckInPolicyPath = path.join(
+  root,
+  "lib",
+  "people-experience",
+  "gentle-checkin.js"
+);
+const gentleCheckInComponentPath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "GentleCheckIn.js"
+);
 
 const errors = [];
 
@@ -57,6 +69,8 @@ if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI pro
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
 if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activity timeline endpoint is missing.");
 if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
+if (!fs.existsSync(gentleCheckInPolicyPath)) errors.push("Shared gentle check-in policy is missing.");
+if (!fs.existsSync(gentleCheckInComponentPath)) errors.push("Shared gentle check-in component is missing.");
 
 const authenticatedPagePath = path.join(root, "app", "admin", "control-room", "page.js");
 const authenticatedClientPath = path.join(root, "app", "admin", "control-room", "AuthenticatedControlRoom.js");
@@ -104,6 +118,12 @@ const activityTimeline = fs.existsSync(activityTimelinePath)
   : "";
 const recordTime = fs.existsSync(recordTimePath)
   ? fs.readFileSync(recordTimePath, "utf8")
+  : "";
+const gentleCheckInPolicy = fs.existsSync(gentleCheckInPolicyPath)
+  ? fs.readFileSync(gentleCheckInPolicyPath, "utf8")
+  : "";
+const gentleCheckInComponent = fs.existsSync(gentleCheckInComponentPath)
+  ? fs.readFileSync(gentleCheckInComponentPath, "utf8")
   : "";
 
 for (const label of [
@@ -163,6 +183,15 @@ for (const required of [
   "Submitted for processing",
   "recordTimeGrid",
   "HIISSA timestamp rule:",
+  "GentleCheckIn",
+  "checkInVisible",
+  "calmStart",
+  "FOUNDER CALM START",
+  "Only what may need you first",
+  "Open Alerts",
+  "Open Approvals",
+  "Show full Overview",
+  "Your check-in answer was not sent to the Founder/Admin audit trail.",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
@@ -179,6 +208,9 @@ for (const required of [
   ".recordTimeGrid",
   ".approvalQueueTime",
   ".timestampStandardNote",
+  ".calmStartPanel",
+  ".calmStartActions",
+  ".calmStartPrivacy",
 ]) requireText("Founder Control Room styles", styles, required);
 
 const welcomeNameStart = styles.indexOf(".welcomeName{");
@@ -381,6 +413,10 @@ for (const required of [
   "message_rotation",
   "nextMessageIndex",
   '"Cache-Control": "no-store"',
+  "prepareGentleCheckIn",
+  "checkIn,",
+  'contextLabel: "Founder Control Room"',
+  'actorMode: "FOUNDER"',
 ]) requireText("Founder welcome intelligence endpoint", founderWelcome, required);
 
 for (const required of [
@@ -408,6 +444,35 @@ for (const required of [
   "toISOString()",
   "hiissaResolvedTimeZone",
 ]) requireText("Shared HIISSA record time formatter", recordTime, required);
+
+for (const required of [
+  "PEOPLE_CHECKIN_MIN_HOURS = 48",
+  '"people_experience_checkin_offered"',
+  "answer_recorded: false",
+  "emotional_score_created: false",
+  "performance_score_created: false",
+  "manager_signal_created: false",
+  "explicit_support_escalation_created: false",
+  'welcomeMode === "QUIET_RETURN"',
+]) requireText("Gentle check-in privacy policy", gentleCheckInPolicy, required);
+
+for (const required of [
+  "HIISSA · GENTLE CHECK-IN",
+  "How are you doing today",
+  "Private by default.",
+  "Give me a calmer start",
+  "records only that a check-in was offered, not which answer you chose",
+]) requireText("Shared gentle check-in component", gentleCheckInComponent, required);
+
+for (const forbidden of [
+  "fetch(",
+  "localStorage",
+  "sessionStorage",
+]) {
+  if (gentleCheckInComponent.includes(forbidden)) {
+    errors.push(`Shared gentle check-in component must not persist/share answers directly: ${forbidden}`);
+  }
+}
 
 for (const registryRule of [
   "export const CONTROL_ROOM_MODULE_REGISTRY",
@@ -514,13 +579,20 @@ for (const registryRule of [
   "Reuse and connect the existing HIISSA Seasons",
   "Motivation must encourage without manipulation",
   "welcomeNameTypography",
+  "FOUNDER_AND_CUSTOMER_SUPPORT_STAGING_IMPLEMENTED_BUILD_PENDING",
+  "minimumHoursBetweenOffers: 48",
+  "answerRecordedInAdminAudit: false",
+  "managerSignalCreated: false",
+  "Give me a calmer start temporarily reduces Overview to Alerts, Approvals and Show full Overview",
+  "Founder Preview may demonstrate the staff check-in",
+
   "anti-repeat rotation",
   "navigationExperience",
   "Every Founder destination",
   "2-by-2 layout",
   "Only a verified critical/emergency signal",
   "peopleExperience",
-  "STAGING_FOUNDER_WELCOME_DEPLOYED_TEST_PENDING",
+  "STAGING_GENTLE_CHECKIN_IMPLEMENTATION_BUILD_PENDING",
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
   "Founder Provider, Subscription & Spend Register",
   "openAiProviderConnection",
@@ -584,6 +656,9 @@ console.log("- Universal Timestamp & Activity Record Standard is registered");
 console.log("- Founder Activity Timeline reads real Staging audit timestamps");
 console.log("- Approval and staff records use the shared local-time display formatter");
 console.log("- Created/updated/history preservation and no-fabricated-time rules are protected");
+console.log("- Founder gentle check-in is 48-hour cadence-limited and privacy-safe");
+console.log("- Founder Calm Start temporarily prioritises Alerts and Approvals without removing Overview");
+console.log("- Check-in answers are not persisted to the Founder/Admin audit trail");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
 console.log("- Module 9 protected OpenAI provider connection layer is Staging-only, Admin-gated and read-only");
 console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
