@@ -315,6 +315,35 @@
   border:1px solid #e0e7e0;
   background:#fbfcf9;
 }
+
+.alertItemAttention{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:center;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid #e4c77e;
+  background:#fff9e9;
+}
+.alertItemCritical{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:center;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid #d39a95;
+  background:#fff3f1;
+}
+.alertItemAttention strong{color:#8a641a;}
+.alertItemCritical strong{color:#a72d23;}
+.alertItemAttention p,.alertItemCritical p{
+  margin:5px 0 0;
+  color:#765f55;
+  font-size:12px;
+  line-height:1.5;
+}
 .alertItem strong{color:#315f4c;}
 .alertItem p{margin:5px 0 0;color:#68766e;font-size:12px;line-height:1.5;}
 .alertAction{
@@ -611,7 +640,7 @@
     white-space:normal;
   }
   .globalPanel{margin:10px 10px 0;padding:14px;}
-  .alertItem{align-items:flex-start;flex-direction:column;}
+  .alertItem,.alertItemAttention,.alertItemCritical{align-items:flex-start;flex-direction:column;}
   .criticalAlertToast{
     top:10px;
     right:10px;
@@ -680,21 +709,6 @@
 
 .contextBack,
 .overviewBack{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  margin:0 0 16px;
-  padding:9px 12px;
-  border:1px solid #cad9cc;
-  border-radius:12px;
-  background:#fffefa;
-  color:#245b48;
-  font:inherit;
-  font-size:13px;
-  font-weight:850;
-  cursor:pointer;
-}
-.contextBack{
   display:inline-flex;
   align-items:center;
   gap:6px;
