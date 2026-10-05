@@ -80,6 +80,8 @@ for (const required of [
   "HIISSA STAFF WORKSPACE",
   "Customer Support",
   "STAGING · WORKING TEST",
+  '"@supabase/supabase-js"',
+  "← Founder Control Room",
   "actor?.displayIdentity",
   "Assigned Work",
   "Work in Progress",
@@ -102,6 +104,7 @@ for (const required of [
 ]) requireText("Working Customer Support workspace", client, required);
 
 for (const forbidden of [
+  '"@supabase/ssr"',
   "mailto:",
   "sms:",
   "wa.me",
@@ -160,6 +163,12 @@ for (const required of [
 for (const required of [
   "export const STAFF_WORKSPACE_SHELL_STANDARD",
   'status: "founder-approved-fictional-staging-persistent-workflow-implementation-in-progress"',
+  "founderAccessCentre",
+  'status: "IMPLEMENTED_STAGING_BUILD_PENDING"',
+  'primaryHome: "Founder Control Room Overview"',
+  "100% authorised access across HIISSA",
+  "must never silently impersonate the employee",
+  'customer_support: "/staff-workspace-preview"',
   "customerSupportPrototype",
   'status: "STAGING_BUILD_VERIFIED_FOUNDER_END_TO_END_TEST_PENDING"',
   'route: "/staff-workspace-preview"',
@@ -193,8 +202,19 @@ for (const required of [
   "Reject",
   "ONE CANONICAL APPROVAL RECORD",
   "EXTERNAL EXECUTION DISABLED",
-  "Historical local-only approval examples remain below",
-]) requireText("Working Founder Inbox connection", controlRoom, required);
+  "earlier local-only approval prototype remains preserved in source",
+  "FOUNDER ACCESS CENTRE",
+  "Departments & staff workspaces",
+  "Open in Founder Preview",
+  "STAFF DIRECTORY — FOUNDER SIDE",
+  "NO STAFF PASSWORD REQUIRED",
+]) requireText("Working Founder Inbox / access connection", controlRoom, required);
+
+forbidText(
+  "Working Founder Inbox / access connection",
+  controlRoom,
+  "<FounderApprovalInboxPrototype />"
+);
 
 if (errors.length) {
   console.error("\nHIISSA working Customer Support / Founder gate contract: FAIL\n");
@@ -205,6 +225,9 @@ if (errors.length) {
 console.log("HIISSA working Customer Support / Founder gate contract: PASS");
 console.log("- Staging-only staff route remains protected");
 console.log("- Staff and Founder Preview as Role modes are separated");
+console.log("- Founder browser session uses the same Supabase client storage model as Admin sign-in");
+console.log("- Founder Access Centre provides the Control Room doorway into department workspaces");
+console.log("- Duplicate visible Founder Approval Inbox rendering is blocked");
 console.log("- Real staff requires active Customer Support role + permission");
 console.log("- Draft/start/submit actions use protected same-origin APIs");
 console.log("- Submit for processing creates/reuses one canonical Founder approval record");
