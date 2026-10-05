@@ -1,0 +1,253 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import GentleCheckIn from "./GentleCheckIn.js";
+import styles from "./AutomaticGentleCheckIn.module.css";
+
+const PREVIEW_AUTO_DELAY_MS = 8000;
+const DEFAULT_ACTIVE_WORK_DELAY_MS = 30 * 60 * 1000;
+const DEFAULT_POLL_MS = 15 * 60 * 1000;
+const DEFAULT_SNOOZE_MS = 30 * 60 * 1000;
+const AUTO_MINIMISE_MS = 60 * 1000;
+
+function nowContext() {
+  const now = new Date();
+  return {
+    localDate: [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0"),
+    ].join("-"),
+    localHour: now.getHours(),
+    timeZone:
+      Intl.DateTimeFormat().resolvedOptions().timeZone || "local-device",
+  };
+}
+
+function currentDaypart() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "afternoon";
+  return "evening";
+}
+
+export default function AutomaticGentleCheckIn({
+  enabled = false,
+  displayName = "",
+  roleLabel = "",
+  privacyText = "",
+  previewOnly = false,
+  pause = false,
+  requestEligibility,
+  recordState,
+  manualRequestKey = 0,
+  onCalmStart,
+}) {
+  const [offer, setOffer] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [reminder, setReminder] = useState("");
+  const [snoozedUntil, setSnoozedUntil] = useState(null);
+  const [checking, setChecking] = useState(false);
+  const previewDayparts = useRef(new Set());
+  const lastManualRequest = useRef(manualRequestKey);
+
+  const activeDelayMs = previewOnly
+    ? PREVIEW_AUTO_DELAY_MS
+    : Number(offer?.activeWorkDelayMinutes || 30) * 60 * 1000 ||
+      DEFAULT_ACTIVE_WORK_DELAY_MS;
+
+  const pollMs = Number(offer?.pollMinutes || 15) * 60 * 1000 || DEFAULT_POLL_MS;
+  const snoozeMs =
+    Number(offer?.snoozeMinutes || 30) * 60 * 1000 || DEFAULT_SNOOZE_MS;
+
+  const daypart = offer?.daypart || currentDaypart();
+
+  async function evaluateCare({ manual = false } = {}) {
+    if (!enabled || pause || checking || open) return;
+
+    setChecking(true);
+    try {
+      let result = null;
+
+      if (typeof requestEligibility === "function") {
+        result = await requestEligibility(nowContext());
+      } else if (previewOnly) {
+        const nextDaypart = currentDaypart();
+        const alreadyOffered = previewDayparts.current.has(nextDaypart);
+
+        result = {
+          due: manual || !alreadyOffered,
+          reason: manual
+            ? "FOUNDER_MANUAL_PREVIEW"
+            : alreadyOffered
+              ? "DAYPART_ALREADY_OFFERED_PREVIEW"
+              : "FOUNDER_AUTOMATIC_PREVIEW",
+          daypart: nextDaypart,
+          maximumPerActiveDay: 3,
+          activeWorkDelayMinutes: 30,
+          pollMinutes: 15,
+          snoozeMinutes: 30,
+          previewOnly: true,
+          privacy:
+            "Founder Preview only. No emotional answer is stored, scored or shown to a manager.",
+        };
+
+        if (result.due && !manual) previewDayparts.current.add(nextDaypart);
+      }
+
+      if (!result) return;
+
+      if (result.due) {
+        setOffer(result);
+        setReminder("");
+        setSnoozedUntil(null);
+        setOpen(true);
+      } else if (result.reason === "SNOOZED" && result.snoozedUntil) {
+        setOffer(result);
+        setReminder("snoozed");
+        setSnoozedUntil(new Date(result.snoozedUntil));
+      }
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+
+    const timer = window.setTimeout(() => {
+      evaluateCare();
+    }, previewOnly ? PREVIEW_AUTO_DELAY_MS : DEFAULT_ACTIVE_WORK_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [enabled, previewOnly]);
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+
+    const timer = window.setInterval(() => {
+      if (!open && !pause && reminder !== "pending") evaluateCare();
+    }, pollMs);
+
+    return () => window.clearInterval(timer);
+  }, [enabled, open, pause, pollMs, reminder]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setOpen(false);
+      setReminder("pending");
+    }, AUTO_MINIMISE_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [open, offer?.daypart]);
+
+  useEffect(() => {
+    if (manualRequestKey === lastManualRequest.current) return;
+    lastManualRequest.current = manualRequestKey;
+    evaluateCare({ manual: true });
+  }, [manualRequestKey]);
+
+  useEffect(() => {
+    if (!snoozedUntil) return undefined;
+
+    const delay = Math.max(0, snoozedUntil.getTime() - Date.now());
+    const timer = window.setTimeout(() => {
+      setSnoozedUntil(null);
+      setReminder("");
+      setOpen(true);
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [snoozedUntil]);
+
+  async function resolveWithoutAnswerValue() {
+    if (typeof recordState === "function") {
+      await recordState("resolved", nowContext());
+    }
+    setReminder("");
+    setSnoozedUntil(null);
+  }
+
+  async function snooze() {
+    let nextUntil = new Date(Date.now() + snoozeMs);
+
+    if (typeof recordState === "function") {
+      const result = await recordState("snoozed", nowContext());
+      if (result?.snoozedUntil) {
+        const serverUntil = new Date(result.snoozedUntil);
+        if (Number.isFinite(serverUntil.getTime())) nextUntil = serverUntil;
+      }
+    }
+
+    setOpen(false);
+    setReminder("snoozed");
+    setSnoozedUntil(nextUntil);
+  }
+
+  const reminderText = useMemo(() => {
+    if (reminder === "snoozed") {
+      return "Snoozed for now — your gentle check-in is still here when you’re ready.";
+    }
+    return "A gentle check-in is waiting. Take a moment when you’re ready.";
+  }, [reminder]);
+
+  if (!enabled) return null;
+
+  return (
+    <>
+      <GentleCheckIn
+        open={open}
+        displayName={displayName}
+        roleLabel={roleLabel}
+        choices={offer?.choices}
+        privacyText={offer?.privacy || privacyText}
+        daypart={daypart}
+        previewOnly={previewOnly || Boolean(offer?.previewOnly)}
+        onResponded={resolveWithoutAnswerValue}
+        onNotNow={snooze}
+        onClose={() => {
+          setOpen(false);
+          setReminder("");
+        }}
+        onCalmStart={(choice) => {
+          onCalmStart?.(choice);
+          setOpen(false);
+          setReminder("");
+        }}
+      />
+
+      {!open && reminder ? (
+        <aside
+          className={styles.reminder}
+          role="status"
+          aria-label="HIISSA gentle check-in reminder"
+        >
+          <div className={styles.reminderMark} aria-hidden="true">H</div>
+          <div className={styles.reminderCopy}>
+            <span>HIISSA</span>
+            <strong>
+              {reminder === "snoozed"
+                ? "Gentle check-in snoozed"
+                : "A gentle check-in is waiting"}
+            </strong>
+            <p>{reminderText}</p>
+          </div>
+          <div className={styles.reminderActions}>
+            <button
+              type="button"
+              className={styles.respond}
+              onClick={() => setOpen(true)}
+            >
+              Respond now
+            </button>
+            <button type="button" className={styles.snooze} onClick={snooze}>
+              Not now
+            </button>
+          </div>
+        </aside>
+      ) : null}
+    </>
+  );
+}
