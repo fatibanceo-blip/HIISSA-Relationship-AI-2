@@ -118,11 +118,30 @@ function periodFromHour(hour) {
   return "evening";
 }
 
-function messageIndex(localDate) {
+function dateSeedIndex(localDate) {
   const source = String(localDate || "");
   let total = 0;
   for (const char of source) total += char.charCodeAt(0);
   return total % FOUNDER_MESSAGES.length;
+}
+
+function nextMessageIndex({ localDate, mode, previousIndex }) {
+  const safePrevious = Number.isInteger(previousIndex) ? previousIndex : null;
+  const seeded = dateSeedIndex(localDate);
+
+  if (mode === "WELCOME_BACK" && safePrevious !== null) {
+    return (safePrevious + 1) % FOUNDER_MESSAGES.length;
+  }
+
+  if (mode === "QUIET_RETURN" && safePrevious !== null) {
+    return safePrevious;
+  }
+
+  if (safePrevious !== null && seeded === safePrevious) {
+    return (seeded + 1) % FOUNDER_MESSAGES.length;
+  }
+
+  return seeded;
 }
 
 export async function POST(request) {
@@ -189,7 +208,16 @@ export async function POST(request) {
       ? `Good ${period}`
       : "Welcome back";
 
-  const motivation = FOUNDER_MESSAGES[messageIndex(localDate)];
+  const previousMessageIndexRaw = Number(previous?.details?.message_index);
+  const previousMessageIndex = Number.isInteger(previousMessageIndexRaw)
+    ? previousMessageIndexRaw
+    : null;
+  const selectedMessageIndex = nextMessageIndex({
+    localDate,
+    mode,
+    previousIndex: previousMessageIndex,
+  });
+  const motivation = FOUNDER_MESSAGES[selectedMessageIndex];
 
   const { error: insertError } = await founder.adminClient
     .from("admin_audit_events")
@@ -208,6 +236,8 @@ export async function POST(request) {
         local_hour: localHour,
         welcome_mode: mode,
         previous_visit_minutes_ago: minutesSincePrevious,
+        message_index: selectedMessageIndex,
+        message_rotation: "ANTI_REPEAT",
         founder_identity: FOUNDER_NAME,
         founder_role: FOUNDER_ROLE,
         emotional_checkin_recorded: false,
@@ -227,6 +257,8 @@ export async function POST(request) {
     mode,
     period,
     motivation,
+    messageIndex: selectedMessageIndex,
+    rotation: "ANTI_REPEAT",
     showFullWelcome: mode !== "QUIET_RETURN",
     previousVisitMinutesAgo: minutesSincePrevious,
     privacy: {
