@@ -8,7 +8,7 @@ import {
   formatHiissaRecordTime,
 } from "../../../lib/hiissa-record-time.js";
 import GentleCheckIn from "../../../components/people-experience/GentleCheckIn.js";
-import WorkdayClose from "../../../components/people-experience/WorkdayClose.js";
+import WorkdayClose from "../../../components/people-experience/WorkdayClose.js";\nimport PrivateAppreciation from "../../../components/people-experience/PrivateAppreciation.js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -1357,7 +1357,7 @@ function FounderAccessCentre({ authenticated }) {
         })}
       </div>
 
-      <div className={styles.founderPeoplePanel}>
+      <PrivateAppreciation\n        mode="founder-preview"\n        recipientLabel="Customer Support"\n      />\n\n      <div className={styles.founderPeoplePanel}>
         <div>
           <div className={styles.kicker}>STAFF DIRECTORY — FOUNDER SIDE</div>
           <strong>People will sit under their department, not behind separate logins for you.</strong>
