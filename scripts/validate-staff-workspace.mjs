@@ -45,6 +45,18 @@ const workdayCloseStylePath = path.join(
   "people-experience",
   "WorkdayClose.module.css"
 );
+const privateAppreciationComponentPath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "PrivateAppreciation.js"
+);
+const privateAppreciationStylePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "PrivateAppreciation.module.css"
+);
 const staffApiPath = path.join(root, "app", "api", "staff-workspace", "route.js");
 const founderApiPath = path.join(
   root,
@@ -91,6 +103,8 @@ for (const [label, file] of [
   ["Gentle check-in styles", gentleCheckInStylePath],
   ["Workday Close component", workdayCloseComponentPath],
   ["Workday Close styles", workdayCloseStylePath],
+  ["Private Appreciation component", privateAppreciationComponentPath],
+  ["Private Appreciation styles", privateAppreciationStylePath],
   ["Staff workspace API", staffApiPath],
   ["Founder staff approval API", founderApiPath],
   ["Experience Registry", registryPath],
@@ -105,6 +119,8 @@ const gentleCheckInComponent = read(gentleCheckInComponentPath);
 const gentleCheckInStyles = read(gentleCheckInStylePath);
 const workdayCloseComponent = read(workdayCloseComponentPath);
 const workdayCloseStyles = read(workdayCloseStylePath);
+const privateAppreciationComponent = read(privateAppreciationComponentPath);
+const privateAppreciationStyles = read(privateAppreciationStylePath);
 const staffApi = read(staffApiPath);
 const founderApi = read(founderApiPath);
 const registry = read(registryPath);
@@ -181,6 +197,9 @@ for (const required of [
   "unsavedLocalChanges",
   "Save before leaving",
   "Before you finish for now…",
+  "PrivateAppreciation",
+  'mode="recipient-empty"',
+  "No saved appreciation source is connected yet.",
 ]) requireText("Working Customer Support workspace", client, required);
 
 for (const forbidden of [
@@ -325,6 +344,10 @@ for (const required of [
   "hiissa.people-experience.daypart-care-cadence",
   "hiissa.people-experience.workday-close",
   "hiissa.people-experience.private-appreciation",
+  "STAGING_INTERFACE_FOUNDATION_IMPLEMENTED_PERSISTENCE_PENDING",
+  "NO_PERSISTENCE_SOURCE_CONNECTED",
+  "sendsOrStoresMessages: false",
+  "supabaseSchemaChanged: false",
   "hiissa.people-experience.workload-care-signals",
   "hiissa.people-experience.protected-rest-boundaries",
   "hiissa.people-experience.protected-rest-boundaries.care-pause",
@@ -452,6 +475,9 @@ for (const required of [
   "founderReturn=staff",
   "STAFF DIRECTORY — FOUNDER SIDE",
   "NO STAFF PASSWORD REQUIRED",
+  "PrivateAppreciation",
+  'mode="founder-preview"',
+  'recipientLabel="Customer Support"',
 ]) requireText("Working Founder Inbox / access connection", controlRoom, required);
 
 forbidText(
@@ -459,6 +485,31 @@ forbidText(
   controlRoom,
   "<FounderApprovalInboxPrototype />"
 );
+
+for (const required of [
+  "HIISSA · PRIVATE APPRECIATION & RECOGNITION",
+  "Preview only — nothing is sent or stored.",
+  "No Supabase record",
+  "No saved appreciation source is connected yet.",
+  "Browser memory only · not stored",
+]) requireText("Private Appreciation interface foundation", privateAppreciationComponent, required);
+
+for (const forbidden of [
+  "fetch(",
+  "localStorage",
+  "sessionStorage",
+  "navigator.share",
+  "mailto:",
+  "sms:",
+  "wa.me",
+]) forbidText("Private Appreciation interface foundation", privateAppreciationComponent, forbidden);
+
+for (const required of [
+  ".founderSurface",
+  ".recipientSurface",
+  ".appreciationCard",
+  "@media (prefers-reduced-motion: reduce)",
+]) requireText("Private Appreciation styles", privateAppreciationStyles, required);
 
 if (errors.length) {
   console.error("\nHIISSA working Customer Support / Founder gate contract: FAIL\n");
@@ -493,3 +544,7 @@ console.log("- Staff Calm Start begins with Assigned Work without changing workl
 console.log("- Customer Support Workday Close records a close event without mutating case state");
 console.log("- Workday Close warns when browser draft/note differs from the persisted Staging record");
 console.log("- Editable unsaved work offers Save before leaving");
+console.log("- Private Appreciation is nested inside Staff & Workspaces, not added as a top-level dashboard button");
+console.log("- Staff Notifications has the matching private-recognition surface");
+console.log("- Appreciation preview remains browser-memory-only: no send, storage, Supabase schema or Production effect");
+console.log("- Public ranking, popularity scoring and colleague-recognition expansion remain disabled");
