@@ -302,7 +302,7 @@ for (const required of [
   "departmentSelectionRule",
   "consistencyRule",
   "mobileTouchRule",
-  "informational cards must not pretend to be interactive",
+  "must not pretend to be interactive",
   "visibly activate exactly one current department",
 ]) requireText("Founder interaction feedback Registry contract", registry, required);
 
