@@ -675,6 +675,9 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
 function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [pending, setPending] = useState(null);
+  const [securityStatus, setSecurityStatus] = useState(null);
+  const [criticalCount, setCriticalCount] = useState(0);
+  const [criticalMessage, setCriticalMessage] = useState("");
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -695,16 +698,45 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
           return;
         }
 
-        const response = await fetch("/api/admin/control-room/staff-approval-inbox", {
-          method: "GET",
-          cache: "no-store",
-          credentials: "same-origin",
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        const data = await response.json().catch(() => null);
+        const headers = { Authorization: `Bearer ${session.access_token}` };
+        const [approvalResponse, securityResponse] = await Promise.all([
+          fetch("/api/admin/control-room/staff-approval-inbox", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/security-summary", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+        ]);
+
+        const [approvalData, securityData] = await Promise.all([
+          approvalResponse.json().catch(() => null),
+          securityResponse.json().catch(() => null),
+        ]);
 
         if (!active) return;
-        if (response.ok && data) setPending(data.pendingCount ?? 0);
+
+        if (approvalResponse.ok && approvalData) {
+          setPending(Number(approvalData.pendingCount || 0));
+        } else {
+          setPending(null);
+        }
+
+        if (securityResponse.ok && securityData) {
+          setSecurityStatus(securityData.status || null);
+          setCriticalCount(Number(securityData.criticalCount || 0));
+          setCriticalMessage(securityData.criticalMessage || "");
+        } else {
+          setSecurityStatus(null);
+          setCriticalCount(0);
+          setCriticalMessage("");
+        }
+
         setLoading(false);
       } catch {
         if (!active) return;
@@ -718,6 +750,8 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
     };
   }, [authenticated]);
 
+  const securityNeedsAttention = securityStatus === "NEEDS_ATTENTION";
+
   return (
     <section className={styles.globalPanel} aria-label="Founder Alerts">
       <div className={styles.globalPanelHeading}>
@@ -729,6 +763,18 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
       </div>
 
       <div className={styles.alertList}>
+        {criticalCount > 0 ? (
+          <article className={styles.alertItemCritical}>
+            <div>
+              <strong>Critical Founder alert</strong>
+              <p>
+                {criticalMessage ||
+                  `${criticalCount} verified critical signal${criticalCount === 1 ? "" : "s"} currently need immediate Founder attention.`}
+              </p>
+            </div>
+          </article>
+        ) : null}
+
         <article className={styles.alertItem}>
           <div>
             <strong>Staff submissions waiting for you</strong>
@@ -747,11 +793,28 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
           </button>
         </article>
 
+        <article className={securityNeedsAttention ? styles.alertItemAttention : styles.alertItem}>
+          <div>
+            <strong>Admin security & access health</strong>
+            <p>
+              {loading
+                ? "Checking the protected security summary…"
+                : securityStatus === null
+                  ? "This source could not be confirmed right now."
+                  : securityNeedsAttention
+                    ? "A connected Admin Security source needs Founder attention. Open the Admin Security & Audit module for the verified detail."
+                    : "No connected Admin Security attention signal is currently reported."}
+            </p>
+          </div>
+        </article>
+
         <article className={styles.alertItem}>
           <div>
-            <strong>Other Founder alerts</strong>
+            <strong>More Founder alert sources</strong>
             <p>
-              Provider, reliability, security and service-level alerts will appear here only as their real Staging sources are individually connected and certified.
+              Provider, reliability and service-level alerts will join this same
+              alert centre only as their real Staging sources are individually
+              connected and certified. HIISSA does not invent emergency alerts.
             </p>
           </div>
         </article>
