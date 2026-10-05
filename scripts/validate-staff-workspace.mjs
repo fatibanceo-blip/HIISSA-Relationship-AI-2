@@ -102,7 +102,7 @@ for (const required of [
   "export const STAFF_WORKSPACE_SHELL_STANDARD",
   'status: "founder-approved-fictional-staging-design-to-build"',
   "customerSupportPrototype",
-  'status: "IMPLEMENTED_ISOLATED_BUILD_PENDING"',
+  'status: "STAGING_BUILD_VERIFIED_FOUNDER_VISUAL_TEST_PENDING"',
   'route: "/staff-workspace-preview"',
   'workspaceId: "customer_support"',
   "Submit for processing",
