@@ -10,6 +10,30 @@ const FALLBACK_CHOICES = [
   "I could use a calmer start",
 ];
 
+function checkInQuestion(daypart, displayName) {
+  const name = displayName ? `, ${displayName}` : "";
+
+  if (daypart === "morning") {
+    return `Good morning${name}. How are you doing today?`;
+  }
+
+  if (daypart === "afternoon") {
+    return `Just checking in${name}. How is your day going so far?`;
+  }
+
+  return `Before you carry on${name}, how has your day been?`;
+}
+
+function checkInIntro(daypart) {
+  if (daypart === "morning") {
+    return "A gentle check-in before the day gets moving. There is no right answer.";
+  }
+  if (daypart === "afternoon") {
+    return "A small moment to notice how the day is going. There is no right answer.";
+  }
+  return "A quiet check-in before you continue. There is no right answer.";
+}
+
 function needsCalmerStart(choice) {
   return (
     choice === "It's a heavy day" ||
@@ -24,6 +48,7 @@ export default function GentleCheckIn({
   choices = FALLBACK_CHOICES,
   privacyText = "",
   previewOnly = false,
+  daypart = "morning",
   onClose,
   onCalmStart,
 }) {
@@ -57,13 +82,9 @@ export default function GentleCheckIn({
 
         {!choice ? (
           <>
-            <h2>
-              {"How are you doing today" + (displayName ? ", " + displayName : "") + "?"}
-            </h2>
+            <h2>{checkInQuestion(daypart, displayName)}</h2>
             {roleLabel ? <div className={styles.role}>{roleLabel}</div> : null}
-            <p className={styles.intro}>
-              A small check-in before you continue. There is no right answer.
-            </p>
+            <p className={styles.intro}>{checkInIntro(daypart)}</p>
 
             <div className={styles.choices}>
               {choices.map((item) => (
