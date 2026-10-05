@@ -15,6 +15,7 @@ import {
   getHibernatedStaffWorkspace,
 } from "../../lib/hibernated-staff-workspaces.js";
 import AutomaticGentleCheckIn from "../people-experience/AutomaticGentleCheckIn.js";
+import CalmerStartMode from "../people-experience/CalmerStartMode.js";
 import WorkdayClose from "../people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../people-experience/PrivateAppreciation.js";
 import styles from "./HibernatedStaffWorkspace.module.css";
@@ -116,6 +117,7 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
   const [lastActionAt, setLastActionAt] = useState(() => new Date());
   const [checkInManualKey, setCheckInManualKey] = useState(0);
   const [calmStart, setCalmStart] = useState(false);
+  const [calmStartExpanded, setCalmStartExpanded] = useState(false);
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
 
   useEffect(() => {
@@ -474,15 +476,27 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
           </div>
         </section>
 
-        {calmStart ? (
-          <div className={styles.calmStartNotice}>
-            <strong>Calmer start active for this preview.</strong>
-            <span>
-              HIISSA has reduced visual pressure without changing responsibilities, permissions or work priority.
-            </span>
-          </div>
-        ) : null}
+        <CalmerStartMode
+          active={calmStart}
+          previewOnly
+          workspaceLabel={workspace.label}
+          taskTitle={workspace.fictionalTask.title}
+          taskDetail={workspace.fictionalTask.summary}
+          taskStatus={statusLabel(status)}
+          expanded={calmStartExpanded}
+          onContinueTask={() => {
+            setActiveTab(STATUS_TO_TAB[status] || "assigned");
+            setCalmStartExpanded(true);
+          }}
+          onShowAll={() => setCalmStartExpanded(true)}
+          onExit={() => {
+            setCalmStart(false);
+            setCalmStartExpanded(false);
+          }}
+        />
 
+        {!calmStart || calmStartExpanded ? (
+        <>
         <nav className={styles.tabs} aria-label={`${workspace.label} workspace sections`}>
           {TABS.map(([id, label]) => (
             <button
@@ -759,6 +773,8 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
             </div>
           ) : null}
         </section>
+        </>
+        ) : null}
 
         <section className={styles.activationFooter}>
           <div>
@@ -779,7 +795,11 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
         privacyText="This Founder Preview selection is not staff data and is not used as a performance score or manager signal."
         pause={workdayCloseOpen}
         manualRequestKey={checkInManualKey}
-        onCalmStart={() => setCalmStart(true)}
+        onCalmStart={() => {
+          setActiveTab("assigned");
+          setCalmStartExpanded(false);
+          setCalmStart(true);
+        }}
       />
 
       <WorkdayClose
