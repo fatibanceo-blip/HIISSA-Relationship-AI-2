@@ -396,7 +396,6 @@ for (const required of [
   'auditOfferEvent: "people_experience_checkin_offered"',
   'auditSnoozeEvent: "people_experience_checkin_snoozed"',
   'auditResolvedEvent: "people_experience_checkin_resolved"',
-  "Customer Support calmer start opens Assigned Work first",
   "export const HIISSA_PEOPLE_EXPERIENCE_CAPABILITY_REGISTRY",
   "hiissa.people-experience.daypart-care-cadence",
   "hiissa.people-experience.workday-close",
