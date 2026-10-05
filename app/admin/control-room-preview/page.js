@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
+import {
+  formatHiissaFullRecordTime,
+  formatHiissaRecordTime,
+} from "../../../lib/hiissa-record-time.js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -832,6 +836,134 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
   );
 }
 
+function FounderActivityTimeline({ authenticated }) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [events, setEvents] = useState([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadActivity() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch("/api/admin/control-room/activity-timeline", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The verified Founder activity timeline could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setEvents(Array.isArray(data.events) ? data.events : []);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The verified Founder activity timeline could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    loadActivity();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  return (
+    <section className={styles.activityTimelineSection}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>FOUNDER ACTIVITY TIMELINE</div>
+          <h3>What happened, and exactly when</h3>
+        </div>
+        <StatusPill
+          label={loading ? "LOADING" : `${events.length} RECENT RECORDS`}
+          compact
+        />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        These are real Staging audit records. HIISSA stores the authoritative
+        event time and shows it here in your local time. No activity is invented
+        to fill the timeline.
+      </p>
+
+      {error ? (
+        <div className={styles.errorPanel}>
+          <strong>Timeline unavailable</strong>
+          <div>{error}</div>
+        </div>
+      ) : null}
+
+      {!loading && !error && events.length === 0 ? (
+        <div className={styles.emptyState}>
+          No verified Staging audit activity is available yet.
+        </div>
+      ) : null}
+
+      {events.length > 0 ? (
+        <div className={styles.activityTimeline}>
+          {events.slice(0, 12).map((event) => (
+            <article className={styles.activityEvent} key={event.id}>
+              <time
+                className={styles.activityTime}
+                dateTime={event.occurredAt || undefined}
+                title={formatHiissaFullRecordTime(event.occurredAt)}
+              >
+                {formatHiissaRecordTime(event.occurredAt)}
+              </time>
+              <div className={styles.activityEventBody}>
+                <strong>{event.title}</strong>
+                <p>
+                  {event.actor} · {event.source}
+                  {event.caseCode ? ` · ${event.caseCode}` : ""}
+                </p>
+                <div className={styles.activityMeta}>
+                  <span>Outcome: {event.outcome || "Recorded"}</span>
+                  {event.status ? <span>Status: {event.status}</span> : null}
+                  <span>L{event.oversightLevel || 1}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : null}
+
+      <div className={styles.timestampStandardNote}>
+        <strong>HIISSA timestamp rule:</strong> original database time is
+        preserved; created, updated, submitted, returned, approved and verified
+        times stay distinct rather than overwriting one another.
+      </div>
+    </section>
+  );
+}
+
 function Overview({ registeredFeatures, authenticated, onBack, onOpenStaff, onOpenApprovals }) {
   return (
     <>
@@ -855,6 +987,8 @@ function Overview({ registeredFeatures, authenticated, onBack, onOpenStaff, onOp
           Live health, user-registration, entitlement, failure and recovery values will appear only when an authorised real data source is connected and verified.
         </p>
       </section>
+
+      <FounderActivityTimeline authenticated={authenticated} />
 
       <div className={styles.grid}>
         <InfoCard title="HIISSA STATUS" value="Not yet live-wired" detail="Operational aggregation will come from authorised module signals." />
@@ -2514,6 +2648,13 @@ function WorkingStaffApprovalInbox() {
                 </span>
                 <strong>{item.title}</strong>
                 <small>{item.caseCode} · Customer Support</small>
+                <time
+                  className={styles.approvalQueueTime}
+                  dateTime={item.submittedAt || item.createdAt || undefined}
+                  title={formatHiissaFullRecordTime(item.submittedAt || item.createdAt)}
+                >
+                  {formatHiissaRecordTime(item.submittedAt || item.createdAt)}
+                </time>
               </button>
             ))}
           </div>
@@ -2542,6 +2683,45 @@ function WorkingStaffApprovalInbox() {
                   value={selected.caseCode}
                   detail="Canonical staff work record"
                 />
+              </div>
+
+              <div className={styles.recordTimeGrid}>
+                <div>
+                  <span>Approval record created</span>
+                  <strong title={formatHiissaFullRecordTime(selected.createdAt)}>
+                    {formatHiissaRecordTime(selected.createdAt)}
+                  </strong>
+                </div>
+                <div>
+                  <span>Submitted for processing</span>
+                  <strong title={formatHiissaFullRecordTime(selected.submittedAt)}>
+                    {formatHiissaRecordTime(selected.submittedAt)}
+                  </strong>
+                </div>
+                {selected.returnedAt ? (
+                  <div>
+                    <span>Returned for changes</span>
+                    <strong title={formatHiissaFullRecordTime(selected.returnedAt)}>
+                      {formatHiissaRecordTime(selected.returnedAt)}
+                    </strong>
+                  </div>
+                ) : null}
+                {selected.approvedAt ? (
+                  <div>
+                    <span>Founder approved</span>
+                    <strong title={formatHiissaFullRecordTime(selected.approvedAt)}>
+                      {formatHiissaRecordTime(selected.approvedAt)}
+                    </strong>
+                  </div>
+                ) : null}
+                {selected.resolvedAt ? (
+                  <div>
+                    <span>Approval request resolved</span>
+                    <strong title={formatHiissaFullRecordTime(selected.resolvedAt)}>
+                      {formatHiissaRecordTime(selected.resolvedAt)}
+                    </strong>
+                  </div>
+                ) : null}
               </div>
 
               <div className={styles.prototypeReviewBlock}>
