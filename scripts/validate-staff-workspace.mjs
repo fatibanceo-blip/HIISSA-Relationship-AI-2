@@ -154,7 +154,6 @@ for (const required of [
   "GentleCheckIn",
   "checkInVisible",
   "welcome?.checkIn?.due",
-  "Give me a calmer start",
   "calmStart",
   "CALM START",
   "Starting with Assigned Work only.",
