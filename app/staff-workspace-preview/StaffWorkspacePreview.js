@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
 import {
   STAFF_WORKSPACE_SHELL_STANDARD,
@@ -30,7 +30,7 @@ function getSupabase() {
   if (!url || !key) return null;
 
   if (!browserSupabase) {
-    browserSupabase = createBrowserClient(url, key, {
+    browserSupabase = createClient(url, key, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -178,7 +178,7 @@ export default function StaffWorkspacePreview() {
       if (!response.ok || !data?.item) {
         setError(
           data?.status === "CUSTOMER_SUPPORT_ROLE_REQUIRED"
-            ? "This signed-in account does not have an active Customer Support Staging role. Founder testing must use the authorised Founder Admin account."
+            ? "This account is not authorised for the Customer Support workspace. Staff need an active Customer Support role. The Founder should open this workspace from the Founder Control Room so HIISSA can verify Founder Preview access."
             : "The protected Staging staff record could not be loaded."
         );
         setLoading(false);
@@ -352,6 +352,11 @@ export default function StaffWorkspacePreview() {
 
           <div className={styles.headerActions}>
             <StatusPill>STAGING · WORKING TEST</StatusPill>
+            {actor?.mode === "FOUNDER_PREVIEW" ? (
+              <Link className={styles.secondaryButton} href="/admin/control-room">
+                ← Founder Control Room
+              </Link>
+            ) : null}
             <button
               type="button"
               className={styles.secondaryButton}
