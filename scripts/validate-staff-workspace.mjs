@@ -81,6 +81,9 @@ for (const required of [
   "Customer Support",
   "STAGING · WORKING TEST",
   '"@supabase/supabase-js"',
+  "hiissa-record-time.js",
+  "formatHiissaRecordTime",
+  "formatHiissaFullRecordTime",
   "← Back to Staff & Workspaces",
   "actor?.displayIdentity",
   "Assigned Work",
@@ -100,6 +103,14 @@ for (const required of [
   "External execution is still disabled.",
   "Approval is not verified completion",
   "Production effect: None",
+  "Persisted Staging timestamp.",
+  "last",
+  "updated",
+  "Received:",
+  "Response due:",
+  "Submitted:",
+  "Returned:",
+  "Verified at",
   "Verify · Record · Report",
 ]) requireText("Working Customer Support workspace", client, required);
 
@@ -229,6 +240,7 @@ console.log("- Staff and Founder Preview as Role modes are separated");
 console.log("- Founder browser session uses the same Supabase client storage model as Admin sign-in");
 console.log("- Founder Access Centre provides the Control Room doorway into department workspaces");
 console.log("- Founder preview returns to Staff & Workspaces rather than losing previous context");
+console.log("- Staff work records use the shared HIISSA timestamp display standard");
 console.log("- Duplicate visible Founder Approval Inbox rendering is blocked");
 console.log("- Real staff requires active Customer Support role + permission");
 console.log("- Draft/start/submit actions use protected same-origin APIs");
