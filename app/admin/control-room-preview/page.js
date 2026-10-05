@@ -1296,6 +1296,9 @@ function Overview({
 
 function FounderAccessCentre({ authenticated }) {
   const workspaces = STAFF_WORKSPACE_SHELL_STANDARD.workspaces || [];
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState("");
+  const selectedWorkspace =
+    workspaces.find((workspace) => workspace.id === selectedWorkspaceId) || null;
 
   return (
     <section className={styles.section}>
@@ -1318,45 +1321,93 @@ function FounderAccessCentre({ authenticated }) {
         {workspaces.map((workspace) => {
           const route = FOUNDER_WORKSPACE_ROUTES[workspace.id] || null;
           const available = Boolean(authenticated && route?.href);
+          const selected = selectedWorkspaceId === workspace.id;
 
           return (
-            <article className={styles.accessCentreCard} key={workspace.id}>
-              <div className={styles.featureTop}>
-                <div>
-                  <strong>{workspace.label}</strong>
-                  <div className={styles.featureId}>{workspace.id}</div>
+            <article
+              className={
+                selected
+                  ? `${styles.accessCentreCard} ${styles.accessCentreCardSelected}`
+                  : styles.accessCentreCard
+              }
+              key={workspace.id}
+            >
+              <button
+                type="button"
+                className={styles.accessCentreSelect}
+                onClick={() => setSelectedWorkspaceId(workspace.id)}
+                aria-pressed={selected}
+                aria-label={`Select ${workspace.label} department`}
+              >
+                <div className={styles.featureTop}>
+                  <div>
+                    <strong>{workspace.label}</strong>
+                    <div className={styles.featureId}>{workspace.id}</div>
+                  </div>
+                  <div className={styles.accessCentreStatusStack}>
+                    {selected ? (
+                      <span className={styles.accessCentreSelectedPill}>SELECTED</span>
+                    ) : null}
+                    <StatusPill
+                      label={route?.status || "APPROVED · NOT BUILT YET"}
+                      compact
+                    />
+                  </div>
                 </div>
-                <StatusPill
-                  label={route?.status || "APPROVED · NOT BUILT YET"}
-                  compact
-                />
-              </div>
 
-              <p>
-                {route?.note ||
-                  "This approved department workspace will appear here automatically when its interface is built and certified."}
-              </p>
+                <p>
+                  {route?.note ||
+                    "This approved department workspace will appear here automatically when its interface is built and certified."}
+                </p>
+                <span className={styles.accessCentreTapHint}>
+                  {selected ? "Department selected" : "Tap to select this department"}
+                </span>
+              </button>
 
-              {available ? (
-                <Link
-                  className={styles.accessCentreLink}
-                  href={route.href}
-                >
-                  Open in Founder Preview →
-                </Link>
-              ) : route?.href ? (
-                <span className={styles.accessCentreDisabled}>
-                  Founder sign-in required
-                </span>
-              ) : (
-                <span className={styles.accessCentreDisabled}>
-                  Workspace not built yet
-                </span>
-              )}
+              {selected ? (
+                <div className={styles.accessCentreSelectedActions}>
+                  {available ? (
+                    <Link
+                      className={styles.accessCentreLink}
+                      href={route.href}
+                    >
+                      Open {workspace.label} workspace →
+                    </Link>
+                  ) : route?.href ? (
+                    <span className={styles.accessCentreDisabled}>
+                      Selected · Founder sign-in required
+                    </span>
+                  ) : (
+                    <span className={styles.accessCentreDisabled}>
+                      Selected · Workspace approved — interface not built yet
+                    </span>
+                  )}
+                </div>
+              ) : null}
             </article>
           );
         })}
       </div>
+
+      {selectedWorkspace ? (
+        <div className={styles.selectedWorkspaceContext} role="status" aria-live="polite">
+          <span className={styles.kicker}>ACTIVE DEPARTMENT</span>
+          <strong>You&apos;re viewing {selectedWorkspace.label}</strong>
+          <span>
+            {FOUNDER_WORKSPACE_ROUTES[selectedWorkspace.id]?.href
+              ? "Its available Founder workspace action is shown on the selected card."
+              : "This department is selected. Its workspace will remain clearly unavailable until it is built and certified."}
+          </span>
+        </div>
+      ) : (
+        <div className={styles.selectedWorkspaceContext}>
+          <span className={styles.kicker}>DEPARTMENT SELECTION</span>
+          <strong>Choose a department to make it active.</strong>
+          <span>
+            Interactive areas acknowledge your selection; informational cards remain informational.
+          </span>
+        </div>
+      )}
 
       <PrivateAppreciation
         mode="founder-preview"
