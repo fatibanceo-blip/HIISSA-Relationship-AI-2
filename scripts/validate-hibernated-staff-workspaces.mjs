@@ -132,7 +132,7 @@ for (const required of [
   "onExit",
   'enabled={authState === "ready"}',
   "manualRequestKey={checkInManualKey}",
-  "pause={workdayCloseOpen}",
+  "pause={workdayCloseOpen || calmStartMomentOpen || calmStart}",
   "Finish for now",
   "PrivateAppreciation",
   "No real-world effect",
