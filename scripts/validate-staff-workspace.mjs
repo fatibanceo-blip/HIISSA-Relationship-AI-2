@@ -80,7 +80,7 @@ for (const required of [
   "HIISSA STAFF WORKSPACE",
   "Customer Support",
   "STAGING · WORKING TEST",
-  "Founder Preview as Customer Support",
+  "actor?.displayIdentity",
   "Assigned Work",
   "Work in Progress",
   "Saved Drafts",
