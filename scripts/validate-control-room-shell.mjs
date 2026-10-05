@@ -266,6 +266,21 @@ for (const required of [
   ".primaryNavItem:active",
   ".navItem:active",
   "@media (prefers-reduced-motion: reduce)",
+  "CONTROL ROOM INTERACTION ACKNOWLEDGEMENT SWEEP",
+  ".backLink:active",
+  ".signOutPreview:not(:disabled):active",
+  ".panelClose:active",
+  ".alertAction:active",
+  ".contextBack:active",
+  ".finishForNowButton:active",
+  ".calmStartActions button:active",
+  ".approvalQueueItem:active",
+  ".prototypeApprove:not(:disabled):active",
+  ".prototypeReturn:not(:disabled):active",
+  ".prototypeReject:not(:disabled):active",
+  ".welcomeEnter:active",
+  ".welcomeDismiss:active",
+  ".criticalAlertActions button:active",
 ]) requireText("Founder Control Room styles", styles, required);
 
 const welcomeNameStart = styles.indexOf(".welcomeName{");
@@ -794,6 +809,7 @@ console.log("- Founder Access Centre is surfaced from the existing Control Room 
 console.log("- Founder department cards visibly select one active department and expose honest working/unbuilt states");
 console.log("- Interactive Founder controls use calm pressed/active feedback while informational cards remain non-interactive");
 console.log("- Reduced-motion preferences remain protected for interaction feedback");
+console.log("- Back, close, Finish for now, alert, approval, welcome and sign-out controls now visibly acknowledge touch/press");
 console.log("- Founder primary navigation is Overview / Modules / Staff & Workspaces / Approvals with Search and Alerts");
 console.log("- Founder welcome intelligence is protected, time-aware and records same-day return continuity");
 console.log("- FATI BANCE / FOUNDER identity treatment and People Experience Layer are registered");
