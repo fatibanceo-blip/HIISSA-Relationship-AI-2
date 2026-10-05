@@ -68,6 +68,7 @@ const founderApiPath = path.join(
   "route.js"
 );
 const registryPath = path.join(root, "lib", "experience-registry.js");
+const recordTimePath = path.join(root, "lib", "hiissa-record-time.js");
 const controlRoomPath = path.join(
   root,
   "app",
@@ -108,6 +109,7 @@ for (const [label, file] of [
   ["Staff workspace API", staffApiPath],
   ["Founder staff approval API", founderApiPath],
   ["Experience Registry", registryPath],
+  ["HIISSA record time helper", recordTimePath],
   ["Founder Control Room", controlRoomPath],
 ]) requireFile(label, file);
 
@@ -124,6 +126,7 @@ const privateAppreciationStyles = read(privateAppreciationStylePath);
 const staffApi = read(staffApiPath);
 const founderApi = read(founderApiPath);
 const registry = read(registryPath);
+const recordTime = read(recordTimePath);
 const controlRoom = read(controlRoomPath);
 
 for (const required of [
@@ -343,7 +346,30 @@ for (const required of [
   "hiissa.people-experience.daypart-care-cadence",
   "hiissa.people-experience.workday-close",
   "hiissa.people-experience.private-appreciation",
-  "STAGING_INTERFACE_FOUNDATION_IMPLEMENTED_PERSISTENCE_PENDING",
+  "FOUNDER_APPROVED_EXPANDED_STAGING_INTERFACE_FOUNDATION_IMPLEMENTATION_IN_PROGRESS",
+  "HIISSA_GLOBAL_IDENTITY_WRITING_STANDARD",
+  "FOUNDER_APPROVED_PERMANENT_HIISSA_WIDE_STANDARD",
+  "warm",
+  "calm",
+  "kind",
+  "respectful",
+  "emotionally intelligent",
+  "grounded",
+  "non-judgmental",
+  "HIISSA is one global and international product",
+  "WRITE_IT_MYSELF",
+  "HELP_ME_WRITE_IT",
+  "multipleSuggestionsRequired: true",
+  "sameMessageOrPersonalise: true",
+  "wholeActiveDepartment: true",
+  "multipleDepartments: true",
+  "savedGroupsFuture: true",
+  "recipientLocalWorkingHoursOption: true",
+  "duplicateSendProtection: true",
+  "founderSentHistory: true",
+  "recipientMyAppreciationsArchive: true",
+  "appreciationMomentsOptional: true",
+  "noAutoSend: true",
   "NO_PERSISTENCE_SOURCE_CONNECTED",
   "sendsOrStoresMessages: false",
   "supabaseSchemaChanged: false",
@@ -487,11 +513,36 @@ forbidText(
 
 for (const required of [
   "HIISSA · PRIVATE APPRECIATION & RECOGNITION",
-  "Preview only — nothing is sent or stored.",
-  "No Supabase record",
+  "STAGING · PREVIEW ONLY",
+  "HIISSA writing identity",
+  "Fictional Staging directory",
+  "All departments",
+  "Select all shown",
+  "Cross-department example",
+  "Write it myself",
+  "Help me write it",
+  "Give me more suggestions",
+  "Same message for everyone",
+  "Personalise for each person",
+  "Optional Founder-only context note",
+  "Deliver in recipient’s local working hours",
+  "Preview final delivery",
+  "there is deliberately no Send button yet.",
   "No saved appreciation source is connected yet.",
-  "Browser memory only · not stored",
+  "No external AI-generation service is connected yet",
+  "does not invent a reason for praise",
+  "formatHiissaGlobalRecordTime",
+  "hiissaResolvedLocale",
+  "hiissaResolvedTimeZone",
+  "permanent staff identity",
 ]) requireText("Private Appreciation interface foundation", privateAppreciationComponent, required);
+
+for (const required of [
+  "hiissaResolvedLocale",
+  "formatHiissaGlobalRecordTime",
+  "hiissaGlobalTimestampRecord",
+  "timeZoneName: \"short\"",
+]) requireText("HIISSA global timestamp helper", recordTime, required);
 
 for (const forbidden of [
   "fetch(",
@@ -506,7 +557,11 @@ for (const forbidden of [
 for (const required of [
   ".founderSurface",
   ".recipientSurface",
-  ".appreciationCard",
+  ".identityNotice",
+  ".peopleGrid",
+  ".suggestionGrid",
+  ".finalReview",
+  ".recipientReviewList",
   "@media (prefers-reduced-motion: reduce)",
 ]) requireText("Private Appreciation styles", privateAppreciationStyles, required);
 
@@ -543,7 +598,11 @@ console.log("- Staff Calm Start begins with Assigned Work without changing workl
 console.log("- Customer Support Workday Close records a close event without mutating case state");
 console.log("- Workday Close warns when browser draft/note differs from the persisted Staging record");
 console.log("- Editable unsaved work offers Save before leaving");
-console.log("- Private Appreciation is nested inside Staff & Workspaces, not added as a top-level dashboard button");
+console.log("- Private Appreciation remains nested inside Staff & Workspaces, not added as a top-level dashboard button");
+console.log("- Expanded Staging foundation supports fictional one/bulk/cross-department recipient selection");
+console.log("- Write it myself / Help me write it and multiple HIISSA-aligned suggestions are present without a live AI service");
+console.log("- HIISSA identity is locked: warm, calm, kind, respectful, emotionally intelligent, grounded and non-judgmental");
+console.log("- Global timestamp helper preserves authoritative instant while supporting viewer locale/timezone presentation");
 console.log("- Staff Notifications has the matching private-recognition surface");
-console.log("- Appreciation preview remains browser-memory-only: no send, storage, Supabase schema or Production effect");
+console.log("- Appreciation remains browser-session-only: no send, storage, Supabase schema or Production effect");
 console.log("- Public ranking, popularity scoring and colleague-recognition expansion remain disabled");
