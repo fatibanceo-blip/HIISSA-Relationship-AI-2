@@ -12,6 +12,7 @@ import {
   formatHiissaRecordTime,
 } from "../../lib/hiissa-record-time.js";
 import AutomaticGentleCheckIn from "../../components/people-experience/AutomaticGentleCheckIn.js";
+import CalmerStartMode from "../../components/people-experience/CalmerStartMode.js";
 
 // LEGACY CERTIFICATION CONTINUITY:
 // checkInVisible and welcome?.checkIn?.due belonged to the superseded manual/welcome-triggered flow.
@@ -129,6 +130,7 @@ function CustomerSupportWorkspacePreview() {
   const [welcome, setWelcome] = useState(null);
   const [welcomeVisible, setWelcomeVisible] = useState(false);
   const [calmStart, setCalmStart] = useState(false);
+  const [calmStartExpanded, setCalmStartExpanded] = useState(false);
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
   const [workdayCloseLoading, setWorkdayCloseLoading] = useState(false);
   const [workdayCloseSummary, setWorkdayCloseSummary] = useState(null);
@@ -413,6 +415,7 @@ function CustomerSupportWorkspacePreview() {
     setWelcome(null);
     setWelcomeVisible(false);
     setCalmStart(false);
+    setCalmStartExpanded(false);
     setWorkdayCloseOpen(false);
     setWorkdayCloseLoading(false);
     setWorkdayCloseSummary(null);
@@ -562,6 +565,7 @@ function CustomerSupportWorkspacePreview() {
         recordState={recordCareState}
         onCalmStart={() => {
           setActiveTab("assigned");
+          setCalmStartExpanded(false);
           setCalmStart(true);
         }}
       />
@@ -682,26 +686,26 @@ function CustomerSupportWorkspacePreview() {
           </p>
         </section>
 
-        {calmStart ? (
-          <section className={styles.calmStartNotice} role="status">
-            <div>
-              <div className={styles.kicker}>CALM START</div>
-              <strong>Starting with Assigned Work only.</strong>
-              <p>
-                Nothing has been removed and your workload, priority and performance
-                records are unchanged. All normal workspace tabs remain available.
-              </p>
-            </div>
-            <button
-              type="button"
-              className={styles.secondaryButton}
-              onClick={() => setCalmStart(false)}
-            >
-              Show normal workspace
-            </button>
-          </section>
-        ) : null}
+        <CalmerStartMode
+          active={calmStart}
+          previewOnly={actor?.mode === "FOUNDER_PREVIEW"}
+          workspaceLabel="Customer Support"
+          taskTitle={item.title}
+          taskDetail={item.summary}
+          taskStatus={statusText(item.status)}
+          expanded={calmStartExpanded}
+          onContinueTask={() => {
+            setActiveTab(suggestedTab(item.status));
+            setCalmStartExpanded(true);
+          }}
+          onShowAll={() => setCalmStartExpanded(true)}
+          onExit={() => {
+            setCalmStart(false);
+            setCalmStartExpanded(false);
+          }}
+        />
 
+        {!calmStart || calmStartExpanded ? (
         <div className={styles.workspaceGrid}>
           <nav className={styles.nav} aria-label="Customer Support workspace">
             <div className={styles.navHeading}>My workspace</div>
@@ -802,6 +806,7 @@ function CustomerSupportWorkspacePreview() {
             {activeTab === "notifications" ? <Notifications item={item} actor={actor} /> : null}
           </section>
         </div>
+        ) : null}
 
         <footer className={styles.footer}>
           <div>
