@@ -118,6 +118,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   );
   const [menuOpen, setMenuOpen] = useState(false);
   const [toolPanel, setToolPanel] = useState("");
+  const [navigationHistory, setNavigationHistory] = useState([]);
 
   const activeModule = useMemo(
     () => MODULES.find((item) => item.id === activeId) || moduleList[0],
@@ -126,17 +127,46 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
 
   const registeredFeatures = FEATURE_KEYS.map((key) => EXPERIENCE_REGISTRY[key]).filter(Boolean);
 
+  function rememberCurrentView() {
+    setNavigationHistory((history) => [
+      ...history.slice(-11),
+      { view: primaryView, activeId },
+    ]);
+  }
+
   function choosePrimary(view) {
+    if (view !== primaryView) rememberCurrentView();
     setPrimaryView(view);
     setMenuOpen(false);
     setToolPanel("");
   }
 
   function chooseModule(id) {
+    if (primaryView !== "modules" || activeId !== id) rememberCurrentView();
     setActiveId(id);
     setPrimaryView("modules");
     setMenuOpen(false);
     setToolPanel("");
+  }
+
+  function goBack() {
+    setToolPanel("");
+    setMenuOpen(false);
+
+    if (navigationHistory.length > 0) {
+      const previous = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory((history) => history.slice(0, -1));
+      setPrimaryView(previous.view);
+      if (previous.activeId) setActiveId(previous.activeId);
+      return;
+    }
+
+    if (primaryView === "overview") {
+      window.location.assign("/admin");
+      return;
+    }
+
+    setPrimaryView("overview");
   }
 
   return (
@@ -169,14 +199,11 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             >
               Search
             </button>
-            <button
-              type="button"
-              className={toolPanel === "alerts" ? styles.headerToolActive : styles.headerTool}
+            <FounderAlertButton
+              authenticated={authenticated}
+              active={toolPanel === "alerts"}
               onClick={() => setToolPanel((value) => value === "alerts" ? "" : "alerts")}
-              aria-expanded={toolPanel === "alerts"}
-            >
-              Alerts
-            </button>
+            />
             <Link href="/" className={styles.backLink}>← Back to HIISSA</Link>
             <button
               type="button"
@@ -264,6 +291,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
               <Overview
                 registeredFeatures={registeredFeatures}
                 authenticated={authenticated}
+                onBack={goBack}
                 onOpenStaff={() => choosePrimary("staff")}
                 onOpenApprovals={() => choosePrimary("approvals")}
               />
@@ -274,20 +302,186 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 module={activeModule}
                 authenticated={authenticated}
                 onOverview={() => choosePrimary("overview")}
+                onBack={goBack}
               />
             ) : null}
 
             {primaryView === "staff" ? (
-              <FounderAccessCentre authenticated={authenticated} />
+              <>
+                <FounderContextBack onBack={goBack} />
+                <FounderAccessCentre authenticated={authenticated} />
+              </>
             ) : null}
 
             {primaryView === "approvals" ? (
-              <WorkingStaffApprovalInbox />
+              <>
+                <FounderContextBack onBack={goBack} />
+                <WorkingStaffApprovalInbox />
+              </>
             ) : null}
           </section>
         </div>
       </section>
     </main>
+  );
+}
+
+function FounderContextBack({ onBack, fallbackLabel = "Previous" }) {
+  return (
+    <button
+      type="button"
+      className={styles.contextBack}
+      onClick={onBack}
+      aria-label={`Go back to ${fallbackLabel}`}
+    >
+      ← Back
+    </button>
+  );
+}
+
+function FounderAlertButton({ authenticated, active, onClick }) {
+  const [summary, setSummary] = useState({
+    loading: Boolean(authenticated),
+    attentionCount: 0,
+    criticalCount: 0,
+    criticalMessage: "",
+  });
+  const [criticalVisible, setCriticalVisible] = useState(true);
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setSummary({
+        loading: false,
+        attentionCount: 0,
+        criticalCount: 0,
+        criticalMessage: "",
+      });
+      return;
+    }
+
+    let mounted = true;
+
+    async function loadAlertCount() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !mounted) return;
+
+        const headers = { Authorization: `Bearer ${session.access_token}` };
+        const [approvalResponse, securityResponse] = await Promise.all([
+          fetch("/api/admin/control-room/staff-approval-inbox", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/security-summary", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+        ]);
+
+        const [approvalData, securityData] = await Promise.all([
+          approvalResponse.json().catch(() => null),
+          securityResponse.json().catch(() => null),
+        ]);
+
+        if (!mounted) return;
+
+        const pendingApprovals =
+          approvalResponse.ok && approvalData
+            ? Number(approvalData.pendingCount || 0)
+            : 0;
+        const securityAttention =
+          securityResponse.ok && securityData?.status === "NEEDS_ATTENTION"
+            ? 1
+            : 0;
+
+        const explicitCritical = Number(
+          securityData?.criticalCount ||
+          approvalData?.criticalCount ||
+          0
+        );
+        const criticalCount = Number.isFinite(explicitCritical)
+          ? Math.max(0, explicitCritical)
+          : 0;
+
+        setSummary({
+          loading: false,
+          attentionCount: Math.max(0, pendingApprovals) + securityAttention,
+          criticalCount,
+          criticalMessage:
+            securityData?.criticalMessage ||
+            approvalData?.criticalMessage ||
+            "",
+        });
+        setCriticalVisible(true);
+      } catch {
+        if (!mounted) return;
+        setSummary((current) => ({ ...current, loading: false }));
+      }
+    }
+
+    loadAlertCount();
+    const interval = window.setInterval(loadAlertCount, 60000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(interval);
+    };
+  }, [authenticated]);
+
+  const badgeCount =
+    summary.criticalCount > 0
+      ? summary.criticalCount
+      : summary.attentionCount;
+
+  return (
+    <>
+      <button
+        type="button"
+        className={active ? styles.headerToolActive : styles.headerTool}
+        onClick={onClick}
+        aria-expanded={active}
+      >
+        <span>Alerts</span>
+        {!summary.loading && badgeCount > 0 ? (
+          <span
+            className={
+              summary.criticalCount > 0
+                ? styles.alertBadgeCritical
+                : styles.alertBadgeAttention
+            }
+            aria-label={`${badgeCount} Founder alert${badgeCount === 1 ? "" : "s"}`}
+          >
+            {badgeCount > 99 ? "99+" : badgeCount}
+          </span>
+        ) : null}
+      </button>
+
+      {summary.criticalCount > 0 && criticalVisible ? (
+        <div className={styles.criticalAlertToast} role="alert">
+          <div>
+            <div className={styles.criticalAlertKicker}>URGENT FOUNDER ALERT</div>
+            <strong>
+              {summary.criticalCount} critical alert{summary.criticalCount === 1 ? "" : "s"} need attention
+            </strong>
+            <p>
+              {summary.criticalMessage ||
+                "HIISSA has received a verified critical signal. Open Alerts for the authorised detail and safest next action."}
+            </p>
+          </div>
+          <div className={styles.criticalAlertActions}>
+            <button type="button" onClick={onClick}>Open Alerts</button>
+            <button type="button" onClick={() => setCriticalVisible(false)}>Dismiss</button>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -543,9 +737,10 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
   );
 }
 
-function Overview({ registeredFeatures, authenticated, onOpenStaff, onOpenApprovals }) {
+function Overview({ registeredFeatures, authenticated, onBack, onOpenStaff, onOpenApprovals }) {
   return (
     <>
+      <FounderContextBack onBack={onBack} fallbackLabel="Admin Dashboard" />
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>OVERVIEW / CONTROL ROOM</div>
@@ -738,7 +933,7 @@ function FounderAccessCentre({ authenticated }) {
   );
 }
 
-function ModuleFoundation({ module, authenticated, onOverview }) {
+function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
   if (module.id === CONTROL_ROOM_MODULES.feedbackRecommendations && authenticated) {
     return <FeedbackRecommendationsModule module={module} onOverview={onOverview} />;
   }
@@ -762,9 +957,7 @@ function ModuleFoundation({ module, authenticated, onOverview }) {
 
   return (
     <>
-      <button type="button" className={styles.overviewBack} onClick={onOverview}>
-        ← Control Room Overview
-      </button>
+      <FounderContextBack onBack={onBack} />
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>CURRENT MODULE / PAGE</div>
