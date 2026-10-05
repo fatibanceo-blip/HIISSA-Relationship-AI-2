@@ -1240,6 +1240,8 @@ function AdminSecurityAuditModule({ module, onOverview }) {
         </div>
       </section>
 
+      <WorkingStaffApprovalInbox />
+
       <FounderApprovalInboxPrototype />
 
       <StaffAccessControlPrototype />
@@ -1545,6 +1547,350 @@ function AdminSecurityAuditModule({ module, onOverview }) {
         <div>STAFF MANAGEMENT<span>Read-only now; controlled dashboard actions come after certification</span></div>
       </section>
     </>
+  );
+}
+
+function WorkingStaffApprovalInbox() {
+  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState([]);
+  const [selectedId, setSelectedId] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  async function loadQueue() {
+    if (!adminDataClient) {
+      setError("Protected Admin data connection is unavailable in this environment.");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const {
+        data: { session },
+      } = await adminDataClient.auth.getSession();
+
+      if (!session?.access_token) {
+        setError("Sign in to the authorised Founder Admin session to load the working queue.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch("/api/admin/control-room/staff-approval-inbox", {
+        method: "GET",
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data) {
+        setError("The working Staging staff approval queue could not be loaded.");
+        setLoading(false);
+        return;
+      }
+
+      const nextItems = data.items || [];
+      setItems(nextItems);
+      setSelectedId((current) =>
+        nextItems.some((item) => item.requestId === current)
+          ? current
+          : nextItems.find((item) => item.requestStatus === "pending")?.requestId ||
+            nextItems[0]?.requestId ||
+            ""
+      );
+      setLoading(false);
+    } catch {
+      setError("The working Staging staff approval queue could not be loaded.");
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadQueue();
+  }, []);
+
+  const selected =
+    items.find((item) => item.requestId === selectedId) || items[0] || null;
+
+  async function decide(decision) {
+    if (!selected || selected.requestStatus !== "pending" || !adminDataClient) {
+      return;
+    }
+
+    setBusy(decision);
+    setMessage("");
+    setError("");
+
+    try {
+      const {
+        data: { session },
+      } = await adminDataClient.auth.getSession();
+
+      if (!session?.access_token) {
+        setError("Founder Admin session is no longer available.");
+        setBusy("");
+        return;
+      }
+
+      const response = await fetch("/api/admin/control-room/staff-approval-inbox", {
+        method: "POST",
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          requestId: selected.requestId,
+          decision,
+          note,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data) {
+        setError(
+          data?.status === "APPROVAL_REQUEST_NOT_PENDING"
+            ? "This submission has already moved from the pending state. Refresh the queue."
+            : "The Founder decision could not be recorded."
+        );
+        setBusy("");
+        return;
+      }
+
+      setMessage(
+        decision === "approve"
+          ? "Founder decision recorded: APPROVED PENDING EXECUTION. No external action occurred."
+          : decision === "return_for_changes"
+            ? "Founder decision recorded: RETURNED FOR CHANGES. The same work item is available to the staff workspace."
+            : "Founder decision recorded: REJECTED. No external action occurred."
+      );
+      setNote("");
+      setBusy("");
+      await loadQueue();
+    } catch {
+      setError("The Founder decision could not be recorded.");
+      setBusy("");
+    }
+  }
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>FOUNDER COMMAND / APPROVAL INBOX — WORKING STAGING QUEUE</div>
+          <h3>Human staff submissions</h3>
+        </div>
+        <StatusPill
+          label={
+            loading
+              ? "LOADING"
+              : `${items.filter((item) => item.requestStatus === "pending").length} PENDING`
+          }
+          compact
+        />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        This is the working Staging path for the Universal Founder Submission Gate.
+        It reads the same canonical approval record created by the Customer Support
+        workspace. Approve, Return for Changes and Reject now persist in Staging.
+        Approval still does not send a customer message or count as verified completion.
+      </p>
+
+      <div className={styles.prototypeDecisionActions}>
+        <a className={styles.prototypeSecondary} href="/staff-workspace-preview">
+          Open working Customer Support workspace →
+        </a>
+        <button
+          type="button"
+          className={styles.prototypeSecondary}
+          onClick={loadQueue}
+          disabled={loading || Boolean(busy)}
+        >
+          Refresh working queue
+        </button>
+      </div>
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>Needs attention</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+
+      {message ? (
+        <div className={styles.prototypeSuccess}>
+          <strong>{message}</strong>
+        </div>
+      ) : null}
+
+      {!loading && items.length === 0 ? (
+        <div className={styles.emptyState}>
+          No persistent staff submissions exist yet. Submit a draft from the
+          working Customer Support workspace and it will appear here.
+        </div>
+      ) : null}
+
+      {items.length > 0 ? (
+        <div className={styles.approvalInboxLayout}>
+          <div className={styles.approvalQueue}>
+            {items.map((item) => (
+              <button
+                type="button"
+                key={item.requestId}
+                className={
+                  selected?.requestId === item.requestId
+                    ? styles.approvalQueueActive
+                    : styles.approvalQueueItem
+                }
+                onClick={() => {
+                  setSelectedId(item.requestId);
+                  setNote("");
+                  setMessage("");
+                }}
+              >
+                <span className={styles.approvalQueueStatus}>
+                  {String(item.requestStatus || "unknown").replaceAll("_", " ").toUpperCase()}
+                </span>
+                <strong>{item.title}</strong>
+                <small>{item.caseCode} · Customer Support</small>
+              </button>
+            ))}
+          </div>
+
+          {selected ? (
+            <div className={styles.prototypePanel}>
+              <div className={styles.prototypeHeading}>
+                <div>
+                  <div className={styles.kicker}>FOUNDER DECISION PACK · PERSISTENT STAGING RECORD</div>
+                  <h4>{selected.title}</h4>
+                </div>
+                <StatusPill
+                  label={String(selected.requestStatus).replaceAll("_", " ").toUpperCase()}
+                  compact
+                />
+              </div>
+
+              <div className={styles.prototypeReviewGrid}>
+                <InfoCard
+                  title="PREPARED BY"
+                  value={selected.preparedBy}
+                  detail="Authenticated Staging actor mode"
+                />
+                <InfoCard
+                  title="CASE"
+                  value={selected.caseCode}
+                  detail="Canonical staff work record"
+                />
+              </div>
+
+              <div className={styles.prototypeReviewBlock}>
+                <strong>Prepared response</strong>
+                <p>{selected.draftResponse || "No draft response available."}</p>
+              </div>
+
+              {selected.internalNote ? (
+                <div className={styles.prototypeReviewBlock}>
+                  <strong>Internal staff note</strong>
+                  <p>{selected.internalNote}</p>
+                </div>
+              ) : null}
+
+              <div className={styles.decisionPack}>
+                <div><strong>What is being requested?</strong><p>{selected.decisionPack.request}</p></div>
+                <div><strong>Why?</strong><p>{selected.decisionPack.reason}</p></div>
+                <div><strong>Who or what may be affected?</strong><p>{selected.decisionPack.affected}</p></div>
+                <div><strong>Risk / warning</strong><p>{selected.decisionPack.risk}</p></div>
+                <div><strong>Authorised evidence</strong><p>{selected.decisionPack.evidence}</p></div>
+                <div><strong>What has HIISSA already checked?</strong><p>{selected.decisionPack.checked}</p></div>
+                <div><strong>What changes if I approve?</strong><p>{selected.decisionPack.approvedEffect}</p></div>
+                <div><strong>Can it be reversed?</strong><p>{selected.decisionPack.reversible}</p></div>
+                <div><strong>What happens if I reject?</strong><p>{selected.decisionPack.rejectedEffect}</p></div>
+                <div><strong>HIISSA recommendation</strong><p>{selected.decisionPack.recommendation}</p></div>
+              </div>
+
+              {selected.requestStatus === "pending" ? (
+                <>
+                  <label className={styles.prototypeField}>
+                    <span>Founder decision note</span>
+                    <textarea
+                      value={note}
+                      onChange={(event) => setNote(event.target.value)}
+                      rows={3}
+                      placeholder="Optional instruction or reason"
+                    />
+                  </label>
+
+                  <div className={styles.prototypeDecisionActions}>
+                    <button
+                      type="button"
+                      className={styles.prototypeApprove}
+                      onClick={() => decide("approve")}
+                      disabled={Boolean(busy)}
+                    >
+                      {busy === "approve" ? "Recording…" : "Approve"}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.prototypeReturn}
+                      onClick={() => decide("return_for_changes")}
+                      disabled={Boolean(busy)}
+                    >
+                      {busy === "return_for_changes" ? "Returning…" : "Return for Changes"}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.prototypeReject}
+                      onClick={() => decide("reject")}
+                      disabled={Boolean(busy)}
+                    >
+                      {busy === "reject" ? "Rejecting…" : "Reject"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className={styles.prototypeReviewBlock}>
+                  <strong>Recorded outcome</strong>
+                  <p>
+                    {String(selected.requestStatus).replaceAll("_", " ").toUpperCase()}.
+                    No external customer action or Production effect occurred.
+                  </p>
+                  {selected.founderNote ? (
+                    <p><strong>Founder note:</strong> {selected.founderNote}</p>
+                  ) : null}
+                </div>
+              )}
+
+              <div className={styles.featureMeta}>
+                <span>ONE CANONICAL APPROVAL RECORD</span>
+                <span>STAFF SELF-APPROVAL BLOCKED</span>
+                <span>APPROVAL ≠ VERIFIED COMPLETION</span>
+                <span>EXTERNAL EXECUTION DISABLED</span>
+                <span>PRODUCTION EFFECT: NONE</span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className={styles.prototypeReviewBlock}>
+        <strong>Continuity note</strong>
+        <p>
+          Historical local-only approval examples remain below for governance
+          continuity. This working queue is the persistent Staging implementation.
+        </p>
+      </div>
+    </section>
   );
 }
 
