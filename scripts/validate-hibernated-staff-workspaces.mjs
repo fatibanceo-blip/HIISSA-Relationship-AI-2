@@ -11,6 +11,8 @@ const files = {
   page: path.join(root, "app", "staff-workspace-preview", "page.js"),
   wrapper: path.join(root, "app", "staff-workspace-preview", "StaffWorkspacePreview.js"),
   controlRoom: path.join(root, "app", "admin", "control-room-preview", "page.js"),
+  calmerStartMode: path.join(root, "components", "people-experience", "CalmerStartMode.js"),
+  calmerStartStyles: path.join(root, "components", "people-experience", "CalmerStartMode.module.css"),
 };
 
 function read(file) {
