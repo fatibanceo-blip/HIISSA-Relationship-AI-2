@@ -39,6 +39,8 @@ const styles = read(files.styles);
 const page = read(files.page);
 const wrapper = read(files.wrapper);
 const controlRoom = read(files.controlRoom);
+const calmerStartMode = read(files.calmerStartMode);
+const calmerStartStyles = read(files.calmerStartStyles);
 
 const ids = [
   "technical_operations",
@@ -114,8 +116,12 @@ for (const required of [
   "AutomaticGentleCheckIn",
   "CalmerStartMode",
   "calmStartExpanded",
-  "Continue with this task",
-  "Return to normal workspace",
+  'taskTitle={workspace.fictionalTask.title}',
+  'taskDetail={workspace.fictionalTask.summary}',
+  'taskStatus={statusLabel(status)}',
+  "onContinueTask",
+  "onShowAll",
+  "onExit",
   'enabled={authState === "ready"}',
   "manualRequestKey={checkInManualKey}",
   "pause={workdayCloseOpen}",
@@ -130,6 +136,33 @@ for (const required of [
   "PRODUCTION hibernation",
   "browser session only",
 ]) requireText("Staging Staff Workspace engine", component, required);
+
+for (const required of [
+  "HIISSA · CALMER START",
+  "Calmer Start is on.",
+  "reduce non-urgent visual pressure",
+  "Your responsibilities, priority and performance records have not changed.",
+  "YOUR NEXT STEP",
+  "Continue with this task",
+  "View all workspace areas",
+  "Return to normal workspace",
+  "Other work is still safe and available when you’re ready.",
+  "changes presentation only",
+  "does not remove work, lower priority or",
+  "create a manager signal",
+]) requireText("Shared Calmer Start mode", calmerStartMode, required);
+
+for (const required of [
+  ".mode",
+  ".header",
+  ".nextStep",
+  ".actions",
+  ".primary",
+  ".secondary",
+  ".textButton",
+  "@media(max-width:640px)",
+  "@media(prefers-reduced-motion:reduce)",
+]) requireText("Shared Calmer Start styles", calmerStartStyles, required);
 
 for (const forbidden of [
   "fetch(",
