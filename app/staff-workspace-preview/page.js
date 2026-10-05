@@ -3,7 +3,7 @@ import StaffWorkspacePreview from "./StaffWorkspacePreview";
 
 export const dynamic = "force-dynamic";
 
-export default function StaffWorkspacePreviewPage() {
+export default async function StaffWorkspacePreviewPage({ searchParams }) {
   const branch = process.env.VERCEL_GIT_COMMIT_REF || "";
   const environment =
     process.env.VERCEL_TARGET_ENV || process.env.VERCEL_ENV || "";
@@ -15,5 +15,8 @@ export default function StaffWorkspacePreviewPage() {
     notFound();
   }
 
-  return <StaffWorkspacePreview />;
+  const params = await searchParams;
+  const workspaceId = String(params?.workspace || "customer_support");
+
+  return <StaffWorkspacePreview workspaceId={workspaceId} />;
 }
