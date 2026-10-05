@@ -578,7 +578,7 @@ function AssignedWork({ item, busy, onStart, onOpen }) {
       <section className={styles.summaryGrid}>
         <SummaryCard
           label="RECEIVED"
-          value=<span title={formatHiissaFullRecordTime(item.receivedAt)}>{formatDateTime(item.receivedAt)}</span>
+          value={<span title={formatHiissaFullRecordTime(item.receivedAt)}>{formatDateTime(item.receivedAt)}</span>}
           detail="Persisted Staging timestamp."
         />
         <SummaryCard
@@ -588,7 +588,7 @@ function AssignedWork({ item, busy, onStart, onOpen }) {
         />
         <SummaryCard
           label="HUMAN RESPONSE DUE"
-          value=<span title={formatHiissaFullRecordTime(item.responseDueAt)}>{formatDateTime(item.responseDueAt)}</span>
+          value={<span title={formatHiissaFullRecordTime(item.responseDueAt)}>{formatDateTime(item.responseDueAt)}</span>}
           detail="Persisted response-due target."
         />
         <SummaryCard
