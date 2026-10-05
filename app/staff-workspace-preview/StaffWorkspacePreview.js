@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { createBrowserClient } from "@supabase/ssr";
+import { useEffect, useMemo, useState } from "react";
 import {
   STAFF_WORKSPACE_SHELL_STANDARD,
   UNIVERSAL_FOUNDER_SUBMISSION_GATE,
@@ -17,33 +19,28 @@ const TABS = [
   ["notifications", "Notifications"],
 ];
 
-const FICTIONAL_CASE = Object.freeze({
-  id: "CS-SIM-001",
-  title: "Account access guidance",
-  category: "Account & Access",
-  priority: "Normal",
-  received: "09:10 · fictional",
-  acknowledged: "09:11 · fictional",
-  responseDue: "14:00 · fictional",
-  summary:
-    "A fictional customer says they cannot find where to update an account preference. No real person, email address, account identifier or private HIISSA conversation is used.",
-});
+let browserSupabase = null;
 
-const RETURNED_EXAMPLE = Object.freeze({
-  id: "CS-SIM-RET-001",
-  title: "Clarify account-support wording",
-  reason:
-    "Founder simulation note: explain the next step more clearly before processing.",
-  status: "RETURNED FOR CHANGES · FICTIONAL",
-});
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const COMPLETED_EXAMPLE = Object.freeze({
-  id: "CS-SIM-DONE-001",
-  title: "General navigation guidance",
-  result:
-    "Fictional example of a previously verified outcome. No external message was sent by this prototype.",
-  status: "VERIFIED COMPLETE · FICTIONAL EXAMPLE",
-});
+  if (!url || !key) return null;
+
+  if (!browserSupabase) {
+    browserSupabase = createBrowserClient(url, key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+  }
+
+  return browserSupabase;
+}
 
 function StatusPill({ children }) {
   return <span className={styles.statusPill}>{children}</span>;
@@ -59,14 +56,40 @@ function SummaryCard({ label, value, detail }) {
   );
 }
 
-export default function StaffWorkspacePreview() {
-  const [activeTab, setActiveTab] = useState("assigned");
-  const [caseState, setCaseState] = useState("ASSIGNED");
-  const [draft, setDraft] = useState("");
-  const [internalNote, setInternalNote] = useState("");
-  const [notice, setNotice] = useState("");
-  const [signedOut, setSignedOut] = useState(false);
+function formatDateTime(value) {
+  if (!value) return "—";
+  try {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(value));
+  } catch {
+    return "—";
+  }
+}
 
+function statusText(value) {
+  return String(value || "unknown").replaceAll("_", " ").toUpperCase();
+}
+
+function suggestedTab(status) {
+  if (status === "in_progress") return "in-progress";
+  if (status === "saved_draft") return "drafts";
+  if (status === "submitted_for_processing") return "submitted";
+  if (status === "returned_for_changes") return "returned";
+  if (
+    status === "approved_pending_execution" ||
+    status === "executing"
+  ) {
+    return "submitted";
+  }
+  if (status === "verified_complete") return "completed";
+  return "assigned";
+}
+
+export default function StaffWorkspacePreview() {
   const workspace = useMemo(
     () =>
       STAFF_WORKSPACE_SHELL_STANDARD.workspaces.find(
@@ -75,63 +98,244 @@ export default function StaffWorkspacePreview() {
     []
   );
 
-  function startWork() {
-    setCaseState("IN_PROGRESS");
-    setNotice("Fictional work item moved to Work in Progress.");
-    setActiveTab("in-progress");
-  }
+  const [authState, setAuthState] = useState("checking");
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [actor, setActor] = useState(null);
+  const [item, setItem] = useState(null);
+  const [activeTab, setActiveTab] = useState("assigned");
+  const [draft, setDraft] = useState("");
+  const [internalNote, setInternalNote] = useState("");
 
-  function saveDraft() {
-    if (!draft.trim()) {
-      setNotice("Add a fictional draft response before saving.");
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase) {
+      setAuthState("unavailable");
+      setLoading(false);
       return;
     }
 
-    setCaseState("SAVED_DRAFT");
-    setNotice("Draft saved inside this fictional Staging prototype only.");
-    setActiveTab("drafts");
-  }
+    let active = true;
 
-  function submitForProcessing() {
-    if (!draft.trim()) {
-      setNotice("Add a fictional draft response before submitting.");
-      return;
+    supabase.auth
+      .getSession()
+      .then(({ data, error: sessionError }) => {
+        if (!active) return;
+        if (sessionError) {
+          setAuthState("unavailable");
+          setLoading(false);
+          return;
+        }
+
+        const nextSession = data.session || null;
+        setSession(nextSession);
+        setAuthState(nextSession ? "ready" : "signedout");
+
+        if (!nextSession) setLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setAuthState("unavailable");
+        setLoading(false);
+      });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, nextSession) => {
+        if (!active) return;
+        setSession(nextSession || null);
+        setAuthState(nextSession ? "ready" : "signedout");
+      }
+    );
+
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!session?.access_token) return;
+    loadWorkspace(session.access_token, true);
+  }, [session?.access_token]);
+
+  async function loadWorkspace(accessToken = session?.access_token, chooseTab = false) {
+    if (!accessToken) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/staff-workspace", {
+        method: "GET",
+        cache: "no-store",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.item) {
+        setError(
+          data?.status === "CUSTOMER_SUPPORT_ROLE_REQUIRED"
+            ? "This signed-in account does not have an active Customer Support Staging role. Founder testing must use the authorised Founder Admin account."
+            : "The protected Staging staff record could not be loaded."
+        );
+        setLoading(false);
+        return;
+      }
+
+      setActor(data.actor);
+      setItem(data.item);
+      setDraft(data.item.draftResponse || "");
+      setInternalNote(data.item.internalNote || "");
+      if (chooseTab) setActiveTab(suggestedTab(data.item.status));
+      setLoading(false);
+    } catch {
+      setError("The protected Staging staff record could not be loaded.");
+      setLoading(false);
     }
-
-    setCaseState("SUBMITTED_FOR_PROCESSING");
-    setNotice(UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmittedConfirmation);
-    setActiveTab("submitted");
   }
 
-  function resetCase() {
-    setCaseState("ASSIGNED");
-    setDraft("");
-    setInternalNote("");
-    setNotice("Fictional case reset. No external action occurred.");
-    setActiveTab("assigned");
+  async function perform(action, payload = {}) {
+    if (!session?.access_token || !item?.id) return null;
+
+    setBusy(action);
+    setError("");
+    setNotice("");
+
+    try {
+      const response = await fetch("/api/staff-workspace", {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action,
+          itemId: item.id,
+          ...payload,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.item) {
+        const message =
+          data?.status === "STAFF_DRAFT_REQUIRED"
+            ? "Write and save a draft response before submitting it for processing."
+            : data?.status === "STAFF_WORK_ITEM_LOCKED"
+              ? "This work item is locked at its current processing stage."
+              : "The Staging work item could not be updated.";
+        setError(message);
+        setBusy("");
+        return null;
+      }
+
+      setActor(data.actor || actor);
+      setItem(data.item);
+      setDraft(data.item.draftResponse || "");
+      setInternalNote(data.item.internalNote || "");
+
+      if (action === "start") {
+        setNotice("Work started and persisted in Staging.");
+        setActiveTab("in-progress");
+      } else if (action === "save") {
+        setNotice("Draft saved in the Staging database.");
+        setActiveTab("drafts");
+      } else if (action === "submit") {
+        setNotice(UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmittedConfirmation);
+        setActiveTab("submitted");
+      }
+
+      setBusy("");
+      return data.item;
+    } catch {
+      setError("The Staging work item could not be updated.");
+      setBusy("");
+      return null;
+    }
   }
 
-  if (signedOut) {
+  async function signOut() {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setSession(null);
+    setAuthState("signedout");
+    setItem(null);
+    setActor(null);
+    setLoading(false);
+  }
+
+  if (authState === "checking" || loading) {
     return (
       <main className={styles.page}>
         <section className={styles.signedOutCard}>
           <div className={styles.kicker}>HIISSA STAFF WORKSPACE · STAGING</div>
-          <h1>Fictional staff session ended</h1>
+          <h1>Checking protected workspace…</h1>
           <p>
-            This only ended the local prototype session. No real staff account,
-            Admin permission, customer record or production session was changed.
+            HIISSA is verifying the signed-in Staging identity and authorised role.
           </p>
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={() => setSignedOut(false)}
-          >
-            Restart fictional workspace
-          </button>
         </section>
       </main>
     );
   }
+
+  if (authState !== "ready" || !session) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.signedOutCard}>
+          <div className={styles.kicker}>HIISSA STAFF WORKSPACE · STAGING</div>
+          <h1>Sign in before opening the working workspace</h1>
+          <p>
+            The working version is no longer an anonymous screen. Founder testing
+            uses the authorised Admin account in Preview as Role mode. A future
+            staff test account must have an active Customer Support role assignment.
+          </p>
+          <div className={styles.actions}>
+            <Link className={styles.primaryButton} href="/admin/login">
+              Founder Admin sign in
+            </Link>
+            <Link className={styles.secondaryButton} href="/">
+              Back to HIISSA
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (error && !item) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.signedOutCard}>
+          <div className={styles.kicker}>HIISSA STAFF WORKSPACE · STAGING</div>
+          <h1>Workspace access is protected</h1>
+          <p>{error}</p>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => loadWorkspace(session.access_token, true)}
+            >
+              Retry
+            </button>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={signOut}
+            >
+              Sign out
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!item) return null;
 
   return (
     <main className={styles.page}>
@@ -141,17 +345,25 @@ export default function StaffWorkspacePreview() {
             <div className={styles.kicker}>HIISSA STAFF WORKSPACE</div>
             <h1>Customer Support</h1>
             <p className={styles.subtitle}>
-              Fictional Staging prototype for testing staff work before any real
-              employee or real customer action is enabled.
+              Working Staging workflow with persistent records and the mandatory
+              Founder submission gate. All current case data remains fictional.
             </p>
           </div>
 
           <div className={styles.headerActions}>
-            <StatusPill>STAGING · FICTIONAL ONLY</StatusPill>
+            <StatusPill>STAGING · WORKING TEST</StatusPill>
             <button
               type="button"
               className={styles.secondaryButton}
-              onClick={() => setSignedOut(true)}
+              onClick={() => loadWorkspace(session.access_token, true)}
+              disabled={Boolean(busy)}
+            >
+              Refresh
+            </button>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={signOut}
             >
               Secure sign out
             </button>
@@ -160,8 +372,8 @@ export default function StaffWorkspacePreview() {
 
         <section className={styles.identityStrip}>
           <div>
-            <span>STAFF IDENTITY</span>
-            <strong>Sample Customer Support Worker</strong>
+            <span>IDENTITY MODE</span>
+            <strong>{actor?.displayIdentity || "Protected Staging identity"}</strong>
           </div>
           <div>
             <span>AUTHORISED ROLE</span>
@@ -173,18 +385,17 @@ export default function StaffWorkspacePreview() {
           </div>
           <div>
             <span>ACCESS BOUNDARY</span>
-            <strong>Customer Support workspace only</strong>
+            <strong>{actor?.accessBoundary || "Customer Support only"}</strong>
           </div>
         </section>
 
         <section className={styles.safetyNotice}>
-          <strong>No real customer action can happen here.</strong>
+          <strong>Working workflow. External execution is still disabled.</strong>
           <p>
-            This prototype contains only fictional work. Staff can investigate,
-            prepare, draft and save. Final staff submission must pass through the
-            Founder gate before any future real execution. This screen cannot send
-            email, text a customer, alter an account, publish content, move money or
-            change Production.
+            Start, draft, save, submit, Founder Return/Approve/Reject and audit
+            states now persist in the Staging database. No customer email/text is
+            sent, no account is altered, no money moves and Production remains
+            untouched.
           </p>
         </section>
 
@@ -207,64 +418,85 @@ export default function StaffWorkspacePreview() {
             {notice ? (
               <div
                 className={
-                  caseState === "SUBMITTED_FOR_PROCESSING"
+                  item.status === "submitted_for_processing"
                     ? styles.successNotice
                     : styles.inlineNotice
                 }
                 role="status"
               >
                 <strong>{notice}</strong>
-                {caseState === "SUBMITTED_FOR_PROCESSING" ? (
+                {item.status === "submitted_for_processing" ? (
                   <p>
-                    Nothing has been sent to a customer. In the live certified
-                    design, HIISSA would route one underlying approval record to
-                    the {UNIVERSAL_FOUNDER_SUBMISSION_GATE.founderRoute}. Staff
-                    cannot approve their own submission.
+                    One canonical approval request now exists in the Founder
+                    Command / Approval Inbox. Nothing has been sent externally.
                   </p>
                 ) : null}
               </div>
             ) : null}
 
+            {error ? (
+              <div className={styles.errorNotice} role="alert">
+                <strong>{error}</strong>
+              </div>
+            ) : null}
+
             {activeTab === "assigned" ? (
               <AssignedWork
-                caseState={caseState}
-                onStart={startWork}
+                item={item}
+                busy={busy}
+                onStart={() => perform("start")}
                 onOpen={() => setActiveTab("in-progress")}
               />
             ) : null}
 
             {activeTab === "in-progress" ? (
               <WorkEditor
-                caseState={caseState}
+                item={item}
                 draft={draft}
                 internalNote={internalNote}
                 setDraft={setDraft}
                 setInternalNote={setInternalNote}
-                onSave={saveDraft}
-                onSubmit={submitForProcessing}
+                busy={busy}
+                onSave={() =>
+                  perform("save", {
+                    draftResponse: draft,
+                    internalNote,
+                  })
+                }
+                onSubmit={async () => {
+                  const saved = await perform("save", {
+                    draftResponse: draft,
+                    internalNote,
+                  });
+                  if (saved) await perform("submit");
+                }}
               />
             ) : null}
 
             {activeTab === "drafts" ? (
               <SavedDraft
+                item={item}
                 draft={draft}
-                caseState={caseState}
+                busy={busy}
                 onContinue={() => setActiveTab("in-progress")}
-                onSubmit={submitForProcessing}
+                onSubmit={() => perform("submit")}
               />
             ) : null}
 
             {activeTab === "submitted" ? (
-              <SubmittedWork
-                draft={draft}
-                caseState={caseState}
-                onReset={resetCase}
+              <SubmittedWork item={item} draft={draft} />
+            ) : null}
+
+            {activeTab === "returned" ? (
+              <ReturnedWork
+                item={item}
+                onContinue={() => setActiveTab("in-progress")}
               />
             ) : null}
 
-            {activeTab === "returned" ? <ReturnedWork /> : null}
-            {activeTab === "completed" ? <CompletedWork /> : null}
-            {activeTab === "notifications" ? <Notifications /> : null}
+            {activeTab === "completed" ? <CompletedWork item={item} /> : null}
+
+            {activeTab === "notifications" ? <Notifications item={item} /> : null}
           </section>
         </div>
 
@@ -277,10 +509,10 @@ export default function StaffWorkspacePreview() {
             </span>
           </div>
           <div>
-            <strong>Prototype evidence level</strong>
+            <strong>Persistent Staging state</strong>
             <span>
-              Architecture/behaviour approved · visual treatment requires Founder
-              preview acceptance
+              Status: {statusText(item.status)} · Version {item.version} · last
+              updated {formatDateTime(item.updatedAt)}
             </span>
           </div>
         </footer>
@@ -289,7 +521,7 @@ export default function StaffWorkspacePreview() {
   );
 }
 
-function AssignedWork({ caseState, onStart, onOpen }) {
+function AssignedWork({ item, busy, onStart, onOpen }) {
   return (
     <>
       <section className={styles.pageHeading}>
@@ -297,39 +529,40 @@ function AssignedWork({ caseState, onStart, onOpen }) {
           <div className={styles.kicker}>ASSIGNED WORK</div>
           <h2>Work assigned to your authorised role</h2>
           <p>
-            Only fictional Customer Support work is shown in this first Staging
-            workspace.
+            This record is persistent Staging data, but the case itself is
+            deliberately fictional.
           </p>
         </div>
-        <StatusPill>1 FICTIONAL ITEM</StatusPill>
+        <StatusPill>1 WORKING TEST ITEM</StatusPill>
       </section>
 
       <article className={styles.caseCard}>
         <div className={styles.caseTop}>
           <div>
-            <span className={styles.caseId}>{FICTIONAL_CASE.id}</span>
-            <h3>{FICTIONAL_CASE.title}</h3>
+            <span className={styles.caseId}>{item.caseCode}</span>
+            <h3>{item.title}</h3>
           </div>
-          <StatusPill>{caseState.replaceAll("_", " ")}</StatusPill>
+          <StatusPill>{statusText(item.status)}</StatusPill>
         </div>
 
-        <p>{FICTIONAL_CASE.summary}</p>
+        <p>{item.summary}</p>
 
         <div className={styles.metaGrid}>
-          <span>Category: {FICTIONAL_CASE.category}</span>
-          <span>Priority: {FICTIONAL_CASE.priority}</span>
-          <span>Received: {FICTIONAL_CASE.received}</span>
-          <span>Response due: {FICTIONAL_CASE.responseDue}</span>
+          <span>Category: {item.category}</span>
+          <span>Priority: {item.priority}</span>
+          <span>Received: {formatDateTime(item.receivedAt)}</span>
+          <span>Response due: {formatDateTime(item.responseDueAt)}</span>
         </div>
 
         <div className={styles.actions}>
-          {caseState === "ASSIGNED" ? (
+          {item.status === "assigned" ? (
             <button
               type="button"
               className={styles.primaryButton}
               onClick={onStart}
+              disabled={Boolean(busy)}
             >
-              Start work
+              {busy === "start" ? "Starting…" : "Start work"}
             </button>
           ) : (
             <button
@@ -346,23 +579,23 @@ function AssignedWork({ caseState, onStart, onOpen }) {
       <section className={styles.summaryGrid}>
         <SummaryCard
           label="RECEIVED"
-          value={FICTIONAL_CASE.received}
-          detail="Fictional service-centre timing."
+          value={formatDateTime(item.receivedAt)}
+          detail="Persisted Staging timestamp."
         />
         <SummaryCard
           label="ACKNOWLEDGED"
-          value={FICTIONAL_CASE.acknowledged}
-          detail="Prototype status only; no acknowledgement was actually sent."
+          value="TEST RECORD READY"
+          detail="No external acknowledgement is sent in this Staging layer."
         />
         <SummaryCard
           label="HUMAN RESPONSE DUE"
-          value={FICTIONAL_CASE.responseDue}
-          detail="Used to test the approved response-due concept."
+          value={formatDateTime(item.responseDueAt)}
+          detail="Persisted response-due target."
         />
         <SummaryCard
-          label="RESOLUTION"
-          value="OPEN · FICTIONAL"
-          detail="No real support case exists."
+          label="CURRENT STATE"
+          value={statusText(item.status)}
+          detail="Loaded from the canonical staff work record."
         />
       </section>
     </>
@@ -370,33 +603,51 @@ function AssignedWork({ caseState, onStart, onOpen }) {
 }
 
 function WorkEditor({
-  caseState,
+  item,
   draft,
   internalNote,
   setDraft,
   setInternalNote,
+  busy,
   onSave,
   onSubmit,
 }) {
+  const locked = [
+    "submitted_for_processing",
+    "approved_pending_execution",
+    "executing",
+    "verified_complete",
+    "rejected",
+    "cancelled",
+  ].includes(item.status);
+
   return (
     <>
       <section className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>WORK IN PROGRESS</div>
-          <h2>{FICTIONAL_CASE.title}</h2>
+          <h2>{item.title}</h2>
           <p>
-            Prepare the response inside your role. Submission does not send it.
+            Drafts now persist in Staging. Submission still cannot send a customer
+            response.
           </p>
         </div>
-        <StatusPill>{caseState.replaceAll("_", " ")}</StatusPill>
+        <StatusPill>{statusText(item.status)}</StatusPill>
       </section>
+
+      {item.status === "returned_for_changes" && item.founderNote ? (
+        <section className={styles.successPanel}>
+          <strong>Returned for changes</strong>
+          <p>Founder note: {item.founderNote}</p>
+        </section>
+      ) : null}
 
       <section className={styles.caseSummary}>
         <strong>Fictional customer summary</strong>
-        <p>{FICTIONAL_CASE.summary}</p>
+        <p>{item.summary}</p>
         <div className={styles.privacyLine}>
-          Minimum necessary context only · unrelated private HIISSA conversations
-          are not available to this workspace.
+          Minimum necessary fictional context only · unrelated private HIISSA
+          conversations are unavailable to this workspace.
         </div>
       </section>
 
@@ -406,7 +657,8 @@ function WorkEditor({
           rows={9}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder="Write a fictional Customer Support response here…"
+          placeholder="Write the fictional Customer Support response here…"
+          disabled={locked}
         />
       </label>
 
@@ -416,7 +668,8 @@ function WorkEditor({
           rows={4}
           value={internalNote}
           onChange={(event) => setInternalNote(event.target.value)}
-          placeholder="Optional fictional internal note…"
+          placeholder="Optional Staging internal note…"
+          disabled={locked}
         />
       </label>
 
@@ -425,9 +678,8 @@ function WorkEditor({
           <div className={styles.kicker}>MANDATORY HUMAN-STAFF GATE</div>
           <strong>Staff cannot perform the final external action.</strong>
           <p>
-            Save as draft if work is not finished. When it is ready, submit it to
-            HIISSA for Founder processing. The Founder decision is separate from
-            verified execution.
+            Save Draft writes to Staging. Submit for processing creates or reuses
+            the one canonical Founder approval record.
           </p>
         </div>
 
@@ -436,15 +688,17 @@ function WorkEditor({
             type="button"
             className={styles.secondaryButton}
             onClick={onSave}
+            disabled={Boolean(busy) || locked}
           >
-            Save draft
+            {busy === "save" ? "Saving…" : "Save draft"}
           </button>
           <button
             type="button"
             className={styles.primaryButton}
             onClick={onSubmit}
+            disabled={Boolean(busy) || locked || !draft.trim()}
           >
-            {UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmitLabel}
+            {busy ? "Processing…" : UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmitLabel}
           </button>
         </div>
       </section>
@@ -452,22 +706,22 @@ function WorkEditor({
   );
 }
 
-function SavedDraft({ draft, caseState, onContinue, onSubmit }) {
+function SavedDraft({ item, draft, busy, onContinue, onSubmit }) {
   return (
     <>
       <section className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>SAVED DRAFTS</div>
-          <h2>Work preserved before submission</h2>
-          <p>A saved draft has no external effect.</p>
+          <h2>Persisted work before submission</h2>
+          <p>Refresh or reopen the Staging workspace and this draft remains.</p>
         </div>
-        <StatusPill>{caseState.replaceAll("_", " ")}</StatusPill>
+        <StatusPill>{statusText(item.status)}</StatusPill>
       </section>
 
       {draft ? (
         <article className={styles.caseCard}>
-          <span className={styles.caseId}>{FICTIONAL_CASE.id}</span>
-          <h3>{FICTIONAL_CASE.title}</h3>
+          <span className={styles.caseId}>{item.caseCode}</span>
+          <h3>{item.title}</h3>
           <div className={styles.draftPreview}>{draft}</div>
           <div className={styles.actions}>
             <button
@@ -481,174 +735,202 @@ function SavedDraft({ draft, caseState, onContinue, onSubmit }) {
               type="button"
               className={styles.primaryButton}
               onClick={onSubmit}
+              disabled={Boolean(busy)}
             >
-              {UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmitLabel}
+              {busy === "submit"
+                ? "Submitting…"
+                : UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmitLabel}
             </button>
           </div>
         </article>
       ) : (
-        <div className={styles.emptyState}>No fictional draft has been saved yet.</div>
+        <div className={styles.emptyState}>No persisted draft exists yet.</div>
       )}
     </>
   );
 }
 
-function SubmittedWork({ draft, caseState, onReset }) {
-  const submitted = caseState === "SUBMITTED_FOR_PROCESSING";
+function SubmittedWork({ item, draft }) {
+  const pending = item.status === "submitted_for_processing";
+  const approved = item.status === "approved_pending_execution";
 
   return (
     <>
       <section className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>SUBMITTED FOR PROCESSING</div>
-          <h2>Waiting for the Founder gate</h2>
+          <h2>
+            {pending
+              ? "Waiting for Founder decision"
+              : approved
+                ? "Founder approved · execution still disabled"
+                : "Submission status"}
+          </h2>
           <p>
-            A staff submission is not a sent customer response and is not verified
-            completion.
+            Approval is not verified completion and cannot send a customer response
+            from this Staging layer.
           </p>
         </div>
-        <StatusPill>
-          {submitted ? "AWAITING FOUNDER PROCESSING" : "NO SUBMISSION"}
-        </StatusPill>
+        <StatusPill>{statusText(item.status)}</StatusPill>
       </section>
 
-      {submitted ? (
-        <>
-          <section className={styles.successPanel}>
-            <strong>
-              {UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmittedConfirmation}
-            </strong>
-            <p>
-              HIISSA would now route the work to the{" "}
-              {UNIVERSAL_FOUNDER_SUBMISSION_GATE.founderRoute}. The Founder may
-              Approve, Return for Changes or Reject from the Founder side. Those
-              controls never appear in this staff workspace.
-            </p>
-          </section>
+      <section className={styles.successPanel}>
+        <strong>
+          {pending
+            ? UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmittedConfirmation
+            : statusText(item.status)}
+        </strong>
+        <p>
+          Approval request: {item.approvalRequestId ? "persisted" : "not present"}.
+          External execution: disabled. Production effect: none.
+        </p>
+      </section>
 
-          <article className={styles.caseCard}>
-            <span className={styles.caseId}>{FICTIONAL_CASE.id}</span>
-            <h3>{FICTIONAL_CASE.title}</h3>
-            <div className={styles.draftPreview}>{draft}</div>
-            <div className={styles.metaGrid}>
-              <span>State: Submitted for processing</span>
-              <span>External send: Not performed</span>
-              <span>Founder decision: Pending in simulation</span>
-              <span>Production effect: None</span>
-            </div>
-          </article>
+      <article className={styles.caseCard}>
+        <span className={styles.caseId}>{item.caseCode}</span>
+        <h3>{item.title}</h3>
+        <div className={styles.draftPreview}>{draft || "—"}</div>
+        <div className={styles.metaGrid}>
+          <span>State: {statusText(item.status)}</span>
+          <span>Submitted: {formatDateTime(item.submittedAt)}</span>
+          <span>External send: Not performed</span>
+          <span>Production effect: None</span>
+        </div>
+      </article>
 
-          <section className={styles.flowStrip}>
-            <span className={styles.flowComplete}>Staff prepared work</span>
-            <span className={styles.flowComplete}>Submitted for processing</span>
-            <span>Founder decision</span>
-            <span>Controlled execution</span>
-            <span>Verify · Record · Report</span>
-          </section>
+      <section className={styles.flowStrip}>
+        <span className={styles.flowComplete}>Staff prepared work</span>
+        <span className={styles.flowComplete}>Submitted for processing</span>
+        <span className={approved ? styles.flowComplete : ""}>
+          Founder decision
+        </span>
+        <span>Controlled execution</span>
+        <span>Verify · Record · Report</span>
+      </section>
+    </>
+  );
+}
 
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={onReset}
-          >
-            Reset fictional case
-          </button>
-        </>
+function ReturnedWork({ item, onContinue }) {
+  const returned = item.status === "returned_for_changes";
+
+  return (
+    <>
+      <section className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>RETURNED WORK</div>
+          <h2>Founder-returned items come back with the decision note</h2>
+          <p>
+            The same canonical work item and approval history are preserved.
+          </p>
+        </div>
+        <StatusPill>{returned ? "RETURNED FOR CHANGES" : "NONE PENDING"}</StatusPill>
+      </section>
+
+      {returned ? (
+        <article className={styles.caseCard}>
+          <span className={styles.caseId}>{item.caseCode}</span>
+          <h3>{item.title}</h3>
+          <p>
+            <strong>Founder note:</strong> {item.founderNote || "No note supplied."}
+          </p>
+          <div className={styles.metaGrid}>
+            <span>Returned: {formatDateTime(item.returnedAt)}</span>
+            <span>No external action occurred</span>
+          </div>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={onContinue}
+            >
+              Continue returned work
+            </button>
+          </div>
+        </article>
       ) : (
         <div className={styles.emptyState}>
-          No fictional work has been submitted for processing yet.
+          This work item is not currently returned for changes.
         </div>
       )}
     </>
   );
 }
 
-function ReturnedWork() {
-  return (
-    <>
-      <section className={styles.pageHeading}>
-        <div>
-          <div className={styles.kicker}>RETURNED WORK</div>
-          <h2>Founder-returned items come back with context</h2>
-          <p>
-            Returned work remains attributable and can be corrected without losing
-            the earlier proposal.
-          </p>
-        </div>
-        <StatusPill>FICTIONAL EXAMPLE</StatusPill>
-      </section>
+function CompletedWork({ item }) {
+  const complete = item.status === "verified_complete";
 
-      <article className={styles.caseCard}>
-        <span className={styles.caseId}>{RETURNED_EXAMPLE.id}</span>
-        <h3>{RETURNED_EXAMPLE.title}</h3>
-        <p>{RETURNED_EXAMPLE.reason}</p>
-        <div className={styles.metaGrid}>
-          <span>{RETURNED_EXAMPLE.status}</span>
-          <span>No external action occurred</span>
-        </div>
-      </article>
-    </>
-  );
-}
-
-function CompletedWork() {
   return (
     <>
       <section className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>COMPLETED OUTCOMES</div>
-          <h2>Only verified outcomes belong here</h2>
-          <p>
-            Founder approval alone is never displayed as completed execution.
-          </p>
+          <h2>Only verified execution can appear as complete</h2>
+          <p>Founder approval alone never moves work into this section.</p>
         </div>
-        <StatusPill>FICTIONAL EXAMPLE</StatusPill>
+        <StatusPill>{complete ? "VERIFIED COMPLETE" : "NONE"}</StatusPill>
       </section>
 
-      <article className={styles.caseCard}>
-        <span className={styles.caseId}>{COMPLETED_EXAMPLE.id}</span>
-        <h3>{COMPLETED_EXAMPLE.title}</h3>
-        <p>{COMPLETED_EXAMPLE.result}</p>
-        <div className={styles.metaGrid}>
-          <span>{COMPLETED_EXAMPLE.status}</span>
-          <span>Prototype evidence only</span>
+      {complete ? (
+        <article className={styles.caseCard}>
+          <span className={styles.caseId}>{item.caseCode}</span>
+          <h3>{item.title}</h3>
+          <p>Verified at {formatDateTime(item.verifiedCompletedAt)}</p>
+        </article>
+      ) : (
+        <div className={styles.emptyState}>
+          No verified external execution exists in this Staging workflow.
         </div>
-      </article>
+      )}
     </>
   );
 }
 
-function Notifications() {
+function Notifications({ item }) {
+  const notices = [
+    {
+      title: "Current work state",
+      text: `${item.caseCode}: ${statusText(item.status)}.`,
+    },
+    item.status === "returned_for_changes"
+      ? {
+          title: "Founder returned work",
+          text: item.founderNote || "Changes were requested.",
+        }
+      : null,
+    item.status === "submitted_for_processing"
+      ? {
+          title: "Founder decision pending",
+          text: "The canonical submission is waiting in the Founder Command / Approval Inbox.",
+        }
+      : null,
+    {
+      title: "External execution protection",
+      text: "Customer sending and Production effects remain disabled.",
+    },
+  ].filter(Boolean);
+
   return (
     <>
       <section className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>STAFF NOTIFICATIONS</div>
-          <h2>Role-relevant work notices only</h2>
+          <h2>Role-relevant Staging notices</h2>
           <p>
-            Staff do not need access to private Founder decision machinery or
-            unrelated Control Room information.
+            Staff do not receive private Founder controls or unrelated operational
+            data.
           </p>
         </div>
-        <StatusPill>FICTIONAL</StatusPill>
+        <StatusPill>WORKING STAGING</StatusPill>
       </section>
 
       <div className={styles.notificationList}>
-        <article>
-          <strong>Response target approaching · fictional</strong>
-          <p>CS-SIM-001 has a fictional response target at 14:00.</p>
-        </article>
-        <article>
-          <strong>Returned work available · fictional</strong>
-          <p>One sample item demonstrates the Return for Changes pathway.</p>
-        </article>
-        <article>
-          <strong>Permission boundary active</strong>
-          <p>
-            This workspace is limited to Customer Support simulation records and
-            cannot expose other staff roles or private Founder controls.
-          </p>
-        </article>
+        {notices.map((notice) => (
+          <article key={notice.title}>
+            <strong>{notice.title}</strong>
+            <p>{notice.text}</p>
+          </article>
+        ))}
       </div>
     </>
   );
