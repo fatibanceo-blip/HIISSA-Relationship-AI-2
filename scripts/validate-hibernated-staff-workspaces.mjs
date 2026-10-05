@@ -70,7 +70,11 @@ for (const required of [
   "approvedHibernateBuildQueue",
   "mandatory build targets, not indefinite placeholders",
   "calmerStartMode: Object.freeze({",
-  "STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
+  "FOUNDER_APPROVED_FULL_CALMER_START_JOURNEY_IMPLEMENTED_ON_STAGING_BRANCH_BUILD_PENDING",
+  "calmerStartMoment: Object.freeze({",
+  "Help me breathe for a moment",
+  "Give me a quiet moment",
+  "Help me focus on one thing",
   "continueWithThisTask",
   "viewAllWorkspaceAreas",
   "returnToNormalWorkspace",
@@ -117,6 +121,8 @@ for (const required of [
   "Replay gentle check-in preview",
   "AutomaticGentleCheckIn",
   "CalmerStartMode",
+  "CalmerStartMoment",
+  "calmStartMomentOpen",
   "calmStartExpanded",
   'taskTitle={workspace.fictionalTask.title}',
   'taskDetail={workspace.fictionalTask.summary}',
@@ -217,7 +223,8 @@ console.log("- Founder/Admin verification gates Staging previews; Production hib
 console.log("- Shared journey includes Assigned → In Progress → Draft → Submitted → Returned/Completed preview branches → Notifications");
 console.log("- Universal Founder submission gate remains visible; scenario controls do not grant staff Founder authority");
 console.log("- Gentle Check-In, Workday Close and Private Appreciation receiving surfaces are present");
-console.log("- Calmer Start reduces the workspace to one next step, then allows deliberate expansion or return to normal workspace");
+console.log("- Calmer Start Moment sits between the check-in and workspace mode with Breathe / Quiet / Focus choices");
+console.log("- Calmer Start reduces the workspace to one next step only after Start gently, then allows deliberate expansion or return to normal workspace");
 console.log("- Staging Founder previews auto-offer Gentle Check-In after a short test delay and keep manual replay only as a test control");
 console.log("- The same maximum-three/daypart/snooze/privacy contract is inherited from the shared People Experience Registry");
 console.log("- No database persistence, external execution, Production deployment or Production effect is introduced by the Staging preview engine");
