@@ -86,6 +86,14 @@ const MODULES = [
 
 const FEATURE_KEYS = ["youngHiissa", "hiissaRest", "hiissaAlongside"];
 
+const FOUNDER_WORKSPACE_ROUTES = Object.freeze({
+  customer_support: Object.freeze({
+    href: "/staff-workspace-preview",
+    status: "WORKING STAGING",
+    note: "Persistent Customer Support workflow and Founder submission gate are connected in Staging.",
+  }),
+});
+
 const adminDataClient =
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
@@ -216,6 +224,8 @@ function Overview({ registeredFeatures, authenticated }) {
         <InfoCard title="FUTURE EXPANSION" value="Enabled" detail="A future Founder-approved Module 11+ can be registered without rebuilding the shell." />
       </div>
 
+      <FounderAccessCentre authenticated={authenticated} />
+
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
@@ -278,6 +288,93 @@ function Overview({ registeredFeatures, authenticated }) {
         ))}
       </section>
     </>
+  );
+}
+
+function FounderAccessCentre({ authenticated }) {
+  const workspaces = STAFF_WORKSPACE_SHELL_STANDARD.workspaces || [];
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>FOUNDER ACCESS CENTRE</div>
+          <h3>Departments & staff workspaces</h3>
+        </div>
+        <StatusPill label="FOUNDER 100% OVERSIGHT" compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        This is the Founder doorway into HIISSA departments. You do not need a
+        staff role, another password or an employee account. HIISSA keeps your
+        identity as Founder, records the access as Founder activity and opens the
+        selected workspace in Founder Preview / oversight mode.
+      </p>
+
+      <div className={styles.accessCentreGrid}>
+        {workspaces.map((workspace) => {
+          const route = FOUNDER_WORKSPACE_ROUTES[workspace.id] || null;
+          const available = Boolean(authenticated && route?.href);
+
+          return (
+            <article className={styles.accessCentreCard} key={workspace.id}>
+              <div className={styles.featureTop}>
+                <div>
+                  <strong>{workspace.label}</strong>
+                  <div className={styles.featureId}>{workspace.id}</div>
+                </div>
+                <StatusPill
+                  label={route?.status || "APPROVED · NOT BUILT YET"}
+                  compact
+                />
+              </div>
+
+              <p>
+                {route?.note ||
+                  "This approved department workspace will appear here automatically when its interface is built and certified."}
+              </p>
+
+              {available ? (
+                <Link
+                  className={styles.accessCentreLink}
+                  href={route.href}
+                >
+                  Open in Founder Preview →
+                </Link>
+              ) : route?.href ? (
+                <span className={styles.accessCentreDisabled}>
+                  Founder sign-in required
+                </span>
+              ) : (
+                <span className={styles.accessCentreDisabled}>
+                  Workspace not built yet
+                </span>
+              )}
+            </article>
+          );
+        })}
+      </div>
+
+      <div className={styles.founderPeoplePanel}>
+        <div>
+          <div className={styles.kicker}>STAFF DIRECTORY — FOUNDER SIDE</div>
+          <strong>People will sit under their department, not behind separate logins for you.</strong>
+        </div>
+        <p>
+          When real staff onboarding is activated, a person such as “Sarah —
+          Customer Support” will appear under Customer Support here. You will be
+          able to open Sarah&apos;s work context from the Founder Control Room.
+          HIISSA must keep the session attributable to you as Founder and must not
+          impersonate Sarah or use her password.
+        </p>
+        <div className={styles.featureMeta}>
+          <span>FOUNDER IDENTITY PRESERVED</span>
+          <span>NO STAFF PASSWORD REQUIRED</span>
+          <span>NO INVISIBLE IMPERSONATION</span>
+          <span>ACCESS AUDIT REQUIRED</span>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1242,8 +1339,6 @@ function AdminSecurityAuditModule({ module, onOverview }) {
 
       <WorkingStaffApprovalInbox />
 
-      <FounderApprovalInboxPrototype />
-
       <StaffAccessControlPrototype />
 
       <section className={styles.section}>
@@ -1886,8 +1981,9 @@ function WorkingStaffApprovalInbox() {
       <div className={styles.prototypeReviewBlock}>
         <strong>Continuity note</strong>
         <p>
-          Historical local-only approval examples remain below for governance
-          continuity. This working queue is the persistent Staging implementation.
+          The earlier local-only approval prototype remains preserved in source and
+          continuity records for governance history, but it is not shown as a second
+          Founder inbox. This working queue is the one visible persistent Staging inbox.
         </p>
       </div>
     </section>
