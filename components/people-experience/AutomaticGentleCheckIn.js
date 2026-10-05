@@ -9,6 +9,8 @@ const DEFAULT_ACTIVE_WORK_DELAY_MS = 30 * 60 * 1000;
 const DEFAULT_POLL_MS = 15 * 60 * 1000;
 const DEFAULT_SNOOZE_MS = 30 * 60 * 1000;
 const AUTO_MINIMISE_MS = 60 * 1000;
+const RECENT_ACTIVITY_WINDOW_MS = 5 * 60 * 1000;
+const SAFE_MOMENT_RETRY_MS = 2 * 60 * 1000;
 
 function nowContext() {
   const now = new Date();
@@ -50,6 +52,8 @@ export default function AutomaticGentleCheckIn({
   const [checking, setChecking] = useState(false);
   const previewDayparts = useRef(new Set());
   const lastManualRequest = useRef(manualRequestKey);
+  const lastActivityAt = useRef(Date.now());
+  const safeRetryTimer = useRef(null);
 
   const activeDelayMs = previewOnly
     ? PREVIEW_AUTO_DELAY_MS
@@ -64,6 +68,25 @@ export default function AutomaticGentleCheckIn({
 
   async function evaluateCare({ manual = false } = {}) {
     if (!enabled || pause || checking || open) return;
+
+    const activeElement =
+      typeof document !== "undefined" ? document.activeElement : null;
+    const tagName = String(activeElement?.tagName || "").toLowerCase();
+    const editing =
+      tagName === "input" ||
+      tagName === "textarea" ||
+      tagName === "select" ||
+      activeElement?.getAttribute?.("contenteditable") === "true";
+    const recentlyActive =
+      previewOnly || Date.now() - lastActivityAt.current <= RECENT_ACTIVITY_WINDOW_MS;
+
+    if (!manual && (!recentlyActive || editing)) {
+      if (safeRetryTimer.current) window.clearTimeout(safeRetryTimer.current);
+      safeRetryTimer.current = window.setTimeout(() => {
+        evaluateCare();
+      }, SAFE_MOMENT_RETRY_MS);
+      return;
+    }
 
     setChecking(true);
     try {
@@ -115,11 +138,27 @@ export default function AutomaticGentleCheckIn({
   useEffect(() => {
     if (!enabled) return undefined;
 
+    const markActive = () => {
+      lastActivityAt.current = Date.now();
+    };
+
+    window.addEventListener("pointerdown", markActive, { passive: true });
+    window.addEventListener("keydown", markActive);
+    window.addEventListener("touchstart", markActive, { passive: true });
+    window.addEventListener("scroll", markActive, { passive: true });
+
     const timer = window.setTimeout(() => {
       evaluateCare();
     }, previewOnly ? PREVIEW_AUTO_DELAY_MS : DEFAULT_ACTIVE_WORK_DELAY_MS);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      if (safeRetryTimer.current) window.clearTimeout(safeRetryTimer.current);
+      window.removeEventListener("pointerdown", markActive);
+      window.removeEventListener("keydown", markActive);
+      window.removeEventListener("touchstart", markActive);
+      window.removeEventListener("scroll", markActive);
+    };
   }, [enabled, previewOnly]);
 
   useEffect(() => {
@@ -164,7 +203,10 @@ export default function AutomaticGentleCheckIn({
 
   async function resolveWithoutAnswerValue() {
     if (typeof recordState === "function") {
-      await recordState("resolved", nowContext());
+      await recordState("resolved", {
+        ...nowContext(),
+        daypart,
+      });
     }
     setReminder("");
     setSnoozedUntil(null);
@@ -174,7 +216,10 @@ export default function AutomaticGentleCheckIn({
     let nextUntil = new Date(Date.now() + snoozeMs);
 
     if (typeof recordState === "function") {
-      const result = await recordState("snoozed", nowContext());
+      const result = await recordState("snoozed", {
+        ...nowContext(),
+        daypart,
+      });
       if (result?.snoozedUntil) {
         const serverUntil = new Date(result.snoozedUntil);
         if (Number.isFinite(serverUntil.getTime())) nextUntil = serverUntil;
