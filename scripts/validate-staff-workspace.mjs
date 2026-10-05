@@ -45,6 +45,18 @@ const automaticGentleCheckInStylePath = path.join(
   "people-experience",
   "AutomaticGentleCheckIn.module.css"
 );
+const calmerStartModePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "CalmerStartMode.js"
+);
+const calmerStartModeStylePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "CalmerStartMode.module.css"
+);
 const workdayCloseComponentPath = path.join(
   root,
   "components",
@@ -116,6 +128,8 @@ for (const [label, file] of [
   ["Gentle check-in styles", gentleCheckInStylePath],
   ["Automatic Gentle Check-In controller", automaticGentleCheckInPath],
   ["Automatic Gentle Check-In styles", automaticGentleCheckInStylePath],
+  ["Calmer Start mode", calmerStartModePath],
+  ["Calmer Start styles", calmerStartModeStylePath],
   ["Workday Close component", workdayCloseComponentPath],
   ["Workday Close styles", workdayCloseStylePath],
   ["Private Appreciation component", privateAppreciationComponentPath],
@@ -135,6 +149,8 @@ const gentleCheckInComponent = read(gentleCheckInComponentPath);
 const gentleCheckInStyles = read(gentleCheckInStylePath);
 const automaticGentleCheckIn = read(automaticGentleCheckInPath);
 const automaticGentleCheckInStyles = read(automaticGentleCheckInStylePath);
+const calmerStartMode = read(calmerStartModePath);
+const calmerStartModeStyles = read(calmerStartModeStylePath);
 const workdayCloseComponent = read(workdayCloseComponentPath);
 const workdayCloseStyles = read(workdayCloseStylePath);
 const privateAppreciationComponent = read(privateAppreciationComponentPath);
@@ -205,10 +221,14 @@ for (const required of [
   "GentleCheckIn",
   "checkInVisible",
   "welcome?.checkIn?.due",
+  "CalmerStartMode",
   "calmStart",
-  "CALM START",
-  "Starting with Assigned Work only.",
-  "workload, priority and performance",
+  "calmStartExpanded",
+  'taskTitle={item.title}',
+  'taskDetail={item.summary}',
+  'taskStatus={statusText(item.status)}',
+  "setCalmStartExpanded(false)",
+  "setCalmStartExpanded(true)",
   "WorkdayClose",
   "Finish for now",
   "openWorkdayClose",
@@ -432,7 +452,6 @@ for (const required of [
   ".staffQuietWelcome",
   "@media (prefers-reduced-motion: reduce)",
   "font-family: Arial, Helvetica, sans-serif;",
-  ".calmStartNotice",
 ]) requireText("Staff welcome styles", css, required);
 
 for (const forbidden of [
@@ -512,6 +531,31 @@ for (const required of [
   "@media (prefers-reduced-motion: reduce)",
   "font-family: Arial, Helvetica, sans-serif;",
 ]) requireText("Shared gentle check-in styles", gentleCheckInStyles, required);
+
+for (const required of [
+  "HIISSA · CALMER START",
+  "Calmer Start is on.",
+  "reduce non-urgent visual pressure",
+  "Your responsibilities, priority and performance records have not changed.",
+  "YOUR NEXT STEP",
+  "Continue with this task",
+  "View all workspace areas",
+  "Return to normal workspace",
+  "Other work is still safe and available when you’re ready.",
+  "changes presentation only",
+  "does not remove work, lower priority or",
+  "create a manager signal",
+]) requireText("Shared Calmer Start mode", calmerStartMode, required);
+
+for (const required of [
+  ".mode",
+  ".nextStep",
+  ".primary",
+  ".secondary",
+  ".textButton",
+  "@media(max-width:640px)",
+  "@media(prefers-reduced-motion:reduce)",
+]) requireText("Shared Calmer Start styles", calmerStartModeStyles, required);
 
 for (const required of [
   "PREVIEW_AUTO_DELAY_MS = 8000",
