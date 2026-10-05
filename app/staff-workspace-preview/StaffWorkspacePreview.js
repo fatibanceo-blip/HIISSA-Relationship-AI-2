@@ -7,6 +7,10 @@ import {
   STAFF_WORKSPACE_SHELL_STANDARD,
   UNIVERSAL_FOUNDER_SUBMISSION_GATE,
 } from "../../lib/experience-registry.js";
+import {
+  formatHiissaFullRecordTime,
+  formatHiissaRecordTime,
+} from "../../lib/hiissa-record-time.js";
 import styles from "./page.module.css";
 
 const TABS = [
@@ -57,17 +61,7 @@ function SummaryCard({ label, value, detail }) {
 }
 
 function formatDateTime(value) {
-  if (!value) return "—";
-  try {
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(value));
-  } catch {
-    return "—";
-  }
+  return formatHiissaRecordTime(value);
 }
 
 function statusText(value) {
@@ -517,7 +511,7 @@ export default function StaffWorkspacePreview() {
             <strong>Persistent Staging state</strong>
             <span>
               Status: {statusText(item.status)} · Version {item.version} · last
-              updated {formatDateTime(item.updatedAt)}
+              updated <span title={formatHiissaFullRecordTime(item.updatedAt)}>{formatDateTime(item.updatedAt)}</span>
             </span>
           </div>
         </footer>
@@ -555,8 +549,8 @@ function AssignedWork({ item, busy, onStart, onOpen }) {
         <div className={styles.metaGrid}>
           <span>Category: {item.category}</span>
           <span>Priority: {item.priority}</span>
-          <span>Received: {formatDateTime(item.receivedAt)}</span>
-          <span>Response due: {formatDateTime(item.responseDueAt)}</span>
+          <span>Received: <span title={formatHiissaFullRecordTime(item.receivedAt)}>{formatDateTime(item.receivedAt)}</span></span>
+          <span>Response due: <span title={formatHiissaFullRecordTime(item.responseDueAt)}>{formatDateTime(item.responseDueAt)}</span></span>
         </div>
 
         <div className={styles.actions}>
@@ -584,7 +578,7 @@ function AssignedWork({ item, busy, onStart, onOpen }) {
       <section className={styles.summaryGrid}>
         <SummaryCard
           label="RECEIVED"
-          value={formatDateTime(item.receivedAt)}
+          value=<span title={formatHiissaFullRecordTime(item.receivedAt)}>{formatDateTime(item.receivedAt)}</span>
           detail="Persisted Staging timestamp."
         />
         <SummaryCard
@@ -594,7 +588,7 @@ function AssignedWork({ item, busy, onStart, onOpen }) {
         />
         <SummaryCard
           label="HUMAN RESPONSE DUE"
-          value={formatDateTime(item.responseDueAt)}
+          value=<span title={formatHiissaFullRecordTime(item.responseDueAt)}>{formatDateTime(item.responseDueAt)}</span>
           detail="Persisted response-due target."
         />
         <SummaryCard
@@ -797,7 +791,7 @@ function SubmittedWork({ item, draft }) {
         <div className={styles.draftPreview}>{draft || "—"}</div>
         <div className={styles.metaGrid}>
           <span>State: {statusText(item.status)}</span>
-          <span>Submitted: {formatDateTime(item.submittedAt)}</span>
+          <span>Submitted: <span title={formatHiissaFullRecordTime(item.submittedAt)}>{formatDateTime(item.submittedAt)}</span></span>
           <span>External send: Not performed</span>
           <span>Production effect: None</span>
         </div>
@@ -840,7 +834,7 @@ function ReturnedWork({ item, onContinue }) {
             <strong>Founder note:</strong> {item.founderNote || "No note supplied."}
           </p>
           <div className={styles.metaGrid}>
-            <span>Returned: {formatDateTime(item.returnedAt)}</span>
+            <span>Returned: <span title={formatHiissaFullRecordTime(item.returnedAt)}>{formatDateTime(item.returnedAt)}</span></span>
             <span>No external action occurred</span>
           </div>
           <div className={styles.actions}>
@@ -880,7 +874,7 @@ function CompletedWork({ item }) {
         <article className={styles.caseCard}>
           <span className={styles.caseId}>{item.caseCode}</span>
           <h3>{item.title}</h3>
-          <p>Verified at {formatDateTime(item.verifiedCompletedAt)}</p>
+          <p>Verified at <span title={formatHiissaFullRecordTime(item.verifiedCompletedAt)}>{formatDateTime(item.verifiedCompletedAt)}</span></p>
         </article>
       ) : (
         <div className={styles.emptyState}>
