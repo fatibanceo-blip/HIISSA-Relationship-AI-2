@@ -229,6 +229,18 @@
   border-color:#245b48;
   box-shadow:0 8px 18px rgba(36,91,72,.14);
 }
+.primaryNavItem:active,
+.headerTool:active,
+.menuButton:active,
+.searchResult:active{
+  transform:translateY(1px);
+  background:#e6efe6;
+}
+.primaryNavActive:active,
+.headerToolActive:active{
+  transform:translateY(1px);
+  background:#1d4d3c;
+}
 .globalPanel{
   position:relative;
   z-index:15;
@@ -383,7 +395,9 @@
 }
 .navItem{background:transparent;color:#52635a;}
 .navItem:hover{background:#eaf0e9;}
+.navItem:active{transform:translateY(1px);background:#e1ebe1;}
 .navActive{background:#245b48;color:#fff;font-weight:850;box-shadow:0 8px 18px rgba(36,91,72,.15);}
+.navActive:active{transform:translateY(1px);background:#1d4d3c;}
 .content{padding:clamp(20px,4vw,36px);min-width:0;}
 .pageHeading{
   display:flex;
@@ -537,6 +551,11 @@
   border-color:#9eb7a5;
   box-shadow:0 10px 28px rgba(39,74,57,.08);
   outline:none;
+}
+.overviewPathway:active{
+  transform:translateY(1px);
+  background:linear-gradient(145deg,#eef5ee,#f7faf3);
+  border-color:#6f927e;
 }
 .overviewPathway span{
   color:#6d7e74;
@@ -692,16 +711,88 @@
   gap:12px;
 }
 .accessCentreCard{
-  padding:18px;
+  overflow:hidden;
   border-radius:18px;
   border:1px solid rgba(49,91,70,.14);
   background:linear-gradient(145deg,#fffefa,#f8fbf7);
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease,transform .12s ease;
+}
+.accessCentreCardSelected{
+  border-color:#6f927e;
+  background:linear-gradient(145deg,#edf5ed,#f8fbf4);
+  box-shadow:0 12px 30px rgba(39,74,57,.12);
+}
+.accessCentreSelect{
+  width:100%;
+  display:block;
+  padding:18px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  font:inherit;
+  cursor:pointer;
+}
+.accessCentreSelect:hover,
+.accessCentreSelect:focus-visible{
+  background:rgba(230,240,231,.58);
+  outline:none;
+}
+.accessCentreSelect:focus-visible{
+  box-shadow:inset 0 0 0 3px rgba(36,91,72,.18);
+}
+.accessCentreSelect:active{
+  transform:translateY(1px);
+  background:rgba(217,232,220,.7);
 }
 .accessCentreCard p{
-  margin:10px 0 14px;
+  margin:10px 0 12px;
   color:#5f6e66;
   font-size:13px;
   line-height:1.55;
+}
+.accessCentreStatusStack{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+}
+.accessCentreSelectedPill{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#245b48;
+  color:#fff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.accessCentreTapHint{
+  color:#688076;
+  font-size:11px;
+  font-weight:800;
+}
+.accessCentreSelectedActions{
+  padding:0 18px 18px;
+}
+.selectedWorkspaceContext{
+  display:grid;
+  gap:5px;
+  margin-top:14px;
+  padding:14px 16px;
+  border:1px solid rgba(49,91,70,.14);
+  border-radius:15px;
+  background:#f1f6f0;
+  color:#627269;
+}
+.selectedWorkspaceContext strong{
+  color:#245b48;
+  font-size:15px;
+}
+.selectedWorkspaceContext>span:last-child{
+  font-size:12px;
+  line-height:1.5;
 }
 .accessCentreLink,.accessCentreDisabled{
   display:inline-flex;
@@ -723,6 +814,10 @@
   background:#1d4d3c;
   outline:2px solid rgba(36,91,72,.18);
   outline-offset:2px;
+}
+.accessCentreLink:active{
+  transform:translateY(1px);
+  background:#173f31;
 }
 .accessCentreDisabled{
   color:#758179;
