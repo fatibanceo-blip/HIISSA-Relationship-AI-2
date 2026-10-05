@@ -530,7 +530,7 @@ for (const required of [
   "there is deliberately no Send button yet.",
   "No saved appreciation source is connected yet.",
   "No external AI-generation service is connected yet",
-  "does not invent a reason for praise",
+  "reason for praise",
   "formatHiissaGlobalRecordTime",
   "hiissaResolvedLocale",
   "hiissaResolvedTimeZone",
