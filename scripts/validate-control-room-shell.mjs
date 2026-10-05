@@ -313,6 +313,21 @@ for (const feature of [
 ]) requireText("Registry-driven feature visibility", page, feature);
 
 for (const required of [
+  "STAGING BUILT · FOUNDER TESTING",
+  "Production hibernation deployment",
+]) requireText("Founder Access Centre staging-versus-hibernation truth", page, required);
+
+for (const required of [
+  "supersededInterpretationPreserved",
+  "definitiveVisualReference",
+  "Explore HIISSA",
+  "SEPARATE_FOUNDER_PRODUCTION_DEPLOYMENT_APPROVAL",
+  "PRODUCTION_DEPLOYED_HIBERNATED_NOT_ACTIVATED",
+  "SEPARATE_FOUNDER_ACTIVATION_APPROVAL",
+  "Production deployment and Production activation are two different Founder-controlled decisions",
+]) requireText("Corrected Production hibernation Registry standard", registry, required);
+
+for (const required of [
   "interactionFeedbackRule",
   "departmentSelectionRule",
   "consistencyRule",
