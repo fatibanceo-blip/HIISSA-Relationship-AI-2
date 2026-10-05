@@ -1,0 +1,210 @@
+.founderSurface,
+.recipientSurface {
+  margin-top: 22px;
+  padding: 22px;
+  border: 1px solid rgba(23, 61, 49, 0.13);
+  border-radius: 18px;
+  background: #fbfcf8;
+}
+
+.kicker,
+.previewLabel,
+.cardLabel {
+  color: #5d7469;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.surfaceHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.surfaceHeading h3 {
+  margin: 0;
+  color: #244f3e;
+}
+
+.surfaceHeading p {
+  margin: 7px 0 0;
+  max-width: 720px;
+  color: #62756c;
+  line-height: 1.55;
+}
+
+.foundationPill {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid rgba(36, 79, 62, 0.18);
+  border-radius: 999px;
+  background: #edf4ec;
+  color: #315e4b;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.composePanel,
+.recipientPreview,
+.emptyState {
+  padding: 18px;
+  border: 1px solid rgba(23, 61, 49, 0.11);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.composePanel label {
+  display: block;
+  margin-bottom: 8px;
+  color: #315b49;
+  font-weight: 800;
+}
+
+.composePanel textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid rgba(23, 61, 49, 0.2);
+  border-radius: 11px;
+  background: #fff;
+  color: #243b32;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.composePanel textarea:focus-visible,
+.previewButton:focus-visible {
+  outline: 3px solid rgba(50, 102, 79, 0.2);
+  outline-offset: 2px;
+}
+
+.composeMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 7px;
+  color: #718078;
+  font-size: 0.75rem;
+}
+
+.previewButton {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #285b46;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.previewButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.safetyNote,
+.boundaryNote,
+.emptyState p,
+.emptyState small {
+  color: #65776e;
+  line-height: 1.5;
+}
+
+.safetyNote {
+  margin: 12px 0 0;
+  font-size: 0.82rem;
+}
+
+.recipientPreview {
+  background: linear-gradient(145deg, #f5f8f1, #fffaf2);
+}
+
+.appreciationCard {
+  margin-top: 12px;
+  padding: 18px;
+  border: 1px solid rgba(36, 79, 62, 0.14);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.appreciationCard p {
+  margin: 10px 0 12px;
+  color: #32483e;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.appreciationCard small {
+  color: #6a7b72;
+}
+
+.previewPlaceholder {
+  margin-top: 12px;
+  padding: 24px 18px;
+  border: 1px dashed rgba(36, 79, 62, 0.2);
+  border-radius: 12px;
+  color: #718078;
+  text-align: center;
+}
+
+.boundaryNote {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f1f5ef;
+  font-size: 0.84rem;
+}
+
+.emptyState {
+  margin-top: 16px;
+}
+
+.emptyState strong {
+  color: #315b49;
+}
+
+.emptyState p {
+  margin: 7px 0;
+}
+
+.emptyState small {
+  display: block;
+}
+
+@media (max-width: 760px) {
+  .surfaceHeading,
+  .composeMeta {
+    flex-direction: column;
+  }
+
+  .previewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .foundationPill {
+    align-self: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .founderSurface *,
+  .recipientSurface * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
