@@ -16,6 +16,7 @@ import {
 } from "../../lib/hibernated-staff-workspaces.js";
 import AutomaticGentleCheckIn from "../people-experience/AutomaticGentleCheckIn.js";
 import CalmerStartMode from "../people-experience/CalmerStartMode.js";
+import CalmerStartMoment from "../people-experience/CalmerStartMoment.js";
 import WorkdayClose from "../people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../people-experience/PrivateAppreciation.js";
 import styles from "./HibernatedStaffWorkspace.module.css";
@@ -116,6 +117,7 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
   const [error, setError] = useState("");
   const [lastActionAt, setLastActionAt] = useState(() => new Date());
   const [checkInManualKey, setCheckInManualKey] = useState(0);
+  const [calmStartMomentOpen, setCalmStartMomentOpen] = useState(false);
   const [calmStart, setCalmStart] = useState(false);
   const [calmStartExpanded, setCalmStartExpanded] = useState(false);
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
@@ -793,12 +795,30 @@ export default function HibernatedStaffWorkspace({ workspaceId }) {
         roleLabel={`FOUNDER PREVIEW · ${workspace.label.toUpperCase()}`}
         previewOnly
         privacyText="This Founder Preview selection is not staff data and is not used as a performance score or manager signal."
-        pause={workdayCloseOpen}
+        pause={workdayCloseOpen || calmStartMomentOpen || calmStart}
         manualRequestKey={checkInManualKey}
         onCalmStart={() => {
+          setCalmStart(false);
+          setCalmStartExpanded(false);
+          setCalmStartMomentOpen(true);
+        }}
+      />
+
+      <CalmerStartMoment
+        open={calmStartMomentOpen}
+        displayName="FATI BANCE"
+        previewOnly
+        taskTitle={workspace.fictionalTask.title}
+        onStartGently={() => {
+          setCalmStartMomentOpen(false);
           setActiveTab("assigned");
           setCalmStartExpanded(false);
           setCalmStart(true);
+        }}
+        onContinueNormally={() => {
+          setCalmStartMomentOpen(false);
+          setCalmStart(false);
+          setCalmStartExpanded(false);
         }}
       />
 
