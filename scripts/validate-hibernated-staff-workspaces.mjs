@@ -61,6 +61,12 @@ for (const required of [
   "BUILT_HIBERNATED_NOT_ACTIVATED",
   "approvedHibernateBuildQueue",
   "mandatory build targets, not indefinite placeholders",
+  "automaticTimedCare",
+  "maximumOpportunitiesPerActiveDay: 3",
+  "automaticWhileActive: true",
+  "snoozeCreatesExtraCheckIn: false",
+  "ignoredBehaviour",
+  "safeMomentRule",
 ]) requireText("Build-complete then hibernate Registry contract", registry, required);
 
 for (const required of [
@@ -95,7 +101,11 @@ for (const required of [
   "Founder Preview scenario controls",
   "Preview returned outcome",
   "Preview verified completed outcome",
-  "Gentle check-in preview",
+  "Replay gentle check-in preview",
+  "AutomaticGentleCheckIn",
+  'enabled={authState === "ready"}',
+  "manualRequestKey={checkInManualKey}",
+  "pause={workdayCloseOpen}",
   "Finish for now",
   "PrivateAppreciation",
   "No real-world effect",
@@ -155,5 +165,7 @@ console.log("- Founder/Admin verification gates hibernated previews; ordinary st
 console.log("- Shared journey includes Assigned → In Progress → Draft → Submitted → Returned/Completed preview branches → Notifications");
 console.log("- Universal Founder submission gate remains visible; scenario controls do not grant staff Founder authority");
 console.log("- Gentle Check-In, Workday Close and Private Appreciation receiving surfaces are present");
+console.log("- Hibernated Founder previews auto-offer Gentle Check-In after a short test delay and keep manual replay only as a test control");
+console.log("- The same maximum-three/daypart/snooze/privacy contract is inherited from the shared People Experience Registry");
 console.log("- No database persistence, external execution or Production effect is introduced by the hibernated preview engine");
 console.log("- Global/mobile/reduced-motion presentation protections are present");
