@@ -429,6 +429,32 @@
 .infoCard strong{font-size:19px;color:#245b48;overflow-wrap:anywhere;}
 .infoCard p{margin:7px 0 0;color:#6a766f;font-size:13px;line-height:1.5;}
 
+.overviewHeadingActions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:9px;
+  flex-wrap:wrap;
+}
+.finishForNowButton{
+  min-height:40px;
+  padding:9px 13px;
+  border:1px solid #cad9cc;
+  border-radius:12px;
+  background:#fffefa;
+  color:#315f4c;
+  font:inherit;
+  font-size:12px;
+  font-weight:850;
+  cursor:pointer;
+}
+.finishForNowButton:hover,
+.finishForNowButton:focus-visible{
+  background:#f1f7f1;
+  border-color:#9fb8a5;
+  outline:none;
+}
+
 .calmStartPanel{
   margin-top:8px;
   padding:24px;
@@ -753,6 +779,10 @@
 .mobileBar{display:none;}
 
 @media(max-width:800px){
+  .overviewHeadingActions{
+    justify-content:flex-start;
+  }
+
   .page{padding:8px;}
   .shell{border-radius:20px;}
   .header{padding:18px;flex-direction:column;}
