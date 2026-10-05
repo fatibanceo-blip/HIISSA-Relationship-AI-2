@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { prepareGentleCheckIn } from "../../../../../lib/people-experience/gentle-checkin.js";
 
 export const dynamic = "force-dynamic";
 
@@ -248,6 +249,17 @@ export async function POST(request) {
     return noStoreJson({ status: "FOUNDER_WELCOME_RECORD_FAILED" }, 500);
   }
 
+  const checkIn = await prepareGentleCheckIn({
+    adminClient: founder.adminClient,
+    actorUserId: founder.founderUserId,
+    moduleId: "overview",
+    actorMode: "FOUNDER",
+    contextLabel: "Founder Control Room",
+    localDate,
+    welcomeMode: mode,
+    isFounderPreview: false,
+  });
+
   return noStoreJson({
     status: "READY",
     scope: "founder-welcome-intelligence-staging",
@@ -261,6 +273,7 @@ export async function POST(request) {
     rotation: "ANTI_REPEAT",
     showFullWelcome: mode !== "QUIET_RETURN",
     previousVisitMinutesAgo: minutesSincePrevious,
+    checkIn,
     privacy: {
       emotionalCheckinRecorded: false,
       employeePerformanceScoring: false,
