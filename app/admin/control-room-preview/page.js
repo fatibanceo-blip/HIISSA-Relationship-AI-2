@@ -347,6 +347,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
     criticalMessage: "",
   });
   const [criticalVisible, setCriticalVisible] = useState(true);
+  const [dismissedCriticalKey, setDismissedCriticalKey] = useState("");
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -410,16 +411,28 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           ? Math.max(0, explicitCritical)
           : 0;
 
+        const criticalMessage =
+          securityData?.criticalMessage ||
+          approvalData?.criticalMessage ||
+          "";
+        const criticalKey =
+          criticalCount > 0
+            ? `${criticalCount}:${criticalMessage || "verified-critical-signal"}`
+            : "";
+
         setSummary({
           loading: false,
           attentionCount: Math.max(0, pendingApprovals) + securityAttention,
           criticalCount,
-          criticalMessage:
-            securityData?.criticalMessage ||
-            approvalData?.criticalMessage ||
-            "",
+          criticalMessage,
         });
-        setCriticalVisible(true);
+
+        if (criticalCount > 0 && criticalKey !== dismissedCriticalKey) {
+          setCriticalVisible(true);
+        } else if (criticalCount === 0) {
+          setCriticalVisible(false);
+          setDismissedCriticalKey("");
+        }
       } catch {
         if (!mounted) return;
         setSummary((current) => ({ ...current, loading: false }));
@@ -433,7 +446,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
       mounted = false;
       window.clearInterval(interval);
     };
-  }, [authenticated]);
+  }, [authenticated, dismissedCriticalKey]);
 
   const badgeCount =
     summary.criticalCount > 0
@@ -477,7 +490,17 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           </div>
           <div className={styles.criticalAlertActions}>
             <button type="button" onClick={onClick}>Open Alerts</button>
-            <button type="button" onClick={() => setCriticalVisible(false)}>Dismiss</button>
+            <button
+              type="button"
+              onClick={() => {
+                setDismissedCriticalKey(
+                  `${summary.criticalCount}:${summary.criticalMessage || "verified-critical-signal"}`
+                );
+                setCriticalVisible(false);
+              }}
+            >
+              Dismiss
+            </button>
           </div>
         </div>
       ) : null}
