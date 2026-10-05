@@ -609,6 +609,7 @@ function FounderWelcomeMoment({ authenticated, onCalmStart }) {
           roleLabel={welcome.role}
           choices={welcome.checkIn?.choices}
           privacyText={welcome.checkIn?.privacy}
+          daypart={welcome.checkIn?.daypart}
           previewOnly={false}
           onClose={() => setCheckInVisible(false)}
           onCalmStart={() => {
