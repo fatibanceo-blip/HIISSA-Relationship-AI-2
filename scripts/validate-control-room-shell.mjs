@@ -55,6 +55,27 @@ const gentleCheckInComponentPath = path.join(
   "people-experience",
   "GentleCheckIn.js"
 );
+const workdayClosePath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "workday-close",
+  "route.js"
+);
+const workdayCloseComponentPath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "WorkdayClose.js"
+);
+const workdayCloseStylePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "WorkdayClose.module.css"
+);
 
 const errors = [];
 
@@ -71,6 +92,9 @@ if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activit
 if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
 if (!fs.existsSync(gentleCheckInPolicyPath)) errors.push("Shared gentle check-in policy is missing.");
 if (!fs.existsSync(gentleCheckInComponentPath)) errors.push("Shared gentle check-in component is missing.");
+if (!fs.existsSync(workdayClosePath)) errors.push("Protected Founder Workday Close endpoint is missing.");
+if (!fs.existsSync(workdayCloseComponentPath)) errors.push("Shared Workday Close component is missing.");
+if (!fs.existsSync(workdayCloseStylePath)) errors.push("Shared Workday Close styles are missing.");
 
 const authenticatedPagePath = path.join(root, "app", "admin", "control-room", "page.js");
 const authenticatedClientPath = path.join(root, "app", "admin", "control-room", "AuthenticatedControlRoom.js");
@@ -124,6 +148,15 @@ const gentleCheckInPolicy = fs.existsSync(gentleCheckInPolicyPath)
   : "";
 const gentleCheckInComponent = fs.existsSync(gentleCheckInComponentPath)
   ? fs.readFileSync(gentleCheckInComponentPath, "utf8")
+  : "";
+const workdayClose = fs.existsSync(workdayClosePath)
+  ? fs.readFileSync(workdayClosePath, "utf8")
+  : "";
+const workdayCloseComponent = fs.existsSync(workdayCloseComponentPath)
+  ? fs.readFileSync(workdayCloseComponentPath, "utf8")
+  : "";
+const workdayCloseStyles = fs.existsSync(workdayCloseStylePath)
+  ? fs.readFileSync(workdayCloseStylePath, "utf8")
   : "";
 
 for (const label of [
@@ -192,6 +225,11 @@ for (const required of [
   "Open Approvals",
   "Show full Overview",
   "Your check-in answer was not sent to the Founder/Admin audit trail.",
+  "FounderWorkdayClose",
+  "Finish for now",
+  'fetch("/api/admin/control-room/workday-close"',
+  "Before you finish for now…",
+  "FATI BANCE · FOUNDER",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
@@ -211,6 +249,8 @@ for (const required of [
   ".calmStartPanel",
   ".calmStartActions",
   ".calmStartPrivacy",
+  ".overviewHeadingActions",
+  ".finishForNowButton",
 ]) requireText("Founder Control Room styles", styles, required);
 
 const welcomeNameStart = styles.indexOf(".welcomeName{");
@@ -484,6 +524,50 @@ for (const forbidden of [
   }
 }
 
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
+  '.from("admin_approval_requests")',
+  '.from("admin_audit_events")',
+  '"people_experience_workday_close_opened"',
+  '"finish_for_now"',
+  'criticalSourceStatus = "NO_CERTIFIED_CRITICAL_SOURCE_CONNECTED"',
+  '"founder-workday-close-staging"',
+  "This closing summary currently checks the working Customer Support Founder Approval Inbox and Admin audit timeline only.",
+  "externalEffectPerformed: false",
+  "productionEffectPerformed: false",
+  '"Cache-Control": "no-store"',
+]) requireText("Founder Workday Close endpoint", workdayClose, required);
+
+for (const required of [
+  "HIISSA · WORKDAY CLOSE",
+  "Checking verified work state…",
+  "Before you leave",
+  "Close for now",
+]) requireText("Shared Workday Close component", workdayCloseComponent, required);
+
+for (const forbidden of [
+  "fetch(",
+  "localStorage",
+  "sessionStorage",
+]) {
+  if (workdayCloseComponent.includes(forbidden)) {
+    errors.push(`Shared Workday Close component must remain presentation-only: ${forbidden}`);
+  }
+}
+
+for (const required of [
+  ".overlay",
+  ".card",
+  ".items",
+  ".itemAttention",
+  ".sourceNote",
+  "@media (prefers-reduced-motion: reduce)",
+  "font-family: Arial, Helvetica, sans-serif;",
+]) requireText("Shared Workday Close styles", workdayCloseStyles, required);
+
 for (const registryRule of [
   "export const CONTROL_ROOM_MODULE_REGISTRY",
   "futureExpansionAllowed: true",
@@ -608,6 +692,13 @@ for (const registryRule of [
   "export const HIISSA_PEOPLE_EXPERIENCE_CAPABILITY_REGISTRY",
   "hiissa.people-experience.daypart-care-cadence",
   "hiissa.people-experience.workday-close",
+  "components/people-experience/WorkdayClose.js",
+  "/api/admin/control-room/workday-close",
+  "POST /api/staff-workspace action=workday_close",
+  "people_experience_workday_close_opened",
+  "staffUnsavedChangeRule",
+  "No certified critical-emergency source is connected to the Workday Close card yet",
+  "STAGING_WORKDAY_CLOSE_IMPLEMENTATION_BUILD_PENDING",
   "hiissa.people-experience.private-appreciation",
   "hiissa.people-experience.workload-care-signals",
   "hiissa.people-experience.protected-rest-boundaries",
@@ -619,7 +710,7 @@ for (const registryRule of [
   "hiissa.people-experience.since-you-were-away",
   "FOUNDER_APPROVED_REGISTRY_REGISTERED_IMPLEMENTATION_PENDING",
   "peopleExperience",
-  "STAGING_DAYPART_CARE_DEPLOYED_TEST_PENDING",
+  "STAGING_WORKDAY_CLOSE_IMPLEMENTATION_BUILD_PENDING",
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
   "Founder Provider, Subscription & Spend Register",
   "openAiProviderConnection",
@@ -689,6 +780,8 @@ console.log("- Check-in answers are not persisted to the Founder/Admin audit tra
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
 console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap and suppresses quiet returns");
 console.log("- All ten Founder-approved People Experience capability contracts plus Care Pause are registered");
+console.log("- Founder Workday Close uses verified approval/audit sources and states critical-source coverage limits");
+console.log("- Shared Workday Close component is presentation-only and reduced-motion protected");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
 console.log("- Module 9 protected OpenAI provider connection layer is Staging-only, Admin-gated and read-only");
 console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
