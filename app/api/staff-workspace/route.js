@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { prepareGentleCheckIn } from "../../../lib/people-experience/gentle-checkin.js";
+import {
+  prepareGentleCheckIn,
+  recordGentleCheckInState,
+} from "../../../lib/people-experience/gentle-checkin.js";
 
 export const dynamic = "force-dynamic";
 
@@ -530,6 +533,41 @@ export async function GET(request) {
     return noStoreJson({ status: actor.reason }, actor.status);
   }
 
+  const requestUrl = new URL(request.url);
+  if (requestUrl.searchParams.get("care") === "1") {
+    const localDate = String(requestUrl.searchParams.get("localDate") || "").slice(0, 10);
+    const localHour = Number(requestUrl.searchParams.get("localHour"));
+
+    const checkIn = await prepareGentleCheckIn({
+      adminClient: actor.adminClient,
+      actorUserId: actor.userId,
+      moduleId: MODULE_ID,
+      actorMode: actor.mode,
+      contextLabel:
+        actor.mode === "FOUNDER_PREVIEW"
+          ? "Founder Preview · Customer Support"
+          : "Customer Support",
+      localDate,
+      localHour,
+      welcomeMode: "ACTIVE_WORK",
+      isFounderPreview: actor.mode === "FOUNDER_PREVIEW",
+    });
+
+    return noStoreJson({
+      status: "CARE_CHECK_READY",
+      scope: "customer-support-daypart-care-staging",
+      actor: actorPayload(actor),
+      checkIn,
+      safeguards: {
+        answerRecorded: false,
+        emotionalScoreCreated: false,
+        performanceScoreCreated: false,
+        managerSignalCreated: false,
+        productionEffectEnabled: false,
+      },
+    });
+  }
+
   let result = await getOwnedItem(actor.adminClient, actor);
 
   if (result.error) {
@@ -596,17 +634,54 @@ export async function POST(request) {
         ? "save_draft"
         : action === "submit"
           ? "submit_for_processing"
-          : action === "workday_close"
+          : action === "workday_close" ||
+              action === "checkin_snooze" ||
+              action === "checkin_resolve"
             ? "view_assigned_work"
             : "";
 
-  if (!permissionAction || !itemId) {
+  if (!permissionAction) {
     return noStoreJson({ status: "INVALID_STAFF_ACTION" }, 400);
   }
 
   const actor = await verifyActor(request, permissionAction);
   if (!actor.ok) {
     return noStoreJson({ status: actor.reason }, actor.status);
+  }
+
+  if (action === "checkin_snooze" || action === "checkin_resolve") {
+    const localDate = String(body?.localDate || "").slice(0, 10);
+    const localHour = Number(body?.localHour);
+    const state = action === "checkin_snooze" ? "snoozed" : "resolved";
+
+    const result = await recordGentleCheckInState({
+      adminClient: actor.adminClient,
+      actorUserId: actor.userId,
+      moduleId: MODULE_ID,
+      actorMode: actor.mode,
+      localDate,
+      localHour,
+      state,
+      isFounderPreview: actor.mode === "FOUNDER_PREVIEW",
+    });
+
+    if (!result.ok) {
+      return noStoreJson({ status: result.reason }, 400);
+    }
+
+    return noStoreJson({
+      status:
+        state === "snoozed"
+          ? "CHECKIN_SNOOZED"
+          : "CHECKIN_RESOLVED",
+      careState: result,
+      answerRecorded: false,
+      productionEffectPerformed: false,
+    });
+  }
+
+  if (!itemId) {
+    return noStoreJson({ status: "INVALID_STAFF_ACTION" }, 400);
   }
 
   const owned = await getOwnedItem(actor.adminClient, actor, itemId);
