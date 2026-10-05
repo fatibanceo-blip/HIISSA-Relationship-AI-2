@@ -429,6 +429,64 @@
 .infoCard strong{font-size:19px;color:#245b48;overflow-wrap:anywhere;}
 .infoCard p{margin:7px 0 0;color:#6a766f;font-size:13px;line-height:1.5;}
 
+.calmStartPanel{
+  margin-top:8px;
+  padding:24px;
+  border:1px solid rgba(49,91,70,.14);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 86% 12%,rgba(226,214,167,.22),transparent 28%),
+    linear-gradient(145deg,#f8fcf7,#fffaf0);
+  box-shadow:0 16px 44px rgba(39,74,57,.08);
+}
+.calmStartPanel h2{
+  margin:7px 0 0;
+  color:#234f3f;
+  font-size:clamp(26px,5vw,38px);
+  line-height:1.08;
+}
+.calmStartPanel p{
+  max-width:680px;
+  margin:14px 0 0;
+  color:#627269;
+  font-size:14px;
+  line-height:1.65;
+}
+.calmStartActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:20px;
+}
+.calmStartActions button{
+  min-height:44px;
+  padding:10px 14px;
+  border:1px solid #cad9cc;
+  border-radius:12px;
+  background:#fff;
+  color:#315f4c;
+  font:inherit;
+  font-size:13px;
+  font-weight:850;
+  cursor:pointer;
+}
+.calmStartActions button:first-child,
+.calmStartActions button:nth-child(2){
+  background:#245b48;
+  border-color:#245b48;
+  color:#fff;
+}
+.calmStartPrivacy{
+  margin-top:16px;
+  padding:11px 12px;
+  border:1px solid #dde6de;
+  border-radius:13px;
+  background:#f1f6f0;
+  color:#6c7972;
+  font-size:11px;
+  line-height:1.55;
+}
+
 .overviewPathways{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
