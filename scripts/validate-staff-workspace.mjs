@@ -64,6 +64,7 @@ for (const [label, file] of [
 
 const route = read(routePath);
 const client = read(clientPath);
+const css = read(cssPath);
 const staffApi = read(staffApiPath);
 const founderApi = read(founderApiPath);
 const registry = read(registryPath);
@@ -112,6 +113,20 @@ for (const required of [
   "Returned:",
   "Verified at",
   "Verify · Record · Report",
+  "StaffWelcomeMoment",
+  "HIISSA · PEOPLE EXPERIENCE",
+  "Founder Preview — staff identity is not being impersonated",
+  "welcome.isFounderPreview",
+  "welcome.displayName",
+  "welcome.roleLabel",
+  "welcome.motivation",
+  "Enter workspace →",
+  "Skip welcome",
+  "URLSearchParams",
+  'welcome: "1"',
+  "localDate",
+  "localHour",
+  "timeZone",
 ]) requireText("Working Customer Support workspace", client, required);
 
 for (const forbidden of [
@@ -143,6 +158,26 @@ for (const required of [
   "externalEffectPerformed: false",
   "productionEffectPerformed: false",
   '"Cache-Control": "no-store"',
+  "STAFF_WELCOME_MESSAGES",
+  "FOUNDER_PREVIEW_MESSAGES",
+  "preferredDisplayName",
+  "staffWelcomePayload",
+  '"staff_workspace_visit"',
+  '"FIRST_VISIT_TODAY"',
+  '"WELCOME_BACK"',
+  '"QUIET_RETURN"',
+  '"ANTI_REPEAT"',
+  'metadata.preferred_name',
+  'metadata.display_name',
+  'metadata.full_name',
+  'metadata.name',
+  '"FATI BANCE"',
+  '"FOUNDER PREVIEW · CUSTOMER SUPPORT"',
+  '"CUSTOMER SUPPORT"',
+  "emotional_checkin_recorded: false",
+  "performance_score_recorded: false",
+  "managerMoodSignalCreated: false",
+  "productionEffectEnabled: false",
 ]) requireText("Protected staff workspace API", staffApi, required);
 
 for (const forbidden of [
@@ -201,7 +236,33 @@ for (const required of [
   'productionEffect: "NONE"',
   "zero leftover verification rows",
   "export const UNIVERSAL_FOUNDER_SUBMISSION_GATE",
+  "HIISSA_PEOPLE_EXPERIENCE_LAYER",
+  'implementationStatus:',
+  "CUSTOMER_SUPPORT_STAGING_IMPLEMENTED_BUILD_PENDING",
+  'firstImplementedWorkspace: "customer_support"',
+  "Founder Preview uses its own role-aware encouragement",
+  "preferred_name / display_name / full_name / name",
+  'visitAuditEvent: "staff_workspace_visit"',
+  "antiRepeatMessages: true",
+  "founderTypographyLeak: false",
 ]) requireText("Persistent staff workspace Registry contract", registry, required);
+
+for (const required of [
+  ".staffWelcomeOverlay",
+  ".staffWelcomeCard",
+  ".staffWelcomeName",
+  ".staffWelcomeRole",
+  ".staffWelcomeMessage",
+  ".staffQuietWelcome",
+  "@media (prefers-reduced-motion: reduce)",
+  "font-family: Arial, Helvetica, sans-serif;",
+]) requireText("Staff welcome styles", css, required);
+
+for (const forbidden of [
+  "ui-serif",
+  'font-family: Georgia',
+  '"Times New Roman"',
+]) forbidText("Staff welcome styles", css, forbidden);
 
 for (const required of [
   "<WorkingStaffApprovalInbox />",
@@ -249,3 +310,7 @@ console.log("- Founder Approve / Return / Reject uses the working persistent Sta
 console.log("- Approval remains distinct from verified completion");
 console.log("- External customer execution and Production effects remain disabled");
 console.log("- Historical prototype evidence remains preserved separately");
+console.log("- Customer Support staff welcome uses time-aware first/return/quiet visit intelligence");
+console.log("- Real staff identity comes from authorised profile metadata; Founder Preview preserves FATI BANCE as Founder");
+console.log("- Staff welcome motivation rotates without performance scoring or mood surveillance");
+console.log("- Founder-only premium typography is blocked from staff welcome styles");
