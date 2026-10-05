@@ -387,6 +387,7 @@ export default function StaffWorkspacePreview() {
         roleLabel={welcome?.roleLabel || workspace?.label || "CUSTOMER SUPPORT"}
         choices={welcome?.checkIn?.choices}
         privacyText={welcome?.checkIn?.privacy}
+        daypart={welcome?.checkIn?.daypart}
         previewOnly={Boolean(welcome?.checkIn?.previewOnly)}
         onClose={() => setCheckInVisible(false)}
         onCalmStart={() => {
