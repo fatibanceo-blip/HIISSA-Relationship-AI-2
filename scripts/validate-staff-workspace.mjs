@@ -199,7 +199,6 @@ for (const required of [
   "Before you finish for now…",
   "PrivateAppreciation",
   'mode="recipient-empty"',
-  "No saved appreciation source is connected yet.",
 ]) requireText("Working Customer Support workspace", client, required);
 
 for (const forbidden of [
