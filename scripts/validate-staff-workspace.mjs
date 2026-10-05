@@ -346,7 +346,7 @@ for (const required of [
   "hiissa.people-experience.daypart-care-cadence",
   "hiissa.people-experience.workday-close",
   "hiissa.people-experience.private-appreciation",
-  "FOUNDER_APPROVED_EXPANDED_STAGING_INTERFACE_FOUNDATION_IMPLEMENTATION_IN_PROGRESS",
+  "STAGING_EXPANDED_INTERFACE_FOUNDATION_BUILD_VERIFIED_PERSISTENCE_PENDING_FOUNDER_PRACTICAL_TEST_PENDING",
   "HIISSA_GLOBAL_IDENTITY_WRITING_STANDARD",
   "FOUNDER_APPROVED_PERMANENT_HIISSA_WIDE_STANDARD",
   "warm",
