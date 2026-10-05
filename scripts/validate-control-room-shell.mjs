@@ -619,7 +619,7 @@ for (const registryRule of [
   "hiissa.people-experience.since-you-were-away",
   "FOUNDER_APPROVED_REGISTRY_REGISTERED_IMPLEMENTATION_PENDING",
   "peopleExperience",
-  "STAGING_DAYPART_CARE_IMPLEMENTATION_BUILD_PENDING",
+  "STAGING_DAYPART_CARE_DEPLOYED_TEST_PENDING",
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
   "Founder Provider, Subscription & Spend Register",
   "openAiProviderConnection",
