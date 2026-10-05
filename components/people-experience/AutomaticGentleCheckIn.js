@@ -55,11 +55,6 @@ export default function AutomaticGentleCheckIn({
   const lastActivityAt = useRef(Date.now());
   const safeRetryTimer = useRef(null);
 
-  const activeDelayMs = previewOnly
-    ? PREVIEW_AUTO_DELAY_MS
-    : Number(offer?.activeWorkDelayMinutes || 30) * 60 * 1000 ||
-      DEFAULT_ACTIVE_WORK_DELAY_MS;
-
   const pollMs = Number(offer?.pollMinutes || 15) * 60 * 1000 || DEFAULT_POLL_MS;
   const snoozeMs =
     Number(offer?.snoozeMinutes || 30) * 60 * 1000 || DEFAULT_SNOOZE_MS;
