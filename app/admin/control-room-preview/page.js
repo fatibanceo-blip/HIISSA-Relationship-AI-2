@@ -89,7 +89,7 @@ const FEATURE_KEYS = ["youngHiissa", "hiissaRest", "hiissaAlongside"];
 
 const FOUNDER_WORKSPACE_ROUTES = Object.freeze({
   customer_support: Object.freeze({
-    href: "/staff-workspace-preview",
+    href: "/staff-workspace-preview?founderReturn=staff",
     status: "WORKING STAGING",
     note: "Persistent Customer Support workflow and Founder submission gate are connected in Staging.",
   }),
@@ -119,6 +119,15 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   const [menuOpen, setMenuOpen] = useState(false);
   const [toolPanel, setToolPanel] = useState("");
   const [navigationHistory, setNavigationHistory] = useState([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const requestedView = new URLSearchParams(window.location.search).get("view");
+    if (["overview", "modules", "staff", "approvals"].includes(requestedView)) {
+      setPrimaryView(requestedView);
+    }
+  }, []);
 
   const activeModule = useMemo(
     () => MODULES.find((item) => item.id === activeId) || moduleList[0],
