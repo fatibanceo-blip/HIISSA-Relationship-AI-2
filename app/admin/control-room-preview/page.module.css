@@ -151,6 +151,69 @@
   color:#586961;
   border:1px solid #dbe4dc;
 }
+
+.accessCentreGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.accessCentreCard{
+  padding:18px;
+  border-radius:18px;
+  border:1px solid rgba(49,91,70,.14);
+  background:linear-gradient(145deg,#fffefa,#f8fbf7);
+}
+.accessCentreCard p{
+  margin:10px 0 14px;
+  color:#5f6e66;
+  font-size:13px;
+  line-height:1.55;
+}
+.accessCentreLink,.accessCentreDisabled{
+  display:inline-flex;
+  align-items:center;
+  min-height:38px;
+  padding:8px 12px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:850;
+}
+.accessCentreLink{
+  color:#fff;
+  background:#245b48;
+  border:1px solid #245b48;
+  text-decoration:none;
+}
+.accessCentreLink:hover,
+.accessCentreLink:focus-visible{
+  background:#1d4d3c;
+  outline:2px solid rgba(36,91,72,.18);
+  outline-offset:2px;
+}
+.accessCentreDisabled{
+  color:#758179;
+  background:#f3f5f2;
+  border:1px solid #dde4dd;
+}
+.founderPeoplePanel{
+  margin-top:14px;
+  padding:18px;
+  border-radius:18px;
+  border:1px solid rgba(49,91,70,.15);
+  background:#f4f8f2;
+}
+.founderPeoplePanel strong{
+  display:block;
+  margin-top:5px;
+  color:#245b48;
+  font-size:17px;
+}
+.founderPeoplePanel p{
+  margin:10px 0 14px;
+  color:#607068;
+  line-height:1.55;
+  font-size:13px;
+}
 .contractGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
 .contractItem{
   padding:10px 11px;
@@ -215,7 +278,7 @@
   .content{padding:18px 14px 24px;}
   .pageHeading{display:block;}
   .pageHeading .pill{margin-top:12px;}
-  .grid,.contractGrid{grid-template-columns:1fr;}
+  .grid,.contractGrid,.accessCentreGrid{grid-template-columns:1fr;}
   .sectionHeading{display:block;}
   .sectionHeading .pill{margin-top:10px;}
   .featureTop{display:block;}
