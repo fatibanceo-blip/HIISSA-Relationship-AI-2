@@ -748,7 +748,7 @@ console.log("- Audit records offer/snooze/resolved delivery state only; emotiona
 console.log("- Daypart Care enforces a 180-minute minimum gap and suppresses quiet returns");
 console.log("- Historical 48-hour cadence remains preserved as superseded design evidence");
 console.log("- Check-in answers are not written to the Admin audit trail or performance/manager signals");
-console.log("- Staff Calm Start begins with Assigned Work without changing workload or removing tabs");
+console.log("- Calmer Start reduces the workspace to one clear next step, then supports deliberate expansion or return to normal workspace without changing workload, priority, responsibilities or permissions");
 console.log("- Customer Support Workday Close records a close event without mutating case state");
 console.log("- Workday Close warns when browser draft/note differs from the persisted Staging record");
 console.log("- Editable unsaved work offers Save before leaving");
