@@ -498,7 +498,7 @@ for (const registryRule of [
   "Do not invent a historical date/time",
   "Founder Activity Timeline reads real Staging admin_audit_events",
   "timestampActivity",
-  "STAGING_TIMESTAMP_ACTIVITY_IMPLEMENTATION_BUILD_PENDING",
+  "STAGING_TIMESTAMP_ACTIVITY_DEPLOYED_TEST_PENDING",
   "export const HIISSA_PEOPLE_EXPERIENCE_LAYER",
   "hiissa.people-experience",
   "HIISSA People Experience Layer",
