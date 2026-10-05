@@ -13,6 +13,7 @@ import {
 } from "../../lib/hiissa-record-time.js";
 import AutomaticGentleCheckIn from "../../components/people-experience/AutomaticGentleCheckIn.js";
 import CalmerStartMode from "../../components/people-experience/CalmerStartMode.js";
+import CalmerStartMoment from "../../components/people-experience/CalmerStartMoment.js";
 
 // LEGACY CERTIFICATION CONTINUITY:
 // checkInVisible and welcome?.checkIn?.due belonged to the superseded manual/welcome-triggered flow.
@@ -129,6 +130,7 @@ function CustomerSupportWorkspacePreview() {
   const [internalNote, setInternalNote] = useState("");
   const [welcome, setWelcome] = useState(null);
   const [welcomeVisible, setWelcomeVisible] = useState(false);
+  const [calmStartMomentOpen, setCalmStartMomentOpen] = useState(false);
   const [calmStart, setCalmStart] = useState(false);
   const [calmStartExpanded, setCalmStartExpanded] = useState(false);
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
@@ -560,13 +562,36 @@ function CustomerSupportWorkspacePreview() {
         roleLabel={welcome?.roleLabel || workspace?.label || "CUSTOMER SUPPORT"}
         privacyText="Your answer stays private. HIISSA records only that care was offered, snoozed or resolved — never which emotional answer you chose."
         previewOnly={actor?.mode === "FOUNDER_PREVIEW"}
-        pause={Boolean(busy) || workdayCloseOpen || welcomeVisible}
+        pause={
+          Boolean(busy) ||
+          workdayCloseOpen ||
+          welcomeVisible ||
+          calmStartMomentOpen ||
+          calmStart
+        }
         requestEligibility={requestCareEligibility}
         recordState={recordCareState}
         onCalmStart={() => {
+          setCalmStart(false);
+          setCalmStartExpanded(false);
+          setCalmStartMomentOpen(true);
+        }}
+      />
+      <CalmerStartMoment
+        open={calmStartMomentOpen}
+        displayName={welcome?.displayName || actor?.displayIdentity || ""}
+        previewOnly={actor?.mode === "FOUNDER_PREVIEW"}
+        taskTitle={item?.title || ""}
+        onStartGently={() => {
+          setCalmStartMomentOpen(false);
           setActiveTab("assigned");
           setCalmStartExpanded(false);
           setCalmStart(true);
+        }}
+        onContinueNormally={() => {
+          setCalmStartMomentOpen(false);
+          setCalmStart(false);
+          setCalmStartExpanded(false);
         }}
       />
       <WorkdayClose
