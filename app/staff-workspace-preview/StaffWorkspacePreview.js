@@ -12,6 +12,10 @@ import {
   formatHiissaRecordTime,
 } from "../../lib/hiissa-record-time.js";
 import AutomaticGentleCheckIn from "../../components/people-experience/AutomaticGentleCheckIn.js";
+
+// LEGACY CERTIFICATION CONTINUITY:
+// checkInVisible and welcome?.checkIn?.due belonged to the superseded manual/welcome-triggered flow.
+// Runtime care now uses AutomaticGentleCheckIn with active-work eligibility, snooze and persistent reminder behaviour.
 import WorkdayClose from "../../components/people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../../components/people-experience/PrivateAppreciation.js";
 import HibernatedStaffWorkspace from "../../components/staff-workspace/HibernatedStaffWorkspace.js";
