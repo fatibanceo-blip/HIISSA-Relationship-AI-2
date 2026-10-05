@@ -19,6 +19,7 @@ import {
   UNIVERSAL_FOUNDER_SUBMISSION_GATE,
   STAFF_WORKSPACE_SHELL_STANDARD,
   FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD,
+  HIISSA_PEOPLE_EXPERIENCE_LAYER,
 } from "../../../lib/experience-registry.js";
 
 const MODULES = [
@@ -108,28 +109,51 @@ function statusLabel(value) {
 }
 
 export default function FounderControlRoomPreview({ authenticated = false, onSignOut = null, environmentLabel = "ISOLATED PREVIEW", environmentNote = "Structure and Registry wiring only — no fabricated live metrics" } = {}) {
-  const [activeId, setActiveId] = useState(CONTROL_ROOM_MODULES.overview);
+  const moduleList = MODULES.filter(
+    (module) => module.id !== CONTROL_ROOM_MODULES.overview
+  );
+  const [primaryView, setPrimaryView] = useState("overview");
+  const [activeId, setActiveId] = useState(
+    moduleList[0]?.id || CONTROL_ROOM_MODULES.usersIdentity
+  );
   const [menuOpen, setMenuOpen] = useState(false);
+  const [toolPanel, setToolPanel] = useState("");
 
   const activeModule = useMemo(
-    () => MODULES.find((item) => item.id === activeId) || MODULES[0],
+    () => MODULES.find((item) => item.id === activeId) || moduleList[0],
     [activeId]
   );
 
   const registeredFeatures = FEATURE_KEYS.map((key) => EXPERIENCE_REGISTRY[key]).filter(Boolean);
 
+  function choosePrimary(view) {
+    setPrimaryView(view);
+    setMenuOpen(false);
+    setToolPanel("");
+  }
+
   function chooseModule(id) {
     setActiveId(id);
+    setPrimaryView("modules");
     setMenuOpen(false);
+    setToolPanel("");
   }
 
   return (
     <main className={styles.page}>
       <section className={styles.shell}>
+        <FounderWelcomeMoment authenticated={authenticated} />
+
         <header className={styles.header}>
-          <div>
+          <div className={styles.founderHeaderIdentity}>
             <div className={styles.kicker}>HIISSA — FOUNDER CONTROL ROOM</div>
-            <h1>Control Room</h1>
+            <div className={styles.founderHeaderNameRow}>
+              <h1>Control Room</h1>
+              <div className={styles.founderIdentityMini}>
+                <strong>FATI BANCE</strong>
+                <span>FOUNDER</span>
+              </div>
+            </div>
             <div className={styles.environmentRow}>
               <span className={styles.environment}>{environmentLabel}</span>
               <span className={styles.environmentNote}>{environmentNote}</span>
@@ -137,6 +161,22 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
           </div>
 
           <div className={styles.headerActions}>
+            <button
+              type="button"
+              className={toolPanel === "search" ? styles.headerToolActive : styles.headerTool}
+              onClick={() => setToolPanel((value) => value === "search" ? "" : "search")}
+              aria-expanded={toolPanel === "search"}
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              className={toolPanel === "alerts" ? styles.headerToolActive : styles.headerTool}
+              onClick={() => setToolPanel((value) => value === "alerts" ? "" : "alerts")}
+              aria-expanded={toolPanel === "alerts"}
+            >
+              Alerts
+            </button>
             <Link href="/" className={styles.backLink}>← Back to HIISSA</Link>
             <button
               type="button"
@@ -150,43 +190,100 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
           </div>
         </header>
 
-        <div className={styles.mobileBar}>
-          <button
-            type="button"
-            className={styles.menuButton}
-            onClick={() => setMenuOpen((value) => !value)}
-            aria-expanded={menuOpen}
-            aria-controls="control-room-nav"
-          >
-            ☰ Modules
-          </button>
-          <strong>{activeModule.short}</strong>
-        </div>
+        <nav className={styles.primaryNav} aria-label="Founder Control Room primary navigation">
+          {[
+            ["overview", "Overview"],
+            ["modules", "Modules"],
+            ["staff", "Staff & Workspaces"],
+            ["approvals", "Approvals"],
+          ].map(([id, label]) => (
+            <button
+              type="button"
+              key={id}
+              className={primaryView === id ? styles.primaryNavActive : styles.primaryNavItem}
+              onClick={() => choosePrimary(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
 
-        <div className={styles.body}>
-          <nav
-            id="control-room-nav"
-            className={menuOpen ? `${styles.nav} ${styles.navOpen}` : styles.nav}
-            aria-label="Founder Control Room modules"
-          >
-            {MODULES.map((module) => (
-              <button
-                type="button"
-                key={module.id}
-                className={activeId === module.id ? styles.navActive : styles.navItem}
-                onClick={() => chooseModule(module.id)}
-              >
-                {module.short}
-              </button>
-            ))}
-          </nav>
+        {toolPanel === "search" ? (
+          <FounderSearchPanel
+            onClose={() => setToolPanel("")}
+            onChoosePrimary={choosePrimary}
+            onChooseModule={chooseModule}
+          />
+        ) : null}
+
+        {toolPanel === "alerts" ? (
+          <FounderAlertsPanel
+            authenticated={authenticated}
+            onClose={() => setToolPanel("")}
+            onOpenApprovals={() => choosePrimary("approvals")}
+          />
+        ) : null}
+
+        {primaryView === "modules" ? (
+          <div className={styles.mobileBar}>
+            <button
+              type="button"
+              className={styles.menuButton}
+              onClick={() => setMenuOpen((value) => !value)}
+              aria-expanded={menuOpen}
+              aria-controls="control-room-nav"
+            >
+              ☰ Modules
+            </button>
+            <strong>{activeModule?.short || "Modules"}</strong>
+          </div>
+        ) : null}
+
+        <div className={primaryView === "modules" ? styles.body : styles.bodyFull}>
+          {primaryView === "modules" ? (
+            <nav
+              id="control-room-nav"
+              className={menuOpen ? `${styles.nav} ${styles.navOpen}` : styles.nav}
+              aria-label="Founder Control Room modules"
+            >
+              {moduleList.map((module) => (
+                <button
+                  type="button"
+                  key={module.id}
+                  className={activeId === module.id ? styles.navActive : styles.navItem}
+                  onClick={() => chooseModule(module.id)}
+                >
+                  {module.short}
+                </button>
+              ))}
+            </nav>
+          ) : null}
 
           <section className={styles.content}>
-            {activeId === CONTROL_ROOM_MODULES.overview ? (
-              <Overview registeredFeatures={registeredFeatures} authenticated={authenticated} />
-            ) : (
-              <ModuleFoundation module={activeModule} authenticated={authenticated} onOverview={() => chooseModule(CONTROL_ROOM_MODULES.overview)} />
-            )}
+            {primaryView === "overview" ? (
+              <Overview
+                registeredFeatures={registeredFeatures}
+                authenticated={authenticated}
+                onOpenStaff={() => choosePrimary("staff")}
+                onOpenApprovals={() => choosePrimary("approvals")}
+              />
+            ) : null}
+
+            {primaryView === "modules" && activeModule ? (
+              <ModuleFoundation
+                module={activeModule}
+                authenticated={authenticated}
+                onOverview={() => choosePrimary("overview")}
+              />
+            ) : null}
+
+            {primaryView === "staff" ? (
+              <FounderAccessCentre authenticated={authenticated} />
+            ) : null}
+
+            {primaryView === "approvals" ? (
+              <WorkingStaffApprovalInbox />
+            ) : null}
           </section>
         </div>
       </section>
@@ -194,7 +291,259 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   );
 }
 
-function Overview({ registeredFeatures, authenticated }) {
+function FounderWelcomeMoment({ authenticated }) {
+  const [welcome, setWelcome] = useState(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) return;
+
+    let active = true;
+
+    function localDateString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    async function loadWelcome() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) return;
+
+        const now = new Date();
+        const response = await fetch("/api/admin/control-room/founder-welcome", {
+          method: "POST",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            localDate: localDateString(now),
+            localHour: now.getHours(),
+            timeZone:
+              Intl.DateTimeFormat().resolvedOptions().timeZone || "local-device",
+          }),
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!active || !response.ok || !data) return;
+
+        setWelcome(data);
+        setVisible(Boolean(data.showFullWelcome));
+      } catch {
+        // Welcome is an enhancement. Control Room access must not depend on it.
+      }
+    }
+
+    loadWelcome();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  if (!welcome) return null;
+
+  if (!visible) {
+    return (
+      <div className={styles.quietWelcome} role="status">
+        <span>{welcome.greeting},</span>
+        <strong>{welcome.founderName}</strong>
+        <span className={styles.quietFounderBadge}>{welcome.role}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.welcomeOverlay} role="dialog" aria-modal="true" aria-label="Founder welcome">
+      <section className={styles.welcomeCard} data-period={welcome.period}>
+        <div className={styles.welcomeGlow} aria-hidden="true" />
+        <div className={styles.welcomeKicker}>HIISSA · FOUNDER WELCOME</div>
+        <div className={styles.welcomeGreeting}>{welcome.greeting}</div>
+        <div className={styles.welcomeName}>{welcome.founderName}</div>
+        <div className={styles.welcomeRoleWrap}>
+          <span className={styles.welcomeRole}>{welcome.role}</span>
+        </div>
+        <p className={styles.welcomeMessage}>{welcome.motivation}</p>
+        {welcome.mode === "WELCOME_BACK" ? (
+          <p className={styles.welcomeReturnNote}>
+            Good to have you back. HIISSA can now bring forward what matters since your earlier visit.
+          </p>
+        ) : null}
+        <button
+          type="button"
+          className={styles.welcomeEnter}
+          onClick={() => setVisible(false)}
+        >
+          Enter Control Room →
+        </button>
+        <button
+          type="button"
+          className={styles.welcomeDismiss}
+          onClick={() => setVisible(false)}
+          aria-label="Dismiss Founder welcome"
+        >
+          Skip welcome
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
+  const [query, setQuery] = useState("");
+
+  const destinations = [
+    { label: "Overview", detail: "Founder operational picture", action: () => onChoosePrimary("overview") },
+    { label: "Staff & Workspaces", detail: "Departments, people and work contexts", action: () => onChoosePrimary("staff") },
+    { label: "Approvals", detail: "Founder Command / Approval Inbox", action: () => onChoosePrimary("approvals") },
+    ...MODULES.filter((module) => module.id !== CONTROL_ROOM_MODULES.overview).map((module) => ({
+      label: module.label,
+      detail: "System module",
+      action: () => onChooseModule(module.id),
+    })),
+    ...(STAFF_WORKSPACE_SHELL_STANDARD.workspaces || []).map((workspace) => ({
+      label: workspace.label,
+      detail: "Staff workspace",
+      action: () => onChoosePrimary("staff"),
+    })),
+  ];
+
+  const normalised = query.trim().toLowerCase();
+  const results = normalised
+    ? destinations.filter((item) =>
+        `${item.label} ${item.detail}`.toLowerCase().includes(normalised)
+      ).slice(0, 12)
+    : destinations.slice(0, 8);
+
+  return (
+    <section className={styles.globalPanel} aria-label="Founder Search">
+      <div className={styles.globalPanelHeading}>
+        <div>
+          <div className={styles.kicker}>FOUNDER SEARCH</div>
+          <strong>Go directly to what you need</strong>
+        </div>
+        <button type="button" className={styles.panelClose} onClick={onClose}>Close</button>
+      </div>
+      <input
+        className={styles.searchInput}
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search modules, departments or workspaces…"
+        autoFocus
+      />
+      <div className={styles.searchResults}>
+        {results.map((item) => (
+          <button
+            type="button"
+            key={`${item.label}-${item.detail}`}
+            className={styles.searchResult}
+            onClick={item.action}
+          >
+            <strong>{item.label}</strong>
+            <span>{item.detail}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [pending, setPending] = useState(null);
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function load() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch("/api/admin/control-room/staff-approval-inbox", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const data = await response.json().catch(() => null);
+
+        if (!active) return;
+        if (response.ok && data) setPending(data.pendingCount ?? 0);
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  return (
+    <section className={styles.globalPanel} aria-label="Founder Alerts">
+      <div className={styles.globalPanelHeading}>
+        <div>
+          <div className={styles.kicker}>FOUNDER ALERTS</div>
+          <strong>Only verified connected signals appear here</strong>
+        </div>
+        <button type="button" className={styles.panelClose} onClick={onClose}>Close</button>
+      </div>
+
+      <div className={styles.alertList}>
+        <article className={styles.alertItem}>
+          <div>
+            <strong>Staff submissions waiting for you</strong>
+            <p>
+              {loading
+                ? "Checking the protected Founder approval queue…"
+                : pending === null
+                  ? "This source could not be confirmed right now."
+                  : pending === 0
+                    ? "Nothing from the working staff approval queue needs your decision right now."
+                    : `${pending} staff submission${pending === 1 ? "" : "s"} currently waiting for a Founder decision.`}
+            </p>
+          </div>
+          <button type="button" className={styles.alertAction} onClick={onOpenApprovals}>
+            Open Approvals →
+          </button>
+        </article>
+
+        <article className={styles.alertItem}>
+          <div>
+            <strong>Other Founder alerts</strong>
+            <p>
+              Provider, reliability, security and service-level alerts will appear here only as their real Staging sources are individually connected and certified.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function Overview({ registeredFeatures, authenticated, onOpenStaff, onOpenApprovals }) {
   return (
     <>
       <div className={styles.pageHeading}>
@@ -224,7 +573,18 @@ function Overview({ registeredFeatures, authenticated }) {
         <InfoCard title="FUTURE EXPANSION" value="Enabled" detail="A future Founder-approved Module 11+ can be registered without rebuilding the shell." />
       </div>
 
-      <FounderAccessCentre authenticated={authenticated} />
+      <section className={styles.overviewPathways}>
+        <button type="button" className={styles.overviewPathway} onClick={onOpenStaff}>
+          <span>STAFF & WORKSPACES</span>
+          <strong>Departments, people and work contexts</strong>
+          <small>Open the dedicated Founder staff area →</small>
+        </button>
+        <button type="button" className={styles.overviewPathway} onClick={onOpenApprovals}>
+          <span>APPROVALS</span>
+          <strong>Founder Command / Approval Inbox</strong>
+          <small>Review work waiting for your decision →</small>
+        </button>
+      </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
@@ -1337,7 +1697,20 @@ function AdminSecurityAuditModule({ module, onOverview }) {
         </div>
       </section>
 
-      <WorkingStaffApprovalInbox />
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>FOUNDER APPROVALS</div>
+            <h3>One visible approval inbox</h3>
+          </div>
+          <StatusPill label="TOP-LEVEL FOUNDER AREA" compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          The working Founder Command / Approval Inbox now lives in the permanent
+          Approvals area at the top of the Control Room. This module keeps the
+          governance and audit context without rendering a second inbox.
+        </p>
+      </section>
 
       <StaffAccessControlPrototype />
 
