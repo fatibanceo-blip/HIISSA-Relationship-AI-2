@@ -12,7 +12,7 @@ import {
   formatHiissaRecordTime,
 } from "../../lib/hiissa-record-time.js";
 import GentleCheckIn from "../../components/people-experience/GentleCheckIn.js";
-import WorkdayClose from "../../components/people-experience/WorkdayClose.js";
+import WorkdayClose from "../../components/people-experience/WorkdayClose.js";\nimport PrivateAppreciation from "../../components/people-experience/PrivateAppreciation.js";
 import styles from "./page.module.css";
 
 const TABS = [
@@ -730,7 +730,7 @@ export default function StaffWorkspacePreview() {
 
             {activeTab === "completed" ? <CompletedWork item={item} /> : null}
 
-            {activeTab === "notifications" ? <Notifications item={item} /> : null}
+            {activeTab === "notifications" ? <Notifications item={item} actor={actor} /> : null}
           </section>
         </div>
 
@@ -1166,7 +1166,7 @@ function CompletedWork({ item }) {
   );
 }
 
-function Notifications({ item }) {
+function Notifications({ item, actor }) {
   const notices = [
     {
       title: "Current work state",
@@ -1204,7 +1204,7 @@ function Notifications({ item }) {
         <StatusPill>WORKING STAGING</StatusPill>
       </section>
 
-      <div className={styles.notificationList}>
+      <PrivateAppreciation\n        mode="recipient-empty"\n        recipientLabel={actor?.displayIdentity || "Customer Support"}\n        isFounderPreview={actor?.mode === "FOUNDER_PREVIEW"}\n      />\n\n      <div className={styles.notificationList}>
         {notices.map((notice) => (
           <article key={notice.title}>
             <strong>{notice.title}</strong>
