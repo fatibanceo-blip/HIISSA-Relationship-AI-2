@@ -51,6 +51,8 @@ export default function GentleCheckIn({
   daypart = "morning",
   onClose,
   onCalmStart,
+  onResponded,
+  onNotNow,
 }) {
   const [choice, setChoice] = useState("");
 
@@ -91,7 +93,10 @@ export default function GentleCheckIn({
                 <button
                   type="button"
                   key={item}
-                  onClick={() => setChoice(item)}
+                  onClick={() => {
+                    setChoice(item);
+                    onResponded?.();
+                  }}
                 >
                   {item}
                 </button>
@@ -104,13 +109,20 @@ export default function GentleCheckIn({
                 "Your answer is not used as a performance score or hidden manager signal."}
             </div>
 
-            <button type="button" className={styles.skip} onClick={onClose}>
+            <button
+              type="button"
+              className={styles.skip}
+              onClick={() => {
+                if (onNotNow) onNotNow();
+                else onClose?.();
+              }}
+            >
               Not now
             </button>
           </>
         ) : calmer ? (
           <>
-            <h2>Thank you for checking in.</h2>
+            <h2>{displayName ? `Thank you, ${displayName}.` : "Thank you for checking in."}</h2>
             <p className={styles.response}>
               You do not need to carry everything at once. HIISSA can give you a
               calmer start without changing your responsibilities or judging how
@@ -140,7 +152,7 @@ export default function GentleCheckIn({
           </>
         ) : (
           <>
-            <h2>Thank you for checking in.</h2>
+            <h2>{displayName ? `Thank you, ${displayName}.` : "Thank you for checking in."}</h2>
             <p className={styles.response}>
               {choice === "I'm doing well"
                 ? "Good to hear. Your workspace is ready when you are."
