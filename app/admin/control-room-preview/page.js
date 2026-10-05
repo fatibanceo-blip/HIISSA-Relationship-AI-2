@@ -7,6 +7,7 @@ import {
   formatHiissaFullRecordTime,
   formatHiissaRecordTime,
 } from "../../../lib/hiissa-record-time.js";
+import GentleCheckIn from "../../../components/people-experience/GentleCheckIn.js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -123,6 +124,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   const [menuOpen, setMenuOpen] = useState(false);
   const [toolPanel, setToolPanel] = useState("");
   const [navigationHistory, setNavigationHistory] = useState([]);
+  const [calmStart, setCalmStart] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -185,7 +187,14 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   return (
     <main className={styles.page}>
       <section className={styles.shell}>
-        <FounderWelcomeMoment authenticated={authenticated} />
+        <FounderWelcomeMoment
+          authenticated={authenticated}
+          onCalmStart={() => {
+            setPrimaryView("overview");
+            setToolPanel("");
+            setCalmStart(true);
+          }}
+        />
 
         <header className={styles.header}>
           <div className={styles.founderHeaderIdentity}>
@@ -304,9 +313,12 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
               <Overview
                 registeredFeatures={registeredFeatures}
                 authenticated={authenticated}
+                calmStart={calmStart}
                 onBack={goBack}
+                onOpenAlerts={() => setToolPanel("alerts")}
                 onOpenStaff={() => choosePrimary("staff")}
                 onOpenApprovals={() => choosePrimary("approvals")}
+                onShowFullOverview={() => setCalmStart(false)}
               />
             ) : null}
 
@@ -521,9 +533,10 @@ function FounderAlertButton({ authenticated, active, onClick }) {
   );
 }
 
-function FounderWelcomeMoment({ authenticated }) {
+function FounderWelcomeMoment({ authenticated, onCalmStart }) {
   const [welcome, setWelcome] = useState(null);
   const [visible, setVisible] = useState(false);
+  const [checkInVisible, setCheckInVisible] = useState(false);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) return;
@@ -566,7 +579,9 @@ function FounderWelcomeMoment({ authenticated }) {
         if (!active || !response.ok || !data) return;
 
         setWelcome(data);
-        setVisible(Boolean(data.showFullWelcome));
+        const showFullWelcome = Boolean(data.showFullWelcome);
+        setVisible(showFullWelcome);
+        setCheckInVisible(!showFullWelcome && Boolean(data.checkIn?.due));
       } catch {
         // Welcome is an enhancement. Control Room access must not depend on it.
       }
@@ -582,12 +597,32 @@ function FounderWelcomeMoment({ authenticated }) {
 
   if (!visible) {
     return (
-      <div className={styles.quietWelcome} role="status">
-        <span>{welcome.greeting},</span>
-        <strong>{welcome.founderName}</strong>
-        <span className={styles.quietFounderBadge}>{welcome.role}</span>
-      </div>
+      <>
+        <div className={styles.quietWelcome} role="status">
+          <span>{welcome.greeting},</span>
+          <strong>{welcome.founderName}</strong>
+          <span className={styles.quietFounderBadge}>{welcome.role}</span>
+        </div>
+        <GentleCheckIn
+          open={checkInVisible}
+          displayName={welcome.founderName}
+          roleLabel={welcome.role}
+          choices={welcome.checkIn?.choices}
+          privacyText={welcome.checkIn?.privacy}
+          previewOnly={false}
+          onClose={() => setCheckInVisible(false)}
+          onCalmStart={() => {
+            setCheckInVisible(false);
+            onCalmStart?.();
+          }}
+        />
+      </>
     );
+  }
+
+  function finishWelcome() {
+    setVisible(false);
+    if (welcome.checkIn?.due) setCheckInVisible(true);
   }
 
   return (
@@ -609,14 +644,14 @@ function FounderWelcomeMoment({ authenticated }) {
         <button
           type="button"
           className={styles.welcomeEnter}
-          onClick={() => setVisible(false)}
+          onClick={finishWelcome}
         >
           Enter Control Room →
         </button>
         <button
           type="button"
           className={styles.welcomeDismiss}
-          onClick={() => setVisible(false)}
+          onClick={finishWelcome}
           aria-label="Dismiss Founder welcome"
         >
           Skip welcome
@@ -964,7 +999,48 @@ function FounderActivityTimeline({ authenticated }) {
   );
 }
 
-function Overview({ registeredFeatures, authenticated, onBack, onOpenStaff, onOpenApprovals }) {
+function Overview({
+  registeredFeatures,
+  authenticated,
+  calmStart,
+  onBack,
+  onOpenAlerts,
+  onOpenStaff,
+  onOpenApprovals,
+  onShowFullOverview,
+}) {
+  if (calmStart) {
+    return (
+      <>
+        <FounderContextBack onBack={onBack} fallbackLabel="Admin Dashboard" />
+        <section className={styles.calmStartPanel}>
+          <div className={styles.kicker}>FOUNDER CALM START</div>
+          <h2>Only what may need you first</h2>
+          <p>
+            HIISSA is keeping the opening view simple. Nothing has been removed.
+            Start with verified Alerts or work waiting for your decision, then
+            return to the full Overview whenever you are ready.
+          </p>
+          <div className={styles.calmStartActions}>
+            <button type="button" onClick={onOpenAlerts}>
+              Open Alerts
+            </button>
+            <button type="button" onClick={onOpenApprovals}>
+              Open Approvals
+            </button>
+            <button type="button" onClick={onShowFullOverview}>
+              Show full Overview
+            </button>
+          </div>
+          <div className={styles.calmStartPrivacy}>
+            Your check-in answer was not sent to the Founder/Admin audit trail.
+            This calmer presentation exists only for your current browser experience.
+          </div>
+        </section>
+      </>
+    );
+  }
+
   return (
     <>
       <FounderContextBack onBack={onBack} fallbackLabel="Admin Dashboard" />
