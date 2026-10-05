@@ -12,6 +12,7 @@ import {
   formatHiissaRecordTime,
 } from "../../lib/hiissa-record-time.js";
 import GentleCheckIn from "../../components/people-experience/GentleCheckIn.js";
+import WorkdayClose from "../../components/people-experience/WorkdayClose.js";
 import styles from "./page.module.css";
 
 const TABS = [
@@ -115,6 +116,10 @@ export default function StaffWorkspacePreview() {
   const [welcomeVisible, setWelcomeVisible] = useState(false);
   const [checkInVisible, setCheckInVisible] = useState(false);
   const [calmStart, setCalmStart] = useState(false);
+  const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
+  const [workdayCloseLoading, setWorkdayCloseLoading] = useState(false);
+  const [workdayCloseSummary, setWorkdayCloseSummary] = useState(null);
+  const [workdayCloseError, setWorkdayCloseError] = useState("");
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -288,6 +293,48 @@ export default function StaffWorkspacePreview() {
     }
   }
 
+  async function openWorkdayClose() {
+    if (!session?.access_token || !item?.id) return;
+
+    setWorkdayCloseOpen(true);
+    setWorkdayCloseLoading(true);
+    setWorkdayCloseError("");
+
+    try {
+      const response = await fetch("/api/staff-workspace", {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "workday_close",
+          itemId: item.id,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.workdayClose) {
+        setWorkdayCloseError(
+          "HIISSA could not verify the persisted Customer Support state for Workday Close."
+        );
+        setWorkdayCloseLoading(false);
+        return;
+      }
+
+      if (data.item) setItem(data.item);
+      setWorkdayCloseSummary(data.workdayClose);
+      setWorkdayCloseLoading(false);
+    } catch {
+      setWorkdayCloseError(
+        "HIISSA could not verify the persisted Customer Support state for Workday Close."
+      );
+      setWorkdayCloseLoading(false);
+    }
+  }
+
   async function signOut() {
     const supabase = getSupabase();
     if (!supabase) return;
@@ -300,6 +347,10 @@ export default function StaffWorkspacePreview() {
     setWelcomeVisible(false);
     setCheckInVisible(false);
     setCalmStart(false);
+    setWorkdayCloseOpen(false);
+    setWorkdayCloseLoading(false);
+    setWorkdayCloseSummary(null);
+    setWorkdayCloseError("");
     setLoading(false);
   }
 
@@ -371,6 +422,55 @@ export default function StaffWorkspacePreview() {
 
   if (!item) return null;
 
+  const unsavedLocalChanges =
+    draft !== (item.draftResponse || "") ||
+    internalNote !== (item.internalNote || "");
+  const canSaveBeforeLeaving = [
+    "in_progress",
+    "saved_draft",
+    "returned_for_changes",
+  ].includes(item.status);
+
+  const closeItems = [
+    {
+      label: "Current work state",
+      value:
+        workdayCloseSummary?.statusLabel || statusText(item.status),
+      tone:
+        item.status === "verified_complete" ||
+        item.status === "submitted_for_processing" ||
+        item.status === "saved_draft"
+          ? "good"
+          : "neutral",
+      detail:
+        workdayCloseSummary?.statusDetail ||
+        "HIISSA is checking the persisted Staging state.",
+    },
+    {
+      label: "Last persisted update",
+      value: formatDateTime(
+        workdayCloseSummary?.updatedAt || item.updatedAt
+      ),
+      tone: unsavedLocalChanges ? "attention" : "good",
+      detail: unsavedLocalChanges
+        ? "There are browser changes that do not match the last persisted Staging record."
+        : "The current browser draft/note matches the persisted Staging record.",
+    },
+    {
+      label: "Founder processing",
+      value: item.approvalRequestId
+        ? item.status === "submitted_for_processing"
+          ? "Waiting for Founder"
+          : "Approval record exists"
+        : "Not submitted",
+      tone:
+        item.status === "submitted_for_processing" ? "attention" : "neutral",
+      detail: item.approvalRequestId
+        ? "The canonical Founder approval record remains persisted."
+        : "No Founder approval request exists for this work item yet.",
+    },
+  ];
+
   return (
     <main className={styles.page}>
       <StaffWelcomeMoment
@@ -396,6 +496,43 @@ export default function StaffWorkspacePreview() {
           setCheckInVisible(false);
         }}
       />
+      <WorkdayClose
+        open={workdayCloseOpen}
+        identity={
+          actor?.mode === "FOUNDER_PREVIEW"
+            ? "FATI BANCE · FOUNDER PREVIEW · CUSTOMER SUPPORT"
+            : "CUSTOMER SUPPORT"
+        }
+        heading="Before you finish for now…"
+        intro="HIISSA is checking this persisted work item so you can see what is saved and what still needs attention before you leave."
+        loading={workdayCloseLoading}
+        error={workdayCloseError}
+        items={closeItems}
+        caution={
+          unsavedLocalChanges
+            ? "You have changes in this browser that are not yet in the persisted Staging record. Save them before leaving if you want HIISSA to keep them."
+            : ""
+        }
+        sourceNote="This closing summary checks this authorised Customer Support work item only. It does not change workload, priority, Founder approval state or external execution."
+        actions={
+          unsavedLocalChanges && canSaveBeforeLeaving
+            ? [
+                {
+                  label: "Save before leaving",
+                  primary: true,
+                  onClick: async () => {
+                    const saved = await perform("save", {
+                      draftResponse: draft,
+                      internalNote,
+                    });
+                    if (saved) setWorkdayCloseOpen(false);
+                  },
+                },
+              ]
+            : []
+        }
+        onClose={() => setWorkdayCloseOpen(false)}
+      />
       <section className={styles.shell}>
         {welcome && !welcomeVisible && welcome.mode === "QUIET_RETURN" ? (
           <div className={styles.staffQuietWelcome} role="status">
@@ -416,6 +553,14 @@ export default function StaffWorkspacePreview() {
 
           <div className={styles.headerActions}>
             <StatusPill>STAGING · WORKING TEST</StatusPill>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={openWorkdayClose}
+              disabled={Boolean(busy)}
+            >
+              Finish for now
+            </button>
             {actor?.mode === "FOUNDER_PREVIEW" ? (
               <Link className={styles.secondaryButton} href="/admin/control-room?view=staff">
                 ← Back to Staff & Workspaces
