@@ -177,6 +177,9 @@ export async function GET(request) {
     {
       status: failedSources.length ? "NEEDS_ATTENTION" : "HEALTHY",
       scope: "read-only-staging-admin-security-summary",
+      criticalCount: 0,
+      criticalMessage: "",
+      criticalSourceStatus: "NO_CERTIFIED_CRITICAL_SOURCE_CONNECTED",
       counts: {
         legacyAdminAccounts: legacyAdmins.count ?? null,
         activeRoleAssignments: activeRoles.count ?? null,
@@ -194,6 +197,7 @@ export async function GET(request) {
         noSelfGrant: true,
         founderApprovalForL3: true,
         productionChangesEnabled: false,
+        noFabricatedCriticalAlerts: true,
       },
       failedSources,
       errors: failedSources.map(
