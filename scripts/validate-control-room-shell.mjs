@@ -93,6 +93,12 @@ for (const required of [
   "no fake health numbers.",
   "FEATURE OPERATIONAL VISIBILITY",
   "SHARED DETAIL VIEW — FOUNDATION",
+  "FOUNDER ACCESS CENTRE",
+  "Departments & staff workspaces",
+  "FOUNDER 100% OVERSIGHT",
+  "Open in Founder Preview",
+  "STAFF DIRECTORY — FOUNDER SIDE",
+  "NO STAFF PASSWORD REQUIRED",
 ]) requireText("Control Room shell", page, required);
 
 for (const feature of [
@@ -312,6 +318,11 @@ for (const registryRule of [
   "Every human staff work item",
   "export const STAFF_WORKSPACE_SHELL_STANDARD",
   "founder-approved-fictional-staging-design-to-build",
+  "founderAccessCentre",
+  "IMPLEMENTED_STAGING_BUILD_PENDING",
+  "Founder Control Room Overview",
+  "100% authorised access across HIISSA",
+  "FOUNDER_ACCESS_CENTRE_STAGING_BUILD_PENDING",
   "technical_operations",
   "customer_support",
   "finance_subscriptions",
@@ -369,6 +380,7 @@ console.log("- Applicant save/resume, review, submission and Founder-review hand
 console.log("- Founder Control Room strengthening package is registered and surfaced without creating Module 11");
 console.log("- Founder Approval Inbox decision-pack simulation is present and explicitly non-live");
 console.log("- Universal Founder submission gate and seven fictional staff workspace families are registered");
+console.log("- Founder Access Centre is surfaced from the existing Control Room with full Founder oversight and no staff impersonation");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
 console.log("- Module 9 protected OpenAI provider connection layer is Staging-only, Admin-gated and read-only");
 console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
