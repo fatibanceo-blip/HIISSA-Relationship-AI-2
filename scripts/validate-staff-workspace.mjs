@@ -280,12 +280,28 @@ for (const required of [
   "antiRepeatMessages: true",
   "founderTypographyLeak: false",
   "FOUNDER_AND_CUSTOMER_SUPPORT_STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
-  "minimumHoursBetweenOffers: 48",
+  "activeRule: \"DAYPART_CARE\"",
+  "maximumOpportunitiesPerActiveDay: 3",
+  "maximumPerDaypart: 1",
+  "minimumGapMinutes: 180",
+  "historical48HourRule",
   "answerRecordedInAdminAudit: false",
   "performanceScoreCreated: false",
   "managerSignalCreated: false",
   'auditOfferEvent: "people_experience_checkin_offered"',
   "Customer Support calmer start opens Assigned Work first",
+  "export const HIISSA_PEOPLE_EXPERIENCE_CAPABILITY_REGISTRY",
+  "hiissa.people-experience.daypart-care-cadence",
+  "hiissa.people-experience.workday-close",
+  "hiissa.people-experience.private-appreciation",
+  "hiissa.people-experience.workload-care-signals",
+  "hiissa.people-experience.protected-rest-boundaries",
+  "hiissa.people-experience.protected-rest-boundaries.care-pause",
+  "hiissa.people-experience.i-need-help",
+  "hiissa.people-experience.growth-learning-companion",
+  "hiissa.people-experience.speak-up-ideas",
+  "hiissa.people-experience.milestones-seasons-human-moments",
+  "hiissa.people-experience.since-you-were-away",
 ]) requireText("Persistent staff workspace Registry contract", registry, required);
 
 for (const required of [
@@ -307,20 +323,29 @@ for (const forbidden of [
 ]) forbidText("Staff welcome styles", css, forbidden);
 
 for (const required of [
-  "PEOPLE_CHECKIN_MIN_HOURS = 48",
+  "HISTORICAL_PEOPLE_CHECKIN_MIN_HOURS = 48",
+  'PEOPLE_CHECKIN_ACTIVE_CADENCE = "DAYPART_CARE"',
+  "PEOPLE_CHECKIN_MIN_GAP_MINUTES = 180",
+  "peopleCheckInDaypart",
   '"people_experience_checkin_offered"',
+  '"DAYPART_ALREADY_OFFERED"',
+  '"MINIMUM_GAP_NOT_MET"',
+  "care_daypart: daypart",
+  "active_cadence: PEOPLE_CHECKIN_ACTIVE_CADENCE",
   "answer_recorded: false",
   "emotional_score_created: false",
   "performance_score_created: false",
   "manager_signal_created: false",
   "explicit_support_escalation_created: false",
   'welcomeMode === "QUIET_RETURN"',
-  "CADENCE_NOT_DUE",
 ]) requireText("Gentle check-in privacy policy", gentleCheckInPolicy, required);
 
 for (const required of [
   "HIISSA · GENTLE CHECK-IN",
   "How are you doing today",
+  "How is your day going so far?",
+  "how has your day been?",
+  "checkInQuestion(daypart, displayName)",
   "I'm doing well",
   "I'm okay",
   "It's a heavy day",
@@ -401,6 +426,8 @@ console.log("- Customer Support staff welcome uses time-aware first/return/quiet
 console.log("- Real staff identity comes from authorised profile metadata; Founder Preview preserves FATI BANCE as Founder");
 console.log("- Staff welcome motivation rotates without performance scoring or mood surveillance");
 console.log("- Founder-only premium typography is blocked from staff welcome styles");
-console.log("- Shared gentle check-in is cadence-limited to 48 hours and suppressed on quiet return");
+console.log("- Daypart Care offers at most one morning, afternoon and evening check-in while active");
+console.log("- Daypart Care enforces a 180-minute minimum gap and suppresses quiet returns");
+console.log("- Historical 48-hour cadence remains preserved as superseded design evidence");
 console.log("- Check-in answers are not written to the Admin audit trail or performance/manager signals");
 console.log("- Staff Calm Start begins with Assigned Work without changing workload or removing tabs");
