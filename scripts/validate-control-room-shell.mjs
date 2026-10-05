@@ -446,8 +446,15 @@ for (const required of [
 ]) requireText("Shared HIISSA record time formatter", recordTime, required);
 
 for (const required of [
-  "PEOPLE_CHECKIN_MIN_HOURS = 48",
+  "HISTORICAL_PEOPLE_CHECKIN_MIN_HOURS = 48",
+  'PEOPLE_CHECKIN_ACTIVE_CADENCE = "DAYPART_CARE"',
+  "PEOPLE_CHECKIN_MIN_GAP_MINUTES = 180",
+  "peopleCheckInDaypart",
   '"people_experience_checkin_offered"',
+  '"DAYPART_ALREADY_OFFERED"',
+  '"MINIMUM_GAP_NOT_MET"',
+  "care_daypart: daypart",
+  "active_cadence: PEOPLE_CHECKIN_ACTIVE_CADENCE",
   "answer_recorded: false",
   "emotional_score_created: false",
   "performance_score_created: false",
@@ -459,6 +466,9 @@ for (const required of [
 for (const required of [
   "HIISSA · GENTLE CHECK-IN",
   "How are you doing today",
+  "How is your day going so far?",
+  "how has your day been?",
+  "checkInQuestion(daypart, displayName)",
   "Private by default.",
   "Give me a calmer start",
   "records only that a check-in was offered, not which answer you chose",
@@ -580,7 +590,11 @@ for (const registryRule of [
   "Motivation must encourage without manipulation",
   "welcomeNameTypography",
   "FOUNDER_AND_CUSTOMER_SUPPORT_STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
-  "minimumHoursBetweenOffers: 48",
+  "activeRule: \"DAYPART_CARE\"",
+  "maximumOpportunitiesPerActiveDay: 3",
+  "maximumPerDaypart: 1",
+  "minimumGapMinutes: 180",
+  "historical48HourRule",
   "answerRecordedInAdminAudit: false",
   "managerSignalCreated: false",
   "Give me a calmer start temporarily reduces Overview to Alerts, Approvals and Show full Overview",
@@ -591,8 +605,21 @@ for (const registryRule of [
   "Every Founder destination",
   "2-by-2 layout",
   "Only a verified critical/emergency signal",
+  "export const HIISSA_PEOPLE_EXPERIENCE_CAPABILITY_REGISTRY",
+  "hiissa.people-experience.daypart-care-cadence",
+  "hiissa.people-experience.workday-close",
+  "hiissa.people-experience.private-appreciation",
+  "hiissa.people-experience.workload-care-signals",
+  "hiissa.people-experience.protected-rest-boundaries",
+  "hiissa.people-experience.protected-rest-boundaries.care-pause",
+  "hiissa.people-experience.i-need-help",
+  "hiissa.people-experience.growth-learning-companion",
+  "hiissa.people-experience.speak-up-ideas",
+  "hiissa.people-experience.milestones-seasons-human-moments",
+  "hiissa.people-experience.since-you-were-away",
+  "FOUNDER_APPROVED_REGISTRY_REGISTERED_IMPLEMENTATION_PENDING",
   "peopleExperience",
-  "STAGING_GENTLE_CHECKIN_DEPLOYED_TEST_PENDING",
+  "STAGING_DAYPART_CARE_IMPLEMENTATION_BUILD_PENDING",
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
   "Founder Provider, Subscription & Spend Register",
   "openAiProviderConnection",
@@ -659,6 +686,9 @@ console.log("- Created/updated/history preservation and no-fabricated-time rules
 console.log("- Founder gentle check-in is 48-hour cadence-limited and privacy-safe");
 console.log("- Founder Calm Start temporarily prioritises Alerts and Approvals without removing Overview");
 console.log("- Check-in answers are not persisted to the Founder/Admin audit trail");
+console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
+console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap and suppresses quiet returns");
+console.log("- All ten Founder-approved People Experience capability contracts plus Care Pause are registered");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
 console.log("- Module 9 protected OpenAI provider connection layer is Staging-only, Admin-gated and read-only");
 console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
