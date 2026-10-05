@@ -935,15 +935,15 @@ function FounderAccessCentre({ authenticated }) {
 
 function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
   if (module.id === CONTROL_ROOM_MODULES.feedbackRecommendations && authenticated) {
-    return <FeedbackRecommendationsModule module={module} onOverview={onOverview} />;
+    return <FeedbackRecommendationsModule module={module} onOverview={onOverview} onBack={onBack} />;
   }
 
   if (module.id === CONTROL_ROOM_MODULES.adminSecurityAudit && authenticated) {
-    return <AdminSecurityAuditModule module={module} onOverview={onOverview} />;
+    return <AdminSecurityAuditModule module={module} onOverview={onOverview} onBack={onBack} />;
   }
 
   if (module.id === CONTROL_ROOM_MODULES.systemOperations && authenticated) {
-    return <SystemOperationsModule module={module} onOverview={onOverview} />;
+    return <SystemOperationsModule module={module} onOverview={onOverview} onBack={onBack} />;
   }
 
   const special =
@@ -998,7 +998,7 @@ function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
   );
 }
 
-function FeedbackRecommendationsModule({ module, onOverview }) {
+function FeedbackRecommendationsModule({ module, onOverview, onBack }) {
   const [loading, setLoading] = useState(true);
   const [health, setHealth] = useState("Checking");
   const [stats, setStats] = useState(null);
@@ -1083,9 +1083,7 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
 
   return (
     <>
-      <button type="button" className={styles.overviewBack} onClick={onOverview}>
-        ← Control Room Overview
-      </button>
+      <FounderContextBack onBack={onBack} />
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>MODULE 4 — LIVE STAGING READ-ONLY</div>
@@ -1278,7 +1276,7 @@ function FeedbackRecommendationsModule({ module, onOverview }) {
   );
 }
 
-function SystemOperationsModule({ module, onOverview }) {
+function SystemOperationsModule({ module, onOverview, onBack }) {
   const providers = FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD.providerRegister;
   const [openAiLoading, setOpenAiLoading] = useState(true);
   const [openAiSummary, setOpenAiSummary] = useState(null);
@@ -1415,9 +1413,7 @@ function SystemOperationsModule({ module, onOverview }) {
 
   return (
     <>
-      <button type="button" className={styles.overviewBack} onClick={onOverview}>
-        ← Control Room Overview
-      </button>
+      <FounderContextBack onBack={onBack} />
 
       <div className={styles.pageHeading}>
         <div>
@@ -1705,7 +1701,7 @@ function SystemOperationsModule({ module, onOverview }) {
   );
 }
 
-function AdminSecurityAuditModule({ module, onOverview }) {
+function AdminSecurityAuditModule({ module, onOverview, onBack }) {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState("");
@@ -1769,9 +1765,7 @@ function AdminSecurityAuditModule({ module, onOverview }) {
 
   return (
     <>
-      <button type="button" className={styles.overviewBack} onClick={onOverview}>
-        ← Control Room Overview
-      </button>
+      <FounderContextBack onBack={onBack} />
 
       <div className={styles.pageHeading}>
         <div>
