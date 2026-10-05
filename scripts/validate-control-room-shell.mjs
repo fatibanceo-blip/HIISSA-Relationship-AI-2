@@ -3,6 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const pagePath = path.join(root, "app", "admin", "control-room-preview", "page.js");
+const stylePath = path.join(root, "app", "admin", "control-room-preview", "page.module.css");
 const registryPath = path.join(root, "lib", "experience-registry.js");
 const sharePreviewPath = path.join(root, "app", "share-hiissa-preview", "page.js");
 const securitySummaryPath = path.join(
@@ -40,6 +41,7 @@ function requireText(label, source, text) {
 }
 
 if (!fs.existsSync(pagePath)) errors.push("Founder Control Room preview page is missing.");
+if (!fs.existsSync(stylePath)) errors.push("Founder Control Room stylesheet is missing.");
 if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security summary endpoint is missing.");
 if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI provider summary endpoint is missing.");
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
@@ -73,6 +75,7 @@ if (!fs.existsSync(registryPath)) errors.push("Experience Registry is missing.")
 if (!fs.existsSync(sharePreviewPath)) errors.push("Share HIISSA Staging preview is missing.");
 
 const page = fs.existsSync(pagePath) ? fs.readFileSync(pagePath, "utf8") : "";
+const styles = fs.existsSync(stylePath) ? fs.readFileSync(stylePath, "utf8") : "";
 const registry = fs.existsSync(registryPath) ? fs.readFileSync(registryPath, "utf8") : "";
 const sharePreview = fs.existsSync(sharePreviewPath) ? fs.readFileSync(sharePreviewPath, "utf8") : "";
 const securitySummary = fs.existsSync(securitySummaryPath)
@@ -100,7 +103,7 @@ for (const label of [
 
 for (const required of [
   "← Back to HIISSA",
-  "← Control Room Overview",
+  "← Back",
   "Sign out",
   "ISOLATED PREVIEW",
   "no fake health numbers.",
@@ -126,7 +129,47 @@ for (const required of [
   'fetch("/api/admin/control-room/founder-welcome"',
   "Open the dedicated Founder staff area",
   "One visible approval inbox",
+  "FounderContextBack",
+  "navigationHistory",
+  "function goBack()",
+  "FounderAlertButton",
+  "alertBadgeCritical",
+  "criticalAlertToast",
+  "Open Alerts",
 ]) requireText("Control Room shell", page, required);
+
+for (const required of [
+  ".welcomeName{",
+  'font-family:ui-serif,Georgia,Cambria,"Times New Roman",serif;',
+  ".alertBadgeAttention",
+  ".alertBadgeCritical",
+  ".criticalAlertToast",
+  ".contextBack",
+  "grid-template-columns:repeat(2,minmax(0,1fr));",
+]) requireText("Founder Control Room styles", styles, required);
+
+const welcomeNameStart = styles.indexOf(".welcomeName{");
+const welcomeNameEnd = welcomeNameStart >= 0 ? styles.indexOf("}", welcomeNameStart) : -1;
+const welcomeNameChunk =
+  welcomeNameStart >= 0 && welcomeNameEnd > welcomeNameStart
+    ? styles.slice(welcomeNameStart, welcomeNameEnd + 1)
+    : "";
+if (!welcomeNameChunk.includes("font-family:ui-serif")) {
+  errors.push("Founder welcome name must keep the premium type treatment.");
+}
+
+for (const protectedSelector of [
+  ".founderIdentityMini{",
+  ".primaryNavItem,.primaryNavActive{",
+  ".content{",
+]) {
+  const start = styles.indexOf(protectedSelector);
+  const end = start >= 0 ? styles.indexOf("}", start) : -1;
+  const chunk = start >= 0 && end > start ? styles.slice(start, end + 1) : "";
+  if (chunk.includes("font-family:")) {
+    errors.push(`Premium Founder font leaked into protected selector: ${protectedSelector}`);
+  }
+}
 
 for (const feature of [
   "youngHiissa",
@@ -261,6 +304,9 @@ for (const required of [
   'productionChangesEnabled: false',
   "failedSources",
   "activeAccessGrantCount",
+  "criticalCount: 0",
+  'criticalSourceStatus: "NO_CERTIFIED_CRITICAL_SOURCE_CONNECTED"',
+  "noFabricatedCriticalAlerts: true",
 ]) requireText("Protected Admin Security summary", securitySummary, required);
 
 for (const required of [
@@ -297,6 +343,10 @@ for (const required of [
   "Welcome back",
   "emotionalCheckinRecorded: false",
   "employeePerformanceScoring: false",
+  '"ANTI_REPEAT"',
+  "message_index",
+  "message_rotation",
+  "nextMessageIndex",
   '"Cache-Control": "no-store"',
 ]) requireText("Founder welcome intelligence endpoint", founderWelcome, required);
 
@@ -390,6 +440,12 @@ for (const registryRule of [
   "must not become performance surveillance",
   "Reuse and connect the existing HIISSA Seasons",
   "Motivation must encourage without manipulation",
+  "welcomeNameTypography",
+  "anti-repeat rotation",
+  "navigationExperience",
+  "Every Founder destination",
+  "2-by-2 layout",
+  "Only a verified critical/emergency signal",
   "peopleExperience",
   "STAGING_FOUNDER_WELCOME_DEPLOYED_TEST_PENDING",
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
@@ -446,6 +502,11 @@ console.log("- Founder Access Centre is surfaced from the existing Control Room 
 console.log("- Founder primary navigation is Overview / Modules / Staff & Workspaces / Approvals with Search and Alerts");
 console.log("- Founder welcome intelligence is protected, time-aware and records same-day return continuity");
 console.log("- FATI BANCE / FOUNDER identity treatment and People Experience Layer are registered");
+console.log("- Premium type treatment is confined to FATI BANCE on the welcome pop-up");
+console.log("- Founder Back navigation history is present across Overview, Modules, Staff & Workspaces and Approvals");
+console.log("- Mobile primary navigation is protected against clipped destinations");
+console.log("- Alert number badges and verified-critical-only red interruption are protected");
+console.log("- Founder motivation uses anti-repeat rotation");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
 console.log("- Module 9 protected OpenAI provider connection layer is Staging-only, Admin-gated and read-only");
 console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
