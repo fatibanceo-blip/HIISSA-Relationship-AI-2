@@ -732,7 +732,7 @@ for (const registryRule of [
   "Reuse and connect the existing HIISSA Seasons",
   "Motivation must encourage without manipulation",
   "welcomeNameTypography",
-  "FOUNDER_APPROVED_AUTOMATIC_TIMED_CARE_IMPLEMENTED_ON_STAGING_BRANCH_BUILD_PENDING",
+  "STAGING_BUILD_VERIFIED_AUTOMATIC_TIMED_CARE_FOUNDER_PRACTICAL_TEST_PENDING",
   "activeRule: \"DAYPART_CARE\"",
   "maximumOpportunitiesPerActiveDay: 3",
   "typicalOpportunitiesPerActiveDay: 2",
