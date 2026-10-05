@@ -1434,6 +1434,144 @@
   70%{opacity:1;transform:translateY(4px) scale(1.03);}
   100%{opacity:1;transform:translateY(0) scale(1);}
 }
+
+/* CONTROL ROOM INTERACTION ACKNOWLEDGEMENT SWEEP */
+.backLink,
+.signOutPreview,
+.panelClose,
+.alertAction,
+.contextBack,
+.overviewBack,
+.finishForNowButton,
+.calmStartActions button,
+.approvalQueueItem,
+.approvalQueueActive,
+.prototypePrimary,
+.prototypeSecondary,
+.prototypeApprove,
+.prototypeReturn,
+.prototypeReject,
+.welcomeEnter,
+.welcomeDismiss,
+.criticalAlertActions button{
+  transition:background .14s ease,border-color .14s ease,box-shadow .14s ease,transform .1s ease,color .14s ease;
+}
+
+.backLink:hover,
+.backLink:focus-visible,
+.signOutPreview:not(:disabled):hover,
+.signOutPreview:not(:disabled):focus-visible,
+.panelClose:hover,
+.panelClose:focus-visible,
+.alertAction:hover,
+.alertAction:focus-visible,
+.contextBack:hover,
+.contextBack:focus-visible,
+.overviewBack:hover,
+.overviewBack:focus-visible,
+.finishForNowButton:hover,
+.finishForNowButton:focus-visible,
+.calmStartActions button:hover,
+.calmStartActions button:focus-visible,
+.approvalQueueItem:hover,
+.approvalQueueItem:focus-visible,
+.approvalQueueActive:focus-visible,
+.prototypePrimary:not(:disabled):hover,
+.prototypePrimary:not(:disabled):focus-visible,
+.prototypeSecondary:not(:disabled):hover,
+.prototypeSecondary:not(:disabled):focus-visible,
+.prototypeApprove:not(:disabled):hover,
+.prototypeApprove:not(:disabled):focus-visible,
+.prototypeReturn:not(:disabled):hover,
+.prototypeReturn:not(:disabled):focus-visible,
+.prototypeReject:not(:disabled):hover,
+.prototypeReject:not(:disabled):focus-visible,
+.welcomeEnter:hover,
+.welcomeEnter:focus-visible,
+.welcomeDismiss:hover,
+.welcomeDismiss:focus-visible,
+.criticalAlertActions button:hover,
+.criticalAlertActions button:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(36,91,72,.12);
+}
+
+.backLink:active,
+.signOutPreview:not(:disabled):active,
+.panelClose:active,
+.alertAction:active,
+.contextBack:active,
+.overviewBack:active,
+.finishForNowButton:active,
+.calmStartActions button:active,
+.approvalQueueItem:active,
+.approvalQueueActive:active,
+.prototypePrimary:not(:disabled):active,
+.prototypeSecondary:not(:disabled):active,
+.prototypeApprove:not(:disabled):active,
+.prototypeReturn:not(:disabled):active,
+.prototypeReject:not(:disabled):active,
+.welcomeEnter:active,
+.welcomeDismiss:active,
+.criticalAlertActions button:active{
+  transform:translateY(1px);
+}
+
+.backLink:active,
+.panelClose:active,
+.contextBack:active,
+.overviewBack:active,
+.finishForNowButton:active,
+.calmStartActions button:active,
+.approvalQueueItem:active,
+.prototypeSecondary:not(:disabled):active,
+.prototypeReturn:not(:disabled):active{
+  background:#e7efe7;
+  border-color:#8fae99;
+}
+
+.signOutPreview:not(:disabled):active{
+  background:#f3ead7;
+  border-color:#c9b891;
+}
+
+.alertAction:active,
+.prototypePrimary:not(:disabled):active,
+.prototypeApprove:not(:disabled):active,
+.welcomeEnter:active,
+.criticalAlertActions button:first-child:active{
+  background:#1d4d3c;
+  border-color:#1d4d3c;
+}
+
+.prototypeReject:not(:disabled):active{
+  background:#f3e7e1;
+  border-color:#c7a99b;
+}
+
+.approvalQueueActive{
+  box-shadow:inset 4px 0 0 #46745e;
+}
+.approvalQueueActive:focus-visible{
+  box-shadow:inset 4px 0 0 #46745e,0 0 0 3px rgba(36,91,72,.12);
+}
+
+.welcomeDismiss:active{
+  background:#eef3ed;
+}
+
+.signOutPreview:disabled,
+.prototypePrimary:disabled,
+.prototypeSecondary:disabled,
+.prototypeApprove:disabled,
+.prototypeReturn:disabled,
+.prototypeReject:disabled{
+  cursor:not-allowed;
+  opacity:.45;
+  transform:none;
+  box-shadow:none;
+}
+
 @media (prefers-reduced-motion: reduce){
   .welcomeCard,
   .welcomeName,
@@ -1450,7 +1588,25 @@
   .headerToolActive,
   .menuButton,
   .searchResult,
-  .accessCentreLink{
+  .accessCentreLink,
+  .backLink,
+  .signOutPreview,
+  .panelClose,
+  .alertAction,
+  .contextBack,
+  .overviewBack,
+  .finishForNowButton,
+  .calmStartActions button,
+  .approvalQueueItem,
+  .approvalQueueActive,
+  .prototypePrimary,
+  .prototypeSecondary,
+  .prototypeApprove,
+  .prototypeReturn,
+  .prototypeReject,
+  .welcomeEnter,
+  .welcomeDismiss,
+  .criticalAlertActions button{
     animation:none !important;
     transition:none !important;
     transform:none !important;
