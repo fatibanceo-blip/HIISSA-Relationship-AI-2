@@ -23,6 +23,15 @@ const openAiProviderSummaryPath = path.join(
   "openai-provider-summary",
   "route.js"
 );
+const founderWelcomePath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "founder-welcome",
+  "route.js"
+);
 
 const errors = [];
 
@@ -33,6 +42,7 @@ function requireText(label, source, text) {
 if (!fs.existsSync(pagePath)) errors.push("Founder Control Room preview page is missing.");
 if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security summary endpoint is missing.");
 if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI provider summary endpoint is missing.");
+if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
 
 const authenticatedPagePath = path.join(root, "app", "admin", "control-room", "page.js");
 const authenticatedClientPath = path.join(root, "app", "admin", "control-room", "AuthenticatedControlRoom.js");
@@ -71,6 +81,9 @@ const securitySummary = fs.existsSync(securitySummaryPath)
 const openAiProviderSummary = fs.existsSync(openAiProviderSummaryPath)
   ? fs.readFileSync(openAiProviderSummaryPath, "utf8")
   : "";
+const founderWelcome = fs.existsSync(founderWelcomePath)
+  ? fs.readFileSync(founderWelcomePath, "utf8")
+  : "";
 
 for (const label of [
   "Overview",
@@ -99,6 +112,20 @@ for (const required of [
   "Open in Founder Preview",
   "STAFF DIRECTORY — FOUNDER SIDE",
   "NO STAFF PASSWORD REQUIRED",
+  "FATI BANCE",
+  "FOUNDER",
+  "Overview",
+  "Modules",
+  "Staff & Workspaces",
+  "Approvals",
+  "Search",
+  "Alerts",
+  "FOUNDER SEARCH",
+  "FOUNDER ALERTS",
+  "FounderWelcomeMoment",
+  'fetch("/api/admin/control-room/founder-welcome"',
+  "Open the dedicated Founder staff area",
+  "One visible approval inbox",
 ]) requireText("Control Room shell", page, required);
 
 for (const feature of [
@@ -254,6 +281,25 @@ for (const required of [
   '"Cache-Control": "no-store"',
 ]) requireText("Protected OpenAI provider summary", openAiProviderSummary, required);
 
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
+  '.from("admin_audit_events")',
+  'event_type", "founder_control_room_visit"',
+  'FOUNDER_NAME = "FATI BANCE"',
+  'FOUNDER_ROLE = "FOUNDER"',
+  '"FIRST_VISIT_TODAY"',
+  '"WELCOME_BACK"',
+  '"QUIET_RETURN"',
+  "Good",
+  "Welcome back",
+  "emotionalCheckinRecorded: false",
+  "employeePerformanceScoring: false",
+  '"Cache-Control": "no-store"',
+]) requireText("Founder welcome intelligence endpoint", founderWelcome, required);
+
 for (const registryRule of [
   "export const CONTROL_ROOM_MODULE_REGISTRY",
   "futureExpansionAllowed: true",
@@ -330,6 +376,22 @@ for (const registryRule of [
   "privacy_data_protection",
   "content_moderation",
   "product_quality",
+  "export const HIISSA_PEOPLE_EXPERIENCE_LAYER",
+  "hiissa.people-experience",
+  "HIISSA People Experience Layer",
+  "FATI BANCE",
+  "WELCOME_MOMENTS",
+  "ROTATING_ENCOURAGEMENT",
+  "GENTLE_CHECK_INS",
+  "RECOGNITION_AND_APPRECIATION",
+  "SEASONS_AND_CELEBRATIONS",
+  "POSITIVE_PROGRESS_AND_WINS",
+  "Welcome back, FATI BANCE",
+  "must not become performance surveillance",
+  "Reuse and connect the existing HIISSA Seasons",
+  "Motivation must encourage without manipulation",
+  "peopleExperience",
+  "STAGING_FOUNDER_WELCOME_IMPLEMENTATION_IN_PROGRESS",
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
   "Founder Provider, Subscription & Spend Register",
   "openAiProviderConnection",
@@ -381,6 +443,9 @@ console.log("- Founder Control Room strengthening package is registered and surf
 console.log("- Founder Approval Inbox decision-pack simulation is present and explicitly non-live");
 console.log("- Universal Founder submission gate and seven fictional staff workspace families are registered");
 console.log("- Founder Access Centre is surfaced from the existing Control Room with full Founder oversight and no staff impersonation");
+console.log("- Founder primary navigation is Overview / Modules / Staff & Workspaces / Approvals with Search and Alerts");
+console.log("- Founder welcome intelligence is protected, time-aware and records same-day return continuity");
+console.log("- FATI BANCE / FOUNDER identity treatment and People Experience Layer are registered");
 console.log("- Module 9 provider/subscription/spend register is surfaced with no fabricated billing values");
 console.log("- Module 9 protected OpenAI provider connection layer is Staging-only, Admin-gated and read-only");
 console.log("- Recommend / Share HIISSA referral contract and Staging interface preview are present");
