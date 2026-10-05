@@ -15,6 +15,16 @@ const cssPath = path.join(
   "staff-workspace-preview",
   "page.module.css"
 );
+const staffApiPath = path.join(root, "app", "api", "staff-workspace", "route.js");
+const founderApiPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "staff-approval-inbox",
+  "route.js"
+);
 const registryPath = path.join(root, "lib", "experience-registry.js");
 const controlRoomPath = path.join(
   root,
@@ -42,14 +52,20 @@ function forbidText(label, source, text) {
   if (source.includes(text)) errors.push(`${label}: forbidden ${text}`);
 }
 
-requireFile("Staff workspace route", routePath);
-requireFile("Staff workspace client", clientPath);
-requireFile("Staff workspace styles", cssPath);
-requireFile("Experience Registry", registryPath);
-requireFile("Founder Control Room", controlRoomPath);
+for (const [label, file] of [
+  ["Staff workspace route", routePath],
+  ["Staff workspace client", clientPath],
+  ["Staff workspace styles", cssPath],
+  ["Staff workspace API", staffApiPath],
+  ["Founder staff approval API", founderApiPath],
+  ["Experience Registry", registryPath],
+  ["Founder Control Room", controlRoomPath],
+]) requireFile(label, file);
 
 const route = read(routePath);
 const client = read(clientPath);
+const staffApi = read(staffApiPath);
+const founderApi = read(founderApiPath);
 const registry = read(registryPath);
 const controlRoom = read(controlRoomPath);
 
@@ -63,9 +79,8 @@ for (const required of [
 for (const required of [
   "HIISSA STAFF WORKSPACE",
   "Customer Support",
-  "STAGING · FICTIONAL ONLY",
-  "Sample Customer Support Worker",
-  "Customer Support workspace only",
+  "STAGING · WORKING TEST",
+  "Founder Preview as Customer Support",
   "Assigned Work",
   "Work in Progress",
   "Saved Drafts",
@@ -74,66 +89,126 @@ for (const required of [
   "Completed Outcomes",
   "Notifications",
   "Secure sign out",
-  "No real customer action can happen here.",
+  'fetch("/api/staff-workspace"',
+  "Draft saved in the Staging database.",
+  "One canonical approval request now exists",
   "UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmitLabel",
   "UNIVERSAL_FOUNDER_SUBMISSION_GATE.staffSubmittedConfirmation",
   "UNIVERSAL_FOUNDER_SUBMISSION_GATE.founderRoute",
-  "cannot approve their own submission.",
-  "Nothing has been sent to a customer.",
-  "Approve, Return for Changes or Reject",
-  "Architecture/behaviour approved · visual treatment requires Founder",
-  "External send: Not performed",
+  "External execution is still disabled.",
+  "Approval is not verified completion",
   "Production effect: None",
   "Verify · Record · Report",
-]) requireText("Fictional Customer Support workspace", client, required);
+]) requireText("Working Customer Support workspace", client, required);
 
 for (const forbidden of [
-  "fetch(",
   "mailto:",
   "sms:",
   "wa.me",
-  "window.open(",
   "navigator.share(",
-  "prototypeApprove",
-  'decide("APPROVED',
-]) forbidText("Fictional Customer Support workspace", client, forbidden);
+  "window.open(",
+  "https://api.",
+]) forbidText("Working Customer Support workspace", client, forbidden);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
+  '.from("admin_role_assignments")',
+  '.from("admin_permission_rules")',
+  'role_id", ROLE_ID',
+  'action_id", actionId',
+  'mode: "FOUNDER_PREVIEW"',
+  'mode: "STAFF"',
+  '.from("staff_work_items")',
+  'rpc("hiissa_staff_save_work_item"',
+  'rpc("hiissa_staff_submit_for_processing"',
+  "CUSTOMER_SUPPORT_ROLE_REQUIRED",
+  "STAFF_ACTION_NOT_AUTHORISED",
+  "externalEffectPerformed: false",
+  "productionEffectPerformed: false",
+  '"Cache-Control": "no-store"',
+]) requireText("Protected staff workspace API", staffApi, required);
+
+for (const forbidden of [
+  "mailto:",
+  "sms:",
+  "wa.me",
+  "navigator.share",
+  "OPENAI_API_KEY",
+]) forbidText("Protected staff workspace API", staffApi, forbidden);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
+  '.from("admin_approval_requests")',
+  '.from("staff_work_items")',
+  'rpc(',
+  '"hiissa_founder_resolve_staff_work"',
+  '"approve"',
+  '"return_for_changes"',
+  '"reject"',
+  "approvalIsVerifiedCompletion: false",
+  "externalExecutionEnabled: false",
+  "productionEffectEnabled: false",
+  '"Cache-Control": "no-store"',
+]) requireText("Protected Founder staff approval API", founderApi, required);
 
 for (const required of [
   "export const STAFF_WORKSPACE_SHELL_STANDARD",
-  'status: "founder-approved-fictional-staging-design-to-build"',
+  'status: "founder-approved-fictional-staging-persistent-workflow-implementation-in-progress"',
   "customerSupportPrototype",
-  'status: "STAGING_BUILD_VERIFIED_FOUNDER_VISUAL_TEST_PENDING"',
+  'status: "PERSISTENT_STAGING_WORKFLOW_IMPLEMENTED_BUILD_PENDING"',
   'route: "/staff-workspace-preview"',
   'workspaceId: "customer_support"',
+  "persistentWorkflow",
+  "20261005054230_working_customer_support_founder_gate_staging",
+  "public.staff_work_items",
+  "public.admin_approval_requests",
+  "public.admin_approval_decisions",
+  "public.admin_audit_events",
+  'staffApi: "/api/staff-workspace"',
+  'founderApi: "/api/admin/control-room/staff-approval-inbox"',
+  "FOUNDER_PREVIEW",
+  "APPROVE_PENDING_EXECUTION",
   "Submit for processing",
   "Submitted for processing",
   "Founder Command / Approval Inbox",
-  "NONE_IN_CURRENT_PROTOTYPE",
+  "NONE_IN_CURRENT_WORKING_STAGING_LAYER",
   'productionEffect: "NONE"',
-  "one underlying approval record",
-  "visual treatment only",
+  "zero leftover verification rows",
   "export const UNIVERSAL_FOUNDER_SUBMISSION_GATE",
-]) requireText("Staff workspace Registry contract", registry, required);
+]) requireText("Persistent staff workspace Registry contract", registry, required);
 
 for (const required of [
+  "<WorkingStaffApprovalInbox />",
+  "FOUNDER COMMAND / APPROVAL INBOX — WORKING STAGING QUEUE",
+  'fetch("/api/admin/control-room/staff-approval-inbox"',
   'href="/staff-workspace-preview"',
-  "Open fictional Customer Support workspace",
-  "FOUNDER COMMAND / APPROVAL INBOX — SIMULATION ONLY",
-]) requireText("Founder Inbox workspace connection", controlRoom, required);
+  "Approve",
+  "Return for Changes",
+  "Reject",
+  "ONE CANONICAL APPROVAL RECORD",
+  "EXTERNAL EXECUTION DISABLED",
+  "Historical local-only approval examples remain below",
+]) requireText("Working Founder Inbox connection", controlRoom, required);
 
 if (errors.length) {
-  console.error("\nHIISSA fictional Customer Support workspace contract: FAIL\n");
+  console.error("\nHIISSA working Customer Support / Founder gate contract: FAIL\n");
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
 
-console.log("HIISSA fictional Customer Support workspace contract: PASS");
-console.log("- Protected Staging-only staff route is present");
-console.log("- Customer Support is the first detailed fictional staff workspace");
-console.log("- Shared shell lifecycle is present");
-console.log("- Exact Submit for processing / Submitted for processing wording is preserved");
-console.log("- Staff submission routes conceptually to the existing Founder Command / Approval Inbox");
-console.log("- Staff-side Founder approval controls are absent");
-console.log("- No fetch, external send, native share or Production action is enabled");
-console.log("- One-source-of-truth Founder approval boundary is registered");
-console.log("- Visual treatment remains Founder-preview pending");
+console.log("HIISSA working Customer Support / Founder gate contract: PASS");
+console.log("- Staging-only staff route remains protected");
+console.log("- Staff and Founder Preview as Role modes are separated");
+console.log("- Real staff requires active Customer Support role + permission");
+console.log("- Draft/start/submit actions use protected same-origin APIs");
+console.log("- Submit for processing creates/reuses one canonical Founder approval record");
+console.log("- Founder Approve / Return / Reject uses the working persistent Staging API");
+console.log("- Approval remains distinct from verified completion");
+console.log("- External customer execution and Production effects remain disabled");
+console.log("- Historical prototype evidence remains preserved separately");
