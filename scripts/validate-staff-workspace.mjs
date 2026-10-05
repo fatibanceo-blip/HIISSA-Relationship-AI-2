@@ -238,7 +238,7 @@ for (const required of [
   "export const UNIVERSAL_FOUNDER_SUBMISSION_GATE",
   "HIISSA_PEOPLE_EXPERIENCE_LAYER",
   'implementationStatus:',
-  "CUSTOMER_SUPPORT_STAGING_IMPLEMENTED_BUILD_PENDING",
+  "CUSTOMER_SUPPORT_STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
   'firstImplementedWorkspace: "customer_support"',
   "Founder Preview uses its own role-aware encouragement",
   "preferred_name / display_name / full_name / name",
