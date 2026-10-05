@@ -391,7 +391,7 @@ for (const registryRule of [
   "Reuse and connect the existing HIISSA Seasons",
   "Motivation must encourage without manipulation",
   "peopleExperience",
-  "STAGING_FOUNDER_WELCOME_IMPLEMENTATION_IN_PROGRESS",
+  "STAGING_FOUNDER_WELCOME_DEPLOYED_TEST_PENDING",
   "export const FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD",
   "Founder Provider, Subscription & Spend Register",
   "openAiProviderConnection",
