@@ -77,6 +77,9 @@
   letter-spacing:.1em;
 }
 .headerTool,.headerToolActive{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
   padding:10px 13px;
   border-radius:13px;
   font:inherit;
@@ -93,6 +96,91 @@
   color:#fff;
   border:1px solid #245b48;
   background:#245b48;
+}
+
+.alertBadgeAttention,.alertBadgeCritical{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:20px;
+  height:20px;
+  padding:0 5px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:950;
+  line-height:1;
+}
+.alertBadgeAttention{
+  background:#d79b27;
+  color:#fff;
+}
+.alertBadgeCritical{
+  background:#b42318;
+  color:#fff;
+  box-shadow:0 0 0 3px rgba(180,35,24,.12);
+}
+.headerToolActive .alertBadgeAttention,
+.headerToolActive .alertBadgeCritical{
+  background:#fff;
+  color:#245b48;
+}
+.criticalAlertToast{
+  position:fixed;
+  z-index:1200;
+  top:18px;
+  right:18px;
+  width:min(430px,calc(100vw - 36px));
+  padding:16px;
+  border-radius:18px;
+  border:1px solid #b42318;
+  background:#fff5f3;
+  color:#6f231d;
+  box-shadow:0 22px 70px rgba(93,22,16,.24);
+  animation:criticalAlertIn .42s cubic-bezier(.2,.8,.2,1) both;
+}
+.criticalAlertKicker{
+  margin-bottom:5px;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.13em;
+  color:#b42318;
+}
+.criticalAlertToast strong{
+  display:block;
+  color:#8d2119;
+  font-size:15px;
+}
+.criticalAlertToast p{
+  margin:7px 0 0;
+  color:#79534f;
+  font-size:12px;
+  line-height:1.5;
+}
+.criticalAlertActions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.criticalAlertActions button{
+  border:1px solid #d7aaa6;
+  border-radius:10px;
+  background:#fff;
+  color:#8d2119;
+  padding:8px 10px;
+  font:inherit;
+  font-size:11px;
+  font-weight:850;
+  cursor:pointer;
+}
+.criticalAlertActions button:first-child{
+  background:#b42318;
+  border-color:#b42318;
+  color:#fff;
+}
+@keyframes criticalAlertIn{
+  from{opacity:0;transform:translateY(-12px) scale(.985);}
+  to{opacity:1;transform:translateY(0) scale(1);}
 }
 .backLink,.signOutPreview{
   padding:10px 13px;
@@ -507,10 +595,29 @@
   .pageHeading{display:block;}
   .pageHeading .pill{margin-top:12px;}
   .grid,.contractGrid,.accessCentreGrid,.overviewPathways,.searchResults{grid-template-columns:1fr;}
-  .primaryNav{padding:10px 12px;}
-  .primaryNavItem,.primaryNavActive{padding:8px 11px;font-size:12px;}
+  .primaryNav{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+    padding:10px 12px;
+    overflow:visible;
+  }
+  .primaryNavItem,.primaryNavActive{
+    width:100%;
+    min-height:44px;
+    padding:9px 10px;
+    font-size:12px;
+    text-align:center;
+    white-space:normal;
+  }
   .globalPanel{margin:10px 10px 0;padding:14px;}
   .alertItem{align-items:flex-start;flex-direction:column;}
+  .criticalAlertToast{
+    top:10px;
+    right:10px;
+    width:calc(100vw - 20px);
+    box-sizing:border-box;
+  }
   .sectionHeading{display:block;}
   .sectionHeading .pill{margin-top:10px;}
   .featureTop{display:block;}
@@ -571,6 +678,7 @@
   margin:-4px 0 14px;
 }
 
+.contextBack,
 .overviewBack{
   display:inline-flex;
   align-items:center;
@@ -586,9 +694,27 @@
   font-weight:850;
   cursor:pointer;
 }
+.contextBack{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin:0 0 16px;
+  padding:9px 12px;
+  border:1px solid #cad9cc;
+  border-radius:12px;
+  background:#fffefa;
+  color:#245b48;
+  font:inherit;
+  font-size:13px;
+  font-weight:850;
+  cursor:pointer;
+}
+.contextBack:hover,
+.contextBack:focus-visible,
 .overviewBack:hover{
   background:#f1f7f1;
   border-color:#b9cdbd;
+  outline:none;
 }
 
 .roleGrid{
@@ -914,6 +1040,7 @@
   position:relative;
   z-index:1;
   margin-top:4px;
+  font-family:ui-serif,Georgia,Cambria,"Times New Roman",serif;
   font-size:clamp(36px,8vw,64px);
   line-height:.98;
   font-weight:950;
@@ -1005,7 +1132,7 @@
   100%{opacity:1;transform:translateY(0) scale(1);}
 }
 @media (prefers-reduced-motion: reduce){
-  .welcomeCard,.welcomeName,.welcomeRole{
+  .welcomeCard,.welcomeName,.welcomeRole,.criticalAlertToast{
     animation:none !important;
     transition:none !important;
   }
