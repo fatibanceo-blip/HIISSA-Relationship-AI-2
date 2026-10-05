@@ -81,7 +81,7 @@ for (const required of [
   "Customer Support",
   "STAGING · WORKING TEST",
   '"@supabase/supabase-js"',
-  "← Founder Control Room",
+  "← Back to Staff & Workspaces",
   "actor?.displayIdentity",
   "Assigned Work",
   "Work in Progress",
@@ -206,6 +206,7 @@ for (const required of [
   "FOUNDER ACCESS CENTRE",
   "Departments & staff workspaces",
   "Open in Founder Preview",
+  "founderReturn=staff",
   "STAFF DIRECTORY — FOUNDER SIDE",
   "NO STAFF PASSWORD REQUIRED",
 ]) requireText("Working Founder Inbox / access connection", controlRoom, required);
@@ -227,6 +228,7 @@ console.log("- Staging-only staff route remains protected");
 console.log("- Staff and Founder Preview as Role modes are separated");
 console.log("- Founder browser session uses the same Supabase client storage model as Admin sign-in");
 console.log("- Founder Access Centre provides the Control Room doorway into department workspaces");
+console.log("- Founder preview returns to Staff & Workspaces rather than losing previous context");
 console.log("- Duplicate visible Founder Approval Inbox rendering is blocked");
 console.log("- Real staff requires active Customer Support role + permission");
 console.log("- Draft/start/submit actions use protected same-origin APIs");
