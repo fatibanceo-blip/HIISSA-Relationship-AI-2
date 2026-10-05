@@ -70,7 +70,7 @@ for (const required of [
   "approvedHibernateBuildQueue",
   "mandatory build targets, not indefinite placeholders",
   "calmerStartMode: Object.freeze({",
-  "FOUNDER_APPROVED_IMPLEMENTED_ON_STAGING_BRANCH_BUILD_PENDING",
+  "STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
   "continueWithThisTask",
   "viewAllWorkspaceAreas",
   "returnToNormalWorkspace",
