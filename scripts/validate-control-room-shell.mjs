@@ -183,7 +183,14 @@ for (const required of [
   "FOUNDER ACCESS CENTRE",
   "Departments & staff workspaces",
   "FOUNDER 100% OVERSIGHT",
-  "Open in Founder Preview",
+  "Select ",
+  "aria-pressed={selected}",
+  "ACTIVE DEPARTMENT",
+  "You&apos;re viewing",
+  "Tap to select this department",
+  "Selected · Workspace approved — interface not built yet",
+  "Open {workspace.label} workspace",
+  "Interactive areas acknowledge your selection; informational cards remain informational.",
   "STAFF DIRECTORY — FOUNDER SIDE",
   "NO STAFF PASSWORD REQUIRED",
   "FATI BANCE",
@@ -251,6 +258,14 @@ for (const required of [
   ".calmStartPrivacy",
   ".overviewHeadingActions",
   ".finishForNowButton",
+  ".accessCentreCardSelected",
+  ".accessCentreSelect",
+  ".accessCentreSelectedPill",
+  ".selectedWorkspaceContext",
+  ".overviewPathway:active",
+  ".primaryNavItem:active",
+  ".navItem:active",
+  "@media (prefers-reduced-motion: reduce)",
 ]) requireText("Founder Control Room styles", styles, required);
 
 const welcomeNameStart = styles.indexOf(".welcomeName{");
@@ -281,6 +296,20 @@ for (const feature of [
   "hiissaRest",
   "hiissaAlongside",
 ]) requireText("Registry-driven feature visibility", page, feature);
+
+for (const required of [
+  "interactionFeedbackRule",
+  "departmentSelectionRule",
+  "consistencyRule",
+  "mobileTouchRule",
+  "informational cards must not pretend to be interactive",
+  "visibly activate exactly one current department",
+]) requireText("Founder interaction feedback Registry contract", registry, required);
+
+for (const required of [
+  "function InfoCard({ title, value, detail })",
+  "<article className={styles.infoCard}>",
+]) requireText("Informational cards remain non-interactive", page, required);
 
 
 for (const required of [
@@ -762,6 +791,9 @@ console.log("- Founder Control Room strengthening package is registered and surf
 console.log("- Founder Approval Inbox decision-pack simulation is present and explicitly non-live");
 console.log("- Universal Founder submission gate and seven fictional staff workspace families are registered");
 console.log("- Founder Access Centre is surfaced from the existing Control Room with full Founder oversight and no staff impersonation");
+console.log("- Founder department cards visibly select one active department and expose honest working/unbuilt states");
+console.log("- Interactive Founder controls use calm pressed/active feedback while informational cards remain non-interactive");
+console.log("- Reduced-motion preferences remain protected for interaction feedback");
 console.log("- Founder primary navigation is Overview / Modules / Staff & Workspaces / Approvals with Search and Alerts");
 console.log("- Founder welcome intelligence is protected, time-aware and records same-day return continuity");
 console.log("- FATI BANCE / FOUNDER identity treatment and People Experience Layer are registered");
