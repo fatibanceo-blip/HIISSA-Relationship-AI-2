@@ -1435,8 +1435,24 @@
   100%{opacity:1;transform:translateY(0) scale(1);}
 }
 @media (prefers-reduced-motion: reduce){
-  .welcomeCard,.welcomeName,.welcomeRole,.criticalAlertToast{
+  .welcomeCard,
+  .welcomeName,
+  .welcomeRole,
+  .criticalAlertToast,
+  .accessCentreCard,
+  .accessCentreSelect,
+  .overviewPathway,
+  .primaryNavItem,
+  .primaryNavActive,
+  .navItem,
+  .navActive,
+  .headerTool,
+  .headerToolActive,
+  .menuButton,
+  .searchResult,
+  .accessCentreLink{
     animation:none !important;
     transition:none !important;
+    transform:none !important;
   }
 }
