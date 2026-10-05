@@ -95,7 +95,7 @@ for (const forbidden of [
   "window.open(",
   "navigator.share(",
   "prototypeApprove",
-  "decide("APPROVED",
+  'decide("APPROVED',
 ]) forbidText("Fictional Customer Support workspace", client, forbidden);
 
 for (const required of [
