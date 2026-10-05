@@ -463,6 +463,111 @@
 .overviewPathway strong{font-size:16px;color:#245b48;}
 .overviewPathway small{font-size:12px;color:#6c7a72;}
 
+.activityTimelineSection{
+  margin-top:22px;
+  padding:20px;
+  border-radius:20px;
+  border:1px solid rgba(49,91,70,.14);
+  background:linear-gradient(145deg,#fffefa,#f6faf5);
+}
+.activityTimeline{
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+}
+.activityEvent{
+  display:grid;
+  grid-template-columns:minmax(132px,180px) minmax(0,1fr);
+  gap:14px;
+  align-items:start;
+  padding:14px;
+  border-radius:15px;
+  border:1px solid #e0e7e0;
+  background:#fff;
+}
+.activityTime{
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  width:max-content;
+  max-width:100%;
+  padding:7px 9px;
+  border-radius:999px;
+  background:#edf4ee;
+  color:#315f4c;
+  font-size:11px;
+  font-weight:900;
+}
+.activityEventBody>strong{
+  color:#29493d;
+  font-size:14px;
+}
+.activityEventBody p{
+  margin:5px 0 0;
+  color:#69766f;
+  font-size:12px;
+  line-height:1.5;
+}
+.activityMeta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+.activityMeta span{
+  padding:5px 7px;
+  border-radius:999px;
+  background:#f3f6f2;
+  color:#69766f;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.02em;
+}
+.timestampStandardNote{
+  margin-top:14px;
+  padding:12px 13px;
+  border-radius:13px;
+  background:#f0f5ef;
+  border:1px solid #dce6dd;
+  color:#607068;
+  font-size:11px;
+  line-height:1.55;
+}
+.timestampStandardNote strong{color:#315f4c;}
+.approvalQueueTime{
+  margin-top:5px;
+  color:#65766d;
+  font-size:10px;
+  font-weight:800;
+}
+.recordTimeGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin:12px 0 16px;
+}
+.recordTimeGrid>div{
+  padding:11px 12px;
+  border-radius:13px;
+  border:1px solid #dde6de;
+  background:#f7faf6;
+}
+.recordTimeGrid span{
+  display:block;
+  margin-bottom:5px;
+  color:#758178;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.recordTimeGrid strong{
+  display:block;
+  color:#315f4c;
+  font-size:12px;
+  line-height:1.4;
+}
+
 .section{
   margin-top:26px;
   padding-top:24px;
@@ -623,7 +728,8 @@
   .content{padding:18px 14px 24px;}
   .pageHeading{display:block;}
   .pageHeading .pill{margin-top:12px;}
-  .grid,.contractGrid,.accessCentreGrid,.overviewPathways,.searchResults{grid-template-columns:1fr;}
+  .grid,.contractGrid,.accessCentreGrid,.overviewPathways,.searchResults,.recordTimeGrid{grid-template-columns:1fr;}
+  .activityEvent{grid-template-columns:1fr;gap:8px;}
   .primaryNav{
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
