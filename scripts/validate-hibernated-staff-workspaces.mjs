@@ -157,6 +157,12 @@ for (const required of [
   "changes presentation only",
   "does not remove work, lower priority or",
   "create a manager signal",
+  "useEffect",
+  "useRef",
+  "scrollIntoView",
+  'tabIndex={-1}',
+  "focus({ preventScroll: true })",
+  "(prefers-reduced-motion: reduce)",
 ]) requireText("Shared Calmer Start mode", calmerStartMode, required);
 
 for (const required of [
