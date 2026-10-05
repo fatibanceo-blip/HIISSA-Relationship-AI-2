@@ -646,6 +646,7 @@ export async function POST(request) {
   if (action === "checkin_snooze" || action === "checkin_resolve") {
     const localDate = String(body?.localDate || "").slice(0, 10);
     const localHour = Number(body?.localHour);
+    const daypart = String(body?.daypart || "");
     const state = action === "checkin_snooze" ? "snoozed" : "resolved";
 
     const result = await recordGentleCheckInState({
@@ -655,6 +656,7 @@ export async function POST(request) {
       actorMode: actor.mode,
       localDate,
       localHour,
+      daypart,
       state,
       isFounderPreview: actor.mode === "FOUNDER_PREVIEW",
     });
