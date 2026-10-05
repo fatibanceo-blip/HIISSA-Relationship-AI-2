@@ -456,6 +456,7 @@ async function staffWelcomePayload(actor, request) {
         ? "Founder Preview · Customer Support"
         : "Customer Support",
     localDate,
+    localHour,
     welcomeMode: mode,
     isFounderPreview: actor.mode === "FOUNDER_PREVIEW",
   });
