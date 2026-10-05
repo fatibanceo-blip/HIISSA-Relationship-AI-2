@@ -279,7 +279,7 @@ for (const required of [
   'visitAuditEvent: "staff_workspace_visit"',
   "antiRepeatMessages: true",
   "founderTypographyLeak: false",
-  "FOUNDER_AND_CUSTOMER_SUPPORT_STAGING_IMPLEMENTED_BUILD_PENDING",
+  "FOUNDER_AND_CUSTOMER_SUPPORT_STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
   "minimumHoursBetweenOffers: 48",
   "answerRecordedInAdminAudit: false",
   "performanceScoreCreated: false",
