@@ -11,6 +11,7 @@ import {
   formatHiissaFullRecordTime,
   formatHiissaRecordTime,
 } from "../../lib/hiissa-record-time.js";
+import GentleCheckIn from "../../components/people-experience/GentleCheckIn.js";
 import styles from "./page.module.css";
 
 const TABS = [
@@ -112,6 +113,8 @@ export default function StaffWorkspacePreview() {
   const [internalNote, setInternalNote] = useState("");
   const [welcome, setWelcome] = useState(null);
   const [welcomeVisible, setWelcomeVisible] = useState(false);
+  const [checkInVisible, setCheckInVisible] = useState(false);
+  const [calmStart, setCalmStart] = useState(false);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -209,7 +212,9 @@ export default function StaffWorkspacePreview() {
       setActor(data.actor);
       if (includeWelcome && data.welcome?.status === "READY") {
         setWelcome(data.welcome);
-        setWelcomeVisible(Boolean(data.welcome.showFullWelcome));
+        const showFullWelcome = Boolean(data.welcome.showFullWelcome);
+        setWelcomeVisible(showFullWelcome);
+        setCheckInVisible(!showFullWelcome && Boolean(data.welcome.checkIn?.due));
       }
       setItem(data.item);
       setDraft(data.item.draftResponse || "");
@@ -293,6 +298,8 @@ export default function StaffWorkspacePreview() {
     setActor(null);
     setWelcome(null);
     setWelcomeVisible(false);
+    setCheckInVisible(false);
+    setCalmStart(false);
     setLoading(false);
   }
 
@@ -369,7 +376,24 @@ export default function StaffWorkspacePreview() {
       <StaffWelcomeMoment
         welcome={welcome}
         visible={welcomeVisible}
-        onDismiss={() => setWelcomeVisible(false)}
+        onDismiss={() => {
+          setWelcomeVisible(false);
+          if (welcome?.checkIn?.due) setCheckInVisible(true);
+        }}
+      />
+      <GentleCheckIn
+        open={checkInVisible}
+        displayName={welcome?.displayName || actor?.displayIdentity || ""}
+        roleLabel={welcome?.roleLabel || workspace?.label || "CUSTOMER SUPPORT"}
+        choices={welcome?.checkIn?.choices}
+        privacyText={welcome?.checkIn?.privacy}
+        previewOnly={Boolean(welcome?.checkIn?.previewOnly)}
+        onClose={() => setCheckInVisible(false)}
+        onCalmStart={() => {
+          setActiveTab("assigned");
+          setCalmStart(true);
+          setCheckInVisible(false);
+        }}
       />
       <section className={styles.shell}>
         {welcome && !welcomeVisible && welcome.mode === "QUIET_RETURN" ? (
@@ -442,6 +466,26 @@ export default function StaffWorkspacePreview() {
             untouched.
           </p>
         </section>
+
+        {calmStart ? (
+          <section className={styles.calmStartNotice} role="status">
+            <div>
+              <div className={styles.kicker}>CALM START</div>
+              <strong>Starting with Assigned Work only.</strong>
+              <p>
+                Nothing has been removed and your workload, priority and performance
+                records are unchanged. All normal workspace tabs remain available.
+              </p>
+            </div>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={() => setCalmStart(false)}
+            >
+              Show normal workspace
+            </button>
+          </section>
+        ) : null}
 
         <div className={styles.workspaceGrid}>
           <nav className={styles.nav} aria-label="Customer Support workspace">
