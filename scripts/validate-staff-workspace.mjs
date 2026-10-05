@@ -436,7 +436,7 @@ for (const required of [
   "hiissa.people-experience.milestones-seasons-human-moments",
   "hiissa.people-experience.since-you-were-away",
   "calmerStartMode: Object.freeze({",
-  "FOUNDER_APPROVED_IMPLEMENTED_ON_STAGING_BRANCH_BUILD_PENDING",
+  "STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING",
   "Gentle Check-In → I could use a calmer start or It's a heavy day",
   "The full normal workspace navigation is temporarily reduced.",
   "continueWithThisTask",
