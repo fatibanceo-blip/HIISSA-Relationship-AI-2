@@ -395,7 +395,7 @@ for (const required of [
   'display: "BROWSER_LOCAL_TIME"',
   "immutableOriginalRequired: true",
   "createdAndUpdatedRemainDistinct: true",
-  "privacy-safe operational metadata only",
+  "Privacy-safe operational metadata only",
   '"Cache-Control": "no-store"',
 ]) requireText("Founder activity timeline endpoint", activityTimeline, required);
 
@@ -404,7 +404,7 @@ for (const required of [
   "formatHiissaFullRecordTime",
   "hiissaTimestampRecord",
   'hour12: true',
-  '"Today ·',
+  "Today ·",
   "toISOString()",
   "hiissaResolvedTimeZone",
 ]) requireText("Shared HIISSA record time formatter", recordTime, required);
