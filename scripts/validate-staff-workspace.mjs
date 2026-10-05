@@ -57,6 +57,18 @@ const calmerStartModeStylePath = path.join(
   "people-experience",
   "CalmerStartMode.module.css"
 );
+const calmerStartMomentPath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "CalmerStartMoment.js"
+);
+const calmerStartMomentStylePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "CalmerStartMoment.module.css"
+);
 const workdayCloseComponentPath = path.join(
   root,
   "components",
@@ -130,6 +142,8 @@ for (const [label, file] of [
   ["Automatic Gentle Check-In styles", automaticGentleCheckInStylePath],
   ["Calmer Start mode", calmerStartModePath],
   ["Calmer Start styles", calmerStartModeStylePath],
+  ["Calmer Start Moment", calmerStartMomentPath],
+  ["Calmer Start Moment styles", calmerStartMomentStylePath],
   ["Workday Close component", workdayCloseComponentPath],
   ["Workday Close styles", workdayCloseStylePath],
   ["Private Appreciation component", privateAppreciationComponentPath],
@@ -151,6 +165,8 @@ const automaticGentleCheckIn = read(automaticGentleCheckInPath);
 const automaticGentleCheckInStyles = read(automaticGentleCheckInStylePath);
 const calmerStartMode = read(calmerStartModePath);
 const calmerStartModeStyles = read(calmerStartModeStylePath);
+const calmerStartMoment = read(calmerStartMomentPath);
+const calmerStartMomentStyles = read(calmerStartMomentStylePath);
 const workdayCloseComponent = read(workdayCloseComponentPath);
 const workdayCloseStyles = read(workdayCloseStylePath);
 const privateAppreciationComponent = read(privateAppreciationComponentPath);
@@ -222,6 +238,8 @@ for (const required of [
   "checkInVisible",
   "welcome?.checkIn?.due",
   "CalmerStartMode",
+  "CalmerStartMoment",
+  "calmStartMomentOpen",
   "calmStart",
   "calmStartExpanded",
   'taskTitle={item.title}',
@@ -543,6 +561,31 @@ for (const required of [
   "@media (prefers-reduced-motion: reduce)",
   "font-family: Arial, Helvetica, sans-serif;",
 ]) requireText("Shared gentle check-in styles", gentleCheckInStyles, required);
+
+for (const required of [
+  "HIISSA · CALMER START MOMENT",
+  "Help me breathe for a moment",
+  "Give me a quiet moment",
+  "Help me focus on one thing",
+  "For the next moment, nothing needs your attention except this.",
+  "Start gently",
+  "Skip — I’m ready to continue normally",
+  "Choose a different calming option",
+  "Private by default.",
+  "not stored",
+  "not change your workload",
+]) requireText("Calmer Start Moment", calmerStartMoment, required);
+
+for (const required of [
+  ".overlay",
+  ".card",
+  ".options",
+  ".breathCircle",
+  ".quietArea",
+  ".focusArea",
+  "@media(max-width:640px)",
+  "@media(prefers-reduced-motion:reduce)",
+]) requireText("Calmer Start Moment styles", calmerStartMomentStyles, required);
 
 for (const required of [
   "HIISSA · CALMER START",
