@@ -11,7 +11,7 @@ import {
   formatHiissaFullRecordTime,
   formatHiissaRecordTime,
 } from "../../lib/hiissa-record-time.js";
-import GentleCheckIn from "../../components/people-experience/GentleCheckIn.js";
+import AutomaticGentleCheckIn from "../../components/people-experience/AutomaticGentleCheckIn.js";
 import WorkdayClose from "../../components/people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../../components/people-experience/PrivateAppreciation.js";
 import HibernatedStaffWorkspace from "../../components/staff-workspace/HibernatedStaffWorkspace.js";
@@ -124,7 +124,6 @@ function CustomerSupportWorkspacePreview() {
   const [internalNote, setInternalNote] = useState("");
   const [welcome, setWelcome] = useState(null);
   const [welcomeVisible, setWelcomeVisible] = useState(false);
-  const [checkInVisible, setCheckInVisible] = useState(false);
   const [calmStart, setCalmStart] = useState(false);
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
   const [workdayCloseLoading, setWorkdayCloseLoading] = useState(false);
@@ -229,7 +228,6 @@ function CustomerSupportWorkspacePreview() {
         setWelcome(data.welcome);
         const showFullWelcome = Boolean(data.welcome.showFullWelcome);
         setWelcomeVisible(showFullWelcome);
-        setCheckInVisible(!showFullWelcome && Boolean(data.welcome.checkIn?.due));
       }
       setItem(data.item);
       setDraft(data.item.draftResponse || "");
@@ -239,6 +237,61 @@ function CustomerSupportWorkspacePreview() {
     } catch {
       setError("The protected Staging staff record could not be loaded.");
       setLoading(false);
+    }
+  }
+
+  async function requestCareEligibility(context) {
+    if (!session?.access_token) return null;
+
+    const params = new URLSearchParams({
+      care: "1",
+      localDate: context.localDate,
+      localHour: String(context.localHour),
+      timeZone: context.timeZone || "local-device",
+    });
+
+    try {
+      const response = await fetch(`/api/staff-workspace?${params.toString()}`, {
+        method: "GET",
+        cache: "no-store",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.checkIn) return null;
+      return data.checkIn;
+    } catch {
+      return null;
+    }
+  }
+
+  async function recordCareState(state, context) {
+    if (!session?.access_token) return null;
+
+    const action =
+      state === "snoozed" ? "checkin_snooze" : "checkin_resolve";
+
+    try {
+      const response = await fetch("/api/staff-workspace", {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action,
+          localDate: context.localDate,
+          localHour: context.localHour,
+          daypart: context.daypart,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.careState) return null;
+      return data.careState;
+    } catch {
+      return null;
     }
   }
 
@@ -355,7 +408,6 @@ function CustomerSupportWorkspacePreview() {
     setActor(null);
     setWelcome(null);
     setWelcomeVisible(false);
-    setCheckInVisible(false);
     setCalmStart(false);
     setWorkdayCloseOpen(false);
     setWorkdayCloseLoading(false);
@@ -488,22 +540,25 @@ function CustomerSupportWorkspacePreview() {
         visible={welcomeVisible}
         onDismiss={() => {
           setWelcomeVisible(false);
-          if (welcome?.checkIn?.due) setCheckInVisible(true);
         }}
       />
-      <GentleCheckIn
-        open={checkInVisible}
+      <AutomaticGentleCheckIn
+        enabled={
+          authState === "ready" &&
+          Boolean(session?.access_token) &&
+          Boolean(item) &&
+          !welcomeVisible
+        }
         displayName={welcome?.displayName || actor?.displayIdentity || ""}
         roleLabel={welcome?.roleLabel || workspace?.label || "CUSTOMER SUPPORT"}
-        choices={welcome?.checkIn?.choices}
-        privacyText={welcome?.checkIn?.privacy}
-        daypart={welcome?.checkIn?.daypart}
-        previewOnly={Boolean(welcome?.checkIn?.previewOnly)}
-        onClose={() => setCheckInVisible(false)}
+        privacyText="Your answer stays private. HIISSA records only that care was offered, snoozed or resolved — never which emotional answer you chose."
+        previewOnly={actor?.mode === "FOUNDER_PREVIEW"}
+        pause={Boolean(busy) || workdayCloseOpen || welcomeVisible}
+        requestEligibility={requestCareEligibility}
+        recordState={recordCareState}
         onCalmStart={() => {
           setActiveTab("assigned");
           setCalmStart(true);
-          setCheckInVisible(false);
         }}
       />
       <WorkdayClose
