@@ -164,7 +164,7 @@ for (const required of [
   "export const STAFF_WORKSPACE_SHELL_STANDARD",
   'status: "founder-approved-fictional-staging-persistent-workflow-implementation-in-progress"',
   "founderAccessCentre",
-  'status: "IMPLEMENTED_STAGING_BUILD_PENDING"',
+  'status: "STAGING_BUILD_VERIFIED_FOUNDER_PRACTICAL_TEST_PENDING"',
   'primaryHome: "Founder Control Room Overview"',
   "100% authorised access across HIISSA",
   "must never silently impersonate the employee",
