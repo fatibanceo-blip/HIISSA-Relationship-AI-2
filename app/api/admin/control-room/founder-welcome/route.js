@@ -256,6 +256,7 @@ export async function POST(request) {
     actorMode: "FOUNDER",
     contextLabel: "Founder Control Room",
     localDate,
+    localHour,
     welcomeMode: mode,
     isFounderPreview: false,
   });
