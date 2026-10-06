@@ -307,7 +307,7 @@ for (const required of [
   "Guest is not an error; Skip is not a failed conversion.",
   '"/api/admin/control-room/auth-sync-health"',
   "Open Auth & Sync",
-  "2 LIVE SOURCES",
+  "3 LIVE SOURCES",
   "Authentication & Sync reliability cross-reference",
   "No second incident record is created.",
   "AUTH & SYNC · SECURITY CROSS-REFERENCE",
@@ -315,6 +315,16 @@ for (const required of [
   "Different device sessions are normal.",
   "Historical pre-timestamp claimed handoffs recognised safely",
   "Current claimed-at evidence gaps",
+  "AI & PRODUCT",
+  "AI & PRODUCT INTELLIGENCE",
+  "AI & Product reliability cross-reference",
+  "No second evaluator or duplicate incident is created.",
+  "AI QUALITY RELIABILITY",
+  "QUALITY FAILURES",
+  "REGENERATION NEEDS REVIEW",
+  "HIISSA AI & Product Intelligence",
+  "Open AI & Product",
+  "5 current Overview sources",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
@@ -533,6 +543,10 @@ for (const required of [
   "may not silently redesign, approve or release HIISSA",
   "do-not-profile-vulnerability-for-engagement",
   "HIISSA Product Intelligence exists to help the Founder understand and improve HIISSA",
+  "controlRoomRouting",
+  "Module 6 reuses the same Module 8 evidence",
+  "Do not create a second incident or second evaluator.",
+  "Surface Module 8 only when its connected evidence is DEGRADED",
 ]) requireText("AI & Product Intelligence Registry standard", registry, required);
 
 for (const required of [
