@@ -3889,6 +3889,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
   const [openAiLoading, setOpenAiLoading] = useState(true);
   const [openAiSummary, setOpenAiSummary] = useState(null);
   const [openAiError, setOpenAiError] = useState("");
+  const [systemHealthLoading, setSystemHealthLoading] = useState(true);
+  const [systemHealth, setSystemHealth] = useState(null);
+  const [systemHealthError, setSystemHealthError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -3948,10 +3951,85 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadSystemOperationsHealth() {
+      if (!adminDataClient) {
+        if (active) {
+          setSystemHealthError(
+            "The protected Admin data connection is not configured for this environment."
+          );
+          setSystemHealthLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setSystemHealthError(
+            "Your Founder Admin session could not be confirmed for provider-health monitoring."
+          );
+          setSystemHealthLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          "/api/admin/control-room/system-operations-health",
+          {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setSystemHealthError(
+            "The protected System & Operations health source could not be loaded."
+          );
+          setSystemHealthLoading(false);
+          return;
+        }
+
+        setSystemHealth(data);
+        setSystemHealthError("");
+        setSystemHealthLoading(false);
+      } catch {
+        if (!active) return;
+        setSystemHealthError(
+          "The protected System & Operations health source could not be loaded."
+        );
+        setSystemHealthLoading(false);
+      }
+    }
+
+    loadSystemOperationsHealth();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   function formatNumber(value) {
     return typeof value === "number" && Number.isFinite(value)
       ? new Intl.NumberFormat("en-GB").format(value)
       : "—";
+  }
+
+  function formatUsage(usage) {
+    if (!usage || typeof usage.used !== "number") return "—";
+    return typeof usage.limit === "number"
+      ? `${formatNumber(usage.used)} / ${formatNumber(usage.limit)}`
+      : formatNumber(usage.used);
   }
 
   function formatCosts(costs) {
@@ -3996,6 +4074,42 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
               ? "The protected OpenAI organization source is temporarily rate limited."
               : openAiError || "Protected OpenAI organization telemetry is not yet available.";
 
+  const systemDisplayStatus = systemHealthLoading
+    ? "CHECKING"
+    : systemHealthError
+      ? "UNAVAILABLE"
+      : systemHealth?.displayHealthStatus || "MONITORING";
+
+  const supabaseHealth = systemHealth?.providers?.supabase || {};
+  const resendHealth = systemHealth?.providers?.resend || {};
+  const vercelHealth = systemHealth?.providers?.vercel || {};
+  const systemFounderView = systemHealth?.founderView || {};
+
+  function providerStatusFor(providerId) {
+    if (providerId === "openai-api") return openAiStatus.replaceAll("_", " ");
+    if (providerId === "supabase") {
+      return systemHealthLoading
+        ? "CHECKING"
+        : statusLabel(supabaseHealth.status || "MONITORING");
+    }
+    if (providerId === "resend") {
+      return systemHealthLoading
+        ? "CHECKING"
+        : statusLabel(resendHealth.status || "MONITORING");
+    }
+    if (providerId === "vercel") {
+      return systemHealthLoading
+        ? "CHECKING"
+        : statusLabel(vercelHealth.status || "MONITORING");
+    }
+
+    return providerId === "cloudflare"
+      ? systemHealth?.providers?.cloudflare?.turnstileConfigured
+        ? "CONFIGURED · HEALTH TELEMETRY PARTIAL"
+        : "SOURCE TO CONNECT"
+      : "SOURCE TO CONNECT";
+  }
+
   const verificationSnapshot = [
     {
       label: "Vercel",
@@ -4004,13 +4118,13 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
     },
     {
       label: "Supabase",
-      value: "FREE PLAN · 2 ACTIVE PROJECTS",
-      detail: "HIISSA organisation plan was verified as Free; Production and Staging projects were ACTIVE_HEALTHY at the latest check.",
+      value: "FREE PLAN · 2 PROJECTS VERIFIED",
+      detail: "Development verification confirmed the HIISSA organisation Free plan and two projects. Current live database health is shown separately above.",
     },
     {
       label: "Resend",
-      value: "DOMAIN + USAGE VERIFIED",
-      detail: "hiissa.com is verified for sending. Latest development check showed 42 / 3000 monthly emails and 3 / 100 daily emails.",
+      value: "DOMAIN + USAGE SOURCE VERIFIED",
+      detail: "Development verification confirmed hiissa.com and Resend account usage visibility. Current live usage is shown separately above when the Staging credential has the required read permission.",
     },
     {
       label: "OpenAI API",
@@ -4029,7 +4143,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <h2>{module.label}</h2>
           <p>{module.purpose}</p>
         </div>
-        <StatusPill label="PARTIAL · VERIFIED SNAPSHOT" />
+        <StatusPill label={statusLabel(systemDisplayStatus)} />
       </div>
 
       <section className={styles.notice}>
@@ -4043,7 +4157,140 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
 
       <PeopleExperienceOperationalHealth authenticated context="system" />
 
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>LIVE PROVIDER HEALTH — PROTECTED STAGING SOURCES</div>
+            <h3>What HIISSA can genuinely verify right now</h3>
+          </div>
+          <StatusPill label={statusLabel(systemDisplayStatus)} compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          Live service health is kept separate from billing snapshots. A provider
+          can be operational while billing telemetry is still not connected, and
+          missing telemetry permission is not automatically treated as a service
+          failure.
+        </p>
+
+        {systemHealthError ? (
+          <section className={styles.errorPanel}>
+            <strong>System Operations monitoring unavailable</strong>
+            <div>{systemHealthError}</div>
+          </section>
+        ) : null}
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="SUPABASE DATABASE HEALTH"
+            value={
+              systemHealthLoading
+                ? "Checking…"
+                : statusLabel(supabaseHealth.status || "MONITORING")
+            }
+            detail={
+              supabaseHealth.detail ||
+              "Checking the protected privacy-safe database health source."
+            }
+          />
+          <InfoCard
+            title="SUPABASE HEALTH PROBE"
+            value={
+              systemHealthLoading
+                ? "Checking…"
+                : typeof supabaseHealth.latencyMs === "number"
+                  ? `${supabaseHealth.latencyMs} ms`
+                  : "—"
+            }
+            detail="Operational response time for the aggregate Staging health probe only; no conversation content is returned."
+          />
+          <InfoCard
+            title="RESEND PROVIDER HEALTH"
+            value={
+              systemHealthLoading
+                ? "Checking…"
+                : statusLabel(resendHealth.status || "MONITORING")
+            }
+            detail={
+              resendHealth.detail ||
+              "Checking the existing Resend Staging provider source."
+            }
+          />
+          <InfoCard
+            title="RESEND MONTHLY EMAILS"
+            value={
+              systemHealthLoading
+                ? "Checking…"
+                : formatUsage(resendHealth.monthlyEmails)
+            }
+            detail={
+              typeof resendHealth.monthlyRemainingPercent === "number"
+                ? `${resendHealth.monthlyRemainingPercent}% of the connected monthly quota remains.`
+                : "Shown only when the existing Staging credential can read account-level usage."
+            }
+          />
+          <InfoCard
+            title="RESEND DAILY EMAILS"
+            value={
+              systemHealthLoading
+                ? "Checking…"
+                : formatUsage(resendHealth.dailyEmails)
+            }
+            detail="Current daily account usage from the provider source when authorised."
+          />
+          <InfoCard
+            title="RESEND VERIFIED DOMAINS"
+            value={
+              systemHealthLoading
+                ? "Checking…"
+                : String(resendHealth.verifiedDomains ?? "—")
+            }
+            detail="Provider domain status only. No email contents or recipients are exposed."
+          />
+          <InfoCard
+            title="VERCEL RUNTIME"
+            value={
+              systemHealthLoading
+                ? "Checking…"
+                : statusLabel(vercelHealth.status || "MONITORING")
+            }
+            detail={
+              vercelHealth.detail ||
+              "Current deployment/runtime evidence only; billing is a separate source."
+            }
+          />
+          <InfoCard
+            title="LIVE PROVIDER ATTENTION"
+            value={
+              systemHealthLoading
+                ? "Checking…"
+                : String(systemHealth?.needsAttentionCount ?? 0)
+            }
+            detail={
+              systemFounderView.doINeedToAct ||
+              "No Founder repair action is currently required."
+            }
+          />
+        </div>
+
+        <div className={styles.featureMeta}>
+          <span>READ ONLY</span>
+          <span>STAGING ONLY</span>
+          <span>NO RAW PROVIDER CREDENTIALS</span>
+          <span>NO PAYMENT CARD DETAILS</span>
+          <span>NO AUTOMATIC MONEY MOVEMENT</span>
+        </div>
+      </section>
+
       <div className={styles.grid}>
+        <InfoCard
+          title="SYSTEM & OPERATIONS HEALTH"
+          value={statusLabel(systemDisplayStatus)}
+          detail={
+            systemFounderView.verification ||
+            "Connected live provider health is shown separately from unconnected billing/usage sources."
+          }
+        />
         <InfoCard
           title="KNOWN CURRENT SERVICES"
           value={String(providers.length)}
@@ -4193,8 +4440,8 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>VERIFIED DEVELOPMENT SNAPSHOT — 4 OCTOBER 2026</div>
-            <h3>What we can already confirm</h3>
+            <div className={styles.kicker}>VERIFIED DEVELOPMENT SNAPSHOT — HISTORICAL EVIDENCE</div>
+            <h3>What was verified outside the live provider-health source</h3>
           </div>
           <StatusPill label="SNAPSHOT + PROTECTED SOURCE" compact />
         </div>
@@ -4231,13 +4478,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
                   <div className={styles.featureId}>{provider.category}</div>
                 </div>
                 <StatusPill
-                  label={
-                    provider.id === "openai-api"
-                      ? openAiStatus.replaceAll("_", " ")
-                      : provider.currentFinancialSource.includes("NOT YET") || provider.currentFinancialSource.includes("REQUIRES")
-                        ? "SOURCE TO CONNECT"
-                        : "SOURCE PARTIAL"
-                  }
+                  label={providerStatusFor(provider.id)}
                   compact
                 />
               </div>
@@ -4296,6 +4537,55 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           billing cycle, renewal date, currency, usage source and alert thresholds.
           New records stay unverified until supporting evidence is connected.
         </p>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>FOUNDER OPERATIONAL VIEW</div>
+            <h3>What happened, what HIISSA did, and what happens next</h3>
+          </div>
+        </div>
+
+        <div className={styles.featureList}>
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT HAPPENED</strong></div>
+            <p>{systemFounderView.whatHappened || "Checking connected provider evidence."}</p>
+            <p><strong>Severity:</strong> {systemFounderView.severity || "Checking…"}</p>
+            <p><strong>User impact:</strong> {systemFounderView.userImpact || "Checking…"}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT HIISSA ALREADY DID</strong></div>
+            <p>{systemFounderView.whatHiissaAlreadyDid || "Read protected provider evidence without changing the providers."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>DO I NEED TO ACT?</strong></div>
+            <p>{systemFounderView.doINeedToAct || "No Founder repair action is currently required."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>RECOVERY / NEXT STEP</strong></div>
+            <p>{systemFounderView.recoveryNextStep || "Continue read-only provider monitoring."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>CURRENT RESOLUTION</strong></div>
+            <p>{systemFounderView.verification || "Verification pending."}</p>
+            <p><strong>Resolution:</strong> {systemFounderView.finalResolution || "Monitoring"}</p>
+          </article>
+
+          <details className={styles.featureCard}>
+            <summary><strong>TECHNICAL DETAILS — expand</strong></summary>
+            <p>
+              Raw API keys, passwords, tokens, payment-card details and
+              conversation content are intentionally excluded from this view.
+            </p>
+            <p><strong>Environment:</strong> STAGING</p>
+            <p><strong>Production effect:</strong> NONE</p>
+          </details>
+        </div>
       </section>
 
       <section className={styles.detailBlueprint}>
