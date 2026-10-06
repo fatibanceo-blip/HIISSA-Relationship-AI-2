@@ -64,6 +64,10 @@ export default function AutomaticGentleCheckIn({
   async function evaluateCare({ manual = false } = {}) {
     if (!enabled || pause || checking || open) return;
 
+    const snoozeStillActive =
+      snoozedUntil && snoozedUntil.getTime() > Date.now();
+    if (!manual && snoozeStillActive) return;
+
     const activeElement =
       typeof document !== "undefined" ? document.activeElement : null;
     const tagName = String(activeElement?.tagName || "").toLowerCase();
@@ -160,11 +164,13 @@ export default function AutomaticGentleCheckIn({
     if (!enabled) return undefined;
 
     const timer = window.setInterval(() => {
-      if (!open && !pause && reminder !== "pending") evaluateCare();
+      if (!open && !pause && !snoozedUntil && reminder !== "pending") {
+        evaluateCare();
+      }
     }, pollMs);
 
     return () => window.clearInterval(timer);
-  }, [enabled, open, pause, pollMs, reminder]);
+  }, [enabled, open, pause, pollMs, reminder, snoozedUntil]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -189,8 +195,8 @@ export default function AutomaticGentleCheckIn({
     const delay = Math.max(0, snoozedUntil.getTime() - Date.now());
     const timer = window.setTimeout(() => {
       setSnoozedUntil(null);
-      setReminder("");
-      setOpen(true);
+      setOpen(false);
+      setReminder("pending");
     }, delay);
 
     return () => window.clearTimeout(timer);
@@ -207,7 +213,7 @@ export default function AutomaticGentleCheckIn({
     setSnoozedUntil(null);
   }
 
-  async function snooze() {
+  async function snooze({ hideReminder = false } = {}) {
     let nextUntil = new Date(Date.now() + snoozeMs);
 
     if (typeof recordState === "function") {
@@ -222,7 +228,7 @@ export default function AutomaticGentleCheckIn({
     }
 
     setOpen(false);
-    setReminder("snoozed");
+    setReminder(hideReminder ? "snoozed_hidden" : "snoozed");
     setSnoozedUntil(nextUntil);
   }
 
@@ -258,7 +264,7 @@ export default function AutomaticGentleCheckIn({
         }}
       />
 
-      {!open && reminder ? (
+      {!open && reminder && reminder !== "snoozed_hidden" ? (
         <aside
           className={styles.reminder}
           role="status"
@@ -282,7 +288,11 @@ export default function AutomaticGentleCheckIn({
             >
               Respond now
             </button>
-            <button type="button" className={styles.snooze} onClick={snooze}>
+            <button
+              type="button"
+              className={styles.snooze}
+              onClick={() => snooze({ hideReminder: true })}
+            >
               Not now
             </button>
           </div>
