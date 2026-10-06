@@ -1001,6 +1001,60 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     },
 
     {
+      label: "Safety Support Health",
+      detail: "Safety, Privacy & Moderation · protection-boundary operational health",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.safetyPrivacyModeration,
+          "module5-health"
+        ),
+    },
+    {
+      label: "Safety boundary events",
+      detail: "Safety, Privacy & Moderation · recent privacy-safe boundary activity",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.safetyPrivacyModeration,
+          "module5-boundary-events"
+        ),
+    },
+    {
+      label: "Privacy & Consent health",
+      detail: "Safety, Privacy & Moderation · privacy and consent monitoring boundaries",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.safetyPrivacyModeration,
+          "module5-privacy-consent"
+        ),
+    },
+    {
+      label: "Safety evidence integrity",
+      detail: "Safety, Privacy & Moderation · evidence preservation and authorised review boundary",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.safetyPrivacyModeration,
+          "module5-evidence-integrity"
+        ),
+    },
+    {
+      label: "Reserved emergency escalation",
+      detail: "Safety, Privacy & Moderation · police, emergency and exceptional access boundaries",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.safetyPrivacyModeration,
+          "module5-reserved-escalation"
+        ),
+    },
+    {
+      label: "Safety & Privacy reliability",
+      detail: "Failures & Reliability · safety, privacy and moderation operational conditions",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.failuresReliability,
+          "module6-safety-privacy"
+        ),
+    },
+    {
       label: "People Experience reliability",
       detail: "Failures & Reliability · People Experience operational failures and recovery",
       action: () =>
@@ -3835,6 +3889,472 @@ function AdminSecurityReliabilityCrossReference({ authenticated }) {
   );
 }
 
+function SafetyPrivacyOperationalHealth({
+  authenticated,
+  context = "specialist",
+}) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadHealth() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          "/api/admin/control-room/safety-privacy-health",
+          {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError(
+            "The protected Safety, Privacy & Moderation source could not be loaded."
+          );
+          setLoading(false);
+          return;
+        }
+
+        setHealth(data);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError(
+          "The protected Safety, Privacy & Moderation source could not be loaded."
+        );
+        setLoading(false);
+      }
+    }
+
+    loadHealth();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const displayStatus = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : health?.displayHealthStatus || "MONITORING";
+  const founderView = health?.founderView || {};
+  const counts = health?.counts || {};
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>
+            SAFETY, PRIVACY & MODERATION · LIVE STAGING EVIDENCE
+          </div>
+          <h3>
+            {context === "failures"
+              ? "Safety/privacy reliability without opening private conversations"
+              : "Is HIISSA's protection boundary evidence available and behaving as intended?"}
+          </h3>
+        </div>
+        <StatusPill label={statusLabel(displayStatus)} compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        This view reads the existing protected boundary-event source. It shows
+        operational evidence only. Private conversation content and raw boundary
+        metadata stay outside this routine Founder view.
+      </p>
+
+      {!authenticated ? (
+        <div className={styles.emptyState}>
+          Live Safety, Privacy & Moderation evidence is available only inside the
+          authenticated Staging Control Room.
+        </div>
+      ) : null}
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>Safety/privacy monitoring unavailable</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+
+      {authenticated ? (
+        <>
+          <div className={styles.grid}>
+            <InfoCard
+              title="CURRENT STATUS"
+              value={statusLabel(displayStatus)}
+              detail={
+                founderView.verification ||
+                "HIISSA is checking the protected safety/privacy source."
+              }
+            />
+            <InfoCard
+              title={`BOUNDARY EVENTS · ${health?.evidenceWindowDays || 30} DAYS`}
+              value={
+                loading
+                  ? "Checking…"
+                  : String(counts.boundaryEvents ?? "—")
+              }
+              detail="A boundary event is not automatically a failure. HIISSA keeps activity separate from verified operational failure."
+            />
+            <InfoCard
+              title="EXPLICIT OPERATIONAL FAILURES"
+              value={
+                loading
+                  ? "Checking…"
+                  : String(counts.explicitOperationalFailures ?? "—")
+              }
+              detail="Only explicitly recorded failure/error states are counted here."
+            />
+            <InfoCard
+              title="FOUNDER ACTION"
+              value={
+                loading
+                  ? "Checking…"
+                  : health?.founderActionRequired
+                    ? "REQUIRED"
+                    : "NOT REQUIRED"
+              }
+              detail={
+                founderView.doINeedToAct ||
+                "No Founder action is currently established by this source."
+              }
+            />
+          </div>
+
+          <div className={styles.featureList}>
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>WHAT HAPPENED</strong>
+                <StatusPill label={statusLabel(displayStatus)} compact />
+              </div>
+              <p>
+                {founderView.whatHappened ||
+                  "HIISSA is checking the connected operational evidence."}
+              </p>
+              <p>
+                <strong>Severity:</strong>{" "}
+                {founderView.severity || "Checking…"}
+              </p>
+              <p>
+                <strong>User impact:</strong>{" "}
+                {founderView.userImpact ||
+                  "No user impact has been established from this source."}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>WHAT HIISSA ALREADY DID</strong>
+              </div>
+              <p>
+                {founderView.whatHiissaAlreadyDid ||
+                  "HIISSA is reading the protected source without exposing private conversation content."}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>RECOVERY / NEXT STEP</strong>
+              </div>
+              <p>
+                {founderView.recoveryNextStep ||
+                  "Continue privacy-safe monitoring and verify any future operational condition before closure."}
+              </p>
+            </article>
+          </div>
+        </>
+      ) : null}
+    </section>
+  );
+}
+
+function SafetyPrivacyModerationModule({
+  module,
+  authenticated,
+  onOverview,
+  onBack,
+}) {
+  const [recent, setRecent] = useState([]);
+  const [loadingRecent, setLoadingRecent] = useState(Boolean(authenticated));
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoadingRecent(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadRecent() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setLoadingRecent(false);
+          return;
+        }
+
+        const response = await fetch(
+          "/api/admin/control-room/safety-privacy-health",
+          {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        setRecent(
+          response.ok && Array.isArray(data?.recentBoundaryEvents)
+            ? data.recentBoundaryEvents
+            : []
+        );
+        setLoadingRecent(false);
+      } catch {
+        if (!active) return;
+        setRecent([]);
+        setLoadingRecent(false);
+      }
+    }
+
+    loadRecent();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  return (
+    <>
+      <FounderContextBack onBack={onBack} />
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>MODULE 5 — LIVE STAGING READ-ONLY</div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill label="MONITORING" />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>Protection systems, not private-life surveillance.</strong>
+        <p>
+          This Safety Control Centre shows minimum-necessary operational evidence.
+          Sensitive case evidence remains behind Authorised Review or separately
+          approved Exceptional Access. Routine monitoring does not expose private
+          conversation content.
+        </p>
+      </section>
+
+      <ControlRoomAreaNavigator
+        id="module5-find"
+        title="Safety, Privacy & Moderation areas"
+        areas={[
+          ["Safety Support Health", "module5-health"],
+          ["Boundary Events", "module5-boundary-events"],
+          ["Privacy & Consent", "module5-privacy-consent"],
+          ["Evidence Integrity", "module5-evidence-integrity"],
+          ["Reserved Escalation", "module5-reserved-escalation"],
+        ]}
+      />
+
+      <div id="module5-health" className={styles.moduleJumpTarget}>
+        <SafetyPrivacyOperationalHealth
+          authenticated={authenticated}
+          context="specialist"
+        />
+      </div>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module5-boundary-events"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>BOUNDARY EVENTS</div>
+            <h3>Recent operational boundary activity</h3>
+          </div>
+          <StatusPill label="PRIVACY-SAFE" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          These cards contain only minimum-necessary operational fields. Raw
+          metadata and private conversation content are deliberately not returned
+          to this routine Founder view.
+        </p>
+
+        {loadingRecent ? (
+          <div className={styles.emptyState}>Checking Staging boundary evidence…</div>
+        ) : recent.length === 0 ? (
+          <div className={styles.emptyState}>
+            No boundary events are recorded in the current evidence window. HIISSA
+            does not convert no activity into a false Healthy claim.
+          </div>
+        ) : (
+          <div className={styles.feedbackList}>
+            {recent.map((event, index) => (
+              <article
+                className={styles.feedbackItem}
+                key={`${event.created_at || "boundary"}-${index}`}
+              >
+                <div className={styles.featureMeta}>
+                  <span>
+                    {humaniseAuditToken(event.boundary_type) || "Boundary type not supplied"}
+                  </span>
+                  <span>
+                    {humaniseAuditToken(event.response_status) || "Status not supplied"}
+                  </span>
+                </div>
+                <p>
+                  <strong>
+                    {humaniseAuditToken(event.event_type) || "Boundary event"}
+                  </strong>
+                </p>
+                <p className={styles.auditReadableDetail}>
+                  Action:{" "}
+                  {humaniseAuditToken(event.action_taken) || "Not supplied"}
+                </p>
+                <p className={styles.auditReadableTime}>
+                  <strong>Recorded:</strong>{" "}
+                  {event.created_at
+                    ? formatHiissaRecordTime(event.created_at)
+                    : "Time not supplied"}
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module5-privacy-consent"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>PRIVACY & CONSENT</div>
+            <h3>What this connected source can — and cannot — prove</h3>
+          </div>
+          <StatusPill label="MONITORING" compact />
+        </div>
+        <div className={styles.grid}>
+          <InfoCard
+            title="BOUNDARY SOURCE"
+            value="CONNECTED"
+            detail="The existing Staging boundary-events source is read through the protected Founder gate."
+          />
+          <InfoCard
+            title="PRIVATE CONVERSATIONS"
+            value="NOT EXPOSED"
+            detail="Routine operational health does not return private conversation content."
+          />
+          <InfoCard
+            title="CONSENT PROPAGATION"
+            value="NOT YET FULLY LIVE-WIRED"
+            detail="This source alone does not prove withdrawal propagation, consent expiry or every partner-access boundary."
+          />
+          <InfoCard
+            title="YOUNG HIISSA"
+            value="SAME PARENT MODULE"
+            detail="Young HIISSA safety remains governed here rather than creating a duplicate safety system."
+          />
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module5-evidence-integrity"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>EVIDENCE INTEGRITY</div>
+            <h3>Operational evidence stays separate from sensitive case evidence</h3>
+          </div>
+          <StatusPill label="AUTHORISED REVIEW BOUNDARY" compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          The Control Room may report that operational evidence exists, when it
+          was recorded and the pathway state. Original sensitive evidence,
+          provenance detail and case material remain behind the appropriate
+          authorised review boundary and must preserve their history.
+        </p>
+        <div className={styles.featureMeta}>
+          <span>ORIGINAL EVIDENCE: NEVER SILENTLY REWRITTEN</span>
+          <span>RAW BOUNDARY METADATA: NOT RETURNED HERE</span>
+          <span>PRIVATE CONTENT: NOT RETURNED HERE</span>
+          <span>AMENDMENTS: MUST PRESERVE HISTORY</span>
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module5-reserved-escalation"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>RESERVED ESCALATION</div>
+            <h3>High-risk real-world escalation remains separately gated</h3>
+          </div>
+          <StatusPill label="RESERVED · NOT ENABLED" compact />
+        </div>
+        <div className={styles.grid}>
+          <InfoCard
+            title="POLICE / EMERGENCY DIRECT ESCALATION"
+            value="NOT ENABLED"
+            detail="Requires its own legal pathway, safeguarding review, authority agreement, jurisdiction handling, integration testing and Founder release approval."
+          />
+          <InfoCard
+            title="BREAK-GLASS"
+            value="NOT ENABLED"
+            detail="Exceptional access remains separate from normal operational viewing."
+          />
+          <InfoCard
+            title="REFERRAL DELIVERY VERIFICATION"
+            value="NOT YET SEPARATELY LIVE-WIRED"
+            detail="A boundary event is not proof that an external referral was received or accepted."
+          />
+          <InfoCard
+            title="PRODUCTION EFFECT"
+            value="NONE"
+            detail="This Staging read-only monitoring batch does not activate any Production safety pathway."
+          />
+        </div>
+      </section>
+    </>
+  );
+}
+
 function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }) {
   return (
     <>
@@ -3845,7 +4365,7 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
           <h2>{module.label}</h2>
           <p>{module.purpose}</p>
         </div>
-        <StatusPill label="5 LIVE SOURCES" />
+        <StatusPill label="6 LIVE SOURCES" />
       </div>
 
       <section className={styles.notice}>
@@ -3862,6 +4382,7 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
         id="module6-find"
         title="Failures & Reliability areas"
         areas={[
+          ["Safety, Privacy & Moderation", "module6-safety-privacy"],
           ["People Experience", "module6-people"],
           ["Authentication & Sync", "module6-auth-sync"],
           ["AI & Product", "module6-ai-product"],
@@ -3869,6 +4390,21 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
           ["Admin Security & Audit", "module6-admin-security"],
         ]}
       />
+
+      <div id="module6-safety-privacy" className={styles.moduleJumpTarget}>
+        <section className={styles.notice}>
+          <strong>Safety, Privacy & Moderation reliability cross-reference</strong>
+          <p>
+            Module 5 owns the Safety Control Centre. Module 6 reuses that same
+            protected source when a recorded operational condition becomes a
+            reliability issue. No second safety incident source is created.
+          </p>
+        </section>
+        <SafetyPrivacyOperationalHealth
+          authenticated={authenticated}
+          context="failures"
+        />
+      </div>
 
       <div id="module6-people" className={styles.moduleJumpTarget}>
         <PeopleExperienceOperationalHealth authenticated context="failures" />
@@ -3999,6 +4535,17 @@ function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
 
   if (module.id === CONTROL_ROOM_MODULES.adminSecurityAudit && authenticated) {
     return <AdminSecurityAuditModule module={module} onOverview={onOverview} onBack={onBack} />;
+  }
+
+  if (module.id === CONTROL_ROOM_MODULES.safetyPrivacyModeration && authenticated) {
+    return (
+      <SafetyPrivacyModerationModule
+        module={module}
+        authenticated={authenticated}
+        onOverview={onOverview}
+        onBack={onBack}
+      />
+    );
   }
 
   if (module.id === CONTROL_ROOM_MODULES.failuresReliability && authenticated) {
