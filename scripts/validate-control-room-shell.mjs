@@ -360,6 +360,7 @@ for (const required of [
   "people_experience_checkin_offered",
   "people_experience_checkin_snoozed",
   "people_experience_checkin_resolved",
+  "people_experience_operational_recovery",
   "PEOPLE_EXPERIENCE_PRIVACY_BOUNDARY_FAILURE",
   "DAILY_MAXIMUM_EXCEEDED",
   "DAYPART_DUPLICATE_OFFER",
@@ -367,6 +368,8 @@ for (const required of [
   "CONNECTED_NO_ACTIVITY",
   "HIISSA_TECHNICAL_OPERATIONS",
   "observedAutomaticRecoveryAttempts",
+  "technicalAttentionRecoveryEvents",
+  "latestObservedRecovery",
   "productionEffectEnabled: false",
 ]) requireText("People Experience health endpoint", peopleExperienceHealth, required);
 
