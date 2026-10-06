@@ -464,7 +464,7 @@ for (const required of [
   "materialMigrationChangeRequiresFounderApproval: true",
   "possibleIdentityConflicts",
   "claimedMissingClaimedAt",
-  "different devices may have different sessions",
+  "Different devices may have different sessions",
   "productionEffectEnabled: false",
 ]) requireText("Auth & Sync health endpoint", authSyncHealth, required);
 
