@@ -262,6 +262,12 @@ export default function AutomaticGentleCheckIn({
       if (result?.snoozedUntil) {
         const serverUntil = new Date(result.snoozedUntil);
         if (Number.isFinite(serverUntil.getTime())) nextUntil = serverUntil;
+      } else if (!result && typeof recordOperationalEvent === "function") {
+        void recordOperationalEvent("care_state_persistence_degraded", {
+          ...nowContext(),
+          daypart,
+          reason: "SNOOZED_STATE_NOT_CONFIRMED",
+        });
       }
     }
 
