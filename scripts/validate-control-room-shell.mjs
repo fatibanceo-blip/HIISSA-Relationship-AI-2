@@ -78,6 +78,15 @@ const aiProductHealthPath = path.join(
   "ai-product-health",
   "route.js"
 );
+const usersIdentityHealthPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "users-identity-health",
+  "route.js"
+);
 const safetyPrivacyHealthPath = path.join(
   root,
   "app",
@@ -137,6 +146,7 @@ if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome i
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
 if (!fs.existsSync(aiProductHealthPath)) errors.push("Protected AI & Product health endpoint is missing.");
+if (!fs.existsSync(usersIdentityHealthPath)) errors.push("Protected Users & Identity health endpoint is missing.");
 if (!fs.existsSync(safetyPrivacyHealthPath)) errors.push("Protected Safety, Privacy & Moderation health endpoint is missing.");
 if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activity timeline endpoint is missing.");
 if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
@@ -201,6 +211,9 @@ const authSyncHealth = fs.existsSync(authSyncHealthPath)
   : "";
 const aiProductHealth = fs.existsSync(aiProductHealthPath)
   ? fs.readFileSync(aiProductHealthPath, "utf8")
+  : "";
+const usersIdentityHealth = fs.existsSync(usersIdentityHealthPath)
+  ? fs.readFileSync(usersIdentityHealthPath, "utf8")
   : "";
 const safetyPrivacyHealth = fs.existsSync(safetyPrivacyHealthPath)
   ? fs.readFileSync(safetyPrivacyHealthPath, "utf8")
@@ -333,7 +346,7 @@ for (const required of [
   "Guest is not an error; Skip is not a failed conversion.",
   '"/api/admin/control-room/auth-sync-health"',
   "Open Auth & Sync",
-  "6 LIVE SOURCES",
+  "7 LIVE SOURCES",
   "Authentication & Sync reliability cross-reference",
   "No second incident record is created.",
   "AUTH & SYNC · SECURITY CROSS-REFERENCE",
@@ -350,7 +363,17 @@ for (const required of [
   "REGENERATION NEEDS REVIEW",
   "HIISSA AI & Product Intelligence",
   "Open AI & Product",
-  "7 current Overview sources",
+  "8 current Overview sources",
+  "Users & Identity areas",
+  "Account & Identity Health",
+  "Ownership Integrity",
+  "Account State",
+  "Guest Continuity",
+  "Privacy Boundaries",
+  '"/api/admin/control-room/users-identity-health"',
+  "Open Users & Identity",
+  "7 LIVE SOURCES",
+  "8 current Overview sources",
   "Safety, Privacy & Moderation areas",
   "Safety Support Health",
   "Boundary Events",
@@ -359,8 +382,8 @@ for (const required of [
   "Reserved Escalation",
   '"/api/admin/control-room/safety-privacy-health"',
   "Open Safety, Privacy & Moderation",
-  "6 LIVE SOURCES",
-  "7 current Overview sources",
+  "7 LIVE SOURCES",
+  "8 current Overview sources",
   "System & Operations provider health",
   "Open System & Operations",
   "SYSTEM & OPERATIONS",
@@ -414,7 +437,7 @@ for (const required of [
   "Admin Security & Audit reliability cross-reference",
   "security incident source is created.",
   "ADMIN SECURITY RELIABILITY",
-  "6 LIVE SOURCES",
+  "7 LIVE SOURCES",
   '.replaceAll("_", " ")',
 ]) requireText("Control Room shell", page, required);
 
@@ -907,6 +930,32 @@ for (const required of [
   'environment !== "production"',
   'verificationClient.auth.getUser(accessToken)',
   '.from("admin_users")',
+  'adminClient.auth.admin.listUsers',
+  '.from("conversations")',
+  '.from("guest_migration_handoffs")',
+  'AUTH_INSPECTION_CAP = 1000',
+  'displayHealthStatus',
+  'inspectionCapped',
+  'emailAddressesReturned: false',
+  'accountIdentifiersReturned: false',
+  'conversationTitlesReturned: false',
+  'messageContentReturned: false',
+  'tokenHashesReturned: false',
+  'payloadReturned: false',
+  'mutationEnabled: false',
+  'mergeEnabled: false',
+  'banUnbanEnabled: false',
+  'entitlementChangeEnabled: false',
+  'loginAsUserEnabled: false',
+  'automaticAccountMergePerformed: false',
+  'productionEffectEnabled: false',
+]) requireText("Protected Users & Identity health", usersIdentityHealth, required);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
   '.from("boundary_events")',
   'displayHealthStatus',
   'monitoringStatus: sourceAvailable ? "CONNECTED" : "SOURCE_UNAVAILABLE"',
@@ -1271,6 +1320,20 @@ for (const registryRule of [
   "NATIVE_PHONE_SHARE",
   "Referral/invitation links bring the recipient to HIISSA.",
 ]) requireText("Registry", registry, registryRule);
+
+for (const required of [
+  "FOUNDER_USERS_IDENTITY_STANDARD",
+  "canonicalModuleId: CONTROL_ROOM_MODULES.usersIdentity",
+  'protectedServerRoute: "/api/admin/control-room/users-identity-health"',
+  "no-user-email-addresses-returned-to-the-aggregate-control-room-source",
+  "no-conversation-titles-returned",
+  "no-message-content-returned",
+  "no-auth-tokens-or-session-secrets-returned",
+  "no-guest-migration-token-hashes-or-payloads-returned",
+  "no-automatic-account-merge",
+  "The initial Staging source inspects up to 1000 Auth accounts per request.",
+  "The Founder should be able to know whether account identity and ownership are coherent",
+]) requireText("Users & Identity Registry standard", registry, required);
 
 for (const required of [
   "FOUNDER_SAFETY_PRIVACY_MODERATION_STANDARD",
