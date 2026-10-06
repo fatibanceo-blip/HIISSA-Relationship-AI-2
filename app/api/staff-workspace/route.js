@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import {
   prepareGentleCheckIn,
   recordGentleCheckInState,
+  recordPeopleExperienceOperationalEvent,
 } from "../../../lib/people-experience/gentle-checkin.js";
 
 export const dynamic = "force-dynamic";
@@ -630,7 +631,8 @@ export async function POST(request) {
           ? "submit_for_processing"
           : action === "workday_close" ||
               action === "checkin_snooze" ||
-              action === "checkin_resolve"
+              action === "checkin_resolve" ||
+              action === "checkin_operational_event"
             ? "view_assigned_work"
             : "";
 
@@ -641,6 +643,37 @@ export async function POST(request) {
   const actor = await verifyActor(request, permissionAction);
   if (!actor.ok) {
     return noStoreJson({ status: actor.reason }, actor.status);
+  }
+
+  if (action === "checkin_operational_event") {
+    const localDate = String(body?.localDate || "").slice(0, 10);
+    const localHour = Number(body?.localHour);
+    const daypart = String(body?.daypart || "");
+    const event = String(body?.event || "");
+    const reason = String(body?.reason || "").slice(0, 120);
+
+    const result = await recordPeopleExperienceOperationalEvent({
+      adminClient: actor.adminClient,
+      actorUserId: actor.userId,
+      moduleId: MODULE_ID,
+      actorMode: actor.mode,
+      event,
+      localDate,
+      localHour,
+      daypart,
+      reason,
+    });
+
+    if (!result.ok) {
+      return noStoreJson({ status: result.reason }, 400);
+    }
+
+    return noStoreJson({
+      status: "PEOPLE_EXPERIENCE_OPERATIONAL_EVENT_RECORDED",
+      operationalEvent: result,
+      answerRecorded: false,
+      productionEffectPerformed: false,
+    });
   }
 
   if (action === "checkin_snooze" || action === "checkin_resolve") {
