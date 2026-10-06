@@ -241,10 +241,6 @@ for (const required of [
   "Submitted for processing",
   "recordTimeGrid",
   "HIISSA timestamp rule:",
-  "Gentle Check-In was offered",
-  "HIISSA deferred Gentle Check-In to a safer moment",
-  "People Experience state persistence needs Technical Operations",
-  "verification_state",
   "GentleCheckIn",
   "checkInVisible",
   "calmStart",
@@ -355,6 +351,14 @@ for (const required of [
   "STAGING BUILT · FOUNDER TESTING",
   "Production hibernation deployment",
 ]) requireText("Founder Access Centre staging-versus-hibernation truth", page, required);
+
+for (const required of [
+  "Gentle Check-In was offered",
+  "HIISSA deferred Gentle Check-In to a safer moment",
+  "People Experience state persistence needs Technical Operations",
+  "verification_state",
+  "HIISSA People Experience",
+]) requireText("Founder activity timeline endpoint", activityTimeline, required);
 
 for (const required of [
   "supersededInterpretationPreserved",
