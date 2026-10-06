@@ -315,6 +315,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             onOpenAuthSync={() =>
               chooseModule(CONTROL_ROOM_MODULES.authSync)
             }
+            onOpenAiProduct={() =>
+              chooseModule(CONTROL_ROOM_MODULES.aiProduct)
+            }
           />
         ) : null}
 
@@ -368,6 +371,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 }
                 onOpenAuthSync={() =>
                   chooseModule(CONTROL_ROOM_MODULES.authSync)
+                }
+                onOpenAiProduct={() =>
+                  chooseModule(CONTROL_ROOM_MODULES.aiProduct)
                 }
                 onShowFullOverview={() => setCalmStart(false)}
               />
@@ -452,6 +458,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           securityResponse,
           peopleResponse,
           authSyncResponse,
+          aiProductResponse,
         ] = await Promise.all([
           fetch("/api/admin/control-room/staff-approval-inbox", {
             method: "GET",
@@ -477,6 +484,12 @@ function FounderAlertButton({ authenticated, active, onClick }) {
             credentials: "same-origin",
             headers,
           }),
+          fetch("/api/admin/control-room/ai-product-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
         ]);
 
         const [
@@ -484,11 +497,13 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           securityData,
           peopleData,
           authSyncData,
+          aiProductData,
         ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
+          aiProductResponse.json().catch(() => null),
         ]);
 
         if (!mounted) return;
@@ -525,12 +540,25 @@ function FounderAlertButton({ authenticated, active, onClick }) {
         ].includes(authSyncDisplayStatus)
           ? 1
           : 0;
+        const aiProductDisplayStatus =
+          aiProductResponse.ok && aiProductData
+            ? String(aiProductData.displayHealthStatus || "")
+            : "";
+        const aiProductAttention = [
+          "NEEDS_ATTENTION",
+          "DEGRADED",
+          "UNAVAILABLE",
+          "CRITICAL",
+        ].includes(aiProductDisplayStatus)
+          ? 1
+          : 0;
 
         const explicitCritical =
           Number(securityData?.criticalCount || 0) +
           Number(approvalData?.criticalCount || 0) +
           (peopleDisplayStatus === "CRITICAL" ? 1 : 0) +
-          (authSyncDisplayStatus === "CRITICAL" ? 1 : 0);
+          (authSyncDisplayStatus === "CRITICAL" ? 1 : 0) +
+          (aiProductDisplayStatus === "CRITICAL" ? 1 : 0);
         const criticalCount = Number.isFinite(explicitCritical)
           ? Math.max(0, explicitCritical)
           : 0;
@@ -550,7 +578,8 @@ function FounderAlertButton({ authenticated, active, onClick }) {
             Math.max(0, pendingApprovals) +
             securityAttention +
             peopleAttention +
-            authSyncAttention,
+            authSyncAttention +
+            aiProductAttention,
           criticalCount,
           criticalMessage,
         });
@@ -830,6 +859,7 @@ function FounderAlertsPanel({
   onOpenApprovals,
   onOpenFailures,
   onOpenAuthSync,
+  onOpenAiProduct,
 }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [pending, setPending] = useState(null);
@@ -838,6 +868,7 @@ function FounderAlertsPanel({
   const [criticalMessage, setCriticalMessage] = useState("");
   const [peopleHealth, setPeopleHealth] = useState(null);
   const [authSyncHealth, setAuthSyncHealth] = useState(null);
+  const [aiProductHealth, setAiProductHealth] = useState(null);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -864,6 +895,7 @@ function FounderAlertsPanel({
           securityResponse,
           peopleResponse,
           authSyncResponse,
+          aiProductResponse,
         ] = await Promise.all([
           fetch("/api/admin/control-room/staff-approval-inbox", {
             method: "GET",
@@ -889,6 +921,12 @@ function FounderAlertsPanel({
             credentials: "same-origin",
             headers,
           }),
+          fetch("/api/admin/control-room/ai-product-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
         ]);
 
         const [
@@ -896,11 +934,13 @@ function FounderAlertsPanel({
           securityData,
           peopleData,
           authSyncData,
+          aiProductData,
         ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
+          aiProductResponse.json().catch(() => null),
         ]);
 
         if (!active) return;
@@ -929,6 +969,11 @@ function FounderAlertsPanel({
           String(authSyncData?.displayHealthStatus || "") === "CRITICAL"
             ? 1
             : 0;
+        const aiProductCritical =
+          aiProductResponse.ok &&
+          String(aiProductData?.displayHealthStatus || "") === "CRITICAL"
+            ? 1
+            : 0;
 
         if (securityResponse.ok && securityData) {
           setSecurityStatus(securityData.status || null);
@@ -944,7 +989,8 @@ function FounderAlertsPanel({
             securityCritical +
               approvalCritical +
               peopleCritical +
-              authSyncCritical
+              authSyncCritical +
+              aiProductCritical
           )
         );
 
@@ -958,6 +1004,12 @@ function FounderAlertsPanel({
           setAuthSyncHealth(authSyncData);
         } else {
           setAuthSyncHealth(null);
+        }
+
+        if (aiProductResponse.ok && aiProductData) {
+          setAiProductHealth(aiProductData);
+        } else {
+          setAiProductHealth(null);
         }
 
         setLoading(false);
@@ -1099,6 +1151,39 @@ function FounderAlertsPanel({
           ) : null}
         </article>
 
+        <article
+          className={
+            ["NEEDS_ATTENTION", "DEGRADED", "UNAVAILABLE", "CRITICAL"].includes(
+              String(aiProductHealth?.displayHealthStatus || "")
+            )
+              ? styles.alertItemAttention
+              : styles.alertItem
+          }
+        >
+          <div>
+            <strong>HIISSA AI & Product Intelligence</strong>
+            <p>
+              {loading
+                ? "Checking the connected AI & Product intelligence source…"
+                : !aiProductHealth
+                  ? "This source could not be confirmed right now."
+                  : aiProductHealth.displayHealthStatus === "MONITORING"
+                    ? "Quality Evaluator evidence is connected and monitored. HIISSA does not claim full Healthy while approved language, regeneration-sequence and provider/model correlation telemetry remain partial."
+                    : aiProductHealth.founderView?.doINeedToAct ||
+                      "A connected AI & Product quality signal needs attention."}
+            </p>
+          </div>
+          {aiProductHealth ? (
+            <button
+              type="button"
+              className={styles.alertAction}
+              onClick={onOpenAiProduct}
+            >
+              Open AI & Product →
+            </button>
+          ) : null}
+        </article>
+
         <article className={styles.alertItem}>
           <div>
             <strong>More Founder alert sources</strong>
@@ -1119,6 +1204,7 @@ function ControlRoomOverviewLiveSummary({
   onOpenAlerts,
   onOpenFailures,
   onOpenAuthSync,
+  onOpenAiProduct,
 }) {
   const [state, setState] = useState({
     loading: Boolean(authenticated),
@@ -1126,6 +1212,7 @@ function ControlRoomOverviewLiveSummary({
     security: null,
     people: null,
     authSync: null,
+    aiProduct: null,
     sourceErrors: 0,
   });
 
@@ -1137,6 +1224,7 @@ function ControlRoomOverviewLiveSummary({
         security: null,
         people: null,
         authSync: null,
+        aiProduct: null,
         sourceErrors: 0,
       });
       return;
@@ -1161,6 +1249,7 @@ function ControlRoomOverviewLiveSummary({
           securityResponse,
           peopleResponse,
           authSyncResponse,
+          aiProductResponse,
         ] = await Promise.all([
           fetch("/api/admin/control-room/staff-approval-inbox", {
             method: "GET",
@@ -1186,6 +1275,12 @@ function ControlRoomOverviewLiveSummary({
             credentials: "same-origin",
             headers,
           }),
+          fetch("/api/admin/control-room/ai-product-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
         ]);
 
         const [
@@ -1193,11 +1288,13 @@ function ControlRoomOverviewLiveSummary({
           securityData,
           peopleData,
           authSyncData,
+          aiProductData,
         ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
+          aiProductResponse.json().catch(() => null),
         ]);
 
         if (!active) return;
@@ -1212,11 +1309,14 @@ function ControlRoomOverviewLiveSummary({
             peopleResponse.ok && peopleData ? peopleData : null,
           authSync:
             authSyncResponse.ok && authSyncData ? authSyncData : null,
+          aiProduct:
+            aiProductResponse.ok && aiProductData ? aiProductData : null,
           sourceErrors:
             Number(!approvalResponse.ok) +
             Number(!securityResponse.ok) +
             Number(!peopleResponse.ok) +
-            Number(!authSyncResponse.ok),
+            Number(!authSyncResponse.ok) +
+            Number(!aiProductResponse.ok),
         });
       } catch {
         if (!active) return;
@@ -1226,7 +1326,8 @@ function ControlRoomOverviewLiveSummary({
           security: null,
           people: null,
           authSync: null,
-          sourceErrors: 4,
+          aiProduct: null,
+          sourceErrors: 5,
         });
       }
     }
@@ -1264,15 +1365,29 @@ function ControlRoomOverviewLiveSummary({
     ? 1
     : 0;
 
+  const aiProductStatus = String(
+    state.aiProduct?.displayHealthStatus || "MONITORING"
+  );
+  const aiProductAttention = [
+    "NEEDS_ATTENTION",
+    "DEGRADED",
+    "UNAVAILABLE",
+    "CRITICAL",
+  ].includes(aiProductStatus)
+    ? 1
+    : 0;
+
   const attentionCount =
     pendingApprovals +
     securityAttention +
     peopleAttention +
-    authSyncAttention;
+    authSyncAttention +
+    aiProductAttention;
   const criticalCount =
     Number(state.security?.criticalCount || 0) +
     (peopleStatus === "CRITICAL" ? 1 : 0) +
-    (authSyncStatus === "CRITICAL" ? 1 : 0);
+    (authSyncStatus === "CRITICAL" ? 1 : 0) +
+    (aiProductStatus === "CRITICAL" ? 1 : 0);
 
   const overallStatus = state.loading
     ? "MONITORING"
@@ -1280,7 +1395,9 @@ function ControlRoomOverviewLiveSummary({
       ? "CRITICAL"
       : state.sourceErrors > 0
         ? "UNAVAILABLE"
-        : peopleStatus === "DEGRADED" || authSyncStatus === "DEGRADED"
+        : peopleStatus === "DEGRADED" ||
+            authSyncStatus === "DEGRADED" ||
+            aiProductStatus === "DEGRADED"
           ? "DEGRADED"
           : attentionCount > 0
             ? "NEEDS ATTENTION"
@@ -1340,13 +1457,27 @@ function ControlRoomOverviewLiveSummary({
           }
         />
         <InfoCard
+          title="AI & PRODUCT"
+          value={
+            state.aiProduct
+              ? statusLabel(state.aiProduct.displayHealthStatus || "MONITORING")
+              : state.loading
+                ? "Checking…"
+                : "Unavailable"
+          }
+          detail={
+            state.aiProduct?.founderView?.doINeedToAct ||
+            "Existing Quality Evaluator evidence is connected read-only without changing generated responses or the evaluator."
+          }
+        />
+        <InfoCard
           title="CONNECTED SOURCES"
           value={
             state.loading
               ? "Checking…"
-              : `${4 - state.sourceErrors} / 4 current Overview sources`
+              : `${5 - state.sourceErrors} / 5 current Overview sources`
           }
-          detail="Founder approvals, Admin Security, People Experience and Auth & Sync are the current live Overview inputs in this Staging package."
+          detail="Founder approvals, Admin Security, People Experience, Auth & Sync and AI & Product are the current live Overview inputs in this Staging package."
         />
       </div>
 
@@ -1389,6 +1520,18 @@ function ControlRoomOverviewLiveSummary({
             Identity & continuity · {statusLabel(authSyncStatus)}
           </strong>
           <small>Open the read-only Auth & Sync operational view →</small>
+        </button>
+
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenAiProduct}
+        >
+          <span>AI & PRODUCT INTELLIGENCE</span>
+          <strong>
+            Quality & product · {statusLabel(aiProductStatus)}
+          </strong>
+          <small>Open the privacy-safe AI & Product operational view →</small>
         </button>
       </div>
     </>
@@ -2389,6 +2532,7 @@ function Overview({
   onOpenApprovals,
   onOpenFailures,
   onOpenAuthSync,
+  onOpenAiProduct,
   onShowFullOverview,
 }) {
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
@@ -2473,6 +2617,7 @@ function Overview({
         onOpenAlerts={onOpenAlerts}
         onOpenFailures={onOpenFailures}
         onOpenAuthSync={onOpenAuthSync}
+        onOpenAiProduct={onOpenAiProduct}
       />
 
       <div className={styles.grid}>
@@ -2713,6 +2858,123 @@ function FounderAccessCentre({ authenticated }) {
   );
 }
 
+function AiProductReliabilityCrossReference({ authenticated }) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadHealth() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch("/api/admin/control-room/ai-product-health", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The protected AI & Product reliability source could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setHealth(data);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The protected AI & Product reliability source could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    loadHealth();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const displayStatus = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : health?.displayHealthStatus || "MONITORING";
+  const quality = health?.sections?.qualityEvaluator || {};
+  const regeneration = health?.sections?.regeneration || {};
+  const founderView = health?.founderView || {};
+
+  return (
+    <>
+      <div className={styles.grid}>
+        <InfoCard
+          title="AI QUALITY RELIABILITY"
+          value={statusLabel(displayStatus)}
+          detail={
+            founderView.verification ||
+            "HIISSA is checking the same Module 8 aggregate quality evidence."
+          }
+        />
+        <InfoCard
+          title="QUALITY FAILURES"
+          value={
+            loading
+              ? "Checking…"
+              : String(quality.evaluatorFailureCount ?? 0)
+          }
+          detail="Existing evaluator audit evidence only. No private response content is exposed here."
+        />
+        <InfoCard
+          title="REGENERATION NEEDS REVIEW"
+          value={
+            loading
+              ? "Checking…"
+              : String(regeneration.regenerationNeedsReviewCount ?? 0)
+          }
+          detail="A recorded regeneration remains open when successful recovery is not proven."
+        />
+        <InfoCard
+          title="FOUNDER ACTION"
+          value={health?.founderActionRequired ? "REQUIRED" : "NOT REQUIRED"}
+          detail={
+            founderView.doINeedToAct ||
+            "Routine product-quality investigation stays outside Founder repair work."
+          }
+        />
+      </div>
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>AI & Product reliability monitoring unavailable</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+    </>
+  );
+}
+
 function FailuresReliabilityModule({ module, onOverview, onBack }) {
   return (
     <>
@@ -2723,7 +2985,7 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
           <h2>{module.label}</h2>
           <p>{module.purpose}</p>
         </div>
-        <StatusPill label="2 LIVE SOURCES" />
+        <StatusPill label="3 LIVE SOURCES" />
       </div>
 
       <section className={styles.notice}>
@@ -2748,6 +3010,17 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
       </section>
 
       <AuthSyncOperationalHealth authenticated />
+
+      <section className={styles.notice}>
+        <strong>AI & Product reliability cross-reference</strong>
+        <p>
+          Module 8 owns AI quality and product intelligence. Module 6 reuses the
+          same protected source when a recorded quality condition becomes a
+          reliability incident. No second evaluator or duplicate incident is created.
+        </p>
+      </section>
+
+      <AiProductReliabilityCrossReference authenticated />
 
       <section className={styles.detailBlueprint}>
         <div className={styles.kicker}>PEOPLE EXPERIENCE RELIABILITY CONTRACT</div>
