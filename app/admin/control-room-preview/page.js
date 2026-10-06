@@ -26,6 +26,7 @@ import {
   UNIVERSAL_FOUNDER_SUBMISSION_GATE,
   STAFF_WORKSPACE_SHELL_STANDARD,
   FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD,
+  FOUNDER_AI_PRODUCT_INTELLIGENCE_STANDARD,
   HIISSA_PEOPLE_EXPERIENCE_LAYER,
 } from "../../../lib/experience-registry.js";
 
@@ -2817,6 +2818,10 @@ function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
     return <AuthSyncHealthModule module={module} onOverview={onOverview} onBack={onBack} />;
   }
 
+  if (module.id === CONTROL_ROOM_MODULES.aiProduct && authenticated) {
+    return <AiProductIntelligenceModule module={module} onOverview={onOverview} onBack={onBack} />;
+  }
+
   if (module.id === CONTROL_ROOM_MODULES.systemOperations && authenticated) {
     return <SystemOperationsModule module={module} onOverview={onOverview} onBack={onBack} />;
   }
@@ -3146,6 +3151,461 @@ function FeedbackRecommendationsModule({ module, onOverview, onBack }) {
         <div>RECOMMENDATIONS<span>Connected Staging submission + read-only Module 4 view</span></div>
         <div>REFERRAL FOUNDATION<span>Signed-in identity + visit + later join attribution; rewards remain off</span></div>
         <div>AUDIT / PERMISSION HISTORY<span>Will connect only from verified source evidence</span></div>
+      </section>
+    </>
+  );
+}
+
+function AiProductIntelligenceModule({ module, onOverview, onBack }) {
+  const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      if (!adminDataClient) {
+        if (active) {
+          setError("The protected Admin data connection is not configured for this environment.");
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          "/api/admin/control-room/ai-product-health",
+          {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The protected AI & Product intelligence source could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setHealth(data);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The protected AI & Product intelligence source could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const displayStatus = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : health?.displayHealthStatus || "MONITORING";
+
+  const quality = health?.sections?.qualityEvaluator || {};
+  const regeneration = health?.sections?.regeneration || {};
+  const language = health?.sections?.languageIntelligence || {};
+  const feedback = health?.sections?.feedbackSignals || {};
+  const youngHiissa = health?.sections?.youngHiissa || {};
+  const providerModel = health?.sections?.providerModelCorrelation || {};
+  const product = health?.sections?.productIntelligence || {};
+  const founderView = health?.founderView || {};
+  const qualityCategories = Array.isArray(quality.categorySummary)
+    ? quality.categorySummary
+    : [];
+
+  const passRate =
+    typeof quality.qualityPassRate === "number"
+      ? `${quality.qualityPassRate.toFixed(1)}%`
+      : "—";
+
+  const languageCoverage =
+    typeof language.languageCoveragePercent === "number"
+      ? `${language.languageCoveragePercent.toFixed(1)}%`
+      : "—";
+
+  return (
+    <>
+      <FounderContextBack onBack={onBack} />
+
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>MODULE 8 — LIVE STAGING READ-ONLY</div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill
+          label={loading ? "CHECKING" : statusLabel(displayStatus)}
+        />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>The existing Quality Evaluator stays in charge.</strong>
+        <p>
+          Module 8 reads existing privacy-safe Staging quality evidence. It does
+          not create a second evaluator, rewrite generated responses, expose
+          private conversation content, or silently change models/providers.
+        </p>
+      </section>
+
+      <section className={styles.notice}>
+        <strong>{FOUNDER_AI_PRODUCT_INTELLIGENCE_STANDARD.permanentPrinciple}</strong>
+        <p>
+          Product intelligence measures whether HIISSA fulfils its human purpose.
+          Emotional disclosure, dependency, attention and screen time are not
+          optimisation targets.
+        </p>
+      </section>
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>AI & Product monitoring unavailable</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+
+      <div className={styles.grid}>
+        <InfoCard
+          title="OVERALL AI & PRODUCT HEALTH"
+          value={statusLabel(displayStatus)}
+          detail={
+            founderView.verification ||
+            "HIISSA is checking the protected aggregate evidence."
+          }
+        />
+        <InfoCard
+          title="QUALITY EVALUATOR"
+          value={statusLabel(quality.status || "MONITORING")}
+          detail="Existing quality_audit_records evidence only — no second evaluator."
+        />
+        <InfoCard
+          title="EVALUATED RESPONSES"
+          value={loading ? "Checking…" : String(quality.evaluatedResponses ?? 0)}
+          detail="Privacy-safe audit records observed by the existing Quality Evaluator source."
+        />
+        <InfoCard
+          title="QUALITY PASS RATE"
+          value={loading ? "Checking…" : passRate}
+          detail="Calculated only from recorded evaluator-success evidence."
+        />
+        <InfoCard
+          title="REGENERATION TRIGGERED"
+          value={
+            loading
+              ? "Checking…"
+              : String(regeneration.regenerationTriggeredCount ?? 0)
+          }
+          detail="Recorded regeneration events only. HIISSA does not invent retry activity."
+        />
+        <InfoCard
+          title="SUCCESSFUL REGENERATION"
+          value={
+            loading
+              ? "Checking…"
+              : String(regeneration.successfulRegenerationCount ?? 0)
+          }
+          detail="Shown only when a recorded regeneration is followed by passing evaluator evidence in the same audit record."
+        />
+        <InfoCard
+          title="LANGUAGE METADATA COVERAGE"
+          value={loading ? "Checking…" : languageCoverage}
+          detail="Missing language tags are incomplete telemetry, not proof of multilingual quality."
+        />
+        <InfoCard
+          title="FOUNDER ACTION"
+          value={health?.founderActionRequired ? "REQUIRED" : "NOT REQUIRED"}
+          detail={founderView.doINeedToAct || "No Founder repair action is currently required."}
+        />
+      </div>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>QUALITY EVALUATOR — EXISTING SOURCE</div>
+            <h3>What the existing evaluator is recording</h3>
+          </div>
+          <StatusPill label={statusLabel(quality.status || "MONITORING")} compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          Private response text and evaluator reason text are excluded from this
+          Founder view. The dashboard receives only operational quality signals.
+        </p>
+
+        {qualityCategories.length === 0 ? (
+          <div className={styles.emptyState}>
+            {loading
+              ? "Checking recorded quality categories…"
+              : "No quality-category evidence is currently available."}
+          </div>
+        ) : (
+          <div className={styles.grid}>
+            {qualityCategories.map((item) => (
+              <InfoCard
+                key={item.category}
+                title={statusLabel(item.category)}
+                value={
+                  Number(item.fail || 0) > 0
+                    ? `${item.fail} FAILED`
+                    : `${item.pass || 0} PASS`
+                }
+                detail={
+                  Number(item.other || 0) > 0
+                    ? `${item.other} additional unclassified result(s).`
+                    : "Aggregate evaluator category evidence."
+                }
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>BOUNDED REGENERATION</div>
+            <h3>Retry only when evidence supports it</h3>
+          </div>
+          <StatusPill
+            label={statusLabel(regeneration.status || "MONITORING")}
+            compact
+          />
+        </div>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="NEEDS REVIEW AFTER REGENERATION"
+            value={
+              loading
+                ? "Checking…"
+                : String(regeneration.regenerationNeedsReviewCount ?? 0)
+            }
+            detail="A recorded regeneration that is not proven successful remains visible for investigation."
+          />
+          <InfoCard
+            title="REPEATED-FAILURE SEQUENCE"
+            value={
+              regeneration.repeatedRegenerationFailureTelemetry ===
+              "NOT_YET_SEPARATELY_LIVE_WIRED"
+                ? "NOT YET LIVE-WIRED"
+                : statusLabel(regeneration.repeatedRegenerationFailureTelemetry)
+            }
+            detail="HIISSA will not fabricate loop/retry history that the current audit schema does not separately record."
+          />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          Automatic regeneration must remain bounded. Module 8 may surface a
+          repeated pattern for investigation, but it cannot silently redesign or
+          release HIISSA.
+        </p>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>LANGUAGE INTELLIGENCE</div>
+            <h3>Technically supported does not mean HIISSA Verified</h3>
+          </div>
+          <StatusPill label={statusLabel(language.status || "PARTIAL")} compact />
+        </div>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="MESSAGES OBSERVED"
+            value={
+              loading
+                ? "Checking…"
+                : String(language.messageMetadataRowsObserved ?? 0)
+            }
+            detail="Metadata only — no conversation content is returned to this dashboard."
+          />
+          <InfoCard
+            title="LANGUAGE-TAGGED"
+            value={
+              loading
+                ? "Checking…"
+                : String(language.languageTaggedMessages ?? 0)
+            }
+            detail="Untyped language records remain incomplete telemetry rather than being guessed."
+          />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          {language.lifecycle ||
+            "Candidate → Technically Available → Testing → HIISSA Verified → Monitored → Reverification / Restricted"}
+        </p>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>AUTHORISED AGGREGATE PRODUCT SIGNALS</div>
+            <h3>Reuse feedback without duplicating Module 4</h3>
+          </div>
+          <StatusPill label={statusLabel(feedback.status || "MONITORING")} compact />
+        </div>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="FEEDBACK RECORDS"
+            value={loading ? "Checking…" : String(feedback.feedbackRecords ?? 0)}
+            detail="Aggregate count from the existing Module 4 source of truth."
+          />
+          <InfoCard
+            title="RECOMMENDATIONS"
+            value={loading ? "Checking…" : String(feedback.recommendations ?? 0)}
+            detail="Aggregate recommendation count only. Private recommendation text stays in Module 4."
+          />
+          <InfoCard
+            title="AVERAGE RATING"
+            value={
+              typeof feedback.averageRating === "number"
+                ? `${feedback.averageRating.toFixed(2)} / 5`
+                : "—"
+            }
+            detail="No rating is fabricated when there is insufficient data."
+          />
+          <InfoCard
+            title="HELPFUL"
+            value={
+              typeof feedback.helpfulPercentage === "number"
+                ? `${feedback.helpfulPercentage.toFixed(1)}%`
+                : "—"
+            }
+            detail="Aggregate helpfulness evidence from the existing feedback source."
+          />
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>YOUNG HIISSA QUALITY BOUNDARY</div>
+            <h3>Quality monitoring without child surveillance</h3>
+          </div>
+          <StatusPill label={statusLabel(youngHiissa.status || "NOT YET LIVE WIRED")} compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          {youngHiissa.surveillanceBoundary ||
+            FOUNDER_AI_PRODUCT_INTELLIGENCE_STANDARD.youngHiissaBoundary}
+        </p>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>MODEL / PROVIDER QUALITY CORRELATION</div>
+            <h3>One provider source — no duplicate monitor</h3>
+          </div>
+          <StatusPill label={statusLabel(providerModel.status || "NOT YET LIVE WIRED")} compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          {providerModel.sourceBoundary ||
+            "Provider operational evidence belongs to Module 9. Module 8 may later correlate authorised aggregate quality evidence without duplicating the provider source."}
+        </p>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>FOUNDER OPERATIONAL VIEW</div>
+            <h3>What happened, what HIISSA did, and what happens next</h3>
+          </div>
+        </div>
+
+        <div className={styles.featureList}>
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT HAPPENED</strong></div>
+            <p>{founderView.whatHappened || "Checking connected quality evidence."}</p>
+            <p><strong>Severity:</strong> {founderView.severity || "Checking…"}</p>
+            <p><strong>User impact:</strong> {founderView.userImpact || "Checking…"}</p>
+            <p><strong>Evidence:</strong> {founderView.evidenceClass || "OBSERVED"}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT HIISSA ALREADY DID</strong></div>
+            <p>{founderView.whatHiissaAlreadyDid || "Read aggregate evidence without changing the AI pipeline."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>DO I NEED TO ACT?</strong></div>
+            <p>{founderView.doINeedToAct || "No Founder repair action is currently required."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>RECOVERY / NEXT STEP</strong></div>
+            <p>{founderView.recoveryNextStep || "Continue read-only monitoring."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>CURRENT RESOLUTION</strong></div>
+            <p>{founderView.verification || "Verification pending."}</p>
+            <p><strong>Resolution:</strong> {founderView.finalResolution || "Monitoring"}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>AUDIT HISTORY</strong></div>
+            <p>
+              <strong>Latest quality evidence:</strong>{" "}
+              {founderView.auditHistory?.latestQualityEvidenceAt
+                ? formatHiissaRecordTime(founderView.auditHistory.latestQualityEvidenceAt)
+                : "No verified timestamp"}
+            </p>
+            <p>
+              <strong>Latest message metadata:</strong>{" "}
+              {founderView.auditHistory?.latestMessageMetadataAt
+                ? formatHiissaRecordTime(founderView.auditHistory.latestMessageMetadataAt)
+                : "No verified timestamp"}
+            </p>
+          </article>
+
+          <details className={styles.featureCard}>
+            <summary><strong>TECHNICAL DETAILS — expand</strong></summary>
+            <p>
+              This view intentionally excludes private conversation content,
+              private feedback text, evaluator reason text and provider secrets.
+            </p>
+            <p><strong>Environment:</strong> {founderView.technicalDetails?.environment || "STAGING"}</p>
+            <p><strong>Quality source:</strong> {founderView.technicalDetails?.qualitySource || "quality_audit_records"}</p>
+            <p><strong>Production effect:</strong> NONE</p>
+          </details>
+        </div>
+      </section>
+
+      <section className={styles.detailBlueprint}>
+        <div className={styles.kicker}>MODULE 8 OPERATIONAL BOUNDARIES</div>
+        <div>QUALITY EVALUATOR<span>Existing source reused; no duplicate evaluator</span></div>
+        <div>PRIVATE CONVERSATIONS<span>Not exposed for aggregate health</span></div>
+        <div>FEEDBACK SOURCE<span>Module 4 remains authoritative</span></div>
+        <div>MODEL / PROVIDER CHANGES<span>Founder-gated; never silent</span></div>
+        <div>PRODUCT OPTIMISATION<span>Human purpose, not vulnerability or screen time</span></div>
+        <div>PRODUCTION EFFECT<span>None — Staging read-only intelligence</span></div>
       </section>
     </>
   );
