@@ -359,6 +359,12 @@ for (const required of [
   "module9-provider-register",
   "module9-history",
   "module9-founder-action",
+  "← Back to Find What You Need",
+  "↑ Back to Find What You Need",
+  "openModuleSection",
+  "Search modules, areas, departments or workspaces…",
+  "System & Operations · live provider status, outages and attention",
+  "System & Operations · usage, capacity, billing sources and renewals",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
@@ -392,6 +398,8 @@ for (const required of [
   ".quickFind",
   ".quickFindGrid",
   ".quickFindLink",
+  ".sectionBackLink",
+  ".sectionReturnLink",
   "@media (prefers-reduced-motion: reduce)",
   "CONTROL ROOM INTERACTION ACKNOWLEDGEMENT SWEEP",
   ".backLink:active",
@@ -580,6 +588,8 @@ for (const required of [
   "Important live health, Founder attention and next-action information comes before historical evidence",
   "Do not place unrelated feature-health panels ahead of a module's primary purpose.",
   "The Founder should not have to search, guess or repeatedly scroll",
+  "subsection must provide an obvious return path back to the local navigation hub",
+  "Global Founder Search should find not only modules, departments and workspaces",
   "Navigation improvements must not duplicate underlying operational truth",
 ]) requireText("Founder Control Room navigation clarity standard", registry, required);
 
