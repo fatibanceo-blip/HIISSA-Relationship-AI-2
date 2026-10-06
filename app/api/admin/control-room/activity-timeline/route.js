@@ -128,6 +128,40 @@ function eventTitle(event) {
   if (event.event_type === "founder_control_room_visit") {
     return "Founder entered the Control Room";
   }
+  if (event.event_type === "people_experience_checkin_offered") {
+    return "Gentle Check-In was offered";
+  }
+  if (event.event_type === "people_experience_checkin_snoozed") {
+    return "Gentle Check-In was snoozed";
+  }
+  if (event.event_type === "people_experience_checkin_resolved") {
+    return "Gentle Check-In care opportunity was resolved";
+  }
+  if (event.event_type === "people_experience_workday_close_opened") {
+    return "Workday Close was opened";
+  }
+  if (event.event_type === "people_experience_operational_recovery") {
+    const action = String(event.action_id || "");
+    if (action === "safe_moment_deferred") {
+      return "HIISSA deferred Gentle Check-In to a safer moment";
+    }
+    if (action === "prompt_auto_minimised") {
+      return "HIISSA minimised an unanswered Gentle Check-In";
+    }
+    if (action === "snooze_reminder_returned") {
+      return "HIISSA returned the snoozed check-in reminder";
+    }
+    if (action === "reminder_dismissed_while_snoozed") {
+      return "HIISSA dismissed the reminder and preserved the snooze";
+    }
+    if (action === "eligibility_source_unavailable") {
+      return "People Experience eligibility source became unavailable";
+    }
+    if (action === "care_state_persistence_degraded") {
+      return "People Experience state persistence needs Technical Operations";
+    }
+    return "HIISSA recorded a People Experience recovery action";
+  }
   return humanise(event.event_type || event.action_id || "HIISSA activity");
 }
 
@@ -135,6 +169,7 @@ function sourceLabel(event) {
   const moduleId = String(event.module_id || "");
   if (moduleId === "customer_support") return "Customer Support";
   if (moduleId === "overview") return "Founder Control Room";
+  if (moduleId === "people_experience") return "HIISSA People Experience";
   if (moduleId) return humanise(moduleId);
   return "HIISSA System";
 }
@@ -165,7 +200,9 @@ function publicEvent(event, founderUserId) {
         ? humanise(details.status).toUpperCase()
         : typeof details.work_item_status === "string"
           ? humanise(details.work_item_status).toUpperCase()
-          : "",
+          : typeof details.verification_state === "string"
+            ? humanise(details.verification_state).toUpperCase()
+            : "",
     privacyBoundary:
       "Privacy-safe operational metadata only. Raw secrets and private conversation content are not returned.",
   };
