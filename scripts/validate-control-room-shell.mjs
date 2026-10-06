@@ -24,6 +24,15 @@ const openAiProviderSummaryPath = path.join(
   "openai-provider-summary",
   "route.js"
 );
+const systemOperationsHealthPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "system-operations-health",
+  "route.js"
+);
 const founderWelcomePath = path.join(
   root,
   "app",
@@ -114,6 +123,7 @@ if (!fs.existsSync(pagePath)) errors.push("Founder Control Room preview page is 
 if (!fs.existsSync(stylePath)) errors.push("Founder Control Room stylesheet is missing.");
 if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security summary endpoint is missing.");
 if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI provider summary endpoint is missing.");
+if (!fs.existsSync(systemOperationsHealthPath)) errors.push("Protected System & Operations health endpoint is missing.");
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
@@ -163,6 +173,9 @@ const securitySummary = fs.existsSync(securitySummaryPath)
   : "";
 const openAiProviderSummary = fs.existsSync(openAiProviderSummaryPath)
   ? fs.readFileSync(openAiProviderSummaryPath, "utf8")
+  : "";
+const systemOperationsHealth = fs.existsSync(systemOperationsHealthPath)
+  ? fs.readFileSync(systemOperationsHealthPath, "utf8")
   : "";
 const founderWelcome = fs.existsSync(founderWelcomePath)
   ? fs.readFileSync(founderWelcomePath, "utf8")
@@ -609,7 +622,18 @@ for (const required of [
 for (const required of [
   "MODULE 9 — STAGING PROVIDER & SPEND REGISTER",
   "Founder business visibility — no fabricated money data.",
-  "VERIFIED DEVELOPMENT SNAPSHOT — 4 OCTOBER 2026",
+  "LIVE PROVIDER HEALTH — PROTECTED STAGING SOURCES",
+  "What HIISSA can genuinely verify right now",
+  '"/api/admin/control-room/system-operations-health"',
+  "SUPABASE DATABASE HEALTH",
+  "SUPABASE HEALTH PROBE",
+  "RESEND PROVIDER HEALTH",
+  "RESEND MONTHLY EMAILS",
+  "RESEND DAILY EMAILS",
+  "RESEND VERIFIED DOMAINS",
+  "VERCEL RUNTIME",
+  "LIVE PROVIDER ATTENTION",
+  "VERIFIED DEVELOPMENT SNAPSHOT — HISTORICAL EVIDENCE",
   "PROVIDER, SUBSCRIPTION & SPEND REGISTER",
   "API CREDIT & CAPACITY PROTECTION",
   "Warn before a provider stops HIISSA",
@@ -625,6 +649,10 @@ for (const required of [
   "CREDIT / PREPAID BALANCE",
   "BILLING PAGE SOURCE",
   'fetch("/api/admin/control-room/openai-provider-summary"',
+  "FOUNDER OPERATIONAL VIEW",
+  "WHAT HIISSA ALREADY DID",
+  "DO I NEED TO ACT?",
+  "RECOVERY / NEXT STEP",
   "NO RAW KEYS RETURNED",
   "NO AUTOMATIC TOP-UP OR PURCHASE",
 ]) requireText("System & Operations provider/spend module", page, required);
@@ -731,6 +759,31 @@ for (const required of [
   "moneyMovementEnabled: false",
   '"Cache-Control": "no-store"',
 ]) requireText("Protected OpenAI provider summary", openAiProviderSummary, required);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
+  '.from("conversations")',
+  'fetch(`https://api.resend.com${path}`',
+  'resendFetch("/usage")',
+  'resendFetch("/domains?limit=100")',
+  "TELEMETRY_PERMISSION_REQUIRED",
+  "SOURCE_NOT_CONFIGURED",
+  "Missing account-level telemetry permission must never",
+  "automaticPurchaseAllowed: false",
+  "automaticTopUpAllowed: false",
+  "automaticUpgradeAllowed: false",
+  "automaticRenewalChangeAllowed: false",
+  "rawApiKeysReturned: false",
+  "paymentCardDetailsReturned: false",
+  "conversationContentReturned: false",
+  "automaticProviderConfigurationChangePerformed: false",
+  "automaticCredentialScopeChangePerformed: false",
+  "automaticMoneyMovementPerformed: false",
+  "productionEffectEnabled: false",
+]) requireText("Protected System & Operations health", systemOperationsHealth, required);
 
 for (const required of [
   'branch === "feature/founder-control-room-staging"',
@@ -1030,6 +1083,14 @@ for (const registryRule of [
   "10% remaining",
   "5% remaining",
   "Automatic purchase, top-up, plan upgrade",
+  "systemOperationsHealthConnection",
+  "STAGING_LIVE_PROVIDER_HEALTH_PARTIAL",
+  "/api/admin/control-room/system-operations-health",
+  "Missing account-level telemetry permission must never be misreported as a provider outage.",
+  "HIISSA must not automatically widen an API key",
+  "Only observed provider degradation/unavailability/critical conditions count as live reliability failures.",
+  "controlRoomRouting",
+  "Telemetry permission/setup states do not create false outage alerts.",
   "openai-api",
   "hiissa-domain",
   "Cloudflare",
