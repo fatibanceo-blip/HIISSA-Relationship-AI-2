@@ -78,6 +78,15 @@ const aiProductHealthPath = path.join(
   "ai-product-health",
   "route.js"
 );
+const safetyPrivacyHealthPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "safety-privacy-health",
+  "route.js"
+);
 const recordTimePath = path.join(root, "lib", "hiissa-record-time.js");
 const gentleCheckInPolicyPath = path.join(
   root,
@@ -128,6 +137,7 @@ if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome i
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
 if (!fs.existsSync(aiProductHealthPath)) errors.push("Protected AI & Product health endpoint is missing.");
+if (!fs.existsSync(safetyPrivacyHealthPath)) errors.push("Protected Safety, Privacy & Moderation health endpoint is missing.");
 if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activity timeline endpoint is missing.");
 if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
 if (!fs.existsSync(gentleCheckInPolicyPath)) errors.push("Shared gentle check-in policy is missing.");
@@ -191,6 +201,9 @@ const authSyncHealth = fs.existsSync(authSyncHealthPath)
   : "";
 const aiProductHealth = fs.existsSync(aiProductHealthPath)
   ? fs.readFileSync(aiProductHealthPath, "utf8")
+  : "";
+const safetyPrivacyHealth = fs.existsSync(safetyPrivacyHealthPath)
+  ? fs.readFileSync(safetyPrivacyHealthPath, "utf8")
   : "";
 const recordTime = fs.existsSync(recordTimePath)
   ? fs.readFileSync(recordTimePath, "utf8")
@@ -320,7 +333,7 @@ for (const required of [
   "Guest is not an error; Skip is not a failed conversion.",
   '"/api/admin/control-room/auth-sync-health"',
   "Open Auth & Sync",
-  "5 LIVE SOURCES",
+  "6 LIVE SOURCES",
   "Authentication & Sync reliability cross-reference",
   "No second incident record is created.",
   "AUTH & SYNC · SECURITY CROSS-REFERENCE",
@@ -337,7 +350,17 @@ for (const required of [
   "REGENERATION NEEDS REVIEW",
   "HIISSA AI & Product Intelligence",
   "Open AI & Product",
-  "6 current Overview sources",
+  "7 current Overview sources",
+  "Safety, Privacy & Moderation areas",
+  "Safety Support Health",
+  "Boundary Events",
+  "Privacy & Consent",
+  "Evidence Integrity",
+  "Reserved Escalation",
+  '"/api/admin/control-room/safety-privacy-health"',
+  "Open Safety, Privacy & Moderation",
+  "6 LIVE SOURCES",
+  "7 current Overview sources",
   "System & Operations provider health",
   "Open System & Operations",
   "SYSTEM & OPERATIONS",
@@ -391,7 +414,7 @@ for (const required of [
   "Admin Security & Audit reliability cross-reference",
   "security incident source is created.",
   "ADMIN SECURITY RELIABILITY",
-  "5 LIVE SOURCES",
+  "6 LIVE SOURCES",
   '.replaceAll("_", " ")',
 ]) requireText("Control Room shell", page, required);
 
@@ -878,6 +901,27 @@ for (const required of [
   "moneyMovementEnabled: false",
   '"Cache-Control": "no-store"',
 ]) requireText("Protected OpenAI provider summary", openAiProviderSummary, required);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
+  '.from("boundary_events")',
+  'displayHealthStatus',
+  'monitoringStatus: sourceAvailable ? "CONNECTED" : "SOURCE_UNAVAILABLE"',
+  'rawConversationContentReturned: false',
+  'rawBoundaryMetadataReturned: false',
+  'rawSecretsReturned: false',
+  'unrestrictedSensitiveEvidenceReturned: false',
+  'fullConsentPropagationLiveWired: false',
+  'deliveryVerificationConnected: false',
+  'partnerAcknowledgementConnected: false',
+  'policeEmergencyDirectEscalationEnabled: false',
+  'breakGlassEnabled: false',
+  'productionEffectEnabled: false',
+  '"MONITORING — CONNECTED BOUNDARY SOURCE"',
+]) requireText("Protected Safety, Privacy & Moderation health", safetyPrivacyHealth, required);
 
 for (const required of [
   'branch === "feature/founder-control-room-staging"',
