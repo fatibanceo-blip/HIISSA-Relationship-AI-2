@@ -42,54 +42,63 @@ const MODULES = [
     label: "Users & Identity",
     short: "Users & Identity",
     purpose: "Account, identity and user administration under privacy and permission rules.",
+    find: "Accounts, identity and user access",
   },
   {
     id: CONTROL_ROOM_MODULES.subscriptionsAccess,
     label: "Subscriptions & Access",
     short: "Subscriptions",
     purpose: "Plans, entitlements, access and safe subscription administration.",
+    find: "Customer plans, entitlements and access",
   },
   {
     id: CONTROL_ROOM_MODULES.feedbackRecommendations,
     label: "Feedback & Recommendations",
     short: "Feedback",
     purpose: "Private feedback, recommendations, public-review permission and improvement signals.",
+    find: "Feedback, recommendations and public reviews",
   },
   {
     id: CONTROL_ROOM_MODULES.safetyPrivacyModeration,
     label: "Safety, Privacy & Moderation",
     short: "Safety & Privacy",
     purpose: "Safeguarding, privacy, consent, moderation and referral-integrity operations.",
+    find: "Safeguarding, privacy and moderation",
   },
   {
     id: CONTROL_ROOM_MODULES.failuresReliability,
     label: "Failures & Reliability",
     short: "Failures",
     purpose: "Failures, impact, bounded recovery, verification and human action.",
+    find: "What failed, recovery and verification",
   },
   {
     id: CONTROL_ROOM_MODULES.authSync,
     label: "Authentication & Sync Health",
     short: "Auth & Sync",
     purpose: "Authentication, continuity, Save & Sync and migration health without exposing secrets.",
+    find: "Sign-in, Save & Sync and migration health",
   },
   {
     id: CONTROL_ROOM_MODULES.aiProduct,
     label: "HIISSA AI & Product Intelligence",
     short: "AI & Product",
     purpose: "Quality, language, experience and product intelligence without vulnerability-as-engagement.",
+    find: "AI quality, evaluator and product health",
   },
   {
     id: CONTROL_ROOM_MODULES.systemOperations,
     label: "System & Operations",
     short: "System & Ops",
     purpose: "Environments, releases, providers, configuration health, jobs and readiness.",
+    find: "Providers, runtime, usage and billing",
   },
   {
     id: CONTROL_ROOM_MODULES.adminSecurityAudit,
     label: "Admin Security & Audit",
     short: "Security & Audit",
     purpose: "Roles, permissions, sensitive actions, step-up and attributable audit.",
+    find: "Roles, permissions, security and audit",
   },
 ];
 
@@ -353,7 +362,10 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                   className={activeId === module.id ? styles.navActive : styles.navItem}
                   onClick={() => chooseModule(module.id)}
                 >
-                  {module.short}
+                  <strong className={styles.navLabel}>{module.short}</strong>
+                  <small className={styles.navHint}>
+                    Find: {module.find || module.purpose}
+                  </small>
                 </button>
               ))}
             </nav>
@@ -4080,10 +4092,10 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module9-founder-action">
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>FOUNDER OPERATIONAL VIEW</div>
+            <div className={styles.kicker}>FOUNDER ACTION / NEXT STEP</div>
             <h3>What happened, what HIISSA did, and what happens next</h3>
           </div>
         </div>
@@ -4431,13 +4443,45 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <PeopleExperienceOperationalHealth authenticated context="system" />
+      <section className={styles.quickFind} aria-labelledby="module9-find-heading">
+        <div>
+          <div className={styles.kicker}>FIND WHAT YOU NEED</div>
+          <h3 id="module9-find-heading">Go straight to the right System & Operations area</h3>
+          <p>
+            You should not have to search through a long Control Room page. Choose
+            what you want to check and HIISSA will take you directly there.
+          </p>
+        </div>
 
-      <section className={styles.section}>
+        <div className={styles.quickFindGrid}>
+          <a className={styles.quickFindLink} href="#module9-provider-health">
+            <strong>Provider Health</strong>
+            <span>Live service status, outages and attention</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module9-usage-billing">
+            <strong>Usage & Billing</strong>
+            <span>Usage, capacity, billing sources and renewal visibility</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module9-provider-register">
+            <strong>Provider Register</strong>
+            <span>Everything HIISSA depends on and each source state</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module9-history">
+            <strong>Historical Evidence</strong>
+            <span>Previously verified plan, usage and provider checks</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module9-founder-action">
+            <strong>Founder Action / Next Step</strong>
+            <span>What needs you, what HIISSA did and what happens next</span>
+          </a>
+        </div>
+      </section>
+
+      <section className={styles.section} id="module9-provider-health">
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>LIVE PROVIDER HEALTH — PROTECTED STAGING SOURCES</div>
-            <h3>What HIISSA can genuinely verify right now</h3>
+            <div className={styles.kicker}>PROVIDER HEALTH — LIVE NOW</div>
+            <h3>Is each provider working right now?</h3>
           </div>
           <StatusPill label={statusLabel(systemDisplayStatus)} compact />
         </div>
@@ -4589,10 +4633,10 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         />
       </div>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module9-usage-billing">
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>OPENAI PROVIDER CONNECTION — PROTECTED STAGING SOURCE</div>
+            <div className={styles.kicker}>USAGE & BILLING SOURCES</div>
             <h3>Runtime health, usage and cost without exposing credentials</h3>
           </div>
           <StatusPill label={openAiStatus.replaceAll("_", " ")} compact />
@@ -4713,10 +4757,10 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module9-history">
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>VERIFIED DEVELOPMENT SNAPSHOT — HISTORICAL EVIDENCE</div>
+            <div className={styles.kicker}>HISTORICAL EVIDENCE — PREVIOUSLY VERIFIED</div>
             <h3>What was verified outside the live provider-health source</h3>
           </div>
           <StatusPill label="SNAPSHOT + PROTECTED SOURCE" compact />
@@ -4737,10 +4781,10 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module9-provider-register">
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>PROVIDER, SUBSCRIPTION & SPEND REGISTER</div>
+            <div className={styles.kicker}>PROVIDER REGISTER — WHAT HIISSA DEPENDS ON</div>
             <h3>Everything HIISSA depends on — one Founder view</h3>
           </div>
         </div>
