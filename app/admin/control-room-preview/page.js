@@ -1139,9 +1139,24 @@ function PeopleExperienceOperationalHealth({
               </p>
               <p>
                 <strong>Recovery-attempt evidence:</strong>{" "}
-                {health?.automaticRecovery?.observedAutomaticRecoveryAttempts ||
-                  "Checking…"}
+                {typeof health?.automaticRecovery?.observedAutomaticRecoveryAttempts === "number"
+                  ? String(health.automaticRecovery.observedAutomaticRecoveryAttempts)
+                  : "Checking…"}
               </p>
+              {health?.automaticRecovery?.latestObservedRecovery ? (
+                <p>
+                  <strong>Latest recovery:</strong>{" "}
+                  {statusLabel(
+                    health.automaticRecovery.latestObservedRecovery.event ||
+                      "recorded"
+                  )}
+                  {" · "}
+                  {statusLabel(
+                    health.automaticRecovery.latestObservedRecovery.verificationState ||
+                      "verification pending"
+                  )}
+                </p>
+              ) : null}
             </article>
           </div>
 
