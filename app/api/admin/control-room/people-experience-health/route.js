@@ -337,6 +337,16 @@ export async function GET(request) {
   const privacyFailures = detectedPrivacyFailures(rows);
   const recordIntegrityFailures = detectedRecordIntegrityFailures(rows);
   const counts = countTypes(rows);
+  const checkInRows = rows.filter((row) =>
+    [
+      "people_experience_checkin_offered",
+      "people_experience_checkin_snoozed",
+      "people_experience_checkin_resolved",
+    ].includes(row.event_type)
+  );
+  const offerRows = checkInRows.filter(
+    (row) => row.event_type === "people_experience_checkin_offered"
+  );
   const recoveryRows = rows.filter(
     (row) => row.event_type === "people_experience_operational_recovery"
   );
@@ -344,21 +354,67 @@ export async function GET(request) {
   const technicalRecoveryFailures = recoveryRows.filter(
     (row) => String(row.outcome || "") === "needs_attention"
   );
+
+  function hasLaterRecoveryEvidence(failureRow) {
+    const failureAt = new Date(failureRow.occurred_at).getTime();
+    if (!Number.isFinite(failureAt)) return false;
+
+    const details = detailsOf(failureRow);
+    const operationalEvent = String(
+      details.operational_event || failureRow.action_id || ""
+    );
+    const reason = String(details.reason || "");
+
+    return checkInRows.some((row) => {
+      const rowAt = new Date(row.occurred_at).getTime();
+      if (!Number.isFinite(rowAt) || rowAt <= failureAt) return false;
+
+      if (operationalEvent === "eligibility_source_unavailable") {
+        return true;
+      }
+
+      if (
+        operationalEvent === "care_state_persistence_degraded" &&
+        reason === "SNOOZED_STATE_NOT_CONFIRMED"
+      ) {
+        return row.event_type === "people_experience_checkin_snoozed";
+      }
+
+      if (
+        operationalEvent === "care_state_persistence_degraded" &&
+        reason === "RESOLVED_STATE_NOT_CONFIRMED"
+      ) {
+        return row.event_type === "people_experience_checkin_resolved";
+      }
+
+      return false;
+    });
+  }
+
+  const unresolvedTechnicalRecoveryFailures =
+    technicalRecoveryFailures.filter(
+      (row) => !hasLaterRecoveryEvidence(row)
+    );
+  const recoveredTechnicalFailures =
+    technicalRecoveryFailures.length -
+    unresolvedTechnicalRecoveryFailures.length;
   const latestEvidenceAt = rows[0]?.occurred_at || null;
 
   const founderActionRequired = privacyFailures.length > 0;
   const needsAttention =
     cadenceFailures.length > 0 ||
     recordIntegrityFailures.length > 0 ||
-    technicalRecoveryFailures.length > 0;
+    unresolvedTechnicalRecoveryFailures.length > 0;
 
   const status = founderActionRequired
     ? "FOUNDER_REQUIRED"
     : needsAttention
       ? "NEEDS_ATTENTION"
-      : rows.length > 0
-        ? "HEALTHY"
-        : "CONNECTED_NO_ACTIVITY";
+      : rows.length === 0
+        ? "CONNECTED_NO_ACTIVITY"
+        : checkInRows.length === 0
+          ? "CONNECTED_PARTIAL_EVIDENCE"
+          : "HEALTHY";
 
   const healthMeaning =
     status === "FOUNDER_REQUIRED"
@@ -366,8 +422,10 @@ export async function GET(request) {
       : status === "NEEDS_ATTENTION"
         ? "Monitoring is connected and found an operational rule that needs Technical Operations review."
         : status === "HEALTHY"
-          ? "The connected People Experience source is readable and no cadence, privacy or record-integrity failure was detected in the current evidence window."
-          : "Monitoring is connected, but no People Experience activity exists in the current evidence window, so HIISSA does not invent a Healthy result.";
+          ? "The connected People Experience source is readable and current check-in evidence shows no cadence, privacy or record-integrity failure in the evidence window."
+          : status === "CONNECTED_PARTIAL_EVIDENCE"
+            ? "Monitoring is connected and People Experience activity is visible, but there is no recent Gentle Check-In state evidence in this window, so HIISSA does not claim the care-delivery path is Healthy."
+            : "Monitoring is connected, but no People Experience activity exists in the current evidence window, so HIISSA does not invent a Healthy result.";
 
   return noStoreJson({
     status,
@@ -379,7 +437,11 @@ export async function GET(request) {
     counts,
     checks: {
       cadence: {
-        status: cadenceFailures.length ? "FAIL" : rows.length ? "PASS" : "NO_ACTIVITY",
+        status: cadenceFailures.length
+          ? "FAIL"
+          : offerRows.length
+            ? "PASS"
+            : "NO_ACTIVITY",
         failures: cadenceFailures,
         maximumPerActiveDay: PEOPLE_CHECKIN_MAX_PER_ACTIVE_DAY,
         minimumGapMinutes: PEOPLE_CHECKIN_MIN_GAP_MINUTES,
@@ -387,14 +449,22 @@ export async function GET(request) {
         founderPreviewManualTestsExcluded: true,
       },
       privacy: {
-        status: privacyFailures.length ? "FAIL" : rows.length ? "PASS" : "NO_ACTIVITY",
+        status: privacyFailures.length
+          ? "FAIL"
+          : rows.length
+            ? "PASS"
+            : "NO_ACTIVITY",
         failures: privacyFailures,
         privateAnswerValueExpected: false,
         emotionalScoringExpected: false,
         managerMoodSignalExpected: false,
       },
       recordIntegrity: {
-        status: recordIntegrityFailures.length ? "FAIL" : rows.length ? "PASS" : "NO_ACTIVITY",
+        status: recordIntegrityFailures.length
+          ? "FAIL"
+          : checkInRows.length
+            ? "PASS"
+            : "NO_ACTIVITY",
         failures: recordIntegrityFailures,
       },
     },
@@ -418,6 +488,9 @@ export async function GET(request) {
         "Stop automatic handling at privacy, permission, data-integrity or Founder-required boundaries.",
       observedAutomaticRecoveryAttempts: counts.operationalRecoveryEvents,
       technicalAttentionRecoveryEvents: counts.technicalAttentionEvents,
+      unresolvedTechnicalAttentionEvents:
+        unresolvedTechnicalRecoveryFailures.length,
+      recoveredTechnicalAttentionEvents: recoveredTechnicalFailures,
       latestObservedRecovery: latestRecovery
         ? {
             event: String(detailsOf(latestRecovery).operational_event || latestRecovery.action_id || ""),
@@ -437,7 +510,7 @@ export async function GET(request) {
       status === "FOUNDER_REQUIRED"
         ? "Detected the privacy boundary failure and stopped at the Founder-required boundary."
         : status === "NEEDS_ATTENTION"
-          ? technicalRecoveryFailures.length > 0
+          ? unresolvedTechnicalRecoveryFailures.length > 0
             ? "Detected a degraded People Experience operational event, recorded the bounded automatic action and routed the unresolved technical condition to HIISSA Technical Operations without asking the Founder to repair it."
             : "Detected and classified the operational anomaly without altering audit history or bypassing safety boundaries."
           : status === "HEALTHY"
