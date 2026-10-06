@@ -697,8 +697,7 @@
 #staff-private-appreciation{
   scroll-margin-top:76px;
 }
-[id^="module6-"],
-[id^="module7-"]{
+.moduleJumpTarget{
   scroll-margin-top:76px;
 }
 
