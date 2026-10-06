@@ -576,7 +576,7 @@ for (const required of [
 for (const required of [
   "MODULE 8 — LIVE STAGING READ-ONLY",
   "The existing Quality Evaluator stays in charge.",
-  'fetch("/api/admin/control-room/ai-product-health"',
+  '"/api/admin/control-room/ai-product-health"',
   "QUALITY EVALUATOR — EXISTING SOURCE",
   "BOUNDED REGENERATION",
   "LANGUAGE INTELLIGENCE",
