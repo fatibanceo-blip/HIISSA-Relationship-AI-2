@@ -1273,6 +1273,20 @@ for (const registryRule of [
 ]) requireText("Registry", registry, registryRule);
 
 for (const required of [
+  "FOUNDER_SAFETY_PRIVACY_MODERATION_STANDARD",
+  "canonicalModuleId: CONTROL_ROOM_MODULES.safetyPrivacyModeration",
+  'protectedServerRoute: "/api/admin/control-room/safety-privacy-health"',
+  "Reuse the existing protected Staging boundary_events source",
+  "no-private-conversation-content-in-routine-operational-health",
+  "no-raw-boundary-metadata-in-routine-founder-view",
+  'policeEmergencyDirectEscalation: "RESERVED_NOT_ENABLED"',
+  'breakGlass: "RESERVED_NOT_ENABLED"',
+  'safeguardingReferralDeliveryVerification: "NOT_YET_SEPARATELY_LIVE_WIRED"',
+  "No activity is not Healthy.",
+  "The purpose of the Safety Control Centre is not to watch people’s private lives.",
+]) requireText("Safety, Privacy & Moderation Registry standard", registry, required);
+
+for (const required of [
   "FOUNDER_ADMIN_SECURITY_AUDIT_STANDARD",
   "canonicalModuleId: CONTROL_ROOM_MODULES.adminSecurityAudit",
   'protectedServerRoute: "/api/admin/control-room/security-summary"',
