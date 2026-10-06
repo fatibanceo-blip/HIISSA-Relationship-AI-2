@@ -369,7 +369,11 @@ for (const required of [
   "HIISSA_TECHNICAL_OPERATIONS",
   "observedAutomaticRecoveryAttempts",
   "technicalAttentionRecoveryEvents",
+  "unresolvedTechnicalAttentionEvents",
+  "recoveredTechnicalAttentionEvents",
   "latestObservedRecovery",
+  "CONNECTED_PARTIAL_EVIDENCE",
+  "hasLaterRecoveryEvidence",
   "productionEffectEnabled: false",
 ]) requireText("People Experience health endpoint", peopleExperienceHealth, required);
 
