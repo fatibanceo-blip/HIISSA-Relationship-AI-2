@@ -3,6 +3,9 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const CLAIMED_AT_EVIDENCE_INTRODUCED_AT =
+  Date.parse("2026-09-27T17:58:13.000Z");
+
 function blocked() {
   return new NextResponse(null, { status: 404 });
 }
@@ -107,6 +110,20 @@ function safeCount(result) {
   return result?.error ? null : Number(result?.count || 0);
 }
 
+function isLegacyPreTimestampClaim(row) {
+  if (!row || row.claimed_at) return false;
+
+  const createdAt = Date.parse(row.created_at || "");
+  const conversations = row?.payload?.conversations;
+
+  return (
+    Number.isFinite(createdAt) &&
+    createdAt < CLAIMED_AT_EVIDENCE_INTRODUCED_AT &&
+    Array.isArray(conversations) &&
+    conversations.length === 0
+  );
+}
+
 function newestIso(values) {
   const dates = values
     .filter(Boolean)
@@ -170,9 +187,10 @@ export async function GET(request) {
       .lte("expires_at", now),
     adminClient
       .from("guest_migration_handoffs")
-      .select("id", { count: "exact", head: true })
+      .select("id,created_at,claimed_at,payload")
       .eq("status", "claimed")
-      .is("claimed_at", null),
+      .is("claimed_at", null)
+      .limit(1000),
     adminClient
       .from("conversations")
       .select("id", { count: "exact", head: true })
@@ -241,7 +259,15 @@ export async function GET(request) {
   const pendingHandoffs = safeCount(pendingHandoffsResult);
   const claimedHandoffs = safeCount(claimedHandoffsResult);
   const expiredPendingHandoffs = safeCount(expiredPendingResult);
-  const claimedMissingClaimedAt = safeCount(claimedMissingAtResult);
+  const claimedMissingRows = claimedMissingAtResult?.error
+    ? []
+    : claimedMissingAtResult?.data || [];
+  const legacyPreTimestampClaims = claimedMissingRows.filter(
+    isLegacyPreTimestampClaim
+  ).length;
+  const claimedMissingClaimedAt = claimedMissingRows.filter(
+    (row) => !isLegacyPreTimestampClaim(row)
+  ).length;
   const activeConversations = safeCount(activeConversationsResult);
   const migratedGuestConversations = safeCount(migratedConversationsResult);
 
@@ -284,7 +310,9 @@ export async function GET(request) {
         ? "HIISSA detected more than one authenticated owner associated with the same Guest migration identifier. No automatic merge or ownership rewrite was attempted."
         : Number(claimedMissingClaimedAt || 0) > 0
           ? "HIISSA found at least one Guest handoff marked claimed without the expected claimed-at verification timestamp."
-          : sourceErrors.length > 0
+          : legacyPreTimestampClaims > 0
+            ? "HIISSA recognised an older Staging Guest handoff created before claimed-at timestamp evidence was introduced. Its secure conversation payload is already cleared, so it is retained as historical evidence rather than treated as a current Save & Sync failure."
+            : sourceErrors.length > 0
             ? "One or more protected Auth & Sync health sources could not be read, so HIISSA is not claiming the system is healthy."
             : "The protected Auth & Sync sources are readable. No ownership conflict is detected in the currently connected evidence, but some deeper failure sources are still being backfilled.",
     currentStatus: displayHealthStatus,
@@ -303,15 +331,19 @@ export async function GET(request) {
       possibleIdentityConflicts > 0
         ? "Conversation ownership could be ambiguous. HIISSA must not auto-merge or guess the correct owner."
         : Number(claimedMissingClaimedAt || 0) > 0
-          ? "A historical migration record cannot currently prove its completion timestamp as strongly as required."
-          : "No current user-facing failure is established by the connected read-only evidence.",
+          ? "A migration record cannot currently prove its completion timestamp as strongly as required."
+          : legacyPreTimestampClaims > 0
+            ? "No current user-facing failure is established. HIISSA identified legacy pre-timestamp Staging evidence and did not disturb the working Save & Sync flow."
+            : "No current user-facing failure is established by the connected read-only evidence.",
     evidenceClass: "OBSERVED",
     whatHiissaAlreadyDid:
       possibleIdentityConflicts > 0
         ? "HIISSA stopped at the ownership boundary and reported the conflict without changing accounts, conversations or migration records."
         : technicalAttentionRequired
           ? "HIISSA classified the read-only health problem and kept the protected Save & Sync core unchanged while routing investigation to the appropriate technical boundary."
-          : "HIISSA read the privacy-safe operational evidence and preserved the existing working authentication and Save & Sync implementation unchanged.",
+          : legacyPreTimestampClaims > 0
+            ? "HIISSA automatically recognised the known pre-timestamp Staging pattern, preserved the historical record, made no data mutation, and kept the working authentication and Save & Sync core unchanged."
+            : "HIISSA read the privacy-safe operational evidence and preserved the existing working authentication and Save & Sync implementation unchanged.",
     doINeedToAct: founderActionRequired
       ? "YES — Founder-authorised review is required before any ownership or identity correction."
       : technicalAttentionRequired
@@ -424,6 +456,7 @@ export async function GET(request) {
         claimedHandoffs,
         expiredPendingHandoffs,
         claimedMissingClaimedAt,
+        legacyPreTimestampClaims,
         possibleIdentityConflicts,
       },
     },
@@ -443,6 +476,7 @@ export async function GET(request) {
       existingStage4AuthAndSaveSyncPreserved: true,
       productionSaveSyncChanged: false,
       automaticDataMutationPerformed: false,
+      legacyPreTimestampEvidenceRecognisedReadOnly: true,
       materialMigrationChangeRequiresFounderApproval: true,
     },
     productionEffectEnabled: false,
