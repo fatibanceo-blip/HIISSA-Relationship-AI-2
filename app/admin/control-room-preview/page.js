@@ -978,6 +978,12 @@ function PeopleExperienceOperationalHealth({
     : error
       ? "UNAVAILABLE"
       : health?.status || "UNKNOWN";
+  const displayStatus = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : health?.displayHealthStatus || status;
+  const founderView = health?.founderView || null;
 
   const counts = health?.counts || {};
   const founderAction =
@@ -1002,7 +1008,7 @@ function PeopleExperienceOperationalHealth({
                 : "Gentle Check-In, Calmer Start and care-delivery health"}
           </h3>
         </div>
-        <StatusPill label={statusLabel(status)} compact />
+        <StatusPill label={statusLabel(displayStatus)} compact />
       </div>
 
       <p className={styles.sectionCopy}>
@@ -1030,7 +1036,7 @@ function PeopleExperienceOperationalHealth({
           <div className={styles.grid}>
             <InfoCard
               title="CURRENT STATUS"
-              value={statusLabel(status)}
+              value={statusLabel(displayStatus)}
               detail={
                 health?.healthMeaning ||
                 "HIISSA is checking the protected operational source."
@@ -1078,6 +1084,183 @@ function PeopleExperienceOperationalHealth({
           </div>
 
           <div className={styles.featureList}>
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>WHAT HAPPENED</strong>
+                <StatusPill label={statusLabel(displayStatus)} compact />
+              </div>
+              <p>
+                {founderView?.whatHappened ||
+                  "HIISSA is checking the connected operational evidence."}
+              </p>
+              <p>
+                <strong>Start time:</strong>{" "}
+                {founderView?.incidentStartedAt
+                  ? formatHiissaRecordTime(founderView.incidentStartedAt)
+                  : "No active incident start time"}
+              </p>
+              <p>
+                <strong>Severity:</strong>{" "}
+                {founderView?.severity || "Checking impact"}
+              </p>
+              <p>
+                <strong>User impact:</strong>{" "}
+                {founderView?.userImpact ||
+                  "HIISSA is checking whether any user-facing behaviour is affected."}
+              </p>
+              <p>
+                <strong>Evidence:</strong>{" "}
+                {founderView?.evidenceClass || "OBSERVED"}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>CURRENT STATUS</strong>
+                <StatusPill label={statusLabel(displayStatus)} compact />
+              </div>
+              <p>
+                {health?.healthMeaning ||
+                  "HIISSA is checking the protected operational source."}
+              </p>
+              <p>
+                <strong>Verification:</strong>{" "}
+                {founderView?.verification ||
+                  "The resulting state must be verified before recovery is called resolved."}
+              </p>
+              <p>
+                <strong>Resolution:</strong>{" "}
+                {founderView?.finalResolution || "Checking…"}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>WHO / WHAT MAY BE AFFECTED</strong>
+              </div>
+              <p>
+                {founderView?.affected ||
+                  "HIISSA is checking the affected capability and scope."}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>WHAT HIISSA ALREADY DID</strong>
+              </div>
+              <p>
+                {founderView?.whatHiissaAlreadyDid ||
+                  health?.whatHiissaDid ||
+                  "HIISSA is checking the connected operational evidence."}
+              </p>
+              <p>
+                <strong>Automatic recovery attempts:</strong>{" "}
+                {typeof health?.automaticRecovery?.observedAutomaticRecoveryAttempts === "number"
+                  ? String(health.automaticRecovery.observedAutomaticRecoveryAttempts)
+                  : "Checking…"}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>DO I NEED TO ACT?</strong>
+              </div>
+              <p>
+                {founderView?.doINeedToAct ||
+                  (health?.founderActionRequired
+                    ? "YES — Founder authority is required."
+                    : "NO — no Founder action is currently required.")}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>AVAILABLE ACTIONS</strong>
+              </div>
+              {(founderView?.availableActions || [
+                "No Founder repair action is required while HIISSA completes the connected monitoring cycle.",
+              ]).map((action) => (
+                <p key={action}>• {action}</p>
+              ))}
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>RECOVERY / NEXT STEP</strong>
+              </div>
+              <p>
+                {founderView?.recoveryNextStep ||
+                  "HIISSA will continue bounded recovery and verify the result before reporting resolution."}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>RELATED EVENTS</strong>
+              </div>
+              <p>
+                Check-In offered {founderView?.relatedEvents?.checkInOffers ?? counts.offered ?? 0}
+                {" · "}Snoozed {founderView?.relatedEvents?.snoozed ?? counts.snoozed ?? 0}
+                {" · "}Resolved {founderView?.relatedEvents?.resolved ?? counts.resolved ?? 0}
+              </p>
+              <p>
+                Recovery attempts {founderView?.relatedEvents?.recoveryAttempts ?? counts.operationalRecoveryEvents ?? 0}
+                {" · "}Still unresolved {founderView?.relatedEvents?.unresolvedTechnicalAttention ?? 0}
+                {" · "}Recovered {founderView?.relatedEvents?.recoveredTechnicalAttention ?? 0}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>AUDIT HISTORY</strong>
+              </div>
+              <p>
+                <strong>Evidence window:</strong>{" "}
+                {founderView?.auditHistory?.evidenceWindowDays ?? health?.evidenceWindowDays ?? 7} days
+              </p>
+              <p>
+                <strong>Latest verified evidence:</strong>{" "}
+                {founderView?.auditHistory?.latestEvidenceAt
+                  ? formatHiissaRecordTime(founderView.auditHistory.latestEvidenceAt)
+                  : health?.latestEvidenceAt
+                    ? formatHiissaRecordTime(health.latestEvidenceAt)
+                    : "No recent verified activity"}
+              </p>
+              <p>
+                <strong>Connected records:</strong>{" "}
+                {founderView?.auditHistory?.connectedRecordCount ?? "Checking…"}
+              </p>
+            </article>
+
+            <details className={styles.featureCard}>
+              <summary><strong>TECHNICAL DETAILS — expand</strong></summary>
+              <p>
+                Human-readable technical detail is available here for authorised review.
+                Raw passwords, tokens, secrets and private conversation content are never shown.
+              </p>
+              <p>
+                <strong>Feature:</strong>{" "}
+                {founderView?.technicalDetails?.featureId || "hiissa.people-experience"}
+              </p>
+              <p>
+                <strong>Environment:</strong>{" "}
+                {founderView?.technicalDetails?.environment || "STAGING"}
+              </p>
+              <p>
+                <strong>Monitoring:</strong>{" "}
+                {statusLabel(founderView?.technicalDetails?.monitoringStatus || health?.monitoringStatus || "checking")}
+              </p>
+              <p>
+                <strong>Internal state:</strong>{" "}
+                {statusLabel(founderView?.technicalDetails?.internalState || status)}
+              </p>
+              <p>
+                <strong>Active issue count:</strong>{" "}
+                {founderView?.technicalDetails?.activeIssueCount ?? "Checking…"}
+              </p>
+            </details>
+
+
             <article className={styles.featureCard}>
               <div className={styles.featureTop}>
                 <strong>Cadence & delivery rules</strong>
