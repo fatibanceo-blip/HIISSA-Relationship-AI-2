@@ -92,7 +92,7 @@ const MODULES = [
   },
 ];
 
-const FEATURE_KEYS = ["youngHiissa", "hiissaRest", "hiissaAlongside"];
+const FEATURE_KEYS = ["peopleExperience", "youngHiissa", "hiissaRest", "hiissaAlongside"];
 
 const FOUNDER_WORKSPACE_ROUTES = Object.freeze({
   customer_support: Object.freeze({
@@ -904,6 +904,260 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
   );
 }
 
+function PeopleExperienceOperationalHealth({
+  authenticated,
+  context = "overview",
+}) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadHealth() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          "/api/admin/control-room/people-experience-health",
+          {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError(
+            "The protected People Experience operational source could not be loaded."
+          );
+          setLoading(false);
+          return;
+        }
+
+        setHealth(data);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError(
+          "The protected People Experience operational source could not be loaded."
+        );
+        setLoading(false);
+      }
+    }
+
+    loadHealth();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const status = loading
+    ? "CHECKING"
+    : error
+      ? "UNAVAILABLE"
+      : health?.status || "UNKNOWN";
+
+  const counts = health?.counts || {};
+  const founderAction =
+    health?.founderActionRequired === true
+      ? "YES — FOUNDER"
+      : health?.actionOwner === "HIISSA_TECHNICAL_OPERATIONS"
+        ? "NO — HIISSA TECH OPS"
+        : "NO";
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>
+            PEOPLE EXPERIENCE · LIVE STAGING OPERATIONAL HEALTH
+          </div>
+          <h3>
+            {context === "failures"
+              ? "What failed, what HIISSA did, and whether you need to act"
+              : context === "system"
+                ? "Connected feature health and recovery boundary"
+                : "Gentle Check-In, Calmer Start and care-delivery health"}
+          </h3>
+        </div>
+        <StatusPill label={statusLabel(status)} compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        One privacy-safe Staging source is reused across authorised Control Room
+        views. HIISSA does not expose emotional answers, private conversation
+        content, passwords or secrets to diagnose this feature.
+      </p>
+
+      {!authenticated ? (
+        <div className={styles.emptyState}>
+          Live People Experience health is available only inside the authenticated
+          Staging Control Room.
+        </div>
+      ) : null}
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>Operational monitoring unavailable</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+
+      {authenticated ? (
+        <>
+          <div className={styles.grid}>
+            <InfoCard
+              title="CURRENT STATUS"
+              value={statusLabel(status)}
+              detail={
+                health?.healthMeaning ||
+                "HIISSA is checking the protected operational source."
+              }
+            />
+            <InfoCard
+              title="FOUNDER ACTION"
+              value={founderAction}
+              detail={
+                health?.founderActionRequired
+                  ? "HIISSA has reached a boundary that requires your authority."
+                  : health?.actionOwner === "HIISSA_TECHNICAL_OPERATIONS"
+                    ? "The issue belongs to HIISSA Technical Operations rather than turning you into the technician."
+                    : "No Founder action is currently required by this connected source."
+              }
+            />
+            <InfoCard
+              title="CHECK-IN EVENTS · 7 DAYS"
+              value={
+                loading
+                  ? "Checking…"
+                  : String(
+                      Number(counts.offered || 0) +
+                        Number(counts.snoozed || 0) +
+                        Number(counts.resolved || 0)
+                    )
+              }
+              detail={
+                loading
+                  ? "Reading Staging evidence."
+                  : `Offered ${counts.offered || 0} · Snoozed ${counts.snoozed || 0} · Resolved ${counts.resolved || 0}`
+              }
+            />
+            <InfoCard
+              title="LAST VERIFIED EVIDENCE"
+              value={
+                health?.latestEvidenceAt
+                  ? formatHiissaRecordTime(health.latestEvidenceAt)
+                  : loading
+                    ? "Checking…"
+                    : "NO RECENT ACTIVITY"
+              }
+              detail="No recent activity is not automatically labelled Healthy."
+            />
+          </div>
+
+          <div className={styles.featureList}>
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>Cadence & delivery rules</strong>
+                <StatusPill
+                  label={statusLabel(health?.checks?.cadence?.status || "CHECKING")}
+                  compact
+                />
+              </div>
+              <p>
+                Daypart maximum, daily maximum and the approved minimum gap are
+                checked from real privacy-safe audit evidence. Founder manual
+                Preview testing is excluded from staff cadence-failure detection.
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>Privacy boundary</strong>
+                <StatusPill
+                  label={statusLabel(health?.checks?.privacy?.status || "CHECKING")}
+                  compact
+                />
+              </div>
+              <p>
+                Emotional answer values, emotional scoring, performance scoring
+                and manager mood signals must remain absent from operational
+                records.
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>Safe automatic recovery</strong>
+                <StatusPill
+                  label={statusLabel(
+                    health?.automaticRecovery?.classification || "CHECKING"
+                  )}
+                  compact
+                />
+              </div>
+              <p>
+                {health?.automaticRecovery?.configuredSafeBehaviours?.[0] ||
+                  "HIISSA is checking the approved recovery contract."}
+              </p>
+              <p>
+                <strong>Verification:</strong>{" "}
+                {health?.automaticRecovery?.verificationRule ||
+                  "Recovery is not called successful until the resulting state is verified."}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>What HIISSA has already done</strong>
+              </div>
+              <p>
+                {health?.whatHiissaDid ||
+                  "HIISSA is checking the connected operational evidence."}
+              </p>
+              <p>
+                <strong>Recovery-attempt evidence:</strong>{" "}
+                {health?.automaticRecovery?.observedAutomaticRecoveryAttempts ||
+                  "Checking…"}
+              </p>
+            </article>
+          </div>
+
+          <div className={styles.featureMeta}>
+            <span>STAGING ONLY</span>
+            <span>READ ONLY</span>
+            <span>ONE SOURCE OF TRUTH</span>
+            <span>NO PRIVATE ANSWER CONTENT</span>
+            <span>PRODUCTION UNTOUCHED</span>
+          </div>
+        </>
+      ) : null}
+    </section>
+  );
+}
+
 function FounderActivityTimeline({ authenticated }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [events, setEvents] = useState([]);
@@ -1239,6 +1493,11 @@ function Overview({
 
       <FounderActivityTimeline authenticated={authenticated} />
 
+      <PeopleExperienceOperationalHealth
+        authenticated={authenticated}
+        context="overview"
+      />
+
       <div className={styles.grid}>
         <InfoCard title="HIISSA STATUS" value="Not yet live-wired" detail="Operational aggregation will come from authorised module signals." />
         <InfoCard title="NEEDS YOUR ATTENTION" value="Feed not connected" detail="One underlying event may appear in multiple authorised views without duplication." />
@@ -1263,7 +1522,7 @@ function Overview({
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>FEATURE OPERATIONAL VISIBILITY</div>
-            <h3>New Explore experiences already registered</h3>
+            <h3>Registered features and their Control Room connection</h3>
           </div>
           <StatusPill label="REGISTRY DRIVEN" />
         </div>
@@ -1467,6 +1726,44 @@ function FounderAccessCentre({ authenticated }) {
   );
 }
 
+function FailuresReliabilityModule({ module, onOverview, onBack }) {
+  return (
+    <>
+      <FounderContextBack onBack={onBack} />
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>MODULE 6 — LIVE STAGING RELIABILITY VIEW</div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill label="PEOPLE EXPERIENCE CONNECTED" />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>A failure is more than a red light.</strong>
+        <p>
+          This first live reliability connection tells you what HIISSA detected,
+          what it already did, whether recovery remains inside a safe automatic
+          boundary, and whether you personally need to act. Routine technical
+          handling belongs to HIISSA Technical Operations.
+        </p>
+      </section>
+
+      <PeopleExperienceOperationalHealth authenticated context="failures" />
+
+      <section className={styles.detailBlueprint}>
+        <div className={styles.kicker}>PEOPLE EXPERIENCE RELIABILITY CONTRACT</div>
+        <div>WHAT HAPPENED<span>Connected audit evidence and classified failure signal</span></div>
+        <div>CURRENT STATUS<span>Healthy, connected-no-activity, needs attention or Founder required</span></div>
+        <div>WHAT HIISSA DID<span>Safe automatic behaviour / bounded recovery reported in plain English</span></div>
+        <div>DO I NEED TO ACT?<span>Founder is separated from Technical Operations work</span></div>
+        <div>RECOVERY VERIFICATION<span>No recovery is called successful without verified resulting state</span></div>
+        <div>PRIVACY<span>No emotional answer values or private conversation content in routine health</span></div>
+      </section>
+    </>
+  );
+}
+
 function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
   if (module.id === CONTROL_ROOM_MODULES.feedbackRecommendations && authenticated) {
     return <FeedbackRecommendationsModule module={module} onOverview={onOverview} onBack={onBack} />;
@@ -1474,6 +1771,10 @@ function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
 
   if (module.id === CONTROL_ROOM_MODULES.adminSecurityAudit && authenticated) {
     return <AdminSecurityAuditModule module={module} onOverview={onOverview} onBack={onBack} />;
+  }
+
+  if (module.id === CONTROL_ROOM_MODULES.failuresReliability && authenticated) {
+    return <FailuresReliabilityModule module={module} onOverview={onOverview} onBack={onBack} />;
   }
 
   if (module.id === CONTROL_ROOM_MODULES.systemOperations && authenticated) {
@@ -1966,6 +2267,8 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           plan or renewal date appears only when its source is verified.
         </p>
       </section>
+
+      <PeopleExperienceOperationalHealth authenticated context="system" />
 
       <div className={styles.grid}>
         <InfoCard
