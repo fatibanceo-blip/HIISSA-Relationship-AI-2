@@ -485,12 +485,10 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           ? 1
           : 0;
 
-        const explicitCritical = Number(
-          securityData?.criticalCount ||
-          approvalData?.criticalCount ||
-          (peopleDisplayStatus === "CRITICAL" ? 1 : 0) ||
-          0
-        );
+        const explicitCritical =
+          Number(securityData?.criticalCount || 0) +
+          Number(approvalData?.criticalCount || 0) +
+          (peopleDisplayStatus === "CRITICAL" ? 1 : 0);
         const criticalCount = Number.isFinite(explicitCritical)
           ? Math.max(0, explicitCritical)
           : 0;
@@ -852,15 +850,34 @@ function FounderAlertsPanel({
           setPending(null);
         }
 
+        const securityCritical =
+          securityResponse.ok && securityData
+            ? Number(securityData.criticalCount || 0)
+            : 0;
+        const approvalCritical =
+          approvalResponse.ok && approvalData
+            ? Number(approvalData.criticalCount || 0)
+            : 0;
+        const peopleCritical =
+          peopleResponse.ok &&
+          String(peopleData?.displayHealthStatus || "") === "CRITICAL"
+            ? 1
+            : 0;
+
         if (securityResponse.ok && securityData) {
           setSecurityStatus(securityData.status || null);
-          setCriticalCount(Number(securityData.criticalCount || 0));
           setCriticalMessage(securityData.criticalMessage || "");
         } else {
           setSecurityStatus(null);
-          setCriticalCount(0);
           setCriticalMessage("");
         }
+
+        setCriticalCount(
+          Math.max(
+            0,
+            securityCritical + approvalCritical + peopleCritical
+          )
+        );
 
         if (peopleResponse.ok && peopleData) {
           setPeopleHealth(peopleData);
