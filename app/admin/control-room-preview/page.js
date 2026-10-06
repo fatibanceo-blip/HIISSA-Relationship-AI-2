@@ -1030,6 +1030,60 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     },
 
     {
+      label: "Account & Identity Health",
+      detail: "Users & Identity · account state and ownership integrity",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.usersIdentity,
+          "module2-health"
+        ),
+    },
+    {
+      label: "Conversation ownership integrity",
+      detail: "Users & Identity · ownership references without private content",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.usersIdentity,
+          "module2-ownership"
+        ),
+    },
+    {
+      label: "User account state",
+      detail: "Users & Identity · verification, restriction and identity boundaries",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.usersIdentity,
+          "module2-account-state"
+        ),
+    },
+    {
+      label: "Guest continuity identity",
+      detail: "Users & Identity · Guest handoff identity cross-reference",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.usersIdentity,
+          "module2-guest-continuity"
+        ),
+    },
+    {
+      label: "User identity privacy",
+      detail: "Users & Identity · minimum-necessary account privacy boundaries",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.usersIdentity,
+          "module2-privacy"
+        ),
+    },
+    {
+      label: "Users & Identity reliability",
+      detail: "Failures & Reliability · account ownership integrity conditions",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.failuresReliability,
+          "module6-users-identity"
+        ),
+    },
+    {
       label: "Safety Support Health",
       detail: "Safety, Privacy & Moderation · protection-boundary operational health",
       action: () =>
@@ -4037,6 +4091,420 @@ function AdminSecurityReliabilityCrossReference({ authenticated }) {
   );
 }
 
+function UsersIdentityOperationalHealth({
+  authenticated,
+  context = "specialist",
+}) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadHealth() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          "/api/admin/control-room/users-identity-health",
+          {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The protected Users & Identity source could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setHealth(data);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The protected Users & Identity source could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    loadHealth();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const displayStatus = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : health?.displayHealthStatus || "MONITORING";
+  const founderView = health?.founderView || {};
+  const counts = health?.counts || {};
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>
+            USERS & IDENTITY · LIVE STAGING EVIDENCE
+          </div>
+          <h3>
+            {context === "failures"
+              ? "Identity and ownership reliability without opening private conversations"
+              : "Are account identity and ownership references coherent?"}
+          </h3>
+        </div>
+        <StatusPill label={statusLabel(displayStatus)} compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        HIISSA checks account and ownership references internally and returns only
+        aggregate operational evidence. Email addresses, conversation titles,
+        messages, auth tokens and Guest migration payloads stay out of this view.
+      </p>
+
+      {!authenticated ? (
+        <div className={styles.emptyState}>
+          Live Users & Identity evidence is available only inside the authenticated
+          Staging Control Room.
+        </div>
+      ) : null}
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>Users & Identity monitoring unavailable</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+
+      {authenticated ? (
+        <>
+          <div className={styles.grid}>
+            <InfoCard
+              title="CURRENT STATUS"
+              value={statusLabel(displayStatus)}
+              detail={
+                founderView.verification ||
+                "HIISSA is checking protected account and ownership evidence."
+              }
+            />
+            <InfoCard
+              title="AUTHENTICATED ACCOUNTS"
+              value={
+                loading
+                  ? "Checking…"
+                  : String(counts.inspectedAuthAccounts ?? "—")
+              }
+              detail={
+                health?.inspectionCapped
+                  ? `Inspection reached the current ${health?.inspectionCap || 1000}-account cap, so HIISSA reports Partial.`
+                  : "Aggregate Staging Auth account count from the protected administrative source."
+              }
+            />
+            <InfoCard
+              title="EMAIL CONFIRMED"
+              value={
+                loading
+                  ? "Checking…"
+                  : String(counts.emailConfirmedAccounts ?? "—")
+              }
+              detail="Only the aggregate verification count is shown; email addresses are not returned."
+            />
+            <InfoCard
+              title={`SIGNED IN · LAST ${health?.evidenceWindowDays || 30} DAYS`}
+              value={
+                loading
+                  ? "Checking…"
+                  : String(counts.recentlySignedInAccounts ?? "—")
+              }
+              detail="Aggregate recent sign-in presence only. Session secrets and tokens are never shown."
+            />
+            <InfoCard
+              title="CURRENTLY RESTRICTED ACCOUNTS"
+              value={
+                loading
+                  ? "Checking…"
+                  : String(counts.currentlyRestrictedAccounts ?? "—")
+              }
+              detail="A restriction is an account state, not automatically a system failure."
+            />
+            <InfoCard
+              title="CONVERSATIONS"
+              value={
+                loading ? "Checking…" : String(counts.conversations ?? "—")
+              }
+              detail="Ownership metadata only. Titles and message content are not read into this Control Room response."
+            />
+            <InfoCard
+              title="UNOWNED CONVERSATION RECORDS"
+              value={
+                loading
+                  ? "Checking…"
+                  : String(counts.unownedConversations ?? "—")
+              }
+              detail="Persisted conversation records should retain an attributable owner identifier."
+            />
+            <InfoCard
+              title="UNRESOLVED OWNER REFERENCES"
+              value={
+                loading
+                  ? "Checking…"
+                  : health?.inspectionCapped
+                    ? "Partial"
+                    : String(counts.unresolvedConversationOwners ?? "—")
+              }
+              detail="Checks whether inspected conversation owner references resolve to an existing Auth account without exposing the identifiers."
+            />
+            <InfoCard
+              title="FOUNDER ACTION"
+              value={
+                loading
+                  ? "Checking…"
+                  : health?.founderActionRequired
+                    ? "REQUIRED"
+                    : "NOT REQUIRED"
+              }
+              detail={
+                founderView.doINeedToAct ||
+                "Routine identity/ownership investigation belongs to Technical Operations."
+              }
+            />
+          </div>
+
+          <div className={styles.featureList}>
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>WHAT HAPPENED</strong>
+                <StatusPill label={statusLabel(displayStatus)} compact />
+              </div>
+              <p>
+                {founderView.whatHappened ||
+                  "HIISSA is checking the connected identity evidence."}
+              </p>
+              <p>
+                <strong>User impact:</strong>{" "}
+                {founderView.userImpact ||
+                  "No user impact has been established from this source."}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>WHAT HIISSA ALREADY DID</strong>
+              </div>
+              <p>
+                {founderView.whatHiissaAlreadyDid ||
+                  "HIISSA compared identity references without returning private content."}
+              </p>
+            </article>
+
+            <article className={styles.featureCard}>
+              <div className={styles.featureTop}>
+                <strong>RECOVERY / NEXT STEP</strong>
+              </div>
+              <p>
+                {founderView.recoveryNextStep ||
+                  "Continue read-only monitoring and avoid automatic account merging."}
+              </p>
+            </article>
+          </div>
+        </>
+      ) : null}
+    </section>
+  );
+}
+
+function UsersIdentityModule({
+  module,
+  authenticated,
+  onOverview,
+  onBack,
+}) {
+  return (
+    <>
+      <FounderContextBack onBack={onBack} />
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>MODULE 2 — LIVE STAGING READ-ONLY</div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill label="MONITORING" />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>Identity is not permission to open someone’s private HIISSA life.</strong>
+        <p>
+          This module gives you the operational account and ownership picture you
+          need while keeping private conversation content, emails, tokens and
+          session secrets outside the routine Founder view.
+        </p>
+      </section>
+
+      <ControlRoomAreaNavigator
+        id="module2-find"
+        title="Users & Identity areas"
+        areas={[
+          ["Account & Identity Health", "module2-health"],
+          ["Ownership Integrity", "module2-ownership"],
+          ["Account State", "module2-account-state"],
+          ["Guest Continuity", "module2-guest-continuity"],
+          ["Privacy Boundaries", "module2-privacy"],
+        ]}
+      />
+
+      <div id="module2-health" className={styles.moduleJumpTarget}>
+        <UsersIdentityOperationalHealth
+          authenticated={authenticated}
+          context="specialist"
+        />
+      </div>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module2-ownership"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>OWNERSHIP INTEGRITY</div>
+            <h3>Account ownership without opening conversation content</h3>
+          </div>
+          <StatusPill label="READ-ONLY" compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          HIISSA compares ownership identifiers internally. A missing or
+          unresolved owner is treated as an integrity condition; similar-looking
+          accounts are never silently merged.
+        </p>
+        <div className={styles.featureMeta}>
+          <span>NO AUTOMATIC ACCOUNT MERGE</span>
+          <span>CONVERSATION TITLES: NOT RETURNED</span>
+          <span>MESSAGE CONTENT: NOT RETURNED</span>
+          <span>OWNER IDS: COMPARED INTERNALLY · NOT DISPLAYED</span>
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module2-account-state"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>ACCOUNT STATE</div>
+            <h3>Read the state; do not silently change it</h3>
+          </div>
+          <StatusPill label="NO CHANGES ENABLED" compact />
+        </div>
+        <div className={styles.grid}>
+          <InfoCard
+            title="EMAIL VERIFICATION"
+            value="AGGREGATE ONLY"
+            detail="Verification counts may be shown; individual email addresses stay outside this operational view."
+          />
+          <InfoCard
+            title="BAN / UNBAN"
+            value="NOT ENABLED HERE"
+            detail="This first operational connection does not change account restriction state."
+          />
+          <InfoCard
+            title="ACCOUNT MERGE"
+            value="NOT ALLOWED AUTOMATICALLY"
+            detail="Similar names, emails or sessions are never enough to merge permanent identities."
+          />
+          <InfoCard
+            title="ENTITLEMENTS"
+            value="SEPARATE MODULE"
+            detail="Plan and entitlement administration belongs to Subscriptions & Access, not identity."
+          />
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module2-guest-continuity"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>GUEST CONTINUITY</div>
+            <h3>Cross-reference, not a second Save & Sync system</h3>
+          </div>
+          <StatusPill label="MODULE 7 OWNS HEALTH" compact />
+        </div>
+        <p className={styles.sectionCopy}>
+          Users & Identity may confirm that claimed Guest handoffs point toward
+          recognised permanent identities. Authentication & Sync Health remains
+          the specialist owner of Guest, Save & Continue, migration and
+          cross-device continuity.
+        </p>
+        <div className={styles.featureMeta}>
+          <span>GUEST TOKEN HASHES: NOT RETURNED</span>
+          <span>MIGRATION PAYLOADS: NOT RETURNED</span>
+          <span>SAVE & SYNC CORE: PRESERVED</span>
+          <span>MODULE 7: SPECIALIST SOURCE</span>
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module2-privacy"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>PRIVACY BOUNDARIES</div>
+            <h3>Operational identity without private-account browsing</h3>
+          </div>
+          <StatusPill label="MINIMUM NECESSARY" compact />
+        </div>
+        <div className={styles.grid}>
+          <InfoCard
+            title="EMAIL ADDRESSES"
+            value="NOT RETURNED"
+            detail="Aggregate account verification is enough for this initial health view."
+          />
+          <InfoCard
+            title="PRIVATE CONVERSATIONS"
+            value="NOT OPENED"
+            detail="Conversation ownership can be checked from identifiers without reading relationship content."
+          />
+          <InfoCard
+            title="AUTH TOKENS / SESSION SECRETS"
+            value="NEVER SHOWN"
+            detail="Identity health never requires exposing credentials to the Founder Control Room."
+          />
+          <InfoCard
+            title="PRODUCTION EFFECT"
+            value="NONE"
+            detail="This Staging source is read-only and performs no account mutation."
+          />
+        </div>
+      </section>
+    </>
+  );
+}
+
 function SafetyPrivacyOperationalHealth({
   authenticated,
   context = "specialist",
@@ -4513,7 +4981,7 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
           <h2>{module.label}</h2>
           <p>{module.purpose}</p>
         </div>
-        <StatusPill label="6 LIVE SOURCES" />
+        <StatusPill label="7 LIVE SOURCES" />
       </div>
 
       <section className={styles.notice}>
@@ -4530,6 +4998,7 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
         id="module6-find"
         title="Failures & Reliability areas"
         areas={[
+          ["Users & Identity", "module6-users-identity"],
           ["Safety, Privacy & Moderation", "module6-safety-privacy"],
           ["People Experience", "module6-people"],
           ["Authentication & Sync", "module6-auth-sync"],
@@ -4538,6 +5007,22 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
           ["Admin Security & Audit", "module6-admin-security"],
         ]}
       />
+
+      <div id="module6-users-identity" className={styles.moduleJumpTarget}>
+        <section className={styles.notice}>
+          <strong>Users & Identity reliability cross-reference</strong>
+          <p>
+            Module 2 owns account and ownership administration. Module 6 reuses
+            the same protected aggregate source if an identity/ownership
+            integrity condition becomes a reliability issue. No second identity
+            incident source is created.
+          </p>
+        </section>
+        <UsersIdentityOperationalHealth
+          authenticated={authenticated}
+          context="failures"
+        />
+      </div>
 
       <div id="module6-safety-privacy" className={styles.moduleJumpTarget}>
         <section className={styles.notice}>
@@ -4677,6 +5162,17 @@ function AuthSyncHealthModule({ module, onOverview, onBack }) {
 }
 
 function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
+  if (module.id === CONTROL_ROOM_MODULES.usersIdentity && authenticated) {
+    return (
+      <UsersIdentityModule
+        module={module}
+        authenticated={authenticated}
+        onOverview={onOverview}
+        onBack={onBack}
+      />
+    );
+  }
+
   if (module.id === CONTROL_ROOM_MODULES.feedbackRecommendations && authenticated) {
     return <FeedbackRecommendationsModule module={module} onOverview={onOverview} onBack={onBack} />;
   }
