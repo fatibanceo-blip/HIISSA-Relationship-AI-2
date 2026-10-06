@@ -4423,9 +4423,9 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to Security & Audit areas"
         >
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -4777,6 +4777,8 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
+      <SecurityAuditAreaNavigator />
+
       <section
         className={styles.quickFind}
         id="module9-find"
@@ -4819,9 +4821,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to Security & Audit areas"
         >
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -4946,7 +4948,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <span>NO AUTOMATIC MONEY MOVEMENT</span>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -4985,9 +4987,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to Security & Audit areas"
         >
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5111,7 +5113,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <span>NO AUTOMATIC TOP-UP OR PURCHASE</span>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -5119,9 +5121,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to Security & Audit areas"
         >
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5145,7 +5147,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           ))}
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -5153,9 +5155,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to Security & Audit areas"
         >
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5184,7 +5186,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           ))}
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -5285,7 +5287,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           </details>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -5406,6 +5408,130 @@ function AuthSyncSecurityBoundarySummary() {
   );
 }
 
+function SecurityAuditAreaNavigator() {
+  const areas = [
+    ["Security Health", "module10-security-health"],
+    ["Roles & Permissions", "module10-roles-permissions"],
+    ["Approvals & Sensitive Actions", "module10-approvals"],
+    ["Staff Access & Onboarding", "module10-staff-access"],
+    ["Audit Trail", "module10-audit"],
+    ["Exceptional Access & Break-Glass", "module10-exceptional-access"],
+  ];
+
+  return (
+    <details className={styles.moduleAreaNavigator}>
+      <summary>
+        <strong>Security & Audit areas</strong>
+        <span>Jump directly to what you need</span>
+      </summary>
+      <div className={styles.moduleAreaNavigatorGrid}>
+        {areas.map(([label, id]) => (
+          <a key={id} href={`#${id}`}>{label}</a>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function humaniseAuditToken(value) {
+  const source = String(value || "").trim();
+  if (!source) return "";
+  return source
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function auditEventPresentation(event) {
+  if (
+    event?.event_type === "founder_control_room_visit" &&
+    event?.action_id === "enter_control_room"
+  ) {
+    return {
+      title: "Founder opened the Control Room",
+      detail: "You entered the Founder Control Room.",
+    };
+  }
+
+  const title = humaniseAuditToken(event?.event_type) || "Admin activity recorded";
+  const action = humaniseAuditToken(event?.action_id);
+
+  return {
+    title,
+    detail: action ? `Action: ${action}.` : "A protected Admin activity was recorded.",
+  };
+}
+
+function auditOutcomeLabel(value) {
+  const token = String(value || "").toLowerCase();
+  if (["recorded", "success", "succeeded", "complete", "completed"].includes(token)) {
+    return "Recorded successfully";
+  }
+  if (["failed", "error"].includes(token)) return "Needs attention";
+  return humaniseAuditToken(value) || "Outcome not supplied";
+}
+
+function auditEnvironmentLabel(value) {
+  const token = String(value || "").toLowerCase();
+  if (token === "staging") return "Staging";
+  if (token === "production") return "Production";
+  return humaniseAuditToken(value) || "Environment not supplied";
+}
+
+function auditOversightLabel(value) {
+  const level = Number(value);
+  if (level === 1) return "Routine oversight (L1)";
+  if (level === 2) return "Founder notification level (L2)";
+  if (level === 3) return "Founder approval level (L3)";
+  return value != null ? `Oversight level L${value}` : "Oversight level not supplied";
+}
+
+function formatAuditTime(value) {
+  if (!value) return "Time not supplied";
+  const parsed = new Date(value);
+  if (!Number.isFinite(parsed.getTime())) return "Time not supplied";
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(parsed);
+  } catch {
+    return parsed.toLocaleString();
+  }
+}
+
+function groupFounderAuditEvents(events) {
+  const groups = [];
+
+  for (const event of events || []) {
+    const isRoutineVisit =
+      event?.event_type === "founder_control_room_visit" &&
+      event?.action_id === "enter_control_room";
+
+    if (isRoutineVisit) {
+      const existing = groups.find((group) => group.kind === "routine-founder-visit");
+      if (existing) {
+        existing.count += 1;
+        continue;
+      }
+      groups.push({
+        kind: "routine-founder-visit",
+        count: 1,
+        event,
+      });
+      continue;
+    }
+
+    groups.push({
+      kind: "event",
+      count: 1,
+      event,
+    });
+  }
+
+  return groups;
+}
+
 function AdminSecurityAuditModule({ module, onOverview, onBack }) {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
@@ -5468,6 +5594,7 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
     : error
       ? "UNAVAILABLE"
       : summary?.displayHealthStatus || summary?.status || "MONITORING";
+  const groupedAuditEvents = groupFounderAuditEvents(summary?.recentAuditEvents || []);
 
   return (
     <>
@@ -5546,9 +5673,9 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module10-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to Security & Audit areas"
         >
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
 
         <div className={styles.sectionHeading}>
@@ -5654,7 +5781,7 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         </div>
 
         <a className={styles.sectionReturnLink} href="#module10-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -5662,7 +5789,7 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
 
       <section className={styles.section} id="module10-roles-permissions">
         <a className={styles.sectionBackLink} href="#module10-find">
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5690,13 +5817,13 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           ) : null}
         </div>
         <a className={styles.sectionReturnLink} href="#module10-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
       <section className={styles.section} id="module10-approvals">
         <a className={styles.sectionBackLink} href="#module10-find">
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5741,7 +5868,7 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           governance and audit context without rendering a second inbox.
         </p>
         <a className={styles.sectionReturnLink} href="#module10-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -5796,7 +5923,7 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
 
       <section className={styles.section} id="module10-staff-access">
         <a className={styles.sectionBackLink} href="#module10-find">
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5854,7 +5981,7 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           workflow can be built and certified without bypassing security.
         </div>
         <a className={styles.sectionReturnLink} href="#module10-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -5988,7 +6115,7 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
 
       <section className={styles.section} id="module10-exceptional-access">
         <a className={styles.sectionBackLink} href="#module10-find">
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
 
         <div className={styles.sectionHeading}>
@@ -6032,7 +6159,7 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         </div>
 
         <a className={styles.sectionReturnLink} href="#module10-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
@@ -6063,13 +6190,13 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           </div>
         )}
         <a className={styles.sectionReturnLink} href="#module10-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
       <section className={styles.section} id="module10-audit">
         <a className={styles.sectionBackLink} href="#module10-find">
-          ← Back to Find What You Need
+          ← Security & Audit areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -6078,29 +6205,56 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           </div>
         </div>
 
-        {(summary?.recentAuditEvents || []).length === 0 ? (
+        <p className={styles.sectionCopy}>
+          This is the Founder-friendly view of recent Admin security activity.
+          Technical event names remain available underneath each item when you need them.
+        </p>
+
+        {groupedAuditEvents.length === 0 ? (
           <div className={styles.emptyState}>
             No events have yet been written to the newer Admin audit foundation.
           </div>
         ) : (
           <div className={styles.feedbackList}>
-            {summary.recentAuditEvents.map((event, index) => (
-              <article className={styles.feedbackItem} key={`${event.occurred_at}-${index}`}>
-                <div className={styles.featureMeta}>
-                  <span>{event.environment || "unknown environment"}</span>
-                  <span>{event.outcome || "unknown outcome"}</span>
-                  {event.oversight_level != null ? <span>L{event.oversight_level}</span> : null}
-                </div>
-                <p>
-                  <strong>{event.event_type || "Admin event"}</strong>
-                  {event.action_id ? ` — ${event.action_id}` : ""}
-                </p>
-              </article>
-            ))}
+            {groupedAuditEvents.map((group, index) => {
+              const event = group.event;
+              const presentation = auditEventPresentation(event);
+              const repeatedRoutineVisit = group.kind === "routine-founder-visit" && group.count > 1;
+
+              return (
+                <article className={styles.feedbackItem} key={`${event.occurred_at || "audit"}-${index}`}>
+                  <div className={styles.featureMeta}>
+                    <span>{auditEnvironmentLabel(event.environment)}</span>
+                    <span>{auditOutcomeLabel(event.outcome)}</span>
+                    <span>{auditOversightLabel(event.oversight_level)}</span>
+                  </div>
+
+                  <p className={styles.auditReadableTitle}>
+                    <strong>{presentation.title}</strong>
+                  </p>
+                  <p className={styles.auditReadableDetail}>
+                    {repeatedRoutineVisit
+                      ? `${group.count} recent Control Room visits are grouped here so routine activity does not crowd the page.`
+                      : presentation.detail}
+                  </p>
+                  <p className={styles.auditReadableTime}>
+                    <strong>Most recent:</strong> {formatAuditTime(event.occurred_at)}
+                  </p>
+
+                  <details className={styles.auditTechnical}>
+                    <summary>Technical details</summary>
+                    <div>
+                      <code>event_type: {event.event_type || "not supplied"}</code>
+                      <code>action_id: {event.action_id || "not supplied"}</code>
+                    </div>
+                  </details>
+                </article>
+              );
+            })}
           </div>
         )}
         <a className={styles.sectionReturnLink} href="#module10-find">
-          ↑ Back to Find What You Need
+          ↑ Security & Audit areas
         </a>
       </section>
 
