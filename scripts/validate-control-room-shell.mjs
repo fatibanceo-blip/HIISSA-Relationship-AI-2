@@ -295,6 +295,12 @@ for (const required of [
   "Guest is not an error; Skip is not a failed conversion.",
   '"/api/admin/control-room/auth-sync-health"',
   "Open Auth & Sync",
+  "2 LIVE SOURCES",
+  "Authentication & Sync reliability cross-reference",
+  "No second incident record is created.",
+  "AUTH & SYNC · SECURITY CROSS-REFERENCE",
+  "Identity and ownership boundary",
+  "Different device sessions are normal.",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
