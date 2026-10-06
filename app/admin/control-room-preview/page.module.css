@@ -691,7 +691,62 @@
   padding-top:24px;
   border-top:1px solid rgba(49,91,70,.12);
 }
-.section[id]{scroll-margin-top:18px;}
+.section[id]{scroll-margin-top:76px;}
+
+.moduleAreaNavigator{
+  position:sticky;
+  top:8px;
+  z-index:8;
+  margin:0 0 16px;
+  border:1px solid #cbd9cc;
+  border-radius:14px;
+  background:rgba(250,252,248,.97);
+  box-shadow:0 8px 24px rgba(39,74,57,.10);
+  overflow:hidden;
+}
+.moduleAreaNavigator summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:48px;
+  padding:11px 14px;
+  color:#315f4c;
+  cursor:pointer;
+  list-style:none;
+}
+.moduleAreaNavigator summary::-webkit-details-marker{display:none;}
+.moduleAreaNavigator summary strong{font-size:13px;}
+.moduleAreaNavigator summary span{
+  color:#718078;
+  font-size:10px;
+  font-weight:750;
+}
+.moduleAreaNavigatorGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  padding:0 10px 10px;
+}
+.moduleAreaNavigatorGrid a{
+  display:flex;
+  align-items:center;
+  min-height:40px;
+  padding:9px 10px;
+  border:1px solid #d7e3d8;
+  border-radius:10px;
+  background:#fff;
+  color:#315f4c;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:800;
+}
+.moduleAreaNavigatorGrid a:hover,
+.moduleAreaNavigatorGrid a:focus-visible{
+  border-color:#8eaa98;
+  background:#f5faf4;
+  outline:none;
+}
 
 .quickFind{
   margin:0 0 22px;
@@ -1091,6 +1146,44 @@
   background:#fffefa;
   border:1px solid rgba(49,91,70,.14);
 }
+.auditReadableTitle{
+  margin:12px 0 4px !important;
+  color:#2f604d;
+  font-size:15px;
+}
+.auditReadableDetail{
+  margin:0 !important;
+  color:#65736b;
+  font-size:12px;
+  line-height:1.55;
+}
+.auditReadableTime{
+  margin:8px 0 0 !important;
+  color:#56665d;
+  font-size:11px;
+}
+.auditTechnical{
+  margin-top:10px;
+  padding-top:9px;
+  border-top:1px solid rgba(49,91,70,.10);
+}
+.auditTechnical summary{
+  color:#476858;
+  cursor:pointer;
+  font-size:11px;
+  font-weight:800;
+}
+.auditTechnical div{
+  display:grid;
+  gap:5px;
+  margin-top:8px;
+}
+.auditTechnical code{
+  overflow-wrap:anywhere;
+  color:#69766f;
+  font-size:10px;
+}
+
 .feedbackItem p{
   margin:10px 0 0;
   color:#56665d;
@@ -1723,6 +1816,13 @@
 }
 
 @media (max-width: 640px){
+  .moduleAreaNavigator{top:6px;}
+  .moduleAreaNavigator summary{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:2px;
+  }
+  .moduleAreaNavigatorGrid{grid-template-columns:1fr;}
   .quickFind{padding:16px;}
   .quickFindGrid{grid-template-columns:1fr;}
   .quickFindLink{min-height:0;padding:13px 14px;}
