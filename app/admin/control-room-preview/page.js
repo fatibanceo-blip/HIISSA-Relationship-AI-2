@@ -158,7 +158,10 @@ const adminDataClient =
     : null;
 
 function statusLabel(value) {
-  return String(value || "unknown").replaceAll("-", " ").toUpperCase();
+  return String(value || "unknown")
+    .replaceAll("-", " ")
+    .replaceAll("_", " ")
+    .toUpperCase();
 }
 
 export default function FounderControlRoomPreview({ authenticated = false, onSignOut = null, environmentLabel = "ISOLATED PREVIEW", environmentNote = "Structure and Registry wiring only — no fabricated live metrics" } = {}) {
