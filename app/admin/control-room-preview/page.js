@@ -3824,11 +3824,11 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
         ]}
       />
 
-      <div id="module6-people">
+      <div id="module6-people" className={styles.moduleJumpTarget}>
         <PeopleExperienceOperationalHealth authenticated context="failures" />
       </div>
 
-      <div id="module6-auth-sync">
+      <div id="module6-auth-sync" className={styles.moduleJumpTarget}>
         <section className={styles.notice}>
           <strong>Authentication & Sync reliability cross-reference</strong>
           <p>
@@ -3841,7 +3841,7 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
         <AuthSyncOperationalHealth authenticated />
       </div>
 
-      <div id="module6-ai-product">
+      <div id="module6-ai-product" className={styles.moduleJumpTarget}>
         <section className={styles.notice}>
           <strong>AI & Product reliability cross-reference</strong>
           <p>
@@ -3854,7 +3854,7 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
         <AiProductReliabilityCrossReference authenticated />
       </div>
 
-      <div id="module6-system-operations">
+      <div id="module6-system-operations" className={styles.moduleJumpTarget}>
         <section className={styles.notice}>
           <strong>System & Operations reliability cross-reference</strong>
           <p>
@@ -3868,7 +3868,7 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
         <SystemOperationsReliabilityCrossReference authenticated />
       </div>
 
-      <div id="module6-admin-security">
+      <div id="module6-admin-security" className={styles.moduleJumpTarget}>
         <section className={styles.notice}>
           <strong>Admin Security & Audit reliability cross-reference</strong>
           <p>
@@ -3929,11 +3929,11 @@ function AuthSyncHealthModule({ module, onOverview, onBack }) {
         ]}
       />
 
-      <div id="module7-health">
+      <div id="module7-health" className={styles.moduleJumpTarget}>
         <AuthSyncOperationalHealth authenticated evidenceId="module7-evidence" />
       </div>
 
-      <section className={styles.detailBlueprint} id="module7-principles">
+      <section className={`${styles.detailBlueprint} ${styles.moduleJumpTarget}`} id="module7-principles">
         <div className={styles.kicker}>AUTHENTICATION & SYNC OPERATING PRINCIPLES</div>
         <div>PERMANENT IDENTITY<span>Different devices may have different sessions while resolving to the same permanent identity.</span></div>
         <div>GUEST EXPERIENCE<span>Guest is not an error; Skip is not a failed conversion.</span></div>
