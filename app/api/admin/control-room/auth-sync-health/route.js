@@ -370,6 +370,7 @@ export async function GET(request) {
       handoffsClaimed: claimedHandoffs,
       handoffsExpiredPending: expiredPendingHandoffs,
       claimedMissingClaimedAt,
+      legacyPreTimestampClaims,
       activeConversations,
       migratedGuestConversations,
       possibleIdentityConflicts,
@@ -381,7 +382,9 @@ export async function GET(request) {
     },
     verification:
       displayHealthStatus === "MONITORING"
-        ? "Connected read-only sources are readable, but full Auth & Sync verification is not yet claimed because failed-sign-in and deeper cross-device conflict telemetry are not fully live-wired."
+        ? legacyPreTimestampClaims > 0
+          ? "Connected read-only sources are readable. HIISSA recognised legacy pre-timestamp Staging evidence without changing data. Full Auth & Sync verification is still not claimed because failed-sign-in and deeper cross-device conflict telemetry are not fully live-wired."
+          : "Connected read-only sources are readable, but full Auth & Sync verification is not yet claimed because failed-sign-in and deeper cross-device conflict telemetry are not fully live-wired."
         : "The detected issue remains open until the relevant identity, migration or source condition is rechecked and evidence verifies recovery.",
     finalResolution:
       displayHealthStatus === "MONITORING"
