@@ -1207,10 +1207,52 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     })),
   ];
 
+  const searchAliases = {
+    Overview: "home summary dashboard status what is happening what needs me",
+    "Staff & Workspaces": "staff employees people departments teams workplace workspaces",
+    Approvals: "approve reject return decision inbox founder gate submissions",
+    "Provider Health": "provider service outage down working supabase vercel resend openai cloudflare",
+    "Usage & Billing": "cost spend payment bill billing money usage credit quota renewal subscription provider",
+    "Provider Register": "services tools suppliers dependencies providers subscriptions",
+    "Historical Evidence": "history previous evidence old provider checks",
+    "Founder Action / Next Step": "what do i need to do next action founder attention",
+    "Security Health": "security safe access permissions audit monitoring",
+    "Roles & Permissions": "roles permissions who can do what access rights",
+    "Approvals & Sensitive Actions": "sensitive l3 founder gate high risk approval",
+    "Staff Access & Onboarding": "staff access onboarding invite employee add remove suspend staff member",
+    "Audit Trail": "audit auditory history activity log who did what who changed something admin changes record",
+    "Exceptional Access & Break-Glass": "emergency exceptional break glass high risk access",
+    "People Experience reliability": "check in calmer start workday close people experience failure recovery",
+    "Authentication & Sync reliability": "login sign in auth save sync migration identity failure",
+    "AI & Product reliability": "ai quality evaluator regeneration failure product",
+    "Provider reliability": "provider outage service down infrastructure failure",
+    "Admin Security reliability": "security failure access audit problem",
+    "Sign-in and identity health": "login sign in account identity authentication",
+    "Save & Sync evidence": "save sync continue conversation persistence migration device cross device",
+    "Authentication operating principles": "auth guest identity migration account rules",
+    "Feedback ratings": "feedback rating stars helpful score",
+    "Written feedback": "feedback comments private feedback what users said",
+    Recommendations: "recommendation suggestions ideas improvements user ideas",
+    "Referral growth": "referral invite recommendation share joins growth",
+    "Public reviews": "reviews public permission testimonials",
+    "AI Quality Evaluator": "ai quality evaluator pass fail responses",
+    "AI regeneration": "retry regenerate ai recovery",
+    "Language intelligence": "language multilingual french twi translation metadata",
+    "AI product signals": "product intelligence feedback signals usage quality",
+    "Young HIISSA quality boundary": "young hiissa child children youth safety quality",
+    "AI provider quality": "model provider openai quality correlation",
+    "AI Founder Action / Next Step": "ai founder action next step what do i need to do",
+    "Departments & staff workspaces": "staff teams departments workspaces workplace employees",
+    "Private Appreciation": "recognition appreciation thank staff praise",
+    "Staff Directory": "staff directory people employees team member",
+  };
+
   const normalised = query.trim().toLowerCase();
   const results = normalised
     ? destinations.filter((item) =>
-        `${item.label} ${item.detail}`.toLowerCase().includes(normalised)
+        `${item.label} ${item.detail} ${searchAliases[item.label] || ""}`
+          .toLowerCase()
+          .includes(normalised)
       ).slice(0, 12)
     : destinations.slice(0, 8);
 
@@ -1230,6 +1272,10 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
         placeholder="Search modules, areas, departments or workspaces…"
         autoFocus
       />
+      <p className={styles.searchHelp}>
+        Use ordinary words — for example: staff access, audit/history, save and sync,
+        payment, feedback or provider.
+      </p>
       <div className={styles.searchResults}>
         {results.map((item) => (
           <button
