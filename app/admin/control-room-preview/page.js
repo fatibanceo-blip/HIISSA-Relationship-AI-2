@@ -26,6 +26,7 @@ import {
   UNIVERSAL_FOUNDER_SUBMISSION_GATE,
   STAFF_WORKSPACE_SHELL_STANDARD,
   FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD,
+  FOUNDER_SUBSCRIPTIONS_ACCESS_STANDARD,
   FOUNDER_AI_PRODUCT_INTELLIGENCE_STANDARD,
   FOUNDER_ADMIN_SECURITY_AUDIT_STANDARD,
   HIISSA_PEOPLE_EXPERIENCE_LAYER,
@@ -399,6 +400,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 }
                 onOpenUsersIdentity={() =>
                   chooseModule(CONTROL_ROOM_MODULES.usersIdentity)
+                }
+                onOpenSubscriptionsAccess={() =>
+                  chooseModule(CONTROL_ROOM_MODULES.subscriptionsAccess)
                 }
                 onOpenSafetyPrivacy={() =>
                   chooseModule(CONTROL_ROOM_MODULES.safetyPrivacyModeration)
@@ -1059,6 +1063,60 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     },
 
     {
+      label: "Subscription readiness",
+      detail: "Subscriptions & Access · what is registered, off and still missing before live commerce",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.subscriptionsAccess,
+          "module3-activation"
+        ),
+    },
+    {
+      label: "HIISSA access levels",
+      detail: "Subscriptions & Access · FREE, HIISSA+ and HIISSA TOGETHER access architecture",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.subscriptionsAccess,
+          "module3-access-architecture"
+        ),
+    },
+    {
+      label: "Entitlement resolver",
+      detail: "Subscriptions & Access · account access and entitlement readiness",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.subscriptionsAccess,
+          "module3-entitlements"
+        ),
+    },
+    {
+      label: "Regional pricing",
+      detail: "Subscriptions & Access · Global Commerce & Regional Pricing",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.subscriptionsAccess,
+          "module3-commerce"
+        ),
+    },
+    {
+      label: "Paid Market Readiness",
+      detail: "Subscriptions & Access · commercial activation gate readiness",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.subscriptionsAccess,
+          "module3-market-readiness"
+        ),
+    },
+    {
+      label: "Finance subscription boundaries",
+      detail: "Subscriptions & Access · commercial permissions and privacy boundaries",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.subscriptionsAccess,
+          "module3-boundaries"
+        ),
+    },
+    {
       label: "Account & Identity Health",
       detail: "Users & Identity · account state and ownership integrity",
       action: () =>
@@ -1388,6 +1446,12 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     "Staff Access & Onboarding": "staff access onboarding invite employee add remove suspend staff member",
     "Audit Trail": "audit auditory history activity log who did what who changed something admin changes record",
     "Exceptional Access & Break-Glass": "emergency exceptional break glass high risk access",
+    "Subscription readiness": "subscription payment billing paid money pricing plan membership commercial readiness",
+    "HIISSA access levels": "free plus hiissa+ together plans membership access levels upgrade",
+    "Entitlement resolver": "entitlement access permission plan account access resolver",
+    "Regional pricing": "price currency countries market regional pricing global commerce",
+    "Paid Market Readiness": "launch market payment go live commercial readiness country gate",
+    "Finance subscription boundaries": "refund finance payment card subscription corrections privacy",
     "People Experience reliability": "check in calmer start workday close people experience failure recovery",
     "Authentication & Sync reliability": "login sign in auth save sync migration identity failure",
     "AI & Product reliability": "ai quality evaluator regeneration failure product",
@@ -1990,6 +2054,7 @@ function ControlRoomOverviewLiveSummary({
   onOpenAlerts,
   onOpenFailures,
   onOpenUsersIdentity,
+  onOpenSubscriptionsAccess,
   onOpenSafetyPrivacy,
   onOpenAuthSync,
   onOpenAiProduct,
@@ -2340,6 +2405,11 @@ function ControlRoomOverviewLiveSummary({
           }
         />
         <InfoCard
+          title="SUBSCRIPTIONS & ACCESS READINESS"
+          value="LIVE MONEY OFF"
+          detail="Access architecture is registered, but customer subscriptions, payment activation, entitlement resolution and paid-market release are not yet live-wired."
+        />
+        <InfoCard
           title="USERS & IDENTITY"
           value={
             state.usersIdentity
@@ -2459,6 +2529,16 @@ function ControlRoomOverviewLiveSummary({
                 : "No connected Founder attention item right now"}
           </strong>
           <small>Open the shared Founder Alerts view →</small>
+        </button>
+
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenSubscriptionsAccess}
+        >
+          <span>SUBSCRIPTIONS & ACCESS</span>
+          <strong>Commercial readiness · Live money OFF</strong>
+          <small>Open access, entitlement and paid-market readiness →</small>
         </button>
 
         <button
@@ -3543,6 +3623,7 @@ function Overview({
   onOpenApprovals,
   onOpenFailures,
   onOpenUsersIdentity,
+  onOpenSubscriptionsAccess,
   onOpenSafetyPrivacy,
   onOpenAuthSync,
   onOpenAiProduct,
@@ -3632,6 +3713,7 @@ function Overview({
         onOpenAlerts={onOpenAlerts}
         onOpenFailures={onOpenFailures}
         onOpenUsersIdentity={onOpenUsersIdentity}
+        onOpenSubscriptionsAccess={onOpenSubscriptionsAccess}
         onOpenSafetyPrivacy={onOpenSafetyPrivacy}
         onOpenAuthSync={onOpenAuthSync}
         onOpenAiProduct={onOpenAiProduct}
@@ -4236,6 +4318,315 @@ function AdminSecurityReliabilityCrossReference({ authenticated }) {
           <div>{error}</div>
         </section>
       ) : null}
+    </>
+  );
+}
+
+function SubscriptionsAccessModule({
+  module,
+  onOverview,
+  onBack,
+}) {
+  const standard = FOUNDER_SUBSCRIPTIONS_ACCESS_STANDARD;
+  const accessDiscovery = EXPERIENCE_REGISTRY.accessDiscovery || {};
+  const freeWelcome = EXPERIENCE_REGISTRY.freeWelcome || {};
+  const plusWelcome = EXPERIENCE_REGISTRY.plusWelcome || {};
+  const togetherWelcome = EXPERIENCE_REGISTRY.togetherWelcome || {};
+  const myHiissaHome = EXPERIENCE_REGISTRY.myHiissaHome || {};
+
+  return (
+    <>
+      <FounderContextBack onBack={onBack} />
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>
+            MODULE 3 — COMMERCIAL & ACCESS READINESS
+          </div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill label="READINESS · LIVE MONEY OFF" />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>Do not confuse access architecture with live subscription data.</strong>
+        <p>
+          HIISSA already has approved access journeys, but Staging does not yet
+          have a canonical live customer-subscription source. This module reports
+          what is registered, what is deliberately OFF, and what must be completed
+          before commercial activation. It does not invent subscribers, revenue,
+          prices or entitlements.
+        </p>
+      </section>
+
+      <ControlRoomAreaNavigator
+        id="module3-find"
+        title="Subscriptions & Access areas"
+        areas={[
+          ["Access Architecture", "module3-access-architecture"],
+          ["Subscription Activation", "module3-activation"],
+          ["Entitlement Resolver", "module3-entitlements"],
+          ["Global Commerce & Pricing", "module3-commerce"],
+          ["Paid Market Readiness", "module3-market-readiness"],
+          ["Commercial Boundaries", "module3-boundaries"],
+        ]}
+      />
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module3-access-architecture"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>ACCESS ARCHITECTURE</div>
+            <h3>What HIISSA access families are actually registered?</h3>
+          </div>
+          <StatusPill label="REGISTRY-BACKED" compact />
+        </div>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="HIISSA FREE"
+            value="REGISTERED"
+            detail={
+              freeWelcome.status
+                ? `Registry state: ${humaniseAuditToken(freeWelcome.status)}.`
+                : "Registered FREE access architecture."
+            }
+          />
+          <InfoCard
+            title="HIISSA+"
+            value="REGISTERED · ACTIVATION OFF"
+            detail={
+              plusWelcome.subscriptionActivation === "off"
+                ? "HIISSA+ welcome/access architecture exists, but customer subscription activation remains OFF."
+                : "HIISSA+ subscription activation is not certified as live."
+            }
+          />
+          <InfoCard
+            title="HIISSA TOGETHER"
+            value="REGISTERED · ACTIVATION OFF"
+            detail={
+              togetherWelcome.subscriptionActivation === "off"
+                ? "TOGETHER welcome/access architecture exists, but customer subscription activation remains OFF."
+                : "TOGETHER subscription activation is not certified as live."
+            }
+          />
+          <InfoCard
+            title="GO FURTHER WITH HIISSA"
+            value="REGISTERED"
+            detail={
+              accessDiscovery.status
+                ? `Access-discovery Registry state: ${humaniseAuditToken(accessDiscovery.status)}.`
+                : "The access-discovery doorway is registered."
+            }
+          />
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module3-activation"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>SUBSCRIPTION ACTIVATION</div>
+            <h3>What is commercially live right now?</h3>
+          </div>
+          <StatusPill label="OFF" compact />
+        </div>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="LIVE CUSTOMER-SUBSCRIPTION SOURCE"
+            value="NOT YET LIVE-WIRED"
+            detail="There is no canonical Staging customer-subscription source from which HIISSA can truthfully calculate subscriber or paid-entitlement metrics."
+          />
+          <InfoCard
+            title="LIVE PAYMENT PROVIDER"
+            value="OFF"
+            detail="No live customer payment/card collection is activated by this Control Room work."
+          />
+          <InfoCard
+            title="LIVE MONEY"
+            value="OFF"
+            detail="This Staging module does not charge, refund, renew or collect money."
+          />
+          <InfoCard
+            title="PRODUCTION SUBSCRIPTION RELEASE"
+            value="NOT AUTHORISED"
+            detail="Production commercial activation remains a separate Founder release gate."
+          />
+        </div>
+
+        <div className={styles.featureMeta}>
+          <span>SUBSCRIBER COUNT: NOT AVAILABLE · NO CANONICAL SOURCE</span>
+          <span>REVENUE: NOT AVAILABLE · NO CANONICAL SOURCE</span>
+          <span>PAYMENT SUCCESS: NOT CLAIMED</span>
+          <span>REFUND SUCCESS: NOT CLAIMED</span>
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module3-entitlements"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>ENTITLEMENT RESOLVER</div>
+            <h3>Identity does not automatically prove paid access</h3>
+          </div>
+          <StatusPill label="NOT IMPLEMENTED" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          The authenticated account journey is working, but the Account Access
+          Resolver is not yet implemented. HIISSA must not guess FREE, HIISSA+ or
+          HIISSA TOGETHER entitlement merely because a person is signed in.
+        </p>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="ACCOUNT ACCESS RESOLVER"
+            value="NOT IMPLEMENTED"
+            detail={
+              myHiissaHome.planState ||
+              "The current authenticated account must not guess a subscription entitlement."
+            }
+          />
+          <InfoCard
+            title="IDENTITY"
+            value="SEPARATE"
+            detail="Authentication proves who the account is; it does not itself prove subscription entitlement."
+          />
+          <InfoCard
+            title="ENTITLEMENT CHANGE"
+            value="NO CHANGES ENABLED"
+            detail="Consequential access changes require their own authority, evidence, audit and Founder-approved execution contract."
+          />
+          <InfoCard
+            title="ONE CURRENT ACCESS LEVEL"
+            value="APPROVED RULE"
+            detail="One account has one current HIISSA access level at a time; higher access may include lower-level capabilities without presenting multiple simultaneous subscriptions."
+          />
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module3-commerce"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>GLOBAL COMMERCE & REGIONAL PRICING</div>
+            <h3>One global architecture, not a different subscription system per country</h3>
+          </div>
+          <StatusPill label="APPROVED ARCHITECTURE" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>{standard.commerceArchitecture}</p>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="REGIONAL PRICING"
+            value="PRICE VERSIONS REQUIRED"
+            detail="Regional prices must be approved with versions and effective dates; uncontrolled live FX is not a substitute."
+          />
+          <InfoCard
+            title="PRICING & ENTITLEMENT COPY"
+            value="NOT FINALISED"
+            detail="The access-discovery Registry still records pricing and entitlement copy as unfinished."
+          />
+          <InfoCard
+            title="COUNTRY / CURRENCY"
+            value="NOT IDENTITY"
+            detail="Country, currency, language and subscription remain separate concepts."
+          />
+          <InfoCard
+            title="HIISSA'S OWN PROVIDER COSTS"
+            value="MODULE 9"
+            detail="Provider/tool subscriptions and infrastructure spend remain System & Operations, not customer Subscriptions & Access."
+          />
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module3-market-readiness"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>PAID MARKET READINESS</div>
+            <h3>Commercial activation remains gated</h3>
+          </div>
+          <StatusPill label="GATE NOT OPEN" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>{standard.paidMarketReadinessRule}</p>
+
+        <div className={styles.featureList}>
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT IS READY</strong></div>
+            <p>
+              The access families and conversion doorway are registered, and the
+              one-global-commerce direction is approved.
+            </p>
+          </article>
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT IS STILL MISSING</strong></div>
+            <p>
+              Canonical customer-subscription state, Account Access Resolver,
+              final pricing/entitlement copy, live payment-provider integration,
+              applicable tax/legal/business/benefits readiness and explicit
+              Production subscription release approval.
+            </p>
+          </article>
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>FOUNDER ACTION NOW</strong></div>
+            <p>
+              No live-money action is required from this Staging view. Continue
+              building and certifying the commercial foundations before opening
+              any paid-market gate.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section
+        className={`${styles.section} ${styles.moduleJumpTarget}`}
+        id="module3-boundaries"
+      >
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>COMMERCIAL BOUNDARIES</div>
+            <h3>Finance access is commercial, not private-life access</h3>
+          </div>
+          <StatusPill label="LOCKED" compact />
+        </div>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="PAYMENT ≠ SUBSCRIPTION ≠ ENTITLEMENT ≠ IDENTITY"
+            value="LOCKED"
+            detail="These states must remain separately verifiable."
+          />
+          <InfoCard
+            title="PRIVATE CONVERSATIONS"
+            value="NOT PART OF FINANCE ACCESS"
+            detail="Commercial administration does not grant routine access to a user's private HIISSA life."
+          />
+          <InfoCard
+            title="RAW CARD DATA"
+            value="NOT HELD HERE"
+            detail="A future payment provider handles payment/card collection; the Founder Control Room should not become a card-data console."
+          />
+          <InfoCard
+            title="REFUNDS / CORRECTIONS"
+            value="AUTHORITY + EVIDENCE + AUDIT"
+            detail="Refunds, subscription corrections and entitlement changes require attributable authorised execution and verified outcome."
+          />
+        </div>
+      </section>
     </>
   );
 }
@@ -5311,6 +5702,16 @@ function AuthSyncHealthModule({ module, onOverview, onBack }) {
 }
 
 function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
+  if (module.id === CONTROL_ROOM_MODULES.subscriptionsAccess && authenticated) {
+    return (
+      <SubscriptionsAccessModule
+        module={module}
+        onOverview={onOverview}
+        onBack={onBack}
+      />
+    );
+  }
+
   if (module.id === CONTROL_ROOM_MODULES.usersIdentity && authenticated) {
     return (
       <UsersIdentityModule
