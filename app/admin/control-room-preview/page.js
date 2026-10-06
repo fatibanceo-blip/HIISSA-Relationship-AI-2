@@ -1036,6 +1036,7 @@ function FounderAlertsPanel({
   onOpenAuthSync,
   onOpenAiProduct,
   onOpenSystemOperations,
+  onOpenSecurityAudit,
 }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [pending, setPending] = useState(null);
@@ -1275,10 +1276,19 @@ function FounderAlertsPanel({
                 : securityStatus === null
                   ? "This source could not be confirmed right now."
                   : securityNeedsAttention
-                    ? "A connected Admin Security source needs Founder attention. Open the Admin Security & Audit module for the verified detail."
+                    ? "A connected Admin Security source needs Founder attention. Open Security & Audit for the verified detail."
                     : "No connected Admin Security attention signal is currently reported."}
             </p>
           </div>
+          {securityStatus ? (
+            <button
+              type="button"
+              className={styles.alertAction}
+              onClick={onOpenSecurityAudit}
+            >
+              Open Security & Audit →
+            </button>
+          ) : null}
         </article>
 
         <article
@@ -1437,6 +1447,7 @@ function ControlRoomOverviewLiveSummary({
   onOpenAuthSync,
   onOpenAiProduct,
   onOpenSystemOperations,
+  onOpenSecurityAudit,
 }) {
   const [state, setState] = useState({
     loading: Boolean(authenticated),
@@ -1588,8 +1599,19 @@ function ControlRoomOverviewLiveSummary({
   }, [authenticated]);
 
   const pendingApprovals = Number(state.approvals?.pendingCount || 0);
-  const securityAttention =
-    state.security?.status === "NEEDS_ATTENTION" ? 1 : 0;
+  const securityStatus = String(
+    state.security?.displayHealthStatus ||
+      state.security?.status ||
+      "MONITORING"
+  );
+  const securityAttention = [
+    "NEEDS_ATTENTION",
+    "DEGRADED",
+    "UNAVAILABLE",
+    "CRITICAL",
+  ].includes(securityStatus)
+    ? 1
+    : 0;
   const peopleStatus = String(
     state.people?.displayHealthStatus || "MONITORING"
   );
@@ -1658,7 +1680,8 @@ function ControlRoomOverviewLiveSummary({
       ? "CRITICAL"
       : state.sourceErrors > 0
         ? "UNAVAILABLE"
-        : peopleStatus === "DEGRADED" ||
+        : securityStatus === "DEGRADED" ||
+            peopleStatus === "DEGRADED" ||
             authSyncStatus === "DEGRADED" ||
             aiProductStatus === "DEGRADED" ||
             systemOperationsStatus === "DEGRADED"
@@ -1751,6 +1774,24 @@ function ControlRoomOverviewLiveSummary({
           }
         />
         <InfoCard
+          title="ADMIN SECURITY & AUDIT"
+          value={
+            state.security
+              ? statusLabel(
+                  state.security.displayHealthStatus ||
+                    state.security.status ||
+                    "MONITORING"
+                )
+              : state.loading
+                ? "Checking…"
+                : "Unavailable"
+          }
+          detail={
+            state.security?.founderView?.doINeedToAct ||
+            "Roles, permissions, access grants and attributable audit evidence are monitored from the protected Security source."
+          }
+        />
+        <InfoCard
           title="CONNECTED SOURCES"
           value={
             state.loading
@@ -1824,6 +1865,18 @@ function ControlRoomOverviewLiveSummary({
             Providers & infrastructure · {statusLabel(systemOperationsStatus)}
           </strong>
           <small>Open the live provider-health and spend register →</small>
+        </button>
+
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenSecurityAudit}
+        >
+          <span>SECURITY & AUDIT</span>
+          <strong>
+            Access & accountability · {statusLabel(securityStatus)}
+          </strong>
+          <small>Open Admin access, permissions and audit health →</small>
         </button>
       </div>
     </>
@@ -2826,6 +2879,7 @@ function Overview({
   onOpenAuthSync,
   onOpenAiProduct,
   onOpenSystemOperations,
+  onOpenSecurityAudit,
   onShowFullOverview,
 }) {
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
@@ -2912,6 +2966,7 @@ function Overview({
         onOpenAuthSync={onOpenAuthSync}
         onOpenAiProduct={onOpenAiProduct}
         onOpenSystemOperations={onOpenSystemOperations}
+        onOpenSecurityAudit={onOpenSecurityAudit}
       />
 
       <div className={styles.grid}>
