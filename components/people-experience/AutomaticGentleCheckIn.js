@@ -55,6 +55,18 @@ export default function AutomaticGentleCheckIn({
   const lastManualRequest = useRef(manualRequestKey);
   const lastActivityAt = useRef(Date.now());
   const safeRetryTimer = useRef(null);
+  const lastOperationalEventAt = useRef(new Map());
+
+  function emitOperationalEvent(event, context, minimumGapMs = 0) {
+    if (typeof recordOperationalEvent !== "function") return;
+
+    const previousAt = Number(lastOperationalEventAt.current.get(event) || 0);
+    const now = Date.now();
+    if (minimumGapMs > 0 && now - previousAt < minimumGapMs) return;
+
+    lastOperationalEventAt.current.set(event, now);
+    void recordOperationalEvent(event, context);
+  }
 
   const pollMs = Number(offer?.pollMinutes || 15) * 60 * 1000 || DEFAULT_POLL_MS;
   const snoozeMs =
@@ -81,13 +93,15 @@ export default function AutomaticGentleCheckIn({
       previewOnly || Date.now() - lastActivityAt.current <= RECENT_ACTIVITY_WINDOW_MS;
 
     if (!manual && (!recentlyActive || editing)) {
-      if (typeof recordOperationalEvent === "function") {
-        void recordOperationalEvent("safe_moment_deferred", {
+      emitOperationalEvent(
+        "safe_moment_deferred",
+        {
           ...nowContext(),
           daypart: currentDaypart(),
           reason: editing ? "ACTIVE_EDITING" : "RECENT_ACTIVITY_REQUIRED",
-        });
-      }
+        },
+        DEFAULT_POLL_MS
+      );
       if (safeRetryTimer.current) window.clearTimeout(safeRetryTimer.current);
       safeRetryTimer.current = window.setTimeout(() => {
         evaluateCare();
@@ -126,13 +140,15 @@ export default function AutomaticGentleCheckIn({
       }
 
       if (!result) {
-        if (typeof recordOperationalEvent === "function") {
-          void recordOperationalEvent("eligibility_source_unavailable", {
+        emitOperationalEvent(
+          "eligibility_source_unavailable",
+          {
             ...nowContext(),
             daypart: currentDaypart(),
             reason: "NO_ELIGIBILITY_RESULT",
-          });
-        }
+          },
+          DEFAULT_POLL_MS
+        );
         return;
       }
 
@@ -195,13 +211,11 @@ export default function AutomaticGentleCheckIn({
     const timer = window.setTimeout(() => {
       setOpen(false);
       setReminder("pending");
-      if (typeof recordOperationalEvent === "function") {
-        void recordOperationalEvent("prompt_auto_minimised", {
-          ...nowContext(),
-          daypart,
-          reason: "FULL_PROMPT_IGNORED",
-        });
-      }
+      emitOperationalEvent("prompt_auto_minimised", {
+        ...nowContext(),
+        daypart,
+        reason: "FULL_PROMPT_IGNORED",
+      });
     }, AUTO_MINIMISE_MS);
 
     return () => window.clearTimeout(timer);
@@ -221,13 +235,11 @@ export default function AutomaticGentleCheckIn({
       setSnoozedUntil(null);
       setOpen(false);
       setReminder("pending");
-      if (typeof recordOperationalEvent === "function") {
-        void recordOperationalEvent("snooze_reminder_returned", {
-          ...nowContext(),
-          daypart,
-          reason: "SNOOZE_EXPIRED",
-        });
-      }
+      emitOperationalEvent("snooze_reminder_returned", {
+        ...nowContext(),
+        daypart,
+        reason: "SNOOZE_EXPIRED",
+      });
     }, delay);
 
     return () => window.clearTimeout(timer);
@@ -240,11 +252,15 @@ export default function AutomaticGentleCheckIn({
         daypart,
       });
       if (!result && typeof recordOperationalEvent === "function") {
-        void recordOperationalEvent("care_state_persistence_degraded", {
-          ...nowContext(),
-          daypart,
-          reason: "RESOLVED_STATE_NOT_CONFIRMED",
-        });
+        emitOperationalEvent(
+          "care_state_persistence_degraded",
+          {
+            ...nowContext(),
+            daypart,
+            reason: "RESOLVED_STATE_NOT_CONFIRMED",
+          },
+          5 * 60 * 1000
+        );
       }
     }
     setReminder("");
@@ -263,11 +279,15 @@ export default function AutomaticGentleCheckIn({
         const serverUntil = new Date(result.snoozedUntil);
         if (Number.isFinite(serverUntil.getTime())) nextUntil = serverUntil;
       } else if (!result && typeof recordOperationalEvent === "function") {
-        void recordOperationalEvent("care_state_persistence_degraded", {
-          ...nowContext(),
-          daypart,
-          reason: "SNOOZED_STATE_NOT_CONFIRMED",
-        });
+        emitOperationalEvent(
+          "care_state_persistence_degraded",
+          {
+            ...nowContext(),
+            daypart,
+            reason: "SNOOZED_STATE_NOT_CONFIRMED",
+          },
+          5 * 60 * 1000
+        );
       }
     }
 
@@ -276,7 +296,7 @@ export default function AutomaticGentleCheckIn({
     setSnoozedUntil(nextUntil);
 
     if (hideReminder && typeof recordOperationalEvent === "function") {
-      void recordOperationalEvent("reminder_dismissed_while_snoozed", {
+      emitOperationalEvent("reminder_dismissed_while_snoozed", {
         ...nowContext(),
         daypart,
         reason: "SECOND_NOT_NOW",
