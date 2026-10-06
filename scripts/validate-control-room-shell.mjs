@@ -51,6 +51,15 @@ const peopleExperienceHealthPath = path.join(
   "people-experience-health",
   "route.js"
 );
+const authSyncHealthPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "auth-sync-health",
+  "route.js"
+);
 const recordTimePath = path.join(root, "lib", "hiissa-record-time.js");
 const gentleCheckInPolicyPath = path.join(
   root,
@@ -98,6 +107,7 @@ if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security s
 if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI provider summary endpoint is missing.");
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
+if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
 if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activity timeline endpoint is missing.");
 if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
 if (!fs.existsSync(gentleCheckInPolicyPath)) errors.push("Shared gentle check-in policy is missing.");
@@ -152,6 +162,9 @@ const activityTimeline = fs.existsSync(activityTimelinePath)
   : "";
 const peopleExperienceHealth = fs.existsSync(peopleExperienceHealthPath)
   ? fs.readFileSync(peopleExperienceHealthPath, "utf8")
+  : "";
+const authSyncHealth = fs.existsSync(authSyncHealthPath)
+  ? fs.readFileSync(authSyncHealthPath, "utf8")
   : "";
 const recordTime = fs.existsSync(recordTimePath)
   ? fs.readFileSync(recordTimePath, "utf8")
@@ -271,6 +284,17 @@ for (const required of [
   "AUDIT HISTORY",
   "TECHNICAL DETAILS — expand",
   "PRODUCTION UNTOUCHED",
+  "MODULE 7 — LIVE STAGING READ-ONLY",
+  "AUTH & SYNC CONNECTED",
+  "OVERALL IDENTITY HEALTH",
+  "FAILED SIGN-INS",
+  "FAILED GUEST MIGRATIONS / EVIDENCE INTEGRITY",
+  "SYNC FAILURES",
+  "POSSIBLE IDENTITY CONFLICTS",
+  "AUTHENTICATION & SYNC OPERATING PRINCIPLES",
+  "Guest is not an error; Skip is not a failed conversion.",
+  '"/api/admin/control-room/auth-sync-health"',
+  "Open Auth & Sync",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
@@ -342,6 +366,7 @@ for (const protectedSelector of [
 
 for (const feature of [
   "peopleExperience",
+  "guestSaveSync",
   "youngHiissa",
   "hiissaRest",
   "hiissaAlongside",
@@ -369,6 +394,16 @@ for (const required of [
   "SEPARATE_FOUNDER_ACTIVATION_APPROVAL",
   "Production deployment and Production activation are two different Founder-controlled decisions",
 ]) requireText("Corrected Production hibernation Registry standard", registry, required);
+
+for (const required of [
+  "guestSaveSync: Object.freeze",
+  'id: "guest.save-sync"',
+  'connectionStatus: "staging-live-operational-health-wired"',
+  "failed-sign-in-telemetry-not-yet-live-wired",
+  "deeper-cross-device-session-conflict-telemetry-not-yet-live-wired",
+  "FOUNDER_REQUIRED_FOR_ANY_MATERIAL_SAVE_SYNC_CHANGE",
+  "do not reopen Stage 4 Guest Save & Sync without new evidence",
+]) requireText("Guest Save & Sync Control Room contract", registry, required);
 
 for (const required of [
   'connectionStatus: "staging-live-operational-health-wired"',
@@ -408,6 +443,30 @@ for (const required of [
   "hasLaterRecoveryEvidence",
   "productionEffectEnabled: false",
 ]) requireText("People Experience health endpoint", peopleExperienceHealth, required);
+
+for (const required of [
+  'moduleId: "authentication-synchronisation-health"',
+  'canonicalFeatureId: "guest.save-sync"',
+  'monitoringStatus: "PARTIALLY_LIVE_WIRED"',
+  '"NOT_YET_LIVE_WIRED"',
+  "guestIsNotAnError: true",
+  "skipIsNotFailedConversion: true",
+  "similarAccountsNeverAutoMerged: true",
+  "rawPasswordsReturned: false",
+  "rawTokensReturned: false",
+  "magicLinkCredentialsReturned: false",
+  "serviceRoleSecretsReturned: false",
+  "rawCookiesReturned: false",
+  "conversationContentReturned: false",
+  "existingStage4AuthAndSaveSyncPreserved: true",
+  "productionSaveSyncChanged: false",
+  "automaticDataMutationPerformed: false",
+  "materialMigrationChangeRequiresFounderApproval: true",
+  "possibleIdentityConflicts",
+  "claimedMissingClaimedAt",
+  "different devices may have different sessions",
+  "productionEffectEnabled: false",
+]) requireText("Auth & Sync health endpoint", authSyncHealth, required);
 
 for (const required of [
   "interactionFeedbackRule",
