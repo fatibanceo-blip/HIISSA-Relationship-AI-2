@@ -305,6 +305,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             onOpenFailures={() =>
               chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
             }
+            onOpenAuthSync={() =>
+              chooseModule(CONTROL_ROOM_MODULES.authSync)
+            }
           />
         ) : null}
 
@@ -355,6 +358,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 onOpenApprovals={() => choosePrimary("approvals")}
                 onOpenFailures={() =>
                   chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
+                }
+                onOpenAuthSync={() =>
+                  chooseModule(CONTROL_ROOM_MODULES.authSync)
                 }
                 onShowFullOverview={() => setCalmStart(false)}
               />
@@ -434,32 +440,48 @@ function FounderAlertButton({ authenticated, active, onClick }) {
         if (!session?.access_token || !mounted) return;
 
         const headers = { Authorization: `Bearer ${session.access_token}` };
-        const [approvalResponse, securityResponse, peopleResponse] =
-          await Promise.all([
-            fetch("/api/admin/control-room/staff-approval-inbox", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-            fetch("/api/admin/control-room/security-summary", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-            fetch("/api/admin/control-room/people-experience-health", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-          ]);
+        const [
+          approvalResponse,
+          securityResponse,
+          peopleResponse,
+          authSyncResponse,
+        ] = await Promise.all([
+          fetch("/api/admin/control-room/staff-approval-inbox", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/security-summary", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/auth-sync-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+        ]);
 
-        const [approvalData, securityData, peopleData] = await Promise.all([
+        const [
+          approvalData,
+          securityData,
+          peopleData,
+          authSyncData,
+        ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
+          authSyncResponse.json().catch(() => null),
         ]);
 
         if (!mounted) return;
@@ -484,11 +506,24 @@ function FounderAlertButton({ authenticated, active, onClick }) {
         ].includes(peopleDisplayStatus)
           ? 1
           : 0;
+        const authSyncDisplayStatus =
+          authSyncResponse.ok && authSyncData
+            ? String(authSyncData.displayHealthStatus || "")
+            : "";
+        const authSyncAttention = [
+          "NEEDS_ATTENTION",
+          "DEGRADED",
+          "UNAVAILABLE",
+          "CRITICAL",
+        ].includes(authSyncDisplayStatus)
+          ? 1
+          : 0;
 
         const explicitCritical =
           Number(securityData?.criticalCount || 0) +
           Number(approvalData?.criticalCount || 0) +
-          (peopleDisplayStatus === "CRITICAL" ? 1 : 0);
+          (peopleDisplayStatus === "CRITICAL" ? 1 : 0) +
+          (authSyncDisplayStatus === "CRITICAL" ? 1 : 0);
         const criticalCount = Number.isFinite(explicitCritical)
           ? Math.max(0, explicitCritical)
           : 0;
@@ -507,7 +542,8 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           attentionCount:
             Math.max(0, pendingApprovals) +
             securityAttention +
-            peopleAttention,
+            peopleAttention +
+            authSyncAttention,
           criticalCount,
           criticalMessage,
         });
@@ -786,6 +822,7 @@ function FounderAlertsPanel({
   onClose,
   onOpenApprovals,
   onOpenFailures,
+  onOpenAuthSync,
 }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [pending, setPending] = useState(null);
@@ -793,6 +830,7 @@ function FounderAlertsPanel({
   const [criticalCount, setCriticalCount] = useState(0);
   const [criticalMessage, setCriticalMessage] = useState("");
   const [peopleHealth, setPeopleHealth] = useState(null);
+  const [authSyncHealth, setAuthSyncHealth] = useState(null);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -814,32 +852,48 @@ function FounderAlertsPanel({
         }
 
         const headers = { Authorization: `Bearer ${session.access_token}` };
-        const [approvalResponse, securityResponse, peopleResponse] =
-          await Promise.all([
-            fetch("/api/admin/control-room/staff-approval-inbox", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-            fetch("/api/admin/control-room/security-summary", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-            fetch("/api/admin/control-room/people-experience-health", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-          ]);
+        const [
+          approvalResponse,
+          securityResponse,
+          peopleResponse,
+          authSyncResponse,
+        ] = await Promise.all([
+          fetch("/api/admin/control-room/staff-approval-inbox", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/security-summary", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/auth-sync-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+        ]);
 
-        const [approvalData, securityData, peopleData] = await Promise.all([
+        const [
+          approvalData,
+          securityData,
+          peopleData,
+          authSyncData,
+        ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
+          authSyncResponse.json().catch(() => null),
         ]);
 
         if (!active) return;
@@ -863,6 +917,11 @@ function FounderAlertsPanel({
           String(peopleData?.displayHealthStatus || "") === "CRITICAL"
             ? 1
             : 0;
+        const authSyncCritical =
+          authSyncResponse.ok &&
+          String(authSyncData?.displayHealthStatus || "") === "CRITICAL"
+            ? 1
+            : 0;
 
         if (securityResponse.ok && securityData) {
           setSecurityStatus(securityData.status || null);
@@ -875,7 +934,10 @@ function FounderAlertsPanel({
         setCriticalCount(
           Math.max(
             0,
-            securityCritical + approvalCritical + peopleCritical
+            securityCritical +
+              approvalCritical +
+              peopleCritical +
+              authSyncCritical
           )
         );
 
@@ -883,6 +945,12 @@ function FounderAlertsPanel({
           setPeopleHealth(peopleData);
         } else {
           setPeopleHealth(null);
+        }
+
+        if (authSyncResponse.ok && authSyncData) {
+          setAuthSyncHealth(authSyncData);
+        } else {
+          setAuthSyncHealth(null);
         }
 
         setLoading(false);
@@ -991,6 +1059,39 @@ function FounderAlertsPanel({
           ) : null}
         </article>
 
+        <article
+          className={
+            ["NEEDS_ATTENTION", "DEGRADED", "UNAVAILABLE", "CRITICAL"].includes(
+              String(authSyncHealth?.displayHealthStatus || "")
+            )
+              ? styles.alertItemAttention
+              : styles.alertItem
+          }
+        >
+          <div>
+            <strong>Authentication & Sync health</strong>
+            <p>
+              {loading
+                ? "Checking the connected Auth & Sync health source…"
+                : !authSyncHealth
+                  ? "This source could not be confirmed right now."
+                  : authSyncHealth.displayHealthStatus === "MONITORING"
+                    ? "Read-only Auth & Sync monitoring is connected. HIISSA is not claiming Healthy while failed-sign-in and deeper cross-device conflict telemetry are still being backfilled."
+                    : authSyncHealth.founderView?.doINeedToAct ||
+                      "A connected Auth & Sync signal needs attention."}
+            </p>
+          </div>
+          {authSyncHealth ? (
+            <button
+              type="button"
+              className={styles.alertAction}
+              onClick={onOpenAuthSync}
+            >
+              Open Auth & Sync →
+            </button>
+          ) : null}
+        </article>
+
         <article className={styles.alertItem}>
           <div>
             <strong>More Founder alert sources</strong>
@@ -1010,12 +1111,14 @@ function ControlRoomOverviewLiveSummary({
   authenticated,
   onOpenAlerts,
   onOpenFailures,
+  onOpenAuthSync,
 }) {
   const [state, setState] = useState({
     loading: Boolean(authenticated),
     approvals: null,
     security: null,
     people: null,
+    authSync: null,
     sourceErrors: 0,
   });
 
@@ -1026,6 +1129,7 @@ function ControlRoomOverviewLiveSummary({
         approvals: null,
         security: null,
         people: null,
+        authSync: null,
         sourceErrors: 0,
       });
       return;
@@ -1045,32 +1149,48 @@ function ControlRoomOverviewLiveSummary({
         }
 
         const headers = { Authorization: `Bearer ${session.access_token}` };
-        const [approvalResponse, securityResponse, peopleResponse] =
-          await Promise.all([
-            fetch("/api/admin/control-room/staff-approval-inbox", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-            fetch("/api/admin/control-room/security-summary", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-            fetch("/api/admin/control-room/people-experience-health", {
-              method: "GET",
-              cache: "no-store",
-              credentials: "same-origin",
-              headers,
-            }),
-          ]);
+        const [
+          approvalResponse,
+          securityResponse,
+          peopleResponse,
+          authSyncResponse,
+        ] = await Promise.all([
+          fetch("/api/admin/control-room/staff-approval-inbox", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/security-summary", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/auth-sync-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+        ]);
 
-        const [approvalData, securityData, peopleData] = await Promise.all([
+        const [
+          approvalData,
+          securityData,
+          peopleData,
+          authSyncData,
+        ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
+          authSyncResponse.json().catch(() => null),
         ]);
 
         if (!active) return;
@@ -1083,10 +1203,13 @@ function ControlRoomOverviewLiveSummary({
             securityResponse.ok && securityData ? securityData : null,
           people:
             peopleResponse.ok && peopleData ? peopleData : null,
+          authSync:
+            authSyncResponse.ok && authSyncData ? authSyncData : null,
           sourceErrors:
             Number(!approvalResponse.ok) +
             Number(!securityResponse.ok) +
-            Number(!peopleResponse.ok),
+            Number(!peopleResponse.ok) +
+            Number(!authSyncResponse.ok),
         });
       } catch {
         if (!active) return;
@@ -1095,7 +1218,8 @@ function ControlRoomOverviewLiveSummary({
           approvals: null,
           security: null,
           people: null,
-          sourceErrors: 3,
+          authSync: null,
+          sourceErrors: 4,
         });
       }
     }
@@ -1121,11 +1245,27 @@ function ControlRoomOverviewLiveSummary({
     ? 1
     : 0;
 
+  const authSyncStatus = String(
+    state.authSync?.displayHealthStatus || "MONITORING"
+  );
+  const authSyncAttention = [
+    "NEEDS_ATTENTION",
+    "DEGRADED",
+    "UNAVAILABLE",
+    "CRITICAL",
+  ].includes(authSyncStatus)
+    ? 1
+    : 0;
+
   const attentionCount =
-    pendingApprovals + securityAttention + peopleAttention;
+    pendingApprovals +
+    securityAttention +
+    peopleAttention +
+    authSyncAttention;
   const criticalCount =
     Number(state.security?.criticalCount || 0) +
-    (peopleStatus === "CRITICAL" ? 1 : 0);
+    (peopleStatus === "CRITICAL" ? 1 : 0) +
+    (authSyncStatus === "CRITICAL" ? 1 : 0);
 
   const overallStatus = state.loading
     ? "MONITORING"
@@ -1133,7 +1273,7 @@ function ControlRoomOverviewLiveSummary({
       ? "CRITICAL"
       : state.sourceErrors > 0
         ? "UNAVAILABLE"
-        : peopleStatus === "DEGRADED"
+        : peopleStatus === "DEGRADED" || authSyncStatus === "DEGRADED"
           ? "DEGRADED"
           : attentionCount > 0
             ? "NEEDS ATTENTION"
@@ -1179,13 +1319,27 @@ function ControlRoomOverviewLiveSummary({
           }
         />
         <InfoCard
+          title="AUTH & SYNC"
+          value={
+            state.authSync
+              ? statusLabel(state.authSync.displayHealthStatus || "MONITORING")
+              : state.loading
+                ? "Checking…"
+                : "Unavailable"
+          }
+          detail={
+            state.authSync?.founderView?.doINeedToAct ||
+            "Read-only identity, Guest, Save & Continue and migration evidence is now connected without reopening the protected working core."
+          }
+        />
+        <InfoCard
           title="CONNECTED SOURCES"
           value={
             state.loading
               ? "Checking…"
-              : `${3 - state.sourceErrors} / 3 current Overview sources`
+              : `${4 - state.sourceErrors} / 4 current Overview sources`
           }
-          detail="Founder approvals, Admin Security and People Experience are the current live Overview inputs in this Staging package."
+          detail="Founder approvals, Admin Security, People Experience and Auth & Sync are the current live Overview inputs in this Staging package."
         />
       </div>
 
@@ -1217,7 +1371,292 @@ function ControlRoomOverviewLiveSummary({
           </strong>
           <small>Open the full health, recovery and verification detail →</small>
         </button>
+
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenAuthSync}
+        >
+          <span>AUTHENTICATION & SYNC</span>
+          <strong>
+            Identity & continuity · {statusLabel(authSyncStatus)}
+          </strong>
+          <small>Open the read-only Auth & Sync operational view →</small>
+        </button>
       </div>
+    </>
+  );
+}
+
+function AuthSyncOperationalHealth({ authenticated }) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadHealth() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch("/api/admin/control-room/auth-sync-health", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The protected Auth & Sync health source could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setHealth(data);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The protected Auth & Sync health source could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    loadHealth();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const displayStatus = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : health?.displayHealthStatus || "MONITORING";
+  const sections = health?.sections || {};
+  const founderView = health?.founderView || {};
+  const migration = sections.guestAccountMigration || {};
+
+  return (
+    <>
+      <div className={styles.grid}>
+        <InfoCard
+          title="OVERALL IDENTITY HEALTH"
+          value={statusLabel(displayStatus)}
+          detail={
+            founderView.verification ||
+            "HIISSA is checking the protected read-only Staging evidence."
+          }
+        />
+        <InfoCard
+          title="SIGN-IN"
+          value={statusLabel(sections.signIn?.status || "MONITORING")}
+          detail={
+            sections.signIn?.failedSignInTelemetry === "NOT_YET_LIVE_WIRED"
+              ? "Successful sign-in evidence is observable. Detailed failed-sign-in telemetry is not yet live-wired, so HIISSA does not claim full Healthy verification."
+              : "Connected sign-in evidence."
+          }
+        />
+        <InfoCard
+          title="GUEST EXPERIENCE"
+          value={statusLabel(sections.guestExperience?.status || "MONITORING")}
+          detail="Guest is a valid experience state. Guest and Skip are never treated as failures simply for remaining Guest."
+        />
+        <InfoCard
+          title="SAVE & CONTINUE"
+          value={statusLabel(sections.saveContinue?.status || "MONITORING")}
+          detail="Conversation persistence is observed without exposing conversation content."
+        />
+        <InfoCard
+          title="CROSS-DEVICE SYNC"
+          value={statusLabel(sections.crossDeviceSync?.status || "MONITORING")}
+          detail="Different device sessions can legitimately resolve to the same permanent identity. Session IDs alone are not identity conflicts."
+        />
+        <InfoCard
+          title="GUEST → ACCOUNT MIGRATION"
+          value={statusLabel(migration.status || "MONITORING")}
+          detail="The existing claimed_at / Guest source evidence is reused. No second migration mechanism was created."
+        />
+        <InfoCard
+          title="NEEDS ATTENTION"
+          value={loading ? "Checking…" : String(health?.needsAttentionCount ?? 0)}
+          detail={
+            health?.founderActionRequired
+              ? "At least one connected condition has reached a Founder-authority boundary."
+              : health?.actionOwner === "HIISSA_TECHNICAL_OPERATIONS"
+                ? "Connected technical attention belongs to HIISSA Technical Operations."
+                : "No connected Auth & Sync condition currently asks the Founder to repair anything."
+          }
+        />
+        <InfoCard
+          title="POSSIBLE IDENTITY CONFLICTS"
+          value={loading ? "Checking…" : String(migration.possibleIdentityConflicts ?? 0)}
+          detail="HIISSA never auto-merges similar-looking accounts. Any ownership conflict stops for authorised review."
+        />
+      </div>
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>Auth & Sync monitoring unavailable</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+
+      <section className={styles.section}>
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>AUTH & SYNC · CONNECTED READ-ONLY EVIDENCE</div>
+            <h3>Continuity without exposing secrets or conversation content</h3>
+          </div>
+          <StatusPill label={statusLabel(displayStatus)} compact />
+        </div>
+
+        <div className={styles.featureList}>
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>FAILED SIGN-INS</strong>
+              <StatusPill label="MONITORING" compact />
+            </div>
+            <p>
+              Detailed failed-sign-in telemetry is not yet live-wired. HIISSA
+              therefore does not invent a failure count or claim full sign-in
+              health.
+            </p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>FAILED GUEST MIGRATIONS / EVIDENCE INTEGRITY</strong>
+              <StatusPill label={statusLabel(migration.status || "MONITORING")} compact />
+            </div>
+            <p>
+              Claimed handoffs missing their expected claimed-at verification:
+              {" "}{migration.claimedMissingClaimedAt ?? "Checking…"}.
+            </p>
+            <p>
+              Expired pending handoffs:{" "}
+              {migration.expiredPendingHandoffs ?? "Checking…"}. Expiry is shown
+              as lifecycle evidence and is not automatically treated as a system defect.
+            </p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>SYNC FAILURES</strong>
+              <StatusPill label="MONITORING" compact />
+            </div>
+            <p>
+              Deeper cross-device conflict telemetry is not yet live-wired.
+              Different valid sessions on different devices are normal and are
+              not counted as conflicts by themselves.
+            </p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>WHAT HAPPENED</strong>
+              <StatusPill label={statusLabel(displayStatus)} compact />
+            </div>
+            <p>{founderView.whatHappened || "Checking the connected evidence."}</p>
+            <p><strong>Severity:</strong> {founderView.severity || "Checking…"}</p>
+            <p><strong>User impact:</strong> {founderView.userImpact || "Checking…"}</p>
+            <p><strong>Evidence:</strong> {founderView.evidenceClass || "OBSERVED"}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>CURRENT STATUS</strong></div>
+            <p>{founderView.verification || "Verification pending."}</p>
+            <p><strong>Resolution:</strong> {founderView.finalResolution || "Monitoring"}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHO / WHAT MAY BE AFFECTED</strong></div>
+            <p>{founderView.affected || "Authentication and continuity health in Staging."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT HIISSA ALREADY DID</strong></div>
+            <p>{founderView.whatHiissaAlreadyDid || "Read the protected evidence without changing the working core."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>DO I NEED TO ACT?</strong></div>
+            <p>{founderView.doINeedToAct || "No Founder repair action is currently required."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>AVAILABLE ACTIONS</strong></div>
+            {(founderView.availableActions || ["No Founder repair action is required."]).map((action) => (
+              <p key={action}>• {action}</p>
+            ))}
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>RECOVERY / NEXT STEP</strong></div>
+            <p>{founderView.recoveryNextStep || "Continue read-only monitoring."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>RELATED EVENTS</strong></div>
+            <p>
+              Handoffs {founderView.relatedEvents?.handoffsTotal ?? "—"} ·
+              Pending {founderView.relatedEvents?.handoffsPending ?? "—"} ·
+              Claimed {founderView.relatedEvents?.handoffsClaimed ?? "—"}
+            </p>
+            <p>
+              Active conversations {founderView.relatedEvents?.activeConversations ?? "—"} ·
+              Migrated Guest conversations {founderView.relatedEvents?.migratedGuestConversations ?? "—"}
+            </p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>AUDIT HISTORY</strong></div>
+            <p>
+              <strong>Latest sign-in evidence:</strong>{" "}
+              {founderView.auditHistory?.latestSignInEvidenceAt
+                ? formatHiissaRecordTime(founderView.auditHistory.latestSignInEvidenceAt)
+                : "No recent verified timestamp"}
+            </p>
+            <p>
+              <strong>Latest persistence evidence:</strong>{" "}
+              {founderView.auditHistory?.latestPersistenceEvidenceAt
+                ? formatHiissaRecordTime(founderView.auditHistory.latestPersistenceEvidenceAt)
+                : "No recent verified timestamp"}
+            </p>
+          </article>
+
+          <details className={styles.featureCard}>
+            <summary><strong>TECHNICAL DETAILS — expand</strong></summary>
+            <p>
+              This section intentionally excludes passwords, full auth tokens,
+              Magic-Link credentials, service-role secrets, API keys, raw cookies,
+              session secrets and conversation content.
+            </p>
+            <p><strong>Environment:</strong> {founderView.technicalDetails?.environment || "STAGING"}</p>
+            <p><strong>Canonical feature:</strong> {health?.canonicalFeatureId || "guest.save-sync"}</p>
+            <p><strong>Monitoring:</strong> {statusLabel(health?.monitoringStatus || "PARTIALLY LIVE WIRED")}</p>
+          </details>
+        </div>
+      </section>
     </>
   );
 }
@@ -1931,6 +2370,7 @@ function Overview({
   onOpenStaff,
   onOpenApprovals,
   onOpenFailures,
+  onOpenAuthSync,
   onShowFullOverview,
 }) {
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
@@ -2014,6 +2454,7 @@ function Overview({
         authenticated={authenticated}
         onOpenAlerts={onOpenAlerts}
         onOpenFailures={onOpenFailures}
+        onOpenAuthSync={onOpenAuthSync}
       />
 
       <div className={styles.grid}>
@@ -2292,6 +2733,45 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
   );
 }
 
+function AuthSyncHealthModule({ module, onOverview, onBack }) {
+  return (
+    <>
+      <FounderContextBack onBack={onBack} />
+      <div className={styles.pageHeading}>
+        <div>
+          <div className={styles.kicker}>MODULE 7 — LIVE STAGING READ-ONLY</div>
+          <h2>{module.label}</h2>
+          <p>{module.purpose}</p>
+        </div>
+        <StatusPill label="AUTH & SYNC CONNECTED" />
+      </div>
+
+      <section className={styles.notice}>
+        <strong>Working authentication and Save & Sync stay protected.</strong>
+        <p>
+          This module observes the existing Staging identity, Guest, Save &
+          Continue, migration and persistence evidence. It does not reopen or
+          rewrite the Stage 4 working core, and it never exposes passwords,
+          Magic-Link credentials, tokens, secrets, cookies or conversation
+          content simply to show health.
+        </p>
+      </section>
+
+      <AuthSyncOperationalHealth authenticated />
+
+      <section className={styles.detailBlueprint}>
+        <div className={styles.kicker}>AUTHENTICATION & SYNC OPERATING PRINCIPLES</div>
+        <div>PERMANENT IDENTITY<span>Different devices may have different sessions while resolving to the same permanent identity.</span></div>
+        <div>GUEST EXPERIENCE<span>Guest is not an error; Skip is not a failed conversion.</span></div>
+        <div>SAVE & CONTINUE<span>Persistence health is visible without exposing conversation content.</span></div>
+        <div>GUEST → ACCOUNT MIGRATION<span>Prepared → Available → Claim initiated → Claimed → Verified, using the existing mechanism.</span></div>
+        <div>IDENTITY CONFLICT<span>Similar-looking accounts are never casually auto-merged.</span></div>
+        <div>FOUNDER ROLE<span>You see the health and authorised next step without becoming HIISSA&apos;s authentication engineer.</span></div>
+      </section>
+    </>
+  );
+}
+
 function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
   if (module.id === CONTROL_ROOM_MODULES.feedbackRecommendations && authenticated) {
     return <FeedbackRecommendationsModule module={module} onOverview={onOverview} onBack={onBack} />;
@@ -2303,6 +2783,10 @@ function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
 
   if (module.id === CONTROL_ROOM_MODULES.failuresReliability && authenticated) {
     return <FailuresReliabilityModule module={module} onOverview={onOverview} onBack={onBack} />;
+  }
+
+  if (module.id === CONTROL_ROOM_MODULES.authSync && authenticated) {
+    return <AuthSyncHealthModule module={module} onOverview={onOverview} onBack={onBack} />;
   }
 
   if (module.id === CONTROL_ROOM_MODULES.systemOperations && authenticated) {
