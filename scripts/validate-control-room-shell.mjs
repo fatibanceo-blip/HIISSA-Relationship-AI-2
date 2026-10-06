@@ -365,6 +365,7 @@ for (const required of [
   "Search modules, areas, departments or workspaces…",
   "System & Operations · live provider status, outages and attention",
   "System & Operations · usage, capacity, billing sources and renewals",
+  '.replaceAll("_", " ")',
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
