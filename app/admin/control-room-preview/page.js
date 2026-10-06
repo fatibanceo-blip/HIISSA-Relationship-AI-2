@@ -6112,13 +6112,6 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         <div>PRODUCTION CHANGES<span>Not enabled from this Staging module</span></div>
         <div>STAFF MANAGEMENT<span>Read-only now; controlled dashboard actions come after certification</span></div>
       </section>
-      <FounderWorkdayClose
-        authenticated={authenticated}
-        open={workdayCloseOpen}
-        onClose={() => setWorkdayCloseOpen(false)}
-        onOpenApprovals={onOpenApprovals}
-        onOpenAlerts={onOpenAlerts}
-      />
     </>
   );
 }
