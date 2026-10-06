@@ -320,7 +320,7 @@ for (const required of [
   "Guest is not an error; Skip is not a failed conversion.",
   '"/api/admin/control-room/auth-sync-health"',
   "Open Auth & Sync",
-  "4 LIVE SOURCES",
+  "5 LIVE SOURCES",
   "Authentication & Sync reliability cross-reference",
   "No second incident record is created.",
   "AUTH & SYNC · SECURITY CROSS-REFERENCE",
@@ -365,6 +365,28 @@ for (const required of [
   "Search modules, areas, departments or workspaces…",
   "System & Operations · live provider status, outages and attention",
   "System & Operations · usage, capacity, billing sources and renewals",
+  "Security & Audit · live access, permission and audit health",
+  "Security & Audit · roles, permission rules and assignments",
+  "module10-security-health",
+  "module10-roles-permissions",
+  "module10-approvals",
+  "module10-staff-access",
+  "module10-audit",
+  "module10-exceptional-access",
+  "Go straight to the right Security & Audit area",
+  "Security Health",
+  "Roles & Permissions",
+  "Approvals & Sensitive Actions",
+  "Staff Access & Onboarding",
+  "Audit Trail",
+  "Exceptional Access & Break-Glass",
+  "Open Security & Audit",
+  "ADMIN SECURITY & AUDIT",
+  "Access & accountability",
+  "Admin Security & Audit reliability cross-reference",
+  "No second security incident source is created.",
+  "ADMIN SECURITY RELIABILITY",
+  "5 LIVE SOURCES",
   '.replaceAll("_", " ")',
 ]) requireText("Control Room shell", page, required);
 
@@ -714,7 +736,7 @@ for (const required of [
   "SELF-GRANT",
   "Blocked",
   'Authorization: `Bearer ${session.access_token}`',
-  "ADMIN ACCESS & STAFF ONBOARDING",
+  "STAFF ACCESS & ONBOARDING",
   "FOUNDER APPROVED · NOT YET LIVE",
   "VERBAL-ONLY ACCESS: NOT ALLOWED",
   "FOUNDER APPROVAL: REQUIRED BEFORE ACTIVATION",
@@ -774,8 +796,25 @@ for (const required of [
 ]) requireText("Admin Security & Audit module", page, required);
 
 for (const required of [
-  'branch !== "feature/founder-control-room-staging"',
-  'environment === "production"',
+  "SECURITY HEALTH — LIVE STAGING EVIDENCE",
+  "Is Admin access and accountability behaving as intended?",
+  "ADMIN SECURITY HEALTH",
+  "UNATTRIBUTED L3 EVENTS",
+  "SELF-GRANTED ACCESS",
+  "WHAT HIISSA ALREADY DID",
+  "RECOVERY / NEXT STEP",
+  "ROLES & PERMISSIONS",
+  "APPROVALS & SENSITIVE ACTIONS",
+  "AUDIT TRAIL",
+  "EXCEPTIONAL ACCESS & BREAK-GLASS",
+  "BREAK-GLASS ACCESS",
+  "INVISIBLE LOGIN AS USER",
+  "STEP-UP AUTHENTICATION",
+]) requireText("Admin Security Founder health/navigation", page, required);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
   'request.headers.get("authorization")',
   'verificationClient.auth.getUser(accessToken)',
   '.from("admin_users")',
@@ -784,11 +823,38 @@ for (const required of [
   'noSelfGrant: true',
   'productionChangesEnabled: false',
   "failedSources",
-  "activeAccessGrantCount",
-  "criticalCount: 0",
-  'criticalSourceStatus: "NO_CERTIFIED_CRITICAL_SOURCE_CONNECTED"',
+  "activeAccessGrantRows",
+  "criticalCount",
+  "criticalSourceStatus",
   "noFabricatedCriticalAlerts: true",
 ]) requireText("Protected Admin Security summary", securitySummary, required);
+
+for (const required of [
+  'monitoringStatus: "PARTIALLY_LIVE_WIRED"',
+  "displayHealthStatus",
+  "selfGrantedAccess",
+  "selfAssignedRoles",
+  "unattributedL3AuditEvents",
+  "stalePendingApprovals",
+  "failedAuditOutcomes",
+  "invalidPermissionEffects",
+  "founderView",
+  "founderActionRequired",
+  "breakGlassEnabled: false",
+  "unrestrictedLoginAsUserAllowed: false",
+  '"NOT_YET_SEPARATELY_LIVE_WIRED"',
+  "noInvisibleLoginAsUser: true",
+  "rawPasswordsReturned: false",
+  "rawSecretsReturned: false",
+  "rawTokensReturned: false",
+  "privateConversationContentReturned: false",
+  "auditDetailsPayloadReturned: false",
+  "roleAssignmentsMutated: false",
+  "permissionRulesMutated: false",
+  "accessGrantsMutated: false",
+  "auditHistoryMutated: false",
+  "productionEffectEnabled: false",
+]) requireText("Admin Security health interpretation", securitySummary, required);
 
 for (const required of [
   'branch !== "feature/founder-control-room-staging"',
@@ -1156,6 +1222,21 @@ for (const registryRule of [
   "NATIVE_PHONE_SHARE",
   "Referral/invitation links bring the recipient to HIISSA.",
 ]) requireText("Registry", registry, registryRule);
+
+for (const required of [
+  "FOUNDER_ADMIN_SECURITY_AUDIT_STANDARD",
+  "canonicalModuleId: CONTROL_ROOM_MODULES.adminSecurityAudit",
+  'protectedServerRoute: "/api/admin/control-room/security-summary"',
+  "Authentication establishes identity; Admin authorisation separately establishes what a person may do.",
+  "Exceptional Access is a separately governed state",
+  "Break-Glass Access remains RESERVED / NOT ENABLED.",
+  "No invisible unrestricted login-as-user capability is allowed.",
+  "Material Admin activity must remain attributable and auditable.",
+  "active-self-grant",
+  "unattributed-l3-audit-event",
+  "Module 6 reuses the same security evidence",
+  "No Admin account—including the Founder’s—should become an unaudited master key",
+]) requireText("Admin Security & Audit Registry standard", registry, required);
 
 if (errors.length) {
   console.error("\nFounder Control Room shell contract: FAIL\n");
