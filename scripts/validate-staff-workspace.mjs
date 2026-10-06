@@ -656,6 +656,8 @@ for (const required of [
   "setReminder(\"pending\")",
   "!snoozedUntil",
   "recordOperationalEvent",
+  "emitOperationalEvent",
+  "lastOperationalEventAt",
   '"safe_moment_deferred"',
   '"prompt_auto_minimised"',
   '"snooze_reminder_returned"',
