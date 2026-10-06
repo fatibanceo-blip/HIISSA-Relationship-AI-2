@@ -636,6 +636,10 @@ for (const required of [
   "recordState(\"resolved\"",
   "recordState(\"snoozed\"",
   "manualRequestKey",
+  "snoozed_hidden",
+  "hideReminder",
+  "setReminder(\"pending\")",
+  "!snoozedUntil",
 ]) requireText("Automatic Gentle Check-In controller", automaticGentleCheckIn, required);
 
 for (const forbidden of [
