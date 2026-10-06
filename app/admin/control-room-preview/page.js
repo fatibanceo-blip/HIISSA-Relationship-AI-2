@@ -1563,6 +1563,11 @@ function AuthSyncOperationalHealth({ authenticated }) {
               {migration.expiredPendingHandoffs ?? "Checking…"}. Expiry is shown
               as lifecycle evidence and is not automatically treated as a system defect.
             </p>
+            <p>
+              Historical pre-timestamp claimed handoffs recognised safely:{" "}
+              {migration.legacyPreTimestampClaims ?? "Checking…"}. These remain
+              preserved as Staging history and are not counted as current failures.
+            </p>
           </article>
 
           <article className={styles.featureCard}>
@@ -1631,6 +1636,12 @@ function AuthSyncOperationalHealth({ authenticated }) {
             <p>
               Active conversations {founderView.relatedEvents?.activeConversations ?? "—"} ·
               Migrated Guest conversations {founderView.relatedEvents?.migratedGuestConversations ?? "—"}
+            </p>
+            <p>
+              Legacy pre-timestamp evidence{" "}
+              {founderView.relatedEvents?.legacyPreTimestampClaims ?? "—"} ·
+              Current claimed-at evidence gaps{" "}
+              {founderView.relatedEvents?.claimedMissingClaimedAt ?? "—"}
             </p>
           </article>
 
