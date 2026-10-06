@@ -271,7 +271,6 @@ for (const required of [
   "PEOPLE EXPERIENCE · LIVE STAGING OPERATIONAL HEALTH",
   '"/api/admin/control-room/people-experience-health"',
   "MODULE 6 — LIVE STAGING RELIABILITY VIEW",
-  "PEOPLE EXPERIENCE CONNECTED",
   "What failed, what HIISSA did, and whether you need to act",
   "WHAT HAPPENED",
   "CURRENT STATUS",
