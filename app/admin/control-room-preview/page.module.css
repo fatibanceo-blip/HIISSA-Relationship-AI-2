@@ -290,6 +290,12 @@
   outline:2px solid rgba(36,91,72,.16);
   border-color:#6e9a81;
 }
+.searchHelp{
+  margin:8px 0 10px;
+  color:#68766e;
+  font-size:11px;
+  line-height:1.45;
+}
 .searchResults{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
