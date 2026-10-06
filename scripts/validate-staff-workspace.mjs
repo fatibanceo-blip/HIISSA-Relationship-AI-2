@@ -256,6 +256,9 @@ for (const required of [
   "Before you finish for now…",
   "PrivateAppreciation",
   'mode="recipient-empty"',
+  "recordCareOperationalEvent",
+  'action: "checkin_operational_event"',
+  "recordOperationalEvent={recordCareOperationalEvent}",
 ]) requireText("Working Customer Support workspace", client, required);
 
 for (const forbidden of [
@@ -322,7 +325,10 @@ for (const required of [
   'searchParams.get("care") === "1"',
   '"checkin_snooze"',
   '"checkin_resolve"',
+  '"checkin_operational_event"',
   "recordGentleCheckInState",
+  "recordPeopleExperienceOperationalEvent",
+  '"PEOPLE_EXPERIENCE_OPERATIONAL_EVENT_RECORDED"',
   "answerRecorded: false",
 ]) requireText("Protected staff workspace API", staffApi, required);
 
@@ -528,6 +534,15 @@ for (const required of [
   "explicit_support_escalation_created: false",
   'welcomeMode === "QUIET_RETURN"',
   "recordGentleCheckInState",
+  "PEOPLE_EXPERIENCE_OPERATIONAL_EVENTS",
+  "recordPeopleExperienceOperationalEvent",
+  '"people_experience_operational_recovery"',
+  '"safe_moment_deferred"',
+  '"prompt_auto_minimised"',
+  '"snooze_reminder_returned"',
+  '"reminder_dismissed_while_snoozed"',
+  '"eligibility_source_unavailable"',
+  '"care_state_persistence_degraded"',
 ]) requireText("Gentle check-in privacy policy", gentleCheckInPolicy, required);
 
 for (const required of [
@@ -640,6 +655,13 @@ for (const required of [
   "hideReminder",
   "setReminder(\"pending\")",
   "!snoozedUntil",
+  "recordOperationalEvent",
+  '"safe_moment_deferred"',
+  '"prompt_auto_minimised"',
+  '"snooze_reminder_returned"',
+  '"reminder_dismissed_while_snoozed"',
+  '"eligibility_source_unavailable"',
+  '"care_state_persistence_degraded"',
 ]) requireText("Automatic Gentle Check-In controller", automaticGentleCheckIn, required);
 
 for (const forbidden of [
