@@ -325,6 +325,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             onOpenFailures={() =>
               chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
             }
+            onOpenSafetyPrivacy={() =>
+              chooseModule(CONTROL_ROOM_MODULES.safetyPrivacyModeration)
+            }
             onOpenAuthSync={() =>
               chooseModule(CONTROL_ROOM_MODULES.authSync)
             }
@@ -390,6 +393,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 onOpenApprovals={() => choosePrimary("approvals")}
                 onOpenFailures={() =>
                   chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
+                }
+                onOpenSafetyPrivacy={() =>
+                  chooseModule(CONTROL_ROOM_MODULES.safetyPrivacyModeration)
                 }
                 onOpenAuthSync={() =>
                   chooseModule(CONTROL_ROOM_MODULES.authSync)
@@ -485,6 +491,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           approvalResponse,
           securityResponse,
           peopleResponse,
+          safetyPrivacyResponse,
           authSyncResponse,
           aiProductResponse,
           systemOperationsResponse,
@@ -502,6 +509,12 @@ function FounderAlertButton({ authenticated, active, onClick }) {
             headers,
           }),
           fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/safety-privacy-health", {
             method: "GET",
             cache: "no-store",
             credentials: "same-origin",
@@ -531,6 +544,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           approvalData,
           securityData,
           peopleData,
+          safetyPrivacyData,
           authSyncData,
           aiProductData,
           systemOperationsData,
@@ -538,6 +552,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
+          safetyPrivacyResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
           aiProductResponse.json().catch(() => null),
           systemOperationsResponse.json().catch(() => null),
@@ -563,6 +578,18 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           "UNAVAILABLE",
           "CRITICAL",
         ].includes(peopleDisplayStatus)
+          ? 1
+          : 0;
+        const safetyPrivacyDisplayStatus =
+          safetyPrivacyResponse.ok && safetyPrivacyData
+            ? String(safetyPrivacyData.displayHealthStatus || "")
+            : "";
+        const safetyPrivacyAttention = [
+          "NEEDS_ATTENTION",
+          "DEGRADED",
+          "UNAVAILABLE",
+          "CRITICAL",
+        ].includes(safetyPrivacyDisplayStatus)
           ? 1
           : 0;
         const authSyncDisplayStatus =
@@ -606,6 +633,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           Number(securityData?.criticalCount || 0) +
           Number(approvalData?.criticalCount || 0) +
           (peopleDisplayStatus === "CRITICAL" ? 1 : 0) +
+          (safetyPrivacyDisplayStatus === "CRITICAL" ? 1 : 0) +
           (authSyncDisplayStatus === "CRITICAL" ? 1 : 0) +
           (aiProductDisplayStatus === "CRITICAL" ? 1 : 0) +
           (systemOperationsDisplayStatus === "CRITICAL" ? 1 : 0);
@@ -628,6 +656,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
             Math.max(0, pendingApprovals) +
             securityAttention +
             peopleAttention +
+            safetyPrivacyAttention +
             authSyncAttention +
             aiProductAttention +
             systemOperationsAttention,
@@ -1352,6 +1381,7 @@ function FounderAlertsPanel({
   onClose,
   onOpenApprovals,
   onOpenFailures,
+  onOpenSafetyPrivacy,
   onOpenAuthSync,
   onOpenAiProduct,
   onOpenSystemOperations,
@@ -1363,6 +1393,7 @@ function FounderAlertsPanel({
   const [criticalCount, setCriticalCount] = useState(0);
   const [criticalMessage, setCriticalMessage] = useState("");
   const [peopleHealth, setPeopleHealth] = useState(null);
+  const [safetyPrivacyHealth, setSafetyPrivacyHealth] = useState(null);
   const [authSyncHealth, setAuthSyncHealth] = useState(null);
   const [aiProductHealth, setAiProductHealth] = useState(null);
   const [systemOperationsHealth, setSystemOperationsHealth] = useState(null);
@@ -1470,6 +1501,11 @@ function FounderAlertsPanel({
           String(peopleData?.displayHealthStatus || "") === "CRITICAL"
             ? 1
             : 0;
+        const safetyPrivacyCritical =
+          safetyPrivacyResponse.ok &&
+          String(safetyPrivacyData?.displayHealthStatus || "") === "CRITICAL"
+            ? 1
+            : 0;
         const authSyncCritical =
           authSyncResponse.ok &&
           String(authSyncData?.displayHealthStatus || "") === "CRITICAL"
@@ -1500,6 +1536,7 @@ function FounderAlertsPanel({
             securityCritical +
               approvalCritical +
               peopleCritical +
+              safetyPrivacyCritical +
               authSyncCritical +
               aiProductCritical +
               systemOperationsCritical
@@ -1510,6 +1547,12 @@ function FounderAlertsPanel({
           setPeopleHealth(peopleData);
         } else {
           setPeopleHealth(null);
+        }
+
+        if (safetyPrivacyResponse.ok && safetyPrivacyData) {
+          setSafetyPrivacyHealth(safetyPrivacyData);
+        } else {
+          setSafetyPrivacyHealth(null);
         }
 
         if (authSyncResponse.ok && authSyncData) {
@@ -1648,6 +1691,39 @@ function FounderAlertsPanel({
         <article
           className={
             ["NEEDS_ATTENTION", "DEGRADED", "UNAVAILABLE", "CRITICAL"].includes(
+              String(safetyPrivacyHealth?.displayHealthStatus || "")
+            )
+              ? styles.alertItemAttention
+              : styles.alertItem
+          }
+        >
+          <div>
+            <strong>Safety, Privacy & Moderation health</strong>
+            <p>
+              {loading
+                ? "Checking the connected safety/privacy source…"
+                : !safetyPrivacyHealth
+                  ? "This source could not be confirmed right now."
+                  : safetyPrivacyHealth.displayHealthStatus === "MONITORING"
+                    ? "Boundary-event monitoring is connected. HIISSA does not claim all safety, consent, referral and partner pathways are Healthy from this source alone."
+                    : safetyPrivacyHealth.founderView?.doINeedToAct ||
+                      "A connected safety/privacy condition needs attention."}
+            </p>
+          </div>
+          {safetyPrivacyHealth ? (
+            <button
+              type="button"
+              className={styles.alertAction}
+              onClick={onOpenSafetyPrivacy}
+            >
+              Open Safety, Privacy & Moderation →
+            </button>
+          ) : null}
+        </article>
+
+        <article
+          className={
+            ["NEEDS_ATTENTION", "DEGRADED", "UNAVAILABLE", "CRITICAL"].includes(
               String(authSyncHealth?.displayHealthStatus || "")
             )
               ? styles.alertItemAttention
@@ -1763,6 +1839,7 @@ function ControlRoomOverviewLiveSummary({
   authenticated,
   onOpenAlerts,
   onOpenFailures,
+  onOpenSafetyPrivacy,
   onOpenAuthSync,
   onOpenAiProduct,
   onOpenSystemOperations,
@@ -1773,6 +1850,7 @@ function ControlRoomOverviewLiveSummary({
     approvals: null,
     security: null,
     people: null,
+    safetyPrivacy: null,
     authSync: null,
     aiProduct: null,
     systemOperations: null,
@@ -1786,6 +1864,7 @@ function ControlRoomOverviewLiveSummary({
         approvals: null,
         security: null,
         people: null,
+        safetyPrivacy: null,
         authSync: null,
         aiProduct: null,
         systemOperations: null,
@@ -1812,6 +1891,7 @@ function ControlRoomOverviewLiveSummary({
           approvalResponse,
           securityResponse,
           peopleResponse,
+          safetyPrivacyResponse,
           authSyncResponse,
           aiProductResponse,
           systemOperationsResponse,
@@ -1829,6 +1909,12 @@ function ControlRoomOverviewLiveSummary({
             headers,
           }),
           fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/safety-privacy-health", {
             method: "GET",
             cache: "no-store",
             credentials: "same-origin",
@@ -1858,6 +1944,7 @@ function ControlRoomOverviewLiveSummary({
           approvalData,
           securityData,
           peopleData,
+          safetyPrivacyData,
           authSyncData,
           aiProductData,
           systemOperationsData,
@@ -1865,6 +1952,7 @@ function ControlRoomOverviewLiveSummary({
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
+          safetyPrivacyResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
           aiProductResponse.json().catch(() => null),
           systemOperationsResponse.json().catch(() => null),
@@ -1880,6 +1968,10 @@ function ControlRoomOverviewLiveSummary({
             securityResponse.ok && securityData ? securityData : null,
           people:
             peopleResponse.ok && peopleData ? peopleData : null,
+          safetyPrivacy:
+            safetyPrivacyResponse.ok && safetyPrivacyData
+              ? safetyPrivacyData
+              : null,
           authSync:
             authSyncResponse.ok && authSyncData ? authSyncData : null,
           aiProduct:
@@ -1892,6 +1984,7 @@ function ControlRoomOverviewLiveSummary({
             Number(!approvalResponse.ok) +
             Number(!securityResponse.ok) +
             Number(!peopleResponse.ok) +
+            Number(!safetyPrivacyResponse.ok) +
             Number(!authSyncResponse.ok) +
             Number(!aiProductResponse.ok) +
             Number(!systemOperationsResponse.ok),
@@ -1906,7 +1999,7 @@ function ControlRoomOverviewLiveSummary({
           authSync: null,
           aiProduct: null,
           systemOperations: null,
-          sourceErrors: 6,
+          sourceErrors: 7,
         });
       }
     }
@@ -1940,6 +2033,18 @@ function ControlRoomOverviewLiveSummary({
     "UNAVAILABLE",
     "CRITICAL",
   ].includes(peopleStatus)
+    ? 1
+    : 0;
+
+  const safetyPrivacyStatus = String(
+    state.safetyPrivacy?.displayHealthStatus || "MONITORING"
+  );
+  const safetyPrivacyAttention = [
+    "NEEDS_ATTENTION",
+    "DEGRADED",
+    "UNAVAILABLE",
+    "CRITICAL",
+  ].includes(safetyPrivacyStatus)
     ? 1
     : 0;
 
@@ -1983,12 +2088,14 @@ function ControlRoomOverviewLiveSummary({
     pendingApprovals +
     securityAttention +
     peopleAttention +
+    safetyPrivacyAttention +
     authSyncAttention +
     aiProductAttention +
     systemOperationsAttention;
   const criticalCount =
     Number(state.security?.criticalCount || 0) +
     (peopleStatus === "CRITICAL" ? 1 : 0) +
+    (safetyPrivacyStatus === "CRITICAL" ? 1 : 0) +
     (authSyncStatus === "CRITICAL" ? 1 : 0) +
     (aiProductStatus === "CRITICAL" ? 1 : 0) +
     (systemOperationsStatus === "CRITICAL" ? 1 : 0);
@@ -2001,6 +2108,7 @@ function ControlRoomOverviewLiveSummary({
         ? "UNAVAILABLE"
         : securityStatus === "DEGRADED" ||
             peopleStatus === "DEGRADED" ||
+            safetyPrivacyStatus === "DEGRADED" ||
             authSyncStatus === "DEGRADED" ||
             aiProductStatus === "DEGRADED" ||
             systemOperationsStatus === "DEGRADED"
@@ -2046,6 +2154,22 @@ function ControlRoomOverviewLiveSummary({
           detail={
             state.people?.founderView?.doINeedToAct ||
             "Gentle Check-In and Calmer Start now reuse the same connected health source across authorised Control Room views."
+          }
+        />
+        <InfoCard
+          title="SAFETY, PRIVACY & MODERATION"
+          value={
+            state.safetyPrivacy
+              ? statusLabel(
+                  state.safetyPrivacy.displayHealthStatus || "MONITORING"
+                )
+              : state.loading
+                ? "Checking…"
+                : "Unavailable"
+          }
+          detail={
+            state.safetyPrivacy?.founderView?.doINeedToAct ||
+            "Privacy-safe boundary-event monitoring is connected without exposing private conversation content."
           }
         />
         <InfoCard
@@ -2115,9 +2239,9 @@ function ControlRoomOverviewLiveSummary({
           value={
             state.loading
               ? "Checking…"
-              : `${6 - state.sourceErrors} / 6 current Overview sources`
+              : `${7 - state.sourceErrors} / 7 current Overview sources`
           }
-          detail="Founder approvals, Admin Security, People Experience, Auth & Sync, AI & Product and System & Operations are the current live Overview inputs in this Staging package."
+          detail="Founder approvals, Admin Security, People Experience, Safety/Privacy/Moderation, Auth & Sync, AI & Product and System & Operations are the current live Overview inputs in this Staging package."
         />
       </div>
 
@@ -2136,6 +2260,18 @@ function ControlRoomOverviewLiveSummary({
                 : "No connected Founder attention item right now"}
           </strong>
           <small>Open the shared Founder Alerts view →</small>
+        </button>
+
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenSafetyPrivacy}
+        >
+          <span>SAFETY, PRIVACY & MODERATION</span>
+          <strong>
+            Protection boundaries · {statusLabel(safetyPrivacyStatus)}
+          </strong>
+          <small>Open the privacy-safe Safety Control Centre →</small>
         </button>
 
         <button
@@ -3195,6 +3331,7 @@ function Overview({
   onOpenStaff,
   onOpenApprovals,
   onOpenFailures,
+  onOpenSafetyPrivacy,
   onOpenAuthSync,
   onOpenAiProduct,
   onOpenSystemOperations,
@@ -3282,6 +3419,7 @@ function Overview({
         authenticated={authenticated}
         onOpenAlerts={onOpenAlerts}
         onOpenFailures={onOpenFailures}
+        onOpenSafetyPrivacy={onOpenSafetyPrivacy}
         onOpenAuthSync={onOpenAuthSync}
         onOpenAiProduct={onOpenAiProduct}
         onOpenSystemOperations={onOpenSystemOperations}
