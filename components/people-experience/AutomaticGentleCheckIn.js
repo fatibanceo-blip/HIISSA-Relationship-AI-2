@@ -42,6 +42,7 @@ export default function AutomaticGentleCheckIn({
   pause = false,
   requestEligibility,
   recordState,
+  recordOperationalEvent,
   manualRequestKey = 0,
   onCalmStart,
 }) {
@@ -80,6 +81,13 @@ export default function AutomaticGentleCheckIn({
       previewOnly || Date.now() - lastActivityAt.current <= RECENT_ACTIVITY_WINDOW_MS;
 
     if (!manual && (!recentlyActive || editing)) {
+      if (typeof recordOperationalEvent === "function") {
+        void recordOperationalEvent("safe_moment_deferred", {
+          ...nowContext(),
+          daypart: currentDaypart(),
+          reason: editing ? "ACTIVE_EDITING" : "RECENT_ACTIVITY_REQUIRED",
+        });
+      }
       if (safeRetryTimer.current) window.clearTimeout(safeRetryTimer.current);
       safeRetryTimer.current = window.setTimeout(() => {
         evaluateCare();
@@ -117,7 +125,16 @@ export default function AutomaticGentleCheckIn({
         if (result.due && !manual) previewDayparts.current.add(nextDaypart);
       }
 
-      if (!result) return;
+      if (!result) {
+        if (typeof recordOperationalEvent === "function") {
+          void recordOperationalEvent("eligibility_source_unavailable", {
+            ...nowContext(),
+            daypart: currentDaypart(),
+            reason: "NO_ELIGIBILITY_RESULT",
+          });
+        }
+        return;
+      }
 
       if (result.due) {
         setOffer(result);
@@ -178,6 +195,13 @@ export default function AutomaticGentleCheckIn({
     const timer = window.setTimeout(() => {
       setOpen(false);
       setReminder("pending");
+      if (typeof recordOperationalEvent === "function") {
+        void recordOperationalEvent("prompt_auto_minimised", {
+          ...nowContext(),
+          daypart,
+          reason: "FULL_PROMPT_IGNORED",
+        });
+      }
     }, AUTO_MINIMISE_MS);
 
     return () => window.clearTimeout(timer);
@@ -197,6 +221,13 @@ export default function AutomaticGentleCheckIn({
       setSnoozedUntil(null);
       setOpen(false);
       setReminder("pending");
+      if (typeof recordOperationalEvent === "function") {
+        void recordOperationalEvent("snooze_reminder_returned", {
+          ...nowContext(),
+          daypart,
+          reason: "SNOOZE_EXPIRED",
+        });
+      }
     }, delay);
 
     return () => window.clearTimeout(timer);
@@ -204,10 +235,17 @@ export default function AutomaticGentleCheckIn({
 
   async function resolveWithoutAnswerValue() {
     if (typeof recordState === "function") {
-      await recordState("resolved", {
+      const result = await recordState("resolved", {
         ...nowContext(),
         daypart,
       });
+      if (!result && typeof recordOperationalEvent === "function") {
+        void recordOperationalEvent("care_state_persistence_degraded", {
+          ...nowContext(),
+          daypart,
+          reason: "RESOLVED_STATE_NOT_CONFIRMED",
+        });
+      }
     }
     setReminder("");
     setSnoozedUntil(null);
@@ -230,6 +268,14 @@ export default function AutomaticGentleCheckIn({
     setOpen(false);
     setReminder(hideReminder ? "snoozed_hidden" : "snoozed");
     setSnoozedUntil(nextUntil);
+
+    if (hideReminder && typeof recordOperationalEvent === "function") {
+      void recordOperationalEvent("reminder_dismissed_while_snoozed", {
+        ...nowContext(),
+        daypart,
+        reason: "SECOND_NOT_NOW",
+      });
+    }
   }
 
   const reminderText = useMemo(() => {
