@@ -838,13 +838,82 @@ function FounderWelcomeMoment({ authenticated, onCalmStart }) {
 function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
   const [query, setQuery] = useState("");
 
+  function openModuleSection(moduleId, sectionId) {
+    onChooseModule(moduleId);
+
+    window.setTimeout(() => {
+      const target = document.getElementById(sectionId);
+      if (!target) return;
+
+      const reducedMotion = window.matchMedia?.(
+        "(prefers-reduced-motion: reduce)"
+      )?.matches;
+
+      target.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `#${sectionId}`
+      );
+    }, 120);
+  }
+
   const destinations = [
     { label: "Overview", detail: "Founder operational picture", action: () => onChoosePrimary("overview") },
     { label: "Staff & Workspaces", detail: "Departments, people and work contexts", action: () => onChoosePrimary("staff") },
     { label: "Approvals", detail: "Founder Command / Approval Inbox", action: () => onChoosePrimary("approvals") },
+    {
+      label: "Provider Health",
+      detail: "System & Operations · live provider status, outages and attention",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-provider-health"
+        ),
+    },
+    {
+      label: "Usage & Billing",
+      detail: "System & Operations · usage, capacity, billing sources and renewals",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-usage-billing"
+        ),
+    },
+    {
+      label: "Provider Register",
+      detail: "System & Operations · everything HIISSA depends on",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-provider-register"
+        ),
+    },
+    {
+      label: "Historical Evidence",
+      detail: "System & Operations · previously verified provider evidence",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-history"
+        ),
+    },
+    {
+      label: "Founder Action / Next Step",
+      detail: "System & Operations · what needs you and what happens next",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-founder-action"
+        ),
+    },
     ...MODULES.filter((module) => module.id !== CONTROL_ROOM_MODULES.overview).map((module) => ({
       label: module.label,
-      detail: "System module",
+      detail: module.find || module.purpose,
       action: () => onChooseModule(module.id),
     })),
     ...(STAFF_WORKSPACE_SHELL_STANDARD.workspaces || []).map((workspace) => ({
@@ -874,7 +943,7 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
         className={styles.searchInput}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search modules, departments or workspaces…"
+        placeholder="Search modules, areas, departments or workspaces…"
         autoFocus
       />
       <div className={styles.searchResults}>
@@ -4093,6 +4162,13 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
       </section>
 
       <section className={styles.section} id="module9-founder-action">
+        <a
+          className={styles.sectionBackLink}
+          href="#module9-find"
+          aria-label="Back to Find What You Need"
+        >
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>FOUNDER ACTION / NEXT STEP</div>
@@ -4443,7 +4519,11 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <section className={styles.quickFind} aria-labelledby="module9-find-heading">
+      <section
+        className={styles.quickFind}
+        id="module9-find"
+        aria-labelledby="module9-find-heading"
+      >
         <div>
           <div className={styles.kicker}>FIND WHAT YOU NEED</div>
           <h3 id="module9-find-heading">Go straight to the right System & Operations area</h3>
@@ -4478,6 +4558,13 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
       </section>
 
       <section className={styles.section} id="module9-provider-health">
+        <a
+          className={styles.sectionBackLink}
+          href="#module9-find"
+          aria-label="Back to Find What You Need"
+        >
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>PROVIDER HEALTH — LIVE NOW</div>
@@ -4600,6 +4687,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <span>NO PAYMENT CARD DETAILS</span>
           <span>NO AUTOMATIC MONEY MOVEMENT</span>
         </div>
+        <a className={styles.sectionReturnLink} href="#module9-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
       <div className={styles.grid}>
@@ -4634,6 +4724,13 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
       </div>
 
       <section className={styles.section} id="module9-usage-billing">
+        <a
+          className={styles.sectionBackLink}
+          href="#module9-find"
+          aria-label="Back to Find What You Need"
+        >
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>USAGE & BILLING SOURCES</div>
@@ -4755,9 +4852,19 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <span>NO RAW KEYS RETURNED</span>
           <span>NO AUTOMATIC TOP-UP OR PURCHASE</span>
         </div>
+        <a className={styles.sectionReturnLink} href="#module9-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
       <section className={styles.section} id="module9-history">
+        <a
+          className={styles.sectionBackLink}
+          href="#module9-find"
+          aria-label="Back to Find What You Need"
+        >
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>HISTORICAL EVIDENCE — PREVIOUSLY VERIFIED</div>
@@ -4779,9 +4886,19 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
             </article>
           ))}
         </div>
+        <a className={styles.sectionReturnLink} href="#module9-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
       <section className={styles.section} id="module9-provider-register">
+        <a
+          className={styles.sectionBackLink}
+          href="#module9-find"
+          aria-label="Back to Find What You Need"
+        >
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>PROVIDER REGISTER — WHAT HIISSA DEPENDS ON</div>
@@ -4808,6 +4925,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
             </article>
           ))}
         </div>
+        <a className={styles.sectionReturnLink} href="#module9-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
       <section className={styles.section}>
@@ -4906,6 +5026,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
             <p><strong>Production effect:</strong> NONE</p>
           </details>
         </div>
+        <a className={styles.sectionReturnLink} href="#module9-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
       <section className={styles.detailBlueprint}>
