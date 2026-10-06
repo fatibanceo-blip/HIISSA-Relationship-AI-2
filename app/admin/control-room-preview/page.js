@@ -1001,6 +1001,78 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     },
 
     {
+      label: "People Experience reliability",
+      detail: "Failures & Reliability · People Experience operational failures and recovery",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.failuresReliability,
+          "module6-people"
+        ),
+    },
+    {
+      label: "Authentication & Sync reliability",
+      detail: "Failures & Reliability · identity, continuity and migration incidents",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.failuresReliability,
+          "module6-auth-sync"
+        ),
+    },
+    {
+      label: "AI & Product reliability",
+      detail: "Failures & Reliability · quality and regeneration incidents",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.failuresReliability,
+          "module6-ai-product"
+        ),
+    },
+    {
+      label: "Provider reliability",
+      detail: "Failures & Reliability · provider and infrastructure incidents",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.failuresReliability,
+          "module6-system-operations"
+        ),
+    },
+    {
+      label: "Admin Security reliability",
+      detail: "Failures & Reliability · access and audit integrity incidents",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.failuresReliability,
+          "module6-admin-security"
+        ),
+    },
+    {
+      label: "Sign-in and identity health",
+      detail: "Authentication & Sync · current identity health",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.authSync,
+          "module7-health"
+        ),
+    },
+    {
+      label: "Save & Sync evidence",
+      detail: "Authentication & Sync · persistence, migration and continuity evidence",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.authSync,
+          "module7-evidence"
+        ),
+    },
+    {
+      label: "Authentication operating principles",
+      detail: "Authentication & Sync · identity, Guest and migration boundaries",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.authSync,
+          "module7-principles"
+        ),
+    },
+    {
       label: "Feedback ratings",
       detail: "Feedback & Recommendations · rating distribution and aggregate feedback health",
       action: () =>
@@ -2030,7 +2102,7 @@ function ControlRoomOverviewLiveSummary({
   );
 }
 
-function AuthSyncOperationalHealth({ authenticated }) {
+function AuthSyncOperationalHealth({ authenticated, evidenceId = "" }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [health, setHealth] = useState(null);
   const [error, setError] = useState("");
@@ -2163,7 +2235,7 @@ function AuthSyncOperationalHealth({ authenticated }) {
         </section>
       ) : null}
 
-      <section className={styles.section}>
+      <section className={styles.section} id={evidenceId || undefined}>
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>AUTH & SYNC · CONNECTED READ-ONLY EVIDENCE</div>
@@ -3740,53 +3812,75 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
         </p>
       </section>
 
-      <PeopleExperienceOperationalHealth authenticated context="failures" />
+      <ControlRoomAreaNavigator
+        id="module6-find"
+        title="Failures & Reliability areas"
+        areas={[
+          ["People Experience", "module6-people"],
+          ["Authentication & Sync", "module6-auth-sync"],
+          ["AI & Product", "module6-ai-product"],
+          ["System & Operations", "module6-system-operations"],
+          ["Admin Security & Audit", "module6-admin-security"],
+        ]}
+      />
 
-      <section className={styles.notice}>
-        <strong>Authentication & Sync reliability cross-reference</strong>
-        <p>
-          Module 7 owns identity and continuity health. Module 6 reuses the same
-          protected source when an Auth & Sync condition becomes a reliability
-          incident. No second incident record is created.
-        </p>
-      </section>
+      <div id="module6-people">
+        <PeopleExperienceOperationalHealth authenticated context="failures" />
+      </div>
 
-      <AuthSyncOperationalHealth authenticated />
+      <div id="module6-auth-sync">
+        <section className={styles.notice}>
+          <strong>Authentication & Sync reliability cross-reference</strong>
+          <p>
+            Module 7 owns identity and continuity health. Module 6 reuses the same
+            protected source when an Auth & Sync condition becomes a reliability
+            incident. No second incident record is created.
+          </p>
+        </section>
 
-      <section className={styles.notice}>
-        <strong>AI & Product reliability cross-reference</strong>
-        <p>
-          Module 8 owns AI quality and product intelligence. Module 6 reuses the
-          same protected source when a recorded quality condition becomes a
-          reliability incident. No second evaluator or duplicate incident is created.
-        </p>
-      </section>
+        <AuthSyncOperationalHealth authenticated />
+      </div>
 
-      <AiProductReliabilityCrossReference authenticated />
+      <div id="module6-ai-product">
+        <section className={styles.notice}>
+          <strong>AI & Product reliability cross-reference</strong>
+          <p>
+            Module 8 owns AI quality and product intelligence. Module 6 reuses the
+            same protected source when a recorded quality condition becomes a
+            reliability incident. No second evaluator or duplicate incident is created.
+          </p>
+        </section>
 
-      <section className={styles.notice}>
-        <strong>System & Operations reliability cross-reference</strong>
-        <p>
-          Module 9 owns provider and infrastructure health. Module 6 reuses the
-          same provider-health source only when an observed provider condition
-          becomes a reliability incident. Missing telemetry permission does not
-          create a false outage incident.
-        </p>
-      </section>
+        <AiProductReliabilityCrossReference authenticated />
+      </div>
 
-      <SystemOperationsReliabilityCrossReference authenticated />
+      <div id="module6-system-operations">
+        <section className={styles.notice}>
+          <strong>System & Operations reliability cross-reference</strong>
+          <p>
+            Module 9 owns provider and infrastructure health. Module 6 reuses the
+            same provider-health source only when an observed provider condition
+            becomes a reliability incident. Missing telemetry permission does not
+            create a false outage incident.
+          </p>
+        </section>
 
-      <section className={styles.notice}>
-        <strong>Admin Security & Audit reliability cross-reference</strong>
-        <p>
-          Module 10 owns Admin access, permission and audit integrity. Module 6
-          reuses the same protected security source when a verified control or
-          audit-integrity condition becomes a reliability incident. No second
-          security incident source is created.
-        </p>
-      </section>
+        <SystemOperationsReliabilityCrossReference authenticated />
+      </div>
 
-      <AdminSecurityReliabilityCrossReference authenticated />
+      <div id="module6-admin-security">
+        <section className={styles.notice}>
+          <strong>Admin Security & Audit reliability cross-reference</strong>
+          <p>
+            Module 10 owns Admin access, permission and audit integrity. Module 6
+            reuses the same protected security source when a verified control or
+            audit-integrity condition becomes a reliability incident. No second
+            security incident source is created.
+          </p>
+        </section>
+
+        <AdminSecurityReliabilityCrossReference authenticated />
+      </div>
 
       <section className={styles.detailBlueprint}>
         <div className={styles.kicker}>PEOPLE EXPERIENCE RELIABILITY CONTRACT</div>
@@ -3825,9 +3919,21 @@ function AuthSyncHealthModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <AuthSyncOperationalHealth authenticated />
+      <ControlRoomAreaNavigator
+        id="module7-find"
+        title="Authentication & Sync areas"
+        areas={[
+          ["Identity health", "module7-health"],
+          ["Connected evidence", "module7-evidence"],
+          ["Operating principles", "module7-principles"],
+        ]}
+      />
 
-      <section className={styles.detailBlueprint}>
+      <div id="module7-health">
+        <AuthSyncOperationalHealth authenticated evidenceId="module7-evidence" />
+      </div>
+
+      <section className={styles.detailBlueprint} id="module7-principles">
         <div className={styles.kicker}>AUTHENTICATION & SYNC OPERATING PRINCIPLES</div>
         <div>PERMANENT IDENTITY<span>Different devices may have different sessions while resolving to the same permanent identity.</span></div>
         <div>GUEST EXPERIENCE<span>Guest is not an error; Skip is not a failed conversion.</span></div>
