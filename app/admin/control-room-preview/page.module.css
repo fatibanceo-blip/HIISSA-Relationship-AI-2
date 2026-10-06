@@ -692,6 +692,11 @@
   border-top:1px solid rgba(49,91,70,.12);
 }
 .section[id]{scroll-margin-top:76px;}
+.accessCentreGrid[id],
+.founderPeoplePanel[id],
+#staff-private-appreciation{
+  scroll-margin-top:76px;
+}
 
 .moduleAreaNavigator{
   position:sticky;
