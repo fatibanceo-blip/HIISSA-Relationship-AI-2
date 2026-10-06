@@ -872,10 +872,157 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     }, 120);
   }
 
+  function openPrimarySection(primaryId, sectionId) {
+    onChoosePrimary(primaryId);
+
+    window.setTimeout(() => {
+      const target = document.getElementById(sectionId);
+      if (!target) return;
+
+      const reducedMotion = window.matchMedia?.(
+        "(prefers-reduced-motion: reduce)"
+      )?.matches;
+
+      target.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `#${sectionId}`
+      );
+    }, 120);
+  }
+
   const destinations = [
     { label: "Overview", detail: "Founder operational picture", action: () => onChoosePrimary("overview") },
     { label: "Staff & Workspaces", detail: "Departments, people and work contexts", action: () => onChoosePrimary("staff") },
     { label: "Approvals", detail: "Founder Command / Approval Inbox", action: () => onChoosePrimary("approvals") },
+    {
+      label: "Feedback ratings",
+      detail: "Feedback & Recommendations · rating distribution and aggregate feedback health",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.feedbackRecommendations,
+          "module4-ratings"
+        ),
+    },
+    {
+      label: "Written feedback",
+      detail: "Feedback & Recommendations · private written feedback",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.feedbackRecommendations,
+          "module4-written-feedback"
+        ),
+    },
+    {
+      label: "Recommendations",
+      detail: "Feedback & Recommendations · user ideas and improvements",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.feedbackRecommendations,
+          "module4-recommendations"
+        ),
+    },
+    {
+      label: "Referral growth",
+      detail: "Feedback & Recommendations · privacy-safe invitation attribution",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.feedbackRecommendations,
+          "module4-referrals"
+        ),
+    },
+    {
+      label: "Public reviews",
+      detail: "Feedback & Recommendations · separately permitted public wording",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.feedbackRecommendations,
+          "module4-public-reviews"
+        ),
+    },
+    {
+      label: "AI Quality Evaluator",
+      detail: "AI & Product · existing evaluator quality evidence",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.aiProduct,
+          "module8-quality"
+        ),
+    },
+    {
+      label: "AI regeneration",
+      detail: "AI & Product · bounded regeneration and recovery evidence",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.aiProduct,
+          "module8-regeneration"
+        ),
+    },
+    {
+      label: "Language intelligence",
+      detail: "AI & Product · language metadata and verification state",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.aiProduct,
+          "module8-language"
+        ),
+    },
+    {
+      label: "AI product signals",
+      detail: "AI & Product · aggregate feedback and product intelligence",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.aiProduct,
+          "module8-product-signals"
+        ),
+    },
+    {
+      label: "Young HIISSA quality boundary",
+      detail: "AI & Product · child-safety quality monitoring boundary",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.aiProduct,
+          "module8-young-hiissa"
+        ),
+    },
+    {
+      label: "AI provider quality",
+      detail: "AI & Product · provider quality correlation boundary",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.aiProduct,
+          "module8-provider-quality"
+        ),
+    },
+    {
+      label: "AI Founder Action / Next Step",
+      detail: "AI & Product · what happened, what HIISSA did and what happens next",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.aiProduct,
+          "module8-founder-action"
+        ),
+    },
+    {
+      label: "Departments & staff workspaces",
+      detail: "Staff & Workspaces · Founder doorway into departments",
+      action: () => openPrimarySection("staff", "staff-departments"),
+    },
+    {
+      label: "Private Appreciation",
+      detail: "Staff & Workspaces · private recognition preview",
+      action: () => openPrimarySection("staff", "staff-private-appreciation"),
+    },
+    {
+      label: "Staff Directory",
+      detail: "Staff & Workspaces · Founder-side people view",
+      action: () => openPrimarySection("staff", "staff-directory"),
+    },
     {
       label: "Provider Health",
       detail: "System & Operations · live provider status, outages and attention",
@@ -3071,7 +3218,7 @@ function FounderAccessCentre({ authenticated }) {
     workspaces.find((workspace) => workspace.id === selectedWorkspaceId) || null;
 
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id="staff-workspaces-top">
       <div className={styles.sectionHeading}>
         <div>
           <div className={styles.kicker}>FOUNDER ACCESS CENTRE</div>
@@ -3087,7 +3234,16 @@ function FounderAccessCentre({ authenticated }) {
         selected workspace in Founder Preview / oversight mode.
       </p>
 
-      <div className={styles.accessCentreGrid}>
+      <ControlRoomAreaNavigator
+        title="Staff & Workspaces areas"
+        areas={[
+          ["Departments & workspaces", "staff-departments"],
+          ["Private Appreciation", "staff-private-appreciation"],
+          ["Staff Directory", "staff-directory"],
+        ]}
+      />
+
+      <div className={styles.accessCentreGrid} id="staff-departments">
         {workspaces.map((workspace) => {
           const route = FOUNDER_WORKSPACE_ROUTES[workspace.id] || null;
           const available = Boolean(authenticated && route?.href);
@@ -3179,12 +3335,14 @@ function FounderAccessCentre({ authenticated }) {
         </div>
       )}
 
-      <PrivateAppreciation
+      <div id="staff-private-appreciation">
+        <PrivateAppreciation
         mode="founder-preview"
         recipientLabel="Customer Support"
       />
+      </div>
 
-      <div className={styles.founderPeoplePanel}>
+      <div className={styles.founderPeoplePanel} id="staff-directory">
         <div>
           <div className={styles.kicker}>STAFF DIRECTORY — FOUNDER SIDE</div>
           <strong>People will sit under their department, not behind separate logins for you.</strong>
@@ -3868,6 +4026,18 @@ function FeedbackRecommendationsModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
+      <ControlRoomAreaNavigator
+        id="module4-find"
+        title="Feedback & Recommendations areas"
+        areas={[
+          ["Ratings", "module4-ratings"],
+          ["Written feedback", "module4-written-feedback"],
+          ["Recommendations", "module4-recommendations"],
+          ["Referral growth", "module4-referrals"],
+          ["Public reviews", "module4-public-reviews"],
+        ]}
+      />
+
       {errors.length > 0 ? (
         <section className={styles.errorPanel}>
           <strong>Needs attention</strong>
@@ -3882,7 +4052,7 @@ function FeedbackRecommendationsModule({ module, onOverview, onBack }) {
         <InfoCard title="HELPFUL" value={helpful} detail="Existing aggregate helpfulness signal." />
       </div>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module4-ratings">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>RATING DISTRIBUTION</div>
@@ -3903,7 +4073,7 @@ function FeedbackRecommendationsModule({ module, onOverview, onBack }) {
         )}
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module4-written-feedback">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>PRIVATE FEEDBACK</div>
@@ -3929,7 +4099,7 @@ function FeedbackRecommendationsModule({ module, onOverview, onBack }) {
         )}
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module4-recommendations">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>RECOMMENDATIONS</div>
@@ -3958,7 +4128,7 @@ function FeedbackRecommendationsModule({ module, onOverview, onBack }) {
         )}
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module4-referrals">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>REFERRAL GROWTH — STAGE 1 FOUNDATION</div>
@@ -4004,7 +4174,7 @@ function FeedbackRecommendationsModule({ module, onOverview, onBack }) {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module4-public-reviews">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>PUBLIC REVIEWS</div>
@@ -4170,6 +4340,20 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
+      <ControlRoomAreaNavigator
+        id="module8-find"
+        title="AI & Product areas"
+        areas={[
+          ["Quality Evaluator", "module8-quality"],
+          ["Bounded regeneration", "module8-regeneration"],
+          ["Language intelligence", "module8-language"],
+          ["Product signals", "module8-product-signals"],
+          ["Young HIISSA boundary", "module8-young-hiissa"],
+          ["Provider quality", "module8-provider-quality"],
+          ["Founder Action / Next Step", "module8-founder-action"],
+        ]}
+      />
+
       {error ? (
         <section className={styles.errorPanel}>
           <strong>AI & Product monitoring unavailable</strong>
@@ -4231,7 +4415,7 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         />
       </div>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module8-quality">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>QUALITY EVALUATOR — EXISTING SOURCE</div>
@@ -4273,7 +4457,7 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         )}
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module8-regeneration">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>BOUNDED REGENERATION</div>
@@ -4314,7 +4498,7 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module8-language">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>LANGUAGE INTELLIGENCE</div>
@@ -4350,7 +4534,7 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module8-product-signals">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>AUTHORISED AGGREGATE PRODUCT SIGNALS</div>
@@ -4391,7 +4575,7 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module8-young-hiissa">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>YOUNG HIISSA QUALITY BOUNDARY</div>
@@ -4405,7 +4589,7 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module8-provider-quality">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>MODEL / PROVIDER QUALITY CORRELATION</div>
@@ -4419,13 +4603,13 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <section className={styles.section} id="module9-founder-action">
+      <section className={styles.section} id="module8-founder-action">
         <a
           className={styles.sectionBackLink}
-          href="#module9-find"
-          aria-label="Back to Find What You Need"
+          href="#module8-find"
+          aria-label="AI & Product areas"
         >
-          ← Back to Find What You Need
+          ← AI & Product areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -4777,6 +4961,17 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
+      <ControlRoomAreaNavigator
+        title="System & Operations areas"
+        areas={[
+          ["Provider Health", "module9-provider-health"],
+          ["Usage & Billing", "module9-usage-billing"],
+          ["Provider Register", "module9-provider-register"],
+          ["Historical Evidence", "module9-history"],
+          ["Founder Action / Next Step", "module9-founder-action"],
+        ]}
+      />
+
       <section
         className={styles.quickFind}
         id="module9-find"
@@ -4819,9 +5014,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to System & Operations areas"
         >
-          ← Back to Find What You Need
+          ← System & Operations areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -4946,7 +5141,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <span>NO AUTOMATIC MONEY MOVEMENT</span>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ System & Operations areas
         </a>
       </section>
 
@@ -4985,9 +5180,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to System & Operations areas"
         >
-          ← Back to Find What You Need
+          ← System & Operations areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5111,7 +5306,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <span>NO AUTOMATIC TOP-UP OR PURCHASE</span>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ System & Operations areas
         </a>
       </section>
 
@@ -5119,9 +5314,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to System & Operations areas"
         >
-          ← Back to Find What You Need
+          ← System & Operations areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5145,7 +5340,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           ))}
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ System & Operations areas
         </a>
       </section>
 
@@ -5153,9 +5348,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Find What You Need"
+          aria-label="Back to System & Operations areas"
         >
-          ← Back to Find What You Need
+          ← System & Operations areas
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5184,7 +5379,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           ))}
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ System & Operations areas
         </a>
       </section>
 
@@ -5237,7 +5432,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module9-founder-action">
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>FOUNDER OPERATIONAL VIEW</div>
@@ -5285,7 +5480,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           </details>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Back to Find What You Need
+          ↑ System & Operations areas
         </a>
       </section>
 
@@ -5406,28 +5601,40 @@ function AuthSyncSecurityBoundarySummary() {
   );
 }
 
-function SecurityAuditAreaNavigator() {
-  const areas = [
-    ["Security Health", "module10-security-health"],
-    ["Roles & Permissions", "module10-roles-permissions"],
-    ["Approvals & Sensitive Actions", "module10-approvals"],
-    ["Staff Access & Onboarding", "module10-staff-access"],
-    ["Audit Trail", "module10-audit"],
-    ["Exceptional Access & Break-Glass", "module10-exceptional-access"],
-  ];
-
+function ControlRoomAreaNavigator({
+  title,
+  subtitle = "Jump directly to what you need",
+  areas,
+  id,
+}) {
   return (
-    <details className={styles.moduleAreaNavigator}>
+    <details className={styles.moduleAreaNavigator} id={id}>
       <summary>
-        <strong>Security & Audit areas</strong>
-        <span>Jump directly to what you need</span>
+        <strong>{title}</strong>
+        <span>{subtitle}</span>
       </summary>
       <div className={styles.moduleAreaNavigatorGrid}>
-        {areas.map(([label, id]) => (
-          <a key={id} href={`#${id}`}>{label}</a>
+        {(areas || []).map(([label, targetId]) => (
+          <a key={targetId} href={`#${targetId}`}>{label}</a>
         ))}
       </div>
     </details>
+  );
+}
+
+function SecurityAuditAreaNavigator() {
+  return (
+    <ControlRoomAreaNavigator
+      title="Security & Audit areas"
+      areas={[
+        ["Security Health", "module10-security-health"],
+        ["Roles & Permissions", "module10-roles-permissions"],
+        ["Approvals & Sensitive Actions", "module10-approvals"],
+        ["Staff Access & Onboarding", "module10-staff-access"],
+        ["Audit Trail", "module10-audit"],
+        ["Exceptional Access & Break-Glass", "module10-exceptional-access"],
+      ]}
+    />
   );
 }
 
