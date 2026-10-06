@@ -60,6 +60,15 @@ const authSyncHealthPath = path.join(
   "auth-sync-health",
   "route.js"
 );
+const aiProductHealthPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "ai-product-health",
+  "route.js"
+);
 const recordTimePath = path.join(root, "lib", "hiissa-record-time.js");
 const gentleCheckInPolicyPath = path.join(
   root,
@@ -108,6 +117,7 @@ if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI pro
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
+if (!fs.existsSync(aiProductHealthPath)) errors.push("Protected AI & Product health endpoint is missing.");
 if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activity timeline endpoint is missing.");
 if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
 if (!fs.existsSync(gentleCheckInPolicyPath)) errors.push("Shared gentle check-in policy is missing.");
@@ -165,6 +175,9 @@ const peopleExperienceHealth = fs.existsSync(peopleExperienceHealthPath)
   : "";
 const authSyncHealth = fs.existsSync(authSyncHealthPath)
   ? fs.readFileSync(authSyncHealthPath, "utf8")
+  : "";
+const aiProductHealth = fs.existsSync(aiProductHealthPath)
+  ? fs.readFileSync(aiProductHealthPath, "utf8")
   : "";
 const recordTime = fs.existsSync(recordTimePath)
   ? fs.readFileSync(recordTimePath, "utf8")
@@ -482,6 +495,47 @@ for (const required of [
 ]) requireText("Auth & Sync health endpoint", authSyncHealth, required);
 
 for (const required of [
+  'moduleId: "hiissa-ai-product-intelligence"',
+  'monitoringStatus: "PARTIALLY_LIVE_WIRED"',
+  '.from("quality_audit_records")',
+  '.from("messages")',
+  '.from("feedback")',
+  "evaluatorSuccessCount",
+  "evaluatorFailureCount",
+  "regenerationTriggeredCount",
+  "successfulRegenerationCount",
+  "regenerationNeedsReviewCount",
+  "qualityPassRate",
+  "categorySummary",
+  "languageCoveragePercent",
+  '"NOT_YET_SEPARATELY_LIVE_WIRED"',
+  'sourceOfTruth: "MODULE_4_FEEDBACK_AND_RECOMMENDATIONS"',
+  'status: "NOT_YET_LIVE_WIRED"',
+  "rawConversationContentReturned: false",
+  "privateFeedbackTextReturned: false",
+  "qualityReasonTextReturned: false",
+  "providerSecretsReturned: false",
+  "vulnerabilityEngagementProfilingAllowed: false",
+  "existingConversationalIntelligencePreserved: true",
+  "existingQualityEvaluatorPreserved: true",
+  "automaticEvaluatorReplacementPerformed: false",
+  "automaticModelOrProviderChangePerformed: false",
+  "productionEffectEnabled: false",
+]) requireText("AI & Product health endpoint", aiProductHealth, required);
+
+for (const required of [
+  "FOUNDER_AI_PRODUCT_INTELLIGENCE_STANDARD",
+  'canonicalModuleId: CONTROL_ROOM_MODULES.aiProduct',
+  "Reuse the existing Conversational Intelligence pipeline",
+  "Automatic regeneration must be bounded",
+  "Technically supported is not the same as HIISSA Verified",
+  "Module 4 remains the source of truth for Feedback & Recommendations",
+  "may not silently redesign, approve or release HIISSA",
+  "do-not-profile-vulnerability-for-engagement",
+  "HIISSA Product Intelligence exists to help the Founder understand and improve HIISSA",
+]) requireText("AI & Product Intelligence Registry standard", registry, required);
+
+for (const required of [
   "interactionFeedbackRule",
   "departmentSelectionRule",
   "consistencyRule",
@@ -518,6 +572,25 @@ for (const required of [
   'adminDataClient.rpc("get_hiissa_admin_public_reviews")',
   "Separate permission only",
 ]) requireText("Feedback & Recommendations module", page, required);
+
+for (const required of [
+  "MODULE 8 — LIVE STAGING READ-ONLY",
+  "The existing Quality Evaluator stays in charge.",
+  'fetch("/api/admin/control-room/ai-product-health"',
+  "QUALITY EVALUATOR — EXISTING SOURCE",
+  "BOUNDED REGENERATION",
+  "LANGUAGE INTELLIGENCE",
+  "Technically supported does not mean HIISSA Verified",
+  "AUTHORISED AGGREGATE PRODUCT SIGNALS",
+  "Reuse feedback without duplicating Module 4",
+  "YOUNG HIISSA QUALITY BOUNDARY",
+  "MODEL / PROVIDER QUALITY CORRELATION",
+  "WHAT HIISSA ALREADY DID",
+  "DO I NEED TO ACT?",
+  "RECOVERY / NEXT STEP",
+  "PRODUCT OPTIMISATION",
+  "Human purpose, not vulnerability or screen time",
+]) requireText("AI & Product Intelligence module", page, required);
 
 for (const required of [
   "MODULE 9 — STAGING PROVIDER & SPEND REGISTER",
