@@ -303,6 +303,35 @@ function CustomerSupportWorkspacePreview() {
     }
   }
 
+  async function recordCareOperationalEvent(event, context) {
+    if (!session?.access_token) return null;
+
+    try {
+      const response = await fetch("/api/staff-workspace", {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "checkin_operational_event",
+          event,
+          localDate: context.localDate,
+          localHour: context.localHour,
+          daypart: context.daypart,
+          reason: context.reason || "",
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.operationalEvent) return null;
+      return data.operationalEvent;
+    } catch {
+      return null;
+    }
+  }
+
   async function perform(action, payload = {}) {
     if (!session?.access_token || !item?.id) return null;
 
@@ -571,6 +600,7 @@ function CustomerSupportWorkspacePreview() {
         }
         requestEligibility={requestCareEligibility}
         recordState={recordCareState}
+        recordOperationalEvent={recordCareOperationalEvent}
         onCalmStart={() => {
           setCalmStart(false);
           setCalmStartExpanded(false);
