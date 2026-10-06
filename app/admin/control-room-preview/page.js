@@ -302,6 +302,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             authenticated={authenticated}
             onClose={() => setToolPanel("")}
             onOpenApprovals={() => choosePrimary("approvals")}
+            onOpenFailures={() =>
+              chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
+            }
           />
         ) : null}
 
@@ -350,6 +353,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 onOpenAlerts={() => setToolPanel("alerts")}
                 onOpenStaff={() => choosePrimary("staff")}
                 onOpenApprovals={() => choosePrimary("approvals")}
+                onOpenFailures={() =>
+                  chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
+                }
                 onShowFullOverview={() => setCalmStart(false)}
               />
             ) : null}
@@ -428,24 +434,32 @@ function FounderAlertButton({ authenticated, active, onClick }) {
         if (!session?.access_token || !mounted) return;
 
         const headers = { Authorization: `Bearer ${session.access_token}` };
-        const [approvalResponse, securityResponse] = await Promise.all([
-          fetch("/api/admin/control-room/staff-approval-inbox", {
-            method: "GET",
-            cache: "no-store",
-            credentials: "same-origin",
-            headers,
-          }),
-          fetch("/api/admin/control-room/security-summary", {
-            method: "GET",
-            cache: "no-store",
-            credentials: "same-origin",
-            headers,
-          }),
-        ]);
+        const [approvalResponse, securityResponse, peopleResponse] =
+          await Promise.all([
+            fetch("/api/admin/control-room/staff-approval-inbox", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+            fetch("/api/admin/control-room/security-summary", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+            fetch("/api/admin/control-room/people-experience-health", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+          ]);
 
-        const [approvalData, securityData] = await Promise.all([
+        const [approvalData, securityData, peopleData] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
+          peopleResponse.json().catch(() => null),
         ]);
 
         if (!mounted) return;
@@ -458,10 +472,23 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           securityResponse.ok && securityData?.status === "NEEDS_ATTENTION"
             ? 1
             : 0;
+        const peopleDisplayStatus =
+          peopleResponse.ok && peopleData
+            ? String(peopleData.displayHealthStatus || "")
+            : "";
+        const peopleAttention = [
+          "NEEDS_ATTENTION",
+          "DEGRADED",
+          "UNAVAILABLE",
+          "CRITICAL",
+        ].includes(peopleDisplayStatus)
+          ? 1
+          : 0;
 
         const explicitCritical = Number(
           securityData?.criticalCount ||
           approvalData?.criticalCount ||
+          (peopleDisplayStatus === "CRITICAL" ? 1 : 0) ||
           0
         );
         const criticalCount = Number.isFinite(explicitCritical)
@@ -479,7 +506,10 @@ function FounderAlertButton({ authenticated, active, onClick }) {
 
         setSummary({
           loading: false,
-          attentionCount: Math.max(0, pendingApprovals) + securityAttention,
+          attentionCount:
+            Math.max(0, pendingApprovals) +
+            securityAttention +
+            peopleAttention,
           criticalCount,
           criticalMessage,
         });
@@ -753,12 +783,18 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
   );
 }
 
-function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
+function FounderAlertsPanel({
+  authenticated,
+  onClose,
+  onOpenApprovals,
+  onOpenFailures,
+}) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [pending, setPending] = useState(null);
   const [securityStatus, setSecurityStatus] = useState(null);
   const [criticalCount, setCriticalCount] = useState(0);
   const [criticalMessage, setCriticalMessage] = useState("");
+  const [peopleHealth, setPeopleHealth] = useState(null);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -780,24 +816,32 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
         }
 
         const headers = { Authorization: `Bearer ${session.access_token}` };
-        const [approvalResponse, securityResponse] = await Promise.all([
-          fetch("/api/admin/control-room/staff-approval-inbox", {
-            method: "GET",
-            cache: "no-store",
-            credentials: "same-origin",
-            headers,
-          }),
-          fetch("/api/admin/control-room/security-summary", {
-            method: "GET",
-            cache: "no-store",
-            credentials: "same-origin",
-            headers,
-          }),
-        ]);
+        const [approvalResponse, securityResponse, peopleResponse] =
+          await Promise.all([
+            fetch("/api/admin/control-room/staff-approval-inbox", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+            fetch("/api/admin/control-room/security-summary", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+            fetch("/api/admin/control-room/people-experience-health", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+          ]);
 
-        const [approvalData, securityData] = await Promise.all([
+        const [approvalData, securityData, peopleData] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
+          peopleResponse.json().catch(() => null),
         ]);
 
         if (!active) return;
@@ -816,6 +860,12 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
           setSecurityStatus(null);
           setCriticalCount(0);
           setCriticalMessage("");
+        }
+
+        if (peopleResponse.ok && peopleData) {
+          setPeopleHealth(peopleData);
+        } else {
+          setPeopleHealth(null);
         }
 
         setLoading(false);
@@ -889,18 +939,269 @@ function FounderAlertsPanel({ authenticated, onClose, onOpenApprovals }) {
           </div>
         </article>
 
+        <article
+          className={
+            ["NEEDS_ATTENTION", "DEGRADED", "UNAVAILABLE", "CRITICAL"].includes(
+              String(peopleHealth?.displayHealthStatus || "")
+            )
+              ? styles.alertItemAttention
+              : styles.alertItem
+          }
+        >
+          <div>
+            <strong>People Experience health</strong>
+            <p>
+              {loading
+                ? "Checking the connected People Experience health source…"
+                : !peopleHealth
+                  ? "This source could not be confirmed right now."
+                  : peopleHealth.displayHealthStatus === "HEALTHY"
+                    ? "Gentle Check-In and Calmer Start currently have verified healthy evidence in the connected Staging window."
+                    : peopleHealth.displayHealthStatus === "MONITORING"
+                      ? "Monitoring is connected, but HIISSA is not claiming Healthy without enough verified care-delivery evidence."
+                      : peopleHealth.founderView?.doINeedToAct ||
+                        "A connected People Experience signal needs attention."}
+            </p>
+          </div>
+          {peopleHealth ? (
+            <button
+              type="button"
+              className={styles.alertAction}
+              onClick={onOpenFailures}
+            >
+              Open Failures & Reliability →
+            </button>
+          ) : null}
+        </article>
+
         <article className={styles.alertItem}>
           <div>
             <strong>More Founder alert sources</strong>
             <p>
-              Provider, reliability and service-level alerts will join this same
-              alert centre only as their real Staging sources are individually
-              connected and certified. HIISSA does not invent emergency alerts.
+              Provider and other service-level alerts will join this same alert
+              centre only as their real Staging sources are individually connected
+              and certified. HIISSA does not invent emergency alerts.
             </p>
           </div>
         </article>
       </div>
     </section>
+  );
+}
+
+function ControlRoomOverviewLiveSummary({
+  authenticated,
+  onOpenAlerts,
+  onOpenFailures,
+}) {
+  const [state, setState] = useState({
+    loading: Boolean(authenticated),
+    approvals: null,
+    security: null,
+    people: null,
+    sourceErrors: 0,
+  });
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setState({
+        loading: false,
+        approvals: null,
+        security: null,
+        people: null,
+        sourceErrors: 0,
+      });
+      return;
+    }
+
+    let active = true;
+
+    async function loadSummary() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setState((current) => ({ ...current, loading: false }));
+          return;
+        }
+
+        const headers = { Authorization: `Bearer ${session.access_token}` };
+        const [approvalResponse, securityResponse, peopleResponse] =
+          await Promise.all([
+            fetch("/api/admin/control-room/staff-approval-inbox", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+            fetch("/api/admin/control-room/security-summary", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+            fetch("/api/admin/control-room/people-experience-health", {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            }),
+          ]);
+
+        const [approvalData, securityData, peopleData] = await Promise.all([
+          approvalResponse.json().catch(() => null),
+          securityResponse.json().catch(() => null),
+          peopleResponse.json().catch(() => null),
+        ]);
+
+        if (!active) return;
+
+        setState({
+          loading: false,
+          approvals:
+            approvalResponse.ok && approvalData ? approvalData : null,
+          security:
+            securityResponse.ok && securityData ? securityData : null,
+          people:
+            peopleResponse.ok && peopleData ? peopleData : null,
+          sourceErrors:
+            Number(!approvalResponse.ok) +
+            Number(!securityResponse.ok) +
+            Number(!peopleResponse.ok),
+        });
+      } catch {
+        if (!active) return;
+        setState({
+          loading: false,
+          approvals: null,
+          security: null,
+          people: null,
+          sourceErrors: 3,
+        });
+      }
+    }
+
+    loadSummary();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const pendingApprovals = Number(state.approvals?.pendingCount || 0);
+  const securityAttention =
+    state.security?.status === "NEEDS_ATTENTION" ? 1 : 0;
+  const peopleStatus = String(
+    state.people?.displayHealthStatus || "MONITORING"
+  );
+  const peopleAttention = [
+    "NEEDS_ATTENTION",
+    "DEGRADED",
+    "UNAVAILABLE",
+    "CRITICAL",
+  ].includes(peopleStatus)
+    ? 1
+    : 0;
+
+  const attentionCount =
+    pendingApprovals + securityAttention + peopleAttention;
+  const criticalCount =
+    Number(state.security?.criticalCount || 0) +
+    (peopleStatus === "CRITICAL" ? 1 : 0);
+
+  const overallStatus = state.loading
+    ? "MONITORING"
+    : criticalCount > 0
+      ? "CRITICAL"
+      : state.sourceErrors > 0
+        ? "UNAVAILABLE"
+        : peopleStatus === "DEGRADED"
+          ? "DEGRADED"
+          : attentionCount > 0
+            ? "NEEDS ATTENTION"
+            : "MONITORING";
+
+  return (
+    <>
+      <div className={styles.grid}>
+        <InfoCard
+          title="HIISSA STATUS"
+          value={statusLabel(overallStatus)}
+          detail={
+            state.loading
+              ? "Checking the Control Room sources that are live-wired in Staging."
+              : "This is an aggregate of currently connected, verified sources only. Because all ten modules are not yet fully live-wired, the overall Control Room does not claim Healthy."
+          }
+        />
+        <InfoCard
+          title="NEEDS YOUR ATTENTION"
+          value={
+            state.loading
+              ? "Checking…"
+              : `${attentionCount} connected item${attentionCount === 1 ? "" : "s"}`
+          }
+          detail={
+            attentionCount > 0
+              ? "Open Alerts for the authorised sources that currently need Founder awareness or a decision."
+              : "No currently connected source is asking for Founder attention. Unwired modules are not silently treated as healthy."
+          }
+        />
+        <InfoCard
+          title="PEOPLE EXPERIENCE"
+          value={
+            state.people
+              ? statusLabel(state.people.displayHealthStatus || "MONITORING")
+              : state.loading
+                ? "Checking…"
+                : "Unavailable"
+          }
+          detail={
+            state.people?.founderView?.doINeedToAct ||
+            "Gentle Check-In and Calmer Start now reuse the same connected health source across authorised Control Room views."
+          }
+        />
+        <InfoCard
+          title="CONNECTED SOURCES"
+          value={
+            state.loading
+              ? "Checking…"
+              : `${3 - state.sourceErrors} / 3 current Overview sources`
+          }
+          detail="Founder approvals, Admin Security and People Experience are the current live Overview inputs in this Staging package."
+        />
+      </div>
+
+      <div className={styles.overviewPathways}>
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenAlerts}
+        >
+          <span>NEEDS YOUR ATTENTION</span>
+          <strong>
+            {state.loading
+              ? "Checking connected signals"
+              : attentionCount > 0
+                ? `${attentionCount} connected item${attentionCount === 1 ? "" : "s"} need review`
+                : "No connected Founder attention item right now"}
+          </strong>
+          <small>Open the shared Founder Alerts view →</small>
+        </button>
+
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenFailures}
+        >
+          <span>FAILURES & RELIABILITY</span>
+          <strong>
+            People Experience · {statusLabel(peopleStatus)}
+          </strong>
+          <small>Open the full health, recovery and verification detail →</small>
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -1612,6 +1913,7 @@ function Overview({
   onOpenAlerts,
   onOpenStaff,
   onOpenApprovals,
+  onOpenFailures,
   onShowFullOverview,
 }) {
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
@@ -1691,14 +1993,13 @@ function Overview({
 
       <FounderActivityTimeline authenticated={authenticated} />
 
-      <PeopleExperienceOperationalHealth
+      <ControlRoomOverviewLiveSummary
         authenticated={authenticated}
-        context="overview"
+        onOpenAlerts={onOpenAlerts}
+        onOpenFailures={onOpenFailures}
       />
 
       <div className={styles.grid}>
-        <InfoCard title="HIISSA STATUS" value="Not yet live-wired" detail="Operational aggregation will come from authorised module signals." />
-        <InfoCard title="NEEDS YOUR ATTENTION" value="Feed not connected" detail="One underlying event may appear in multiple authorised views without duplication." />
         <InfoCard title="CURRENT MODULES" value={String(CONTROL_ROOM_MODULE_REGISTRY.currentModuleCount)} detail="Current architecture remains ten modules." />
         <InfoCard title="FUTURE EXPANSION" value="Enabled" detail="A future Founder-approved Module 11+ can be registered without rebuilding the shell." />
       </div>
@@ -1738,7 +2039,14 @@ function Overview({
               <p>{feature.primaryPurpose}</p>
               <div className={styles.featureMeta}>
                 <span>Activation: {statusLabel(feature.activationStatus)}</span>
-                <span>Control Room contract: {feature.controlRoom?.status ? "DEFINED" : "MISSING"}</span>
+                <span>
+                  Control Room:{" "}
+                  {feature.controlRoom?.status === "staging-live-operational-health-wired"
+                    ? "LIVE-WIRED · STAGING"
+                    : feature.controlRoom?.status
+                      ? "CONTRACT DEFINED"
+                      : "MISSING"}
+                </span>
                 <span>Certification: {feature.certification?.stage || "UNKNOWN"}</span>
               </div>
             </article>
@@ -1761,12 +2069,12 @@ function Overview({
       </section>
 
       <section className={styles.detailBlueprint}>
-        <div className={styles.kicker}>SHARED DETAIL VIEW — FOUNDATION</div>
+        <div className={styles.kicker}>SHARED DETAIL VIEW — CONTROL ROOM STANDARD</div>
         {[
           "WHAT HAPPENED",
           "CURRENT STATUS",
           "WHO / WHAT MAY BE AFFECTED",
-          "WHAT HIISSA HAS ALREADY DONE",
+          "WHAT HIISSA ALREADY DID",
           "DO I NEED TO ACT?",
           "AVAILABLE ACTIONS",
           "RECOVERY / NEXT STEP",
@@ -1774,7 +2082,12 @@ function Overview({
           "AUDIT HISTORY",
           "TECHNICAL DETAILS — EXPAND",
         ].map((label) => (
-          <div key={label}>{label}<span>{authenticated ? "Not yet live-wired in Staging" : "Not connected in isolated Preview"}</span></div>
+          <div key={label}>
+            {label}
+            <span>
+              People Experience now uses this structure in the connected Failures & Reliability view; other features must adopt it when their live wiring is certified.
+            </span>
+          </div>
         ))}
       </section>
     </>
