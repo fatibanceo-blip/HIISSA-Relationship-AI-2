@@ -251,7 +251,7 @@ for (const required of [
   "Before you finish for now…",
   "FATI BANCE · FOUNDER",
   "PEOPLE EXPERIENCE · LIVE STAGING OPERATIONAL HEALTH",
-  'fetch("/api/admin/control-room/people-experience-health"',
+  '"/api/admin/control-room/people-experience-health"',
   "MODULE 6 — LIVE STAGING RELIABILITY VIEW",
   "PEOPLE EXPERIENCE CONNECTED",
   "What failed, what HIISSA did, and whether you need to act",
