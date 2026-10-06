@@ -158,6 +158,10 @@ function detectedCadenceFailures(rows) {
         scope: key,
         observed: sorted.length,
         allowed: PEOPLE_CHECKIN_MAX_PER_ACTIVE_DAY,
+        occurredAt:
+          sorted[PEOPLE_CHECKIN_MAX_PER_ACTIVE_DAY]?.occurred_at ||
+          sorted[sorted.length - 1]?.occurred_at ||
+          null,
       });
     }
 
@@ -169,12 +173,19 @@ function detectedCadenceFailures(rows) {
 
     for (const [daypart, count] of daypartCounts.entries()) {
       if (count > 1) {
+        const matchingDaypart = sorted.filter(
+          (row) => String(detailsOf(row).care_daypart || "") === daypart
+        );
         failures.push({
           type: "DAYPART_DUPLICATE_OFFER",
           scope: key,
           daypart,
           observed: count,
           allowed: 1,
+          occurredAt:
+            matchingDaypart[1]?.occurred_at ||
+            matchingDaypart[matchingDaypart.length - 1]?.occurred_at ||
+            null,
         });
       }
     }
@@ -193,6 +204,7 @@ function detectedCadenceFailures(rows) {
           scope: key,
           observedMinutes: gapMinutes,
           requiredMinutes: PEOPLE_CHECKIN_MIN_GAP_MINUTES,
+          occurredAt: current.occurred_at || null,
         });
       }
     }
@@ -258,6 +270,47 @@ function detectedRecordIntegrityFailures(rows) {
   return failures;
 }
 
+function founderIssueSummary(issue) {
+  if (!issue) return "No active operational issue is available.";
+
+  if (issue.type === "DAILY_MAXIMUM_EXCEEDED") {
+    return "The Gentle Check-In was offered more times in one active day than the approved care cadence allows.";
+  }
+
+  if (issue.type === "DAYPART_DUPLICATE_OFFER") {
+    return "The Gentle Check-In was offered more than once in the same approved daypart.";
+  }
+
+  if (issue.type === "MINIMUM_GAP_VIOLATION") {
+    return "Two Gentle Check-In offers occurred closer together than the approved minimum gap.";
+  }
+
+  if (issue.type === "CHECKIN_OPERATIONAL_METADATA_INCOMPLETE") {
+    return "A Gentle Check-In operational record is missing information HIISSA needs to verify the care-delivery rules.";
+  }
+
+  if (issue.type === "PEOPLE_EXPERIENCE_PRIVACY_BOUNDARY_FAILURE") {
+    return "A protected People Experience privacy boundary was breached in operational evidence.";
+  }
+
+  if (issue.type === "TECHNICAL_RECOVERY_UNRESOLVED") {
+    return "A People Experience technical condition remains unresolved after bounded automatic handling.";
+  }
+
+  return "HIISSA detected a People Experience operational condition that requires review.";
+}
+
+function earliestIssueTime(issues) {
+  const times = issues
+    .map((issue) => issue?.occurredAt)
+    .filter(Boolean)
+    .map((value) => new Date(value))
+    .filter((value) => Number.isFinite(value.getTime()))
+    .sort((a, b) => a - b);
+
+  return times[0]?.toISOString() || null;
+}
+
 function countTypes(rows) {
   const counts = {
     offered: 0,
@@ -312,6 +365,7 @@ export async function GET(request) {
   if (error) {
     return noStoreJson({
       status: "NEEDS_ATTENTION",
+      displayHealthStatus: "UNAVAILABLE",
       featureId: "hiissa.people-experience",
       monitoringStatus: "SOURCE_READ_FAILED",
       healthMeaning:
@@ -416,6 +470,37 @@ export async function GET(request) {
           ? "CONNECTED_PARTIAL_EVIDENCE"
           : "HEALTHY";
 
+  const displayHealthStatus =
+    status === "HEALTHY"
+      ? "HEALTHY"
+      : status === "NEEDS_ATTENTION"
+        ? "DEGRADED"
+        : status === "FOUNDER_REQUIRED"
+          ? "NEEDS_ATTENTION"
+          : "MONITORING";
+
+  const activeIssues = [
+    ...privacyFailures,
+    ...cadenceFailures,
+    ...recordIntegrityFailures,
+    ...unresolvedTechnicalRecoveryFailures.map((row) => ({
+      type: "TECHNICAL_RECOVERY_UNRESOLVED",
+      occurredAt: row.occurred_at,
+      operationalEvent: String(
+        detailsOf(row).operational_event || row.action_id || ""
+      ),
+      reason: String(detailsOf(row).reason || ""),
+    })),
+  ];
+
+  const primaryIssue = activeIssues[0] || null;
+  const incidentStartedAt = earliestIssueTime(activeIssues);
+  const issueSeverity = privacyFailures.length
+    ? "HIGH — PRIVACY BOUNDARY"
+    : activeIssues.length
+      ? "MODERATE — OPERATIONAL"
+      : "NONE";
+
   const healthMeaning =
     status === "FOUNDER_REQUIRED"
       ? "A privacy boundary failed. HIISSA stopped at the Founder-required boundary instead of attempting an unsafe automatic repair."
@@ -427,8 +512,107 @@ export async function GET(request) {
             ? "Monitoring is connected and People Experience activity is visible, but there is no recent Gentle Check-In state evidence in this window, so HIISSA does not claim the care-delivery path is Healthy."
             : "Monitoring is connected, but no People Experience activity exists in the current evidence window, so HIISSA does not invent a Healthy result.";
 
+  const founderActionText = founderActionRequired
+    ? "YES — this condition has reached a Founder-authority boundary."
+    : needsAttention
+      ? "NO — HIISSA Technical Operations owns the technical investigation and bounded recovery."
+      : "NO — no Founder action is currently required.";
+
+  const founderAvailableActions = founderActionRequired
+    ? [
+        "Open the authorised Founder review for the privacy boundary.",
+        "Keep the affected capability bounded while the protected review is completed.",
+      ]
+    : needsAttention
+      ? [
+          "No Founder repair action is required.",
+          "Allow HIISSA Technical Operations to investigate, recover within approved bounds and verify the result.",
+        ]
+      : [
+          "No action is required.",
+          "Continue monitoring the connected Staging evidence.",
+        ];
+
+  const founderRecoveryNextStep = founderActionRequired
+    ? "Keep the affected capability bounded until the Founder-authorised privacy review determines the safe next state, then verify before closing the incident."
+    : needsAttention
+      ? "HIISSA Technical Operations continues bounded recovery, retests the affected behaviour and records verified recovery or further escalation."
+      : displayHealthStatus === "HEALTHY"
+        ? "Continue normal monitoring. If a new failure appears, HIISSA will detect, classify, recover within approved bounds and verify before reporting resolution."
+        : "Continue collecting real Staging evidence. HIISSA will not claim Healthy until the connected care-delivery path has sufficient verified evidence.";
+
+  const founderView = {
+    whatHappened: primaryIssue
+      ? founderIssueSummary(primaryIssue) +
+        (activeIssues.length > 1
+          ? ` ${activeIssues.length - 1} additional connected issue${activeIssues.length === 2 ? "" : "s"} also require attention.`
+          : "")
+      : displayHealthStatus === "HEALTHY"
+        ? "No active People Experience failure is detected in the current verified Staging evidence window."
+        : "The monitoring connection is working, but there is not enough recent care-delivery evidence to claim the feature is Healthy.",
+    currentStatus: displayHealthStatus,
+    affected:
+      "HIISSA People Experience — Gentle Check-In, Calmer Start and their privacy-safe care-delivery path in Staging. Production is not affected by this Staging-only work.",
+    incidentStartedAt,
+    severity: issueSeverity,
+    userImpact: primaryIssue
+      ? privacyFailures.length
+        ? "A protected privacy rule may be affected. HIISSA stops at the Founder-required boundary rather than attempting an unsafe repair."
+        : "The care experience may be delayed, repeated incorrectly or temporarily unable to confirm its intended state until recovery is verified."
+      : "No known user impact is currently established from the connected evidence.",
+    evidenceClass: primaryIssue ? "OBSERVED" : "OBSERVED",
+    whatHiissaAlreadyDid:
+      status === "FOUNDER_REQUIRED"
+        ? "HIISSA detected the privacy boundary failure and stopped at the Founder-required boundary."
+        : status === "NEEDS_ATTENTION"
+          ? unresolvedTechnicalRecoveryFailures.length > 0
+            ? "HIISSA detected the degraded condition, recorded the bounded automatic action and routed the unresolved technical work to HIISSA Technical Operations."
+            : "HIISSA detected and classified the operational anomaly without altering audit history or bypassing safety boundaries."
+          : status === "HEALTHY"
+            ? "HIISSA monitored the connected evidence source and verified the current cadence, privacy and record-integrity rules."
+            : "HIISSA confirmed that monitoring is connected and refused to invent a Healthy result without sufficient evidence.",
+    doINeedToAct: founderActionText,
+    availableActions: founderAvailableActions,
+    recoveryNextStep: founderRecoveryNextStep,
+    relatedEvents: {
+      checkInOffers: counts.offered,
+      snoozed: counts.snoozed,
+      resolved: counts.resolved,
+      recoveryAttempts: counts.operationalRecoveryEvents,
+      unresolvedTechnicalAttention: unresolvedTechnicalRecoveryFailures.length,
+      recoveredTechnicalAttention: recoveredTechnicalFailures,
+    },
+    auditHistory: {
+      evidenceWindowDays: WINDOW_DAYS,
+      latestEvidenceAt,
+      connectedRecordCount: rows.length,
+    },
+    verification:
+      activeIssues.length > 0
+        ? "Recovery is not resolved until the affected behaviour is retested and evidence verifies the healthy state."
+        : displayHealthStatus === "HEALTHY"
+          ? "Current connected checks are verified from real privacy-safe Staging evidence."
+          : "Monitoring is connected; Healthy verification remains pending sufficient recent evidence.",
+    finalResolution:
+      activeIssues.length > 0
+        ? "OPEN — VERIFICATION OR AUTHORISED REVIEW REQUIRED"
+        : displayHealthStatus === "HEALTHY"
+          ? "NO ACTIVE INCIDENT"
+          : "MONITORING — NOT ENOUGH EVIDENCE TO CLAIM HEALTHY",
+    technicalDetails: {
+      internalState: status,
+      monitoringStatus: "CONNECTED",
+      featureId: "hiissa.people-experience",
+      environment: "STAGING",
+      activeIssueCount: activeIssues.length,
+      evidenceWindowDays: WINDOW_DAYS,
+    },
+  };
+
   return noStoreJson({
     status,
+    displayHealthStatus,
+    founderView,
     featureId: "hiissa.people-experience",
     featureLabel: "HIISSA People Experience",
     monitoringStatus: "CONNECTED",
