@@ -398,6 +398,21 @@
 .navItem:active{transform:translateY(1px);background:#e1ebe1;}
 .navActive{background:#245b48;color:#fff;font-weight:850;box-shadow:0 8px 18px rgba(36,91,72,.15);}
 .navActive:active{transform:translateY(1px);background:#1d4d3c;}
+.navLabel{
+  display:block;
+  font-size:13px;
+  line-height:1.3;
+}
+.navHint{
+  display:block;
+  margin-top:4px;
+  font-size:10px;
+  line-height:1.4;
+  font-weight:650;
+  opacity:.82;
+}
+.navActive .navHint{color:#eaf5ee;opacity:.92;}
+
 .content{padding:clamp(20px,4vw,36px);min-width:0;}
 .pageHeading{
   display:flex;
@@ -676,6 +691,66 @@
   padding-top:24px;
   border-top:1px solid rgba(49,91,70,.12);
 }
+.section[id]{scroll-margin-top:18px;}
+
+.quickFind{
+  margin:0 0 22px;
+  padding:20px;
+  border:1px solid rgba(49,91,70,.16);
+  border-radius:20px;
+  background:linear-gradient(145deg,#f4f9f3,#fffaf0);
+}
+.quickFind h3{
+  margin:6px 0 0;
+  color:#244c3d;
+  font-size:clamp(21px,4vw,28px);
+  line-height:1.15;
+}
+.quickFind>div>p{
+  margin:10px 0 0;
+  color:#64736b;
+  font-size:13px;
+  line-height:1.55;
+}
+.quickFindGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:16px;
+}
+.quickFindLink{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-height:82px;
+  padding:14px;
+  border:1px solid #d7e3d8;
+  border-radius:14px;
+  background:#fff;
+  color:#315f4c;
+  text-decoration:none;
+}
+.quickFindLink:hover,
+.quickFindLink:focus-visible{
+  border-color:#8eaa98;
+  background:#f5faf4;
+  outline:none;
+  box-shadow:0 8px 22px rgba(39,74,57,.08);
+}
+.quickFindLink:active{
+  transform:translateY(1px);
+  background:#edf5ed;
+}
+.quickFindLink strong{
+  color:#245b48;
+  font-size:14px;
+}
+.quickFindLink span{
+  color:#6b786f;
+  font-size:11px;
+  line-height:1.4;
+}
+
 .sectionHeading{
   display:flex;
   justify-content:space-between;
@@ -1611,4 +1686,10 @@
     transition:none !important;
     transform:none !important;
   }
+}
+
+@media (max-width: 640px){
+  .quickFind{padding:16px;}
+  .quickFindGrid{grid-template-columns:1fr;}
+  .quickFindLink{min-height:0;padding:13px 14px;}
 }
