@@ -5324,11 +5324,12 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
   }, []);
 
   const counts = summary?.counts || {};
+  const founderView = summary?.founderView || {};
   const status = loading
     ? "CHECKING"
-    : error || summary?.status === "NEEDS_ATTENTION"
-      ? "NEEDS ATTENTION"
-      : "HEALTHY";
+    : error
+      ? "UNAVAILABLE"
+      : summary?.displayHealthStatus || summary?.status || "MONITORING";
 
   return (
     <>
@@ -5353,6 +5354,49 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
+      <section
+        className={styles.quickFind}
+        id="module10-find"
+        aria-labelledby="module10-find-heading"
+      >
+        <div>
+          <div className={styles.kicker}>FIND WHAT YOU NEED</div>
+          <h3 id="module10-find-heading">Go straight to the right Security & Audit area</h3>
+          <p>
+            Security should be understandable without hunting through technical
+            administration screens. Choose the area you want and HIISSA will take
+            you directly there.
+          </p>
+        </div>
+
+        <div className={styles.quickFindGrid}>
+          <a className={styles.quickFindLink} href="#module10-security-health">
+            <strong>Security Health</strong>
+            <span>Live access, permission and audit health</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module10-roles-permissions">
+            <strong>Roles & Permissions</strong>
+            <span>Roles, permission rules and active assignments</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module10-approvals">
+            <strong>Approvals & Sensitive Actions</strong>
+            <span>Founder gate, L3 actions and approval boundaries</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module10-staff-access">
+            <strong>Staff Access & Onboarding</strong>
+            <span>How Admin access is invited, approved and removed</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module10-audit">
+            <strong>Audit Trail</strong>
+            <span>Attributable Admin activity and oversight levels</span>
+          </a>
+          <a className={styles.quickFindLink} href="#module10-exceptional-access">
+            <strong>Exceptional Access & Break-Glass</strong>
+            <span>Reserved high-risk access boundaries and protections</span>
+          </a>
+        </div>
+      </section>
+
       {error ? (
         <section className={styles.errorPanel}>
           <strong>Needs attention</strong>
@@ -5360,45 +5404,131 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         </section>
       ) : null}
 
-      <div className={styles.grid}>
-        <InfoCard
-          title="CURRENT ADMIN GATE"
-          value={loading ? "Checking…" : String(counts.legacyAdminAccounts ?? "—")}
-          detail="Accounts currently authorised by the existing protected Admin gate."
-        />
-        <InfoCard
-          title="ACTIVE ROLE ASSIGNMENTS"
-          value={loading ? "Checking…" : String(counts.activeRoleAssignments ?? "—")}
-          detail="Assignments in the newer role-based administration foundation."
-        />
-        <InfoCard
-          title="ACTIVE PERMISSION RULES"
-          value={loading ? "Checking…" : String(counts.activePermissionRules ?? "—")}
-          detail="Explicit active role/resource/action permission rules."
-        />
-        <InfoCard
-          title="PENDING FOUNDER APPROVALS"
-          value={loading ? "Checking…" : String(counts.pendingApprovals ?? "—")}
-          detail="Sensitive actions waiting for an approval decision."
-        />
-        <InfoCard
-          title="ACTIVE ACCESS GRANTS"
-          value={loading ? "Checking…" : String(counts.activeAccessGrants ?? "—")}
-          detail="Temporary or specific active access grants."
-        />
-        <InfoCard
-          title="AUDIT EVENTS"
-          value={loading ? "Checking…" : String(counts.auditEvents ?? "—")}
-          detail="Recorded Admin security/action events in the new audit foundation."
-        />
-      </div>
+      <section className={styles.section} id="module10-security-health">
+        <a
+          className={styles.sectionBackLink}
+          href="#module10-find"
+          aria-label="Back to Find What You Need"
+        >
+          ← Back to Find What You Need
+        </a>
+
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>SECURITY HEALTH — LIVE STAGING EVIDENCE</div>
+            <h3>Is Admin access and accountability behaving as intended?</h3>
+          </div>
+          <StatusPill label={statusLabel(status)} compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          Monitoring stays separate from Healthy. HIISSA reports only what the
+          connected access, permission, approval and audit sources can actually prove.
+        </p>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="ADMIN SECURITY HEALTH"
+            value={statusLabel(status)}
+            detail={
+              founderView.verification ||
+              "Checking the protected security and audit sources."
+            }
+          />
+          <InfoCard
+            title="CURRENT ADMIN GATE"
+            value={loading ? "Checking…" : String(counts.legacyAdminAccounts ?? "—")}
+            detail="Accounts currently authorised by the existing protected Admin gate."
+          />
+          <InfoCard
+            title="ACTIVE ROLE ASSIGNMENTS"
+            value={loading ? "Checking…" : String(counts.activeRoleAssignments ?? "—")}
+            detail="Assignments in the newer role-based administration foundation. Zero is not treated as a failure while staff-management controls remain intentionally disabled."
+          />
+          <InfoCard
+            title="ACTIVE PERMISSION RULES"
+            value={loading ? "Checking…" : String(counts.activePermissionRules ?? "—")}
+            detail="Explicit active role/resource/action permission rules."
+          />
+          <InfoCard
+            title="PENDING FOUNDER APPROVALS"
+            value={loading ? "Checking…" : String(counts.pendingApprovals ?? "—")}
+            detail="Sensitive actions waiting for an approval decision."
+          />
+          <InfoCard
+            title="ACTIVE ACCESS GRANTS"
+            value={loading ? "Checking…" : String(counts.activeAccessGrants ?? "—")}
+            detail="Temporary or specific active access grants that have not expired or been revoked."
+          />
+          <InfoCard
+            title="L3 AUDIT EVENTS"
+            value={loading ? "Checking…" : String(counts.l3AuditEvents ?? "—")}
+            detail="Recorded high-oversight Admin activity in the connected audit evidence."
+          />
+          <InfoCard
+            title="UNATTRIBUTED L3 EVENTS"
+            value={loading ? "Checking…" : String(counts.unattributedL3AuditEvents ?? "—")}
+            detail="L3 events must remain attributable. A non-zero value becomes a security-integrity condition."
+          />
+          <InfoCard
+            title="SELF-GRANTED ACCESS"
+            value={loading ? "Checking…" : String(counts.selfGrantedAccess ?? "—")}
+            detail="Active Admin access must not be silently granted by the same person receiving it."
+          />
+          <InfoCard
+            title="FOUNDER ACTION"
+            value={
+              loading
+                ? "Checking…"
+                : summary?.founderActionRequired
+                  ? "REQUIRED"
+                  : "NOT REQUIRED"
+            }
+            detail={
+              founderView.doINeedToAct ||
+              "No Founder repair action is currently required."
+            }
+          />
+        </div>
+
+        <div className={styles.featureList}>
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT HAPPENED</strong></div>
+            <p>{founderView.whatHappened || "Checking connected Admin Security evidence."}</p>
+            <p><strong>Severity:</strong> {founderView.severity || "Checking…"}</p>
+            <p><strong>User impact:</strong> {founderView.userImpact || "Checking…"}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>WHAT HIISSA ALREADY DID</strong></div>
+            <p>{founderView.whatHiissaAlreadyDid || "Read the protected security evidence without changing access."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>RECOVERY / NEXT STEP</strong></div>
+            <p>{founderView.recoveryNextStep || "Continue read-only monitoring."}</p>
+          </article>
+
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}><strong>CURRENT RESOLUTION</strong></div>
+            <p>{founderView.finalResolution || "Monitoring"}</p>
+          </article>
+        </div>
+
+        <a className={styles.sectionReturnLink} href="#module10-find">
+          ↑ Back to Find What You Need
+        </a>
+      </section>
 
       <AuthSyncSecurityBoundarySummary />
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module10-roles-permissions">
+        <a className={styles.sectionBackLink} href="#module10-find">
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>ADMIN ROLES</div>
+            <div className={styles.kicker}>ROLES & PERMISSIONS</div>
             <h3>Roles the Control Room is designed to support</h3>
           </div>
           <StatusPill label="NO CHANGES ENABLED" compact />
@@ -5421,12 +5551,18 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
             <div className={styles.emptyState}>Role definitions are not currently available.</div>
           ) : null}
         </div>
+        <a className={styles.sectionReturnLink} href="#module10-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module10-approvals">
+        <a className={styles.sectionBackLink} href="#module10-find">
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>FOUNDER AUTHORITY & STAFF ACTION GATE</div>
+            <div className={styles.kicker}>APPROVALS & SENSITIVE ACTIONS</div>
             <h3>Founder remains the final Control Room authority</h3>
           </div>
           <StatusPill label="FOUNDER APPROVED · MANDATORY" compact />
@@ -5466,6 +5602,9 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           Approvals area at the top of the Control Room. This module keeps the
           governance and audit context without rendering a second inbox.
         </p>
+        <a className={styles.sectionReturnLink} href="#module10-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
       <StaffAccessControlPrototype />
@@ -5517,10 +5656,13 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module10-staff-access">
+        <a className={styles.sectionBackLink} href="#module10-find">
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>ADMIN ACCESS & STAFF ONBOARDING</div>
+            <div className={styles.kicker}>STAFF ACCESS & ONBOARDING</div>
             <h3>{ADMIN_STAFF_ACCESS_ONBOARDING_STANDARD.canonicalName}</h3>
           </div>
           <StatusPill label="FOUNDER APPROVED · NOT YET LIVE" compact />
@@ -5573,6 +5715,9 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           The approved governance contract is now registered first so the later
           workflow can be built and certified without bypassing security.
         </div>
+        <a className={styles.sectionReturnLink} href="#module10-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
       <StaffOnboardingPrototype roles={summary?.supportedRoles || []} />
@@ -5703,6 +5848,56 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         </div>
       </section>
 
+      <section className={styles.section} id="module10-exceptional-access">
+        <a className={styles.sectionBackLink} href="#module10-find">
+          ← Back to Find What You Need
+        </a>
+
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>EXCEPTIONAL ACCESS & BREAK-GLASS</div>
+            <h3>High-risk access stays separate from ordinary Admin access</h3>
+          </div>
+          <StatusPill label="RESERVED · NOT ENABLED" compact />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          {FOUNDER_ADMIN_SECURITY_AUDIT_STANDARD.exceptionalAccessRule}
+        </p>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="BREAK-GLASS ACCESS"
+            value="NOT ENABLED"
+            detail={FOUNDER_ADMIN_SECURITY_AUDIT_STANDARD.breakGlassRule}
+          />
+          <InfoCard
+            title="INVISIBLE LOGIN AS USER"
+            value="NOT ALLOWED"
+            detail={FOUNDER_ADMIN_SECURITY_AUDIT_STANDARD.loginAsUserRule}
+          />
+          <InfoCard
+            title="STEP-UP AUTHENTICATION"
+            value={statusLabel(summary?.sections?.exceptionalAccess?.stepUpAuthentication || "NOT YET LIVE WIRED")}
+            detail="Sensitive action step-up remains a separate certification item; this read-only module does not pretend it is active."
+          />
+          <InfoCard
+            title="PRODUCTION CHANGES"
+            value="NOT ENABLED"
+            detail="Production privileges remain separated from this Staging security module."
+          />
+        </div>
+
+        <div className={styles.prototypeReviewBlock}>
+          <strong>Permanent security principle</strong>
+          <p>{FOUNDER_ADMIN_SECURITY_AUDIT_STANDARD.permanentPrinciple}</p>
+        </div>
+
+        <a className={styles.sectionReturnLink} href="#module10-find">
+          ↑ Back to Find What You Need
+        </a>
+      </section>
+
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
@@ -5729,12 +5924,18 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
             ))}
           </div>
         )}
+        <a className={styles.sectionReturnLink} href="#module10-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.section} id="module10-audit">
+        <a className={styles.sectionBackLink} href="#module10-find">
+          ← Back to Find What You Need
+        </a>
         <div className={styles.sectionHeading}>
           <div>
-            <div className={styles.kicker}>RECENT AUDIT</div>
+            <div className={styles.kicker}>AUDIT TRAIL</div>
             <h3>Recent Admin security activity</h3>
           </div>
         </div>
@@ -5760,6 +5961,9 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
             ))}
           </div>
         )}
+        <a className={styles.sectionReturnLink} href="#module10-find">
+          ↑ Back to Find What You Need
+        </a>
       </section>
 
       <section className={styles.detailBlueprint}>
