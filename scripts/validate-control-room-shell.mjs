@@ -771,7 +771,7 @@ for (const required of [
   'resendFetch("/domains?limit=100")',
   "TELEMETRY_PERMISSION_REQUIRED",
   "SOURCE_NOT_CONFIGURED",
-  "Missing account-level telemetry permission must never",
+  "Some account-level telemetry permissions are still not connected",
   "automaticPurchaseAllowed: false",
   "automaticTopUpAllowed: false",
   "automaticUpgradeAllowed: false",
