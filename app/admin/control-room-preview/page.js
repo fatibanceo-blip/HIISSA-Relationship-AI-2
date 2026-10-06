@@ -92,7 +92,13 @@ const MODULES = [
   },
 ];
 
-const FEATURE_KEYS = ["peopleExperience", "youngHiissa", "hiissaRest", "hiissaAlongside"];
+const FEATURE_KEYS = [
+  "peopleExperience",
+  "guestSaveSync",
+  "youngHiissa",
+  "hiissaRest",
+  "hiissaAlongside",
+];
 
 const FOUNDER_WORKSPACE_ROUTES = Object.freeze({
   customer_support: Object.freeze({
