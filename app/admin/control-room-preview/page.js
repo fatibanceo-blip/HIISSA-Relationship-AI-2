@@ -4423,9 +4423,9 @@ function AiProductIntelligenceModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Security & Audit areas"
+          aria-label="Back to Find What You Need"
         >
-          ← Security & Audit areas
+          ← Back to Find What You Need
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -4777,8 +4777,6 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         </p>
       </section>
 
-      <SecurityAuditAreaNavigator />
-
       <section
         className={styles.quickFind}
         id="module9-find"
@@ -4821,9 +4819,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Security & Audit areas"
+          aria-label="Back to Find What You Need"
         >
-          ← Security & Audit areas
+          ← Back to Find What You Need
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -4948,7 +4946,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <span>NO AUTOMATIC MONEY MOVEMENT</span>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Security & Audit areas
+          ↑ Back to Find What You Need
         </a>
       </section>
 
@@ -4987,9 +4985,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Security & Audit areas"
+          aria-label="Back to Find What You Need"
         >
-          ← Security & Audit areas
+          ← Back to Find What You Need
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5113,7 +5111,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           <span>NO AUTOMATIC TOP-UP OR PURCHASE</span>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Security & Audit areas
+          ↑ Back to Find What You Need
         </a>
       </section>
 
@@ -5121,9 +5119,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Security & Audit areas"
+          aria-label="Back to Find What You Need"
         >
-          ← Security & Audit areas
+          ← Back to Find What You Need
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5147,7 +5145,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           ))}
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Security & Audit areas
+          ↑ Back to Find What You Need
         </a>
       </section>
 
@@ -5155,9 +5153,9 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
         <a
           className={styles.sectionBackLink}
           href="#module9-find"
-          aria-label="Back to Security & Audit areas"
+          aria-label="Back to Find What You Need"
         >
-          ← Security & Audit areas
+          ← Back to Find What You Need
         </a>
         <div className={styles.sectionHeading}>
           <div>
@@ -5186,7 +5184,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           ))}
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Security & Audit areas
+          ↑ Back to Find What You Need
         </a>
       </section>
 
@@ -5287,7 +5285,7 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
           </details>
         </div>
         <a className={styles.sectionReturnLink} href="#module9-find">
-          ↑ Security & Audit areas
+          ↑ Back to Find What You Need
         </a>
       </section>
 
@@ -5618,6 +5616,8 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           separately certified.
         </p>
       </section>
+
+      <SecurityAuditAreaNavigator />
 
       <section
         className={styles.quickFind}
