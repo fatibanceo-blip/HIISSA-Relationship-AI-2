@@ -751,6 +751,40 @@
   line-height:1.4;
 }
 
+.sectionBackLink,
+.sectionReturnLink{
+  display:inline-flex;
+  align-items:center;
+  min-height:38px;
+  padding:8px 11px;
+  border:1px solid #cbd9cc;
+  border-radius:11px;
+  background:#f7faf6;
+  color:#315f4c;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:850;
+}
+.sectionBackLink{
+  margin-bottom:14px;
+}
+.sectionReturnLink{
+  margin-top:16px;
+}
+.sectionBackLink:hover,
+.sectionBackLink:focus-visible,
+.sectionReturnLink:hover,
+.sectionReturnLink:focus-visible{
+  border-color:#8eaa98;
+  background:#eef5ed;
+  outline:none;
+}
+.sectionBackLink:active,
+.sectionReturnLink:active{
+  transform:translateY(1px);
+  background:#e4efe4;
+}
+
 .sectionHeading{
   display:flex;
   justify-content:space-between;
