@@ -325,6 +325,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             onOpenFailures={() =>
               chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
             }
+            onOpenUsersIdentity={() =>
+              chooseModule(CONTROL_ROOM_MODULES.usersIdentity)
+            }
             onOpenSafetyPrivacy={() =>
               chooseModule(CONTROL_ROOM_MODULES.safetyPrivacyModeration)
             }
@@ -393,6 +396,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 onOpenApprovals={() => choosePrimary("approvals")}
                 onOpenFailures={() =>
                   chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
+                }
+                onOpenUsersIdentity={() =>
+                  chooseModule(CONTROL_ROOM_MODULES.usersIdentity)
                 }
                 onOpenSafetyPrivacy={() =>
                   chooseModule(CONTROL_ROOM_MODULES.safetyPrivacyModeration)
@@ -491,6 +497,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           approvalResponse,
           securityResponse,
           peopleResponse,
+          usersIdentityResponse,
           safetyPrivacyResponse,
           authSyncResponse,
           aiProductResponse,
@@ -509,6 +516,12 @@ function FounderAlertButton({ authenticated, active, onClick }) {
             headers,
           }),
           fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/users-identity-health", {
             method: "GET",
             cache: "no-store",
             credentials: "same-origin",
@@ -544,6 +557,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           approvalData,
           securityData,
           peopleData,
+          usersIdentityData,
           safetyPrivacyData,
           authSyncData,
           aiProductData,
@@ -552,6 +566,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
+          usersIdentityResponse.json().catch(() => null),
           safetyPrivacyResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
           aiProductResponse.json().catch(() => null),
@@ -578,6 +593,18 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           "UNAVAILABLE",
           "CRITICAL",
         ].includes(peopleDisplayStatus)
+          ? 1
+          : 0;
+        const usersIdentityDisplayStatus =
+          usersIdentityResponse.ok && usersIdentityData
+            ? String(usersIdentityData.displayHealthStatus || "")
+            : "";
+        const usersIdentityAttention = [
+          "NEEDS_ATTENTION",
+          "DEGRADED",
+          "UNAVAILABLE",
+          "CRITICAL",
+        ].includes(usersIdentityDisplayStatus)
           ? 1
           : 0;
         const safetyPrivacyDisplayStatus =
@@ -633,6 +660,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           Number(securityData?.criticalCount || 0) +
           Number(approvalData?.criticalCount || 0) +
           (peopleDisplayStatus === "CRITICAL" ? 1 : 0) +
+          (usersIdentityDisplayStatus === "CRITICAL" ? 1 : 0) +
           (safetyPrivacyDisplayStatus === "CRITICAL" ? 1 : 0) +
           (authSyncDisplayStatus === "CRITICAL" ? 1 : 0) +
           (aiProductDisplayStatus === "CRITICAL" ? 1 : 0) +
@@ -656,6 +684,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
             Math.max(0, pendingApprovals) +
             securityAttention +
             peopleAttention +
+            usersIdentityAttention +
             safetyPrivacyAttention +
             authSyncAttention +
             aiProductAttention +
@@ -1435,6 +1464,7 @@ function FounderAlertsPanel({
   onClose,
   onOpenApprovals,
   onOpenFailures,
+  onOpenUsersIdentity,
   onOpenSafetyPrivacy,
   onOpenAuthSync,
   onOpenAiProduct,
@@ -1447,6 +1477,7 @@ function FounderAlertsPanel({
   const [criticalCount, setCriticalCount] = useState(0);
   const [criticalMessage, setCriticalMessage] = useState("");
   const [peopleHealth, setPeopleHealth] = useState(null);
+  const [usersIdentityHealth, setUsersIdentityHealth] = useState(null);
   const [safetyPrivacyHealth, setSafetyPrivacyHealth] = useState(null);
   const [authSyncHealth, setAuthSyncHealth] = useState(null);
   const [aiProductHealth, setAiProductHealth] = useState(null);
@@ -1476,6 +1507,7 @@ function FounderAlertsPanel({
           approvalResponse,
           securityResponse,
           peopleResponse,
+          usersIdentityResponse,
           safetyPrivacyResponse,
           authSyncResponse,
           aiProductResponse,
@@ -1494,6 +1526,12 @@ function FounderAlertsPanel({
             headers,
           }),
           fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/users-identity-health", {
             method: "GET",
             cache: "no-store",
             credentials: "same-origin",
@@ -1529,6 +1567,7 @@ function FounderAlertsPanel({
           approvalData,
           securityData,
           peopleData,
+          usersIdentityData,
           safetyPrivacyData,
           authSyncData,
           aiProductData,
@@ -1537,6 +1576,7 @@ function FounderAlertsPanel({
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
+          usersIdentityResponse.json().catch(() => null),
           safetyPrivacyResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
           aiProductResponse.json().catch(() => null),
@@ -1562,6 +1602,11 @@ function FounderAlertsPanel({
         const peopleCritical =
           peopleResponse.ok &&
           String(peopleData?.displayHealthStatus || "") === "CRITICAL"
+            ? 1
+            : 0;
+        const usersIdentityCritical =
+          usersIdentityResponse.ok &&
+          String(usersIdentityData?.displayHealthStatus || "") === "CRITICAL"
             ? 1
             : 0;
         const safetyPrivacyCritical =
@@ -1599,6 +1644,7 @@ function FounderAlertsPanel({
             securityCritical +
               approvalCritical +
               peopleCritical +
+              usersIdentityCritical +
               safetyPrivacyCritical +
               authSyncCritical +
               aiProductCritical +
@@ -1610,6 +1656,12 @@ function FounderAlertsPanel({
           setPeopleHealth(peopleData);
         } else {
           setPeopleHealth(null);
+        }
+
+        if (usersIdentityResponse.ok && usersIdentityData) {
+          setUsersIdentityHealth(usersIdentityData);
+        } else {
+          setUsersIdentityHealth(null);
         }
 
         if (safetyPrivacyResponse.ok && safetyPrivacyData) {
@@ -1747,6 +1799,41 @@ function FounderAlertsPanel({
               onClick={onOpenFailures}
             >
               Open Failures & Reliability →
+            </button>
+          ) : null}
+        </article>
+
+        <article
+          className={
+            ["NEEDS_ATTENTION", "DEGRADED", "UNAVAILABLE", "CRITICAL"].includes(
+              String(usersIdentityHealth?.displayHealthStatus || "")
+            )
+              ? styles.alertItemAttention
+              : styles.alertItem
+          }
+        >
+          <div>
+            <strong>Users & Identity health</strong>
+            <p>
+              {loading
+                ? "Checking the connected account and ownership source…"
+                : !usersIdentityHealth
+                  ? "This source could not be confirmed right now."
+                  : ["MONITORING", "PARTIAL"].includes(
+                        usersIdentityHealth.displayHealthStatus
+                      )
+                    ? "Account and ownership evidence is connected. HIISSA keeps private account details out of the aggregate Founder view."
+                    : usersIdentityHealth.founderView?.doINeedToAct ||
+                      "A connected identity/ownership condition needs attention."}
+            </p>
+          </div>
+          {usersIdentityHealth ? (
+            <button
+              type="button"
+              className={styles.alertAction}
+              onClick={onOpenUsersIdentity}
+            >
+              Open Users & Identity →
             </button>
           ) : null}
         </article>
@@ -1902,6 +1989,7 @@ function ControlRoomOverviewLiveSummary({
   authenticated,
   onOpenAlerts,
   onOpenFailures,
+  onOpenUsersIdentity,
   onOpenSafetyPrivacy,
   onOpenAuthSync,
   onOpenAiProduct,
@@ -1913,6 +2001,7 @@ function ControlRoomOverviewLiveSummary({
     approvals: null,
     security: null,
     people: null,
+    usersIdentity: null,
     safetyPrivacy: null,
     authSync: null,
     aiProduct: null,
@@ -1927,6 +2016,7 @@ function ControlRoomOverviewLiveSummary({
         approvals: null,
         security: null,
         people: null,
+        usersIdentity: null,
         safetyPrivacy: null,
         authSync: null,
         aiProduct: null,
@@ -1954,6 +2044,7 @@ function ControlRoomOverviewLiveSummary({
           approvalResponse,
           securityResponse,
           peopleResponse,
+          usersIdentityResponse,
           safetyPrivacyResponse,
           authSyncResponse,
           aiProductResponse,
@@ -1972,6 +2063,12 @@ function ControlRoomOverviewLiveSummary({
             headers,
           }),
           fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/users-identity-health", {
             method: "GET",
             cache: "no-store",
             credentials: "same-origin",
@@ -2007,6 +2104,7 @@ function ControlRoomOverviewLiveSummary({
           approvalData,
           securityData,
           peopleData,
+          usersIdentityData,
           safetyPrivacyData,
           authSyncData,
           aiProductData,
@@ -2015,6 +2113,7 @@ function ControlRoomOverviewLiveSummary({
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
+          usersIdentityResponse.json().catch(() => null),
           safetyPrivacyResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
           aiProductResponse.json().catch(() => null),
@@ -2031,6 +2130,10 @@ function ControlRoomOverviewLiveSummary({
             securityResponse.ok && securityData ? securityData : null,
           people:
             peopleResponse.ok && peopleData ? peopleData : null,
+          usersIdentity:
+            usersIdentityResponse.ok && usersIdentityData
+              ? usersIdentityData
+              : null,
           safetyPrivacy:
             safetyPrivacyResponse.ok && safetyPrivacyData
               ? safetyPrivacyData
@@ -2047,6 +2150,7 @@ function ControlRoomOverviewLiveSummary({
             Number(!approvalResponse.ok) +
             Number(!securityResponse.ok) +
             Number(!peopleResponse.ok) +
+            Number(!usersIdentityResponse.ok) +
             Number(!safetyPrivacyResponse.ok) +
             Number(!authSyncResponse.ok) +
             Number(!aiProductResponse.ok) +
@@ -2063,7 +2167,7 @@ function ControlRoomOverviewLiveSummary({
           authSync: null,
           aiProduct: null,
           systemOperations: null,
-          sourceErrors: 7,
+          sourceErrors: 8,
         });
       }
     }
@@ -2097,6 +2201,18 @@ function ControlRoomOverviewLiveSummary({
     "UNAVAILABLE",
     "CRITICAL",
   ].includes(peopleStatus)
+    ? 1
+    : 0;
+
+  const usersIdentityStatus = String(
+    state.usersIdentity?.displayHealthStatus || "MONITORING"
+  );
+  const usersIdentityAttention = [
+    "NEEDS_ATTENTION",
+    "DEGRADED",
+    "UNAVAILABLE",
+    "CRITICAL",
+  ].includes(usersIdentityStatus)
     ? 1
     : 0;
 
@@ -2152,6 +2268,7 @@ function ControlRoomOverviewLiveSummary({
     pendingApprovals +
     securityAttention +
     peopleAttention +
+    usersIdentityAttention +
     safetyPrivacyAttention +
     authSyncAttention +
     aiProductAttention +
@@ -2159,6 +2276,7 @@ function ControlRoomOverviewLiveSummary({
   const criticalCount =
     Number(state.security?.criticalCount || 0) +
     (peopleStatus === "CRITICAL" ? 1 : 0) +
+    (usersIdentityStatus === "CRITICAL" ? 1 : 0) +
     (safetyPrivacyStatus === "CRITICAL" ? 1 : 0) +
     (authSyncStatus === "CRITICAL" ? 1 : 0) +
     (aiProductStatus === "CRITICAL" ? 1 : 0) +
@@ -2172,6 +2290,7 @@ function ControlRoomOverviewLiveSummary({
         ? "UNAVAILABLE"
         : securityStatus === "DEGRADED" ||
             peopleStatus === "DEGRADED" ||
+            usersIdentityStatus === "DEGRADED" ||
             safetyPrivacyStatus === "DEGRADED" ||
             authSyncStatus === "DEGRADED" ||
             aiProductStatus === "DEGRADED" ||
@@ -2218,6 +2337,22 @@ function ControlRoomOverviewLiveSummary({
           detail={
             state.people?.founderView?.doINeedToAct ||
             "Gentle Check-In and Calmer Start now reuse the same connected health source across authorised Control Room views."
+          }
+        />
+        <InfoCard
+          title="USERS & IDENTITY"
+          value={
+            state.usersIdentity
+              ? statusLabel(
+                  state.usersIdentity.displayHealthStatus || "MONITORING"
+                )
+              : state.loading
+                ? "Checking…"
+                : "Unavailable"
+          }
+          detail={
+            state.usersIdentity?.founderView?.doINeedToAct ||
+            "Aggregate account state and ownership integrity are connected without exposing private account content."
           }
         />
         <InfoCard
@@ -2303,9 +2438,9 @@ function ControlRoomOverviewLiveSummary({
           value={
             state.loading
               ? "Checking…"
-              : `${7 - state.sourceErrors} / 7 current Overview sources`
+              : `${8 - state.sourceErrors} / 8 current Overview sources`
           }
-          detail="Founder approvals, Admin Security, People Experience, Safety/Privacy/Moderation, Auth & Sync, AI & Product and System & Operations are the current live Overview inputs in this Staging package."
+          detail="Founder approvals, Admin Security, People Experience, Users & Identity, Safety/Privacy/Moderation, Auth & Sync, AI & Product and System & Operations are the current live Overview inputs in this Staging package."
         />
       </div>
 
@@ -2324,6 +2459,18 @@ function ControlRoomOverviewLiveSummary({
                 : "No connected Founder attention item right now"}
           </strong>
           <small>Open the shared Founder Alerts view →</small>
+        </button>
+
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenUsersIdentity}
+        >
+          <span>USERS & IDENTITY</span>
+          <strong>
+            Accounts & ownership · {statusLabel(usersIdentityStatus)}
+          </strong>
+          <small>Open the privacy-safe Users & Identity view →</small>
         </button>
 
         <button
@@ -3395,6 +3542,7 @@ function Overview({
   onOpenStaff,
   onOpenApprovals,
   onOpenFailures,
+  onOpenUsersIdentity,
   onOpenSafetyPrivacy,
   onOpenAuthSync,
   onOpenAiProduct,
@@ -3483,6 +3631,7 @@ function Overview({
         authenticated={authenticated}
         onOpenAlerts={onOpenAlerts}
         onOpenFailures={onOpenFailures}
+        onOpenUsersIdentity={onOpenUsersIdentity}
         onOpenSafetyPrivacy={onOpenSafetyPrivacy}
         onOpenAuthSync={onOpenAuthSync}
         onOpenAiProduct={onOpenAiProduct}
