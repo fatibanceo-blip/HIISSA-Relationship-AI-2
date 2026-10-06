@@ -318,6 +318,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             onOpenAiProduct={() =>
               chooseModule(CONTROL_ROOM_MODULES.aiProduct)
             }
+            onOpenSystemOperations={() =>
+              chooseModule(CONTROL_ROOM_MODULES.systemOperations)
+            }
           />
         ) : null}
 
@@ -374,6 +377,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 }
                 onOpenAiProduct={() =>
                   chooseModule(CONTROL_ROOM_MODULES.aiProduct)
+                }
+                onOpenSystemOperations={() =>
+                  chooseModule(CONTROL_ROOM_MODULES.systemOperations)
                 }
                 onShowFullOverview={() => setCalmStart(false)}
               />
@@ -459,6 +465,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           peopleResponse,
           authSyncResponse,
           aiProductResponse,
+          systemOperationsResponse,
         ] = await Promise.all([
           fetch("/api/admin/control-room/staff-approval-inbox", {
             method: "GET",
@@ -490,6 +497,12 @@ function FounderAlertButton({ authenticated, active, onClick }) {
             credentials: "same-origin",
             headers,
           }),
+          fetch("/api/admin/control-room/system-operations-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
         ]);
 
         const [
@@ -498,12 +511,14 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           peopleData,
           authSyncData,
           aiProductData,
+          systemOperationsData,
         ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
           aiProductResponse.json().catch(() => null),
+          systemOperationsResponse.json().catch(() => null),
         ]);
 
         if (!mounted) return;
@@ -552,13 +567,26 @@ function FounderAlertButton({ authenticated, active, onClick }) {
         ].includes(aiProductDisplayStatus)
           ? 1
           : 0;
+        const systemOperationsDisplayStatus =
+          systemOperationsResponse.ok && systemOperationsData
+            ? String(systemOperationsData.displayHealthStatus || "")
+            : "";
+        const systemOperationsAttention = [
+          "NEEDS_ATTENTION",
+          "DEGRADED",
+          "UNAVAILABLE",
+          "CRITICAL",
+        ].includes(systemOperationsDisplayStatus)
+          ? 1
+          : 0;
 
         const explicitCritical =
           Number(securityData?.criticalCount || 0) +
           Number(approvalData?.criticalCount || 0) +
           (peopleDisplayStatus === "CRITICAL" ? 1 : 0) +
           (authSyncDisplayStatus === "CRITICAL" ? 1 : 0) +
-          (aiProductDisplayStatus === "CRITICAL" ? 1 : 0);
+          (aiProductDisplayStatus === "CRITICAL" ? 1 : 0) +
+          (systemOperationsDisplayStatus === "CRITICAL" ? 1 : 0);
         const criticalCount = Number.isFinite(explicitCritical)
           ? Math.max(0, explicitCritical)
           : 0;
@@ -579,7 +607,8 @@ function FounderAlertButton({ authenticated, active, onClick }) {
             securityAttention +
             peopleAttention +
             authSyncAttention +
-            aiProductAttention,
+            aiProductAttention +
+            systemOperationsAttention,
           criticalCount,
           criticalMessage,
         });
@@ -860,6 +889,7 @@ function FounderAlertsPanel({
   onOpenFailures,
   onOpenAuthSync,
   onOpenAiProduct,
+  onOpenSystemOperations,
 }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [pending, setPending] = useState(null);
@@ -869,6 +899,7 @@ function FounderAlertsPanel({
   const [peopleHealth, setPeopleHealth] = useState(null);
   const [authSyncHealth, setAuthSyncHealth] = useState(null);
   const [aiProductHealth, setAiProductHealth] = useState(null);
+  const [systemOperationsHealth, setSystemOperationsHealth] = useState(null);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -896,6 +927,7 @@ function FounderAlertsPanel({
           peopleResponse,
           authSyncResponse,
           aiProductResponse,
+          systemOperationsResponse,
         ] = await Promise.all([
           fetch("/api/admin/control-room/staff-approval-inbox", {
             method: "GET",
@@ -927,6 +959,12 @@ function FounderAlertsPanel({
             credentials: "same-origin",
             headers,
           }),
+          fetch("/api/admin/control-room/system-operations-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
         ]);
 
         const [
@@ -935,12 +973,14 @@ function FounderAlertsPanel({
           peopleData,
           authSyncData,
           aiProductData,
+          systemOperationsData,
         ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
           aiProductResponse.json().catch(() => null),
+          systemOperationsResponse.json().catch(() => null),
         ]);
 
         if (!active) return;
@@ -974,6 +1014,11 @@ function FounderAlertsPanel({
           String(aiProductData?.displayHealthStatus || "") === "CRITICAL"
             ? 1
             : 0;
+        const systemOperationsCritical =
+          systemOperationsResponse.ok &&
+          String(systemOperationsData?.displayHealthStatus || "") === "CRITICAL"
+            ? 1
+            : 0;
 
         if (securityResponse.ok && securityData) {
           setSecurityStatus(securityData.status || null);
@@ -990,7 +1035,8 @@ function FounderAlertsPanel({
               approvalCritical +
               peopleCritical +
               authSyncCritical +
-              aiProductCritical
+              aiProductCritical +
+              systemOperationsCritical
           )
         );
 
@@ -1010,6 +1056,12 @@ function FounderAlertsPanel({
           setAiProductHealth(aiProductData);
         } else {
           setAiProductHealth(null);
+        }
+
+        if (systemOperationsResponse.ok && systemOperationsData) {
+          setSystemOperationsHealth(systemOperationsData);
+        } else {
+          setSystemOperationsHealth(null);
         }
 
         setLoading(false);
@@ -1184,6 +1236,39 @@ function FounderAlertsPanel({
           ) : null}
         </article>
 
+        <article
+          className={
+            ["NEEDS_ATTENTION", "DEGRADED", "UNAVAILABLE", "CRITICAL"].includes(
+              String(systemOperationsHealth?.displayHealthStatus || "")
+            )
+              ? styles.alertItemAttention
+              : styles.alertItem
+          }
+        >
+          <div>
+            <strong>System & Operations provider health</strong>
+            <p>
+              {loading
+                ? "Checking the connected provider-health source…"
+                : !systemOperationsHealth
+                  ? "This source could not be confirmed right now."
+                  : systemOperationsHealth.displayHealthStatus === "MONITORING"
+                    ? "Connected provider health is being monitored. Missing billing/usage telemetry stays separate from provider outage status."
+                    : systemOperationsHealth.founderView?.doINeedToAct ||
+                      "A connected provider-health condition needs attention."}
+            </p>
+          </div>
+          {systemOperationsHealth ? (
+            <button
+              type="button"
+              className={styles.alertAction}
+              onClick={onOpenSystemOperations}
+            >
+              Open System & Operations →
+            </button>
+          ) : null}
+        </article>
+
         <article className={styles.alertItem}>
           <div>
             <strong>More Founder alert sources</strong>
@@ -1205,6 +1290,7 @@ function ControlRoomOverviewLiveSummary({
   onOpenFailures,
   onOpenAuthSync,
   onOpenAiProduct,
+  onOpenSystemOperations,
 }) {
   const [state, setState] = useState({
     loading: Boolean(authenticated),
@@ -1213,6 +1299,7 @@ function ControlRoomOverviewLiveSummary({
     people: null,
     authSync: null,
     aiProduct: null,
+    systemOperations: null,
     sourceErrors: 0,
   });
 
@@ -1225,6 +1312,7 @@ function ControlRoomOverviewLiveSummary({
         people: null,
         authSync: null,
         aiProduct: null,
+        systemOperations: null,
         sourceErrors: 0,
       });
       return;
@@ -1250,6 +1338,7 @@ function ControlRoomOverviewLiveSummary({
           peopleResponse,
           authSyncResponse,
           aiProductResponse,
+          systemOperationsResponse,
         ] = await Promise.all([
           fetch("/api/admin/control-room/staff-approval-inbox", {
             method: "GET",
@@ -1281,6 +1370,12 @@ function ControlRoomOverviewLiveSummary({
             credentials: "same-origin",
             headers,
           }),
+          fetch("/api/admin/control-room/system-operations-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
         ]);
 
         const [
@@ -1289,12 +1384,14 @@ function ControlRoomOverviewLiveSummary({
           peopleData,
           authSyncData,
           aiProductData,
+          systemOperationsData,
         ] = await Promise.all([
           approvalResponse.json().catch(() => null),
           securityResponse.json().catch(() => null),
           peopleResponse.json().catch(() => null),
           authSyncResponse.json().catch(() => null),
           aiProductResponse.json().catch(() => null),
+          systemOperationsResponse.json().catch(() => null),
         ]);
 
         if (!active) return;
@@ -1311,12 +1408,17 @@ function ControlRoomOverviewLiveSummary({
             authSyncResponse.ok && authSyncData ? authSyncData : null,
           aiProduct:
             aiProductResponse.ok && aiProductData ? aiProductData : null,
+          systemOperations:
+            systemOperationsResponse.ok && systemOperationsData
+              ? systemOperationsData
+              : null,
           sourceErrors:
             Number(!approvalResponse.ok) +
             Number(!securityResponse.ok) +
             Number(!peopleResponse.ok) +
             Number(!authSyncResponse.ok) +
-            Number(!aiProductResponse.ok),
+            Number(!aiProductResponse.ok) +
+            Number(!systemOperationsResponse.ok),
         });
       } catch {
         if (!active) return;
@@ -1327,7 +1429,8 @@ function ControlRoomOverviewLiveSummary({
           people: null,
           authSync: null,
           aiProduct: null,
-          sourceErrors: 5,
+          systemOperations: null,
+          sourceErrors: 6,
         });
       }
     }
@@ -1377,17 +1480,31 @@ function ControlRoomOverviewLiveSummary({
     ? 1
     : 0;
 
+  const systemOperationsStatus = String(
+    state.systemOperations?.displayHealthStatus || "MONITORING"
+  );
+  const systemOperationsAttention = [
+    "NEEDS_ATTENTION",
+    "DEGRADED",
+    "UNAVAILABLE",
+    "CRITICAL",
+  ].includes(systemOperationsStatus)
+    ? 1
+    : 0;
+
   const attentionCount =
     pendingApprovals +
     securityAttention +
     peopleAttention +
     authSyncAttention +
-    aiProductAttention;
+    aiProductAttention +
+    systemOperationsAttention;
   const criticalCount =
     Number(state.security?.criticalCount || 0) +
     (peopleStatus === "CRITICAL" ? 1 : 0) +
     (authSyncStatus === "CRITICAL" ? 1 : 0) +
-    (aiProductStatus === "CRITICAL" ? 1 : 0);
+    (aiProductStatus === "CRITICAL" ? 1 : 0) +
+    (systemOperationsStatus === "CRITICAL" ? 1 : 0);
 
   const overallStatus = state.loading
     ? "MONITORING"
@@ -1397,7 +1514,8 @@ function ControlRoomOverviewLiveSummary({
         ? "UNAVAILABLE"
         : peopleStatus === "DEGRADED" ||
             authSyncStatus === "DEGRADED" ||
-            aiProductStatus === "DEGRADED"
+            aiProductStatus === "DEGRADED" ||
+            systemOperationsStatus === "DEGRADED"
           ? "DEGRADED"
           : attentionCount > 0
             ? "NEEDS ATTENTION"
@@ -1471,13 +1589,29 @@ function ControlRoomOverviewLiveSummary({
           }
         />
         <InfoCard
+          title="SYSTEM & OPERATIONS"
+          value={
+            state.systemOperations
+              ? statusLabel(
+                  state.systemOperations.displayHealthStatus || "MONITORING"
+                )
+              : state.loading
+                ? "Checking…"
+                : "Unavailable"
+          }
+          detail={
+            state.systemOperations?.founderView?.doINeedToAct ||
+            "Provider health is connected separately from billing/telemetry completeness."
+          }
+        />
+        <InfoCard
           title="CONNECTED SOURCES"
           value={
             state.loading
               ? "Checking…"
-              : `${5 - state.sourceErrors} / 5 current Overview sources`
+              : `${6 - state.sourceErrors} / 6 current Overview sources`
           }
-          detail="Founder approvals, Admin Security, People Experience, Auth & Sync and AI & Product are the current live Overview inputs in this Staging package."
+          detail="Founder approvals, Admin Security, People Experience, Auth & Sync, AI & Product and System & Operations are the current live Overview inputs in this Staging package."
         />
       </div>
 
@@ -1532,6 +1666,18 @@ function ControlRoomOverviewLiveSummary({
             Quality & product · {statusLabel(aiProductStatus)}
           </strong>
           <small>Open the privacy-safe AI & Product operational view →</small>
+        </button>
+
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenSystemOperations}
+        >
+          <span>SYSTEM & OPERATIONS</span>
+          <strong>
+            Providers & infrastructure · {statusLabel(systemOperationsStatus)}
+          </strong>
+          <small>Open the live provider-health and spend register →</small>
         </button>
       </div>
     </>
@@ -2533,6 +2679,7 @@ function Overview({
   onOpenFailures,
   onOpenAuthSync,
   onOpenAiProduct,
+  onOpenSystemOperations,
   onShowFullOverview,
 }) {
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
@@ -2618,6 +2765,7 @@ function Overview({
         onOpenFailures={onOpenFailures}
         onOpenAuthSync={onOpenAuthSync}
         onOpenAiProduct={onOpenAiProduct}
+        onOpenSystemOperations={onOpenSystemOperations}
       />
 
       <div className={styles.grid}>
@@ -2975,6 +3123,122 @@ function AiProductReliabilityCrossReference({ authenticated }) {
   );
 }
 
+function SystemOperationsReliabilityCrossReference({ authenticated }) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadHealth() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          "/api/admin/control-room/system-operations-health",
+          {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The protected provider reliability source could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setHealth(data);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The protected provider reliability source could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    loadHealth();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const displayStatus = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : health?.displayHealthStatus || "MONITORING";
+  const providers = health?.providers || {};
+  const founderView = health?.founderView || {};
+
+  return (
+    <>
+      <div className={styles.grid}>
+        <InfoCard
+          title="PROVIDER RELIABILITY"
+          value={statusLabel(displayStatus)}
+          detail={
+            founderView.verification ||
+            "HIISSA is checking the same Module 9 provider-health source."
+          }
+        />
+        <InfoCard
+          title="SUPABASE"
+          value={statusLabel(providers.supabase?.status || "MONITORING")}
+          detail="Same privacy-safe database health probe used by Module 9."
+        />
+        <InfoCard
+          title="RESEND"
+          value={statusLabel(providers.resend?.status || "MONITORING")}
+          detail="Telemetry permission/setup is kept separate from a genuine email-provider outage."
+        />
+        <InfoCard
+          title="VERCEL RUNTIME"
+          value={statusLabel(providers.vercel?.status || "MONITORING")}
+          detail="Current runtime evidence only; billing telemetry is not fabricated."
+        />
+        <InfoCard
+          title="PROVIDER ATTENTION"
+          value={loading ? "Checking…" : String(health?.needsAttentionCount ?? 0)}
+          detail={
+            founderView.doINeedToAct ||
+            "Routine provider investigation belongs to HIISSA Technical Operations."
+          }
+        />
+      </div>
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>Provider reliability monitoring unavailable</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+    </>
+  );
+}
+
 function FailuresReliabilityModule({ module, onOverview, onBack }) {
   return (
     <>
@@ -2985,7 +3249,7 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
           <h2>{module.label}</h2>
           <p>{module.purpose}</p>
         </div>
-        <StatusPill label="3 LIVE SOURCES" />
+        <StatusPill label="4 LIVE SOURCES" />
       </div>
 
       <section className={styles.notice}>
@@ -3021,6 +3285,18 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
       </section>
 
       <AiProductReliabilityCrossReference authenticated />
+
+      <section className={styles.notice}>
+        <strong>System & Operations reliability cross-reference</strong>
+        <p>
+          Module 9 owns provider and infrastructure health. Module 6 reuses the
+          same provider-health source only when an observed provider condition
+          becomes a reliability incident. Missing telemetry permission does not
+          create a false outage incident.
+        </p>
+      </section>
+
+      <SystemOperationsReliabilityCrossReference authenticated />
 
       <section className={styles.detailBlueprint}>
         <div className={styles.kicker}>PEOPLE EXPERIENCE RELIABILITY CONTRACT</div>
