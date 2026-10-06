@@ -300,6 +300,8 @@ for (const required of [
   "AUTH & SYNC · SECURITY CROSS-REFERENCE",
   "Identity and ownership boundary",
   "Different device sessions are normal.",
+  "Historical pre-timestamp claimed handoffs recognised safely",
+  "Current claimed-at evidence gaps",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
@@ -408,6 +410,8 @@ for (const required of [
   "deeper-cross-device-session-conflict-telemetry-not-yet-live-wired",
   "FOUNDER_REQUIRED_FOR_ANY_MATERIAL_SAVE_SYNC_CHANGE",
   "do not reopen Stage 4 Guest Save & Sync without new evidence",
+  "legacy-pre-claimed-at-staging-evidence-recognised-read-only",
+  "post-claimed-at-introduction-claim-missing-verification-timestamp",
 ]) requireText("Guest Save & Sync Control Room contract", registry, required);
 
 for (const required of [
@@ -466,6 +470,10 @@ for (const required of [
   "existingStage4AuthAndSaveSyncPreserved: true",
   "productionSaveSyncChanged: false",
   "automaticDataMutationPerformed: false",
+  "legacyPreTimestampEvidenceRecognisedReadOnly: true",
+  "CLAIMED_AT_EVIDENCE_INTRODUCED_AT",
+  "isLegacyPreTimestampClaim",
+  "legacyPreTimestampClaims",
   "materialMigrationChangeRequiresFounderApproval: true",
   "possibleIdentityConflicts",
   "claimedMissingClaimedAt",
