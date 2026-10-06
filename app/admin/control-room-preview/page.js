@@ -3440,7 +3440,126 @@ function SystemOperationsReliabilityCrossReference({ authenticated }) {
   );
 }
 
-function FailuresReliabilityModule({ module, onOverview, onBack }) {
+function AdminSecurityReliabilityCrossReference({ authenticated }) {
+  const [loading, setLoading] = useState(Boolean(authenticated));
+  const [summary, setSummary] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadSecurity() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch("/api/admin/control-room/security-summary", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("The protected Admin Security reliability source could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setSummary(data);
+        setError("");
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("The protected Admin Security reliability source could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    loadSecurity();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const displayStatus = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : summary?.displayHealthStatus || summary?.status || "MONITORING";
+  const counts = summary?.counts || {};
+  const founderView = summary?.founderView || {};
+
+  return (
+    <>
+      <div className={styles.grid}>
+        <InfoCard
+          title="ADMIN SECURITY RELIABILITY"
+          value={statusLabel(displayStatus)}
+          detail={
+            founderView.verification ||
+            "HIISSA is checking the same Module 10 access and audit evidence."
+          }
+        />
+        <InfoCard
+          title="UNATTRIBUTED L3 EVENTS"
+          value={loading ? "Checking…" : String(counts.unattributedL3AuditEvents ?? "—")}
+          detail="High-oversight Admin actions must remain attributable."
+        />
+        <InfoCard
+          title="SELF-GRANTED ACCESS"
+          value={loading ? "Checking…" : String(counts.selfGrantedAccess ?? "—")}
+          detail="A genuine active self-grant is treated as a security-control failure, not normal administration."
+        />
+        <InfoCard
+          title="FAILED AUDIT OUTCOMES"
+          value={loading ? "Checking…" : String(counts.failedAuditOutcomes ?? "—")}
+          detail="Recorded failed/error Admin outcomes remain visible for investigation and verification."
+        />
+        <InfoCard
+          title="FOUNDER ACTION"
+          value={
+            loading
+              ? "Checking…"
+              : summary?.founderActionRequired
+                ? "REQUIRED"
+                : "NOT REQUIRED"
+          }
+          detail={
+            founderView.doINeedToAct ||
+            "Routine security monitoring belongs to HIISSA / Technical Operations."
+          }
+        />
+      </div>
+
+      {error ? (
+        <section className={styles.errorPanel}>
+          <strong>Admin Security reliability monitoring unavailable</strong>
+          <div>{error}</div>
+        </section>
+      ) : null}
+    </>
+  );
+}
+
+function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }) {
   return (
     <>
       <FounderContextBack onBack={onBack} />
@@ -3450,7 +3569,7 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
           <h2>{module.label}</h2>
           <p>{module.purpose}</p>
         </div>
-        <StatusPill label="4 LIVE SOURCES" />
+        <StatusPill label="5 LIVE SOURCES" />
       </div>
 
       <section className={styles.notice}>
@@ -3498,6 +3617,18 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
       </section>
 
       <SystemOperationsReliabilityCrossReference authenticated />
+
+      <section className={styles.notice}>
+        <strong>Admin Security & Audit reliability cross-reference</strong>
+        <p>
+          Module 10 owns Admin access, permission and audit integrity. Module 6
+          reuses the same protected security source when a verified control or
+          audit-integrity condition becomes a reliability incident. No second
+          security incident source is created.
+        </p>
+      </section>
+
+      <AdminSecurityReliabilityCrossReference authenticated />
 
       <section className={styles.detailBlueprint}>
         <div className={styles.kicker}>PEOPLE EXPERIENCE RELIABILITY CONTRACT</div>
@@ -3561,7 +3692,14 @@ function ModuleFoundation({ module, authenticated, onOverview, onBack }) {
   }
 
   if (module.id === CONTROL_ROOM_MODULES.failuresReliability && authenticated) {
-    return <FailuresReliabilityModule module={module} onOverview={onOverview} onBack={onBack} />;
+    return (
+      <FailuresReliabilityModule
+        module={module}
+        authenticated={authenticated}
+        onOverview={onOverview}
+        onBack={onBack}
+      />
+    );
   }
 
   if (module.id === CONTROL_ROOM_MODULES.authSync && authenticated) {
