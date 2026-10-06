@@ -13,6 +13,7 @@ const EVENT_TYPES = Object.freeze([
   "people_experience_checkin_snoozed",
   "people_experience_checkin_resolved",
   "people_experience_workday_close_opened",
+  "people_experience_operational_recovery",
   "founder_control_room_visit",
   "staff_workspace_visit",
 ]);
@@ -263,6 +264,8 @@ function countTypes(rows) {
     snoozed: 0,
     resolved: 0,
     workdayClose: 0,
+    operationalRecoveryEvents: 0,
+    technicalAttentionEvents: 0,
     founderVisits: 0,
     staffWorkspaceVisits: 0,
   };
@@ -272,6 +275,12 @@ function countTypes(rows) {
     if (row.event_type === "people_experience_checkin_snoozed") counts.snoozed += 1;
     if (row.event_type === "people_experience_checkin_resolved") counts.resolved += 1;
     if (row.event_type === "people_experience_workday_close_opened") counts.workdayClose += 1;
+    if (row.event_type === "people_experience_operational_recovery") {
+      counts.operationalRecoveryEvents += 1;
+      if (String(row.outcome || "") === "needs_attention") {
+        counts.technicalAttentionEvents += 1;
+      }
+    }
     if (row.event_type === "founder_control_room_visit") counts.founderVisits += 1;
     if (row.event_type === "staff_workspace_visit") counts.staffWorkspaceVisits += 1;
   }
@@ -328,11 +337,20 @@ export async function GET(request) {
   const privacyFailures = detectedPrivacyFailures(rows);
   const recordIntegrityFailures = detectedRecordIntegrityFailures(rows);
   const counts = countTypes(rows);
+  const recoveryRows = rows.filter(
+    (row) => row.event_type === "people_experience_operational_recovery"
+  );
+  const latestRecovery = recoveryRows[0] || null;
+  const technicalRecoveryFailures = recoveryRows.filter(
+    (row) => String(row.outcome || "") === "needs_attention"
+  );
   const latestEvidenceAt = rows[0]?.occurred_at || null;
 
   const founderActionRequired = privacyFailures.length > 0;
   const needsAttention =
-    cadenceFailures.length > 0 || recordIntegrityFailures.length > 0;
+    cadenceFailures.length > 0 ||
+    recordIntegrityFailures.length > 0 ||
+    technicalRecoveryFailures.length > 0;
 
   const status = founderActionRequired
     ? "FOUNDER_REQUIRED"
@@ -398,8 +416,16 @@ export async function GET(request) {
         "Automatic recovery is not counted as successful merely because an action ran; the resulting feature state must still satisfy the connected health rules.",
       autoStop:
         "Stop automatic handling at privacy, permission, data-integrity or Founder-required boundaries.",
-      observedAutomaticRecoveryAttempts:
-        "Per-attempt automatic-recovery telemetry is not separately emitted yet; configured safe recovery behaviour is shown honestly rather than inventing attempt counts.",
+      observedAutomaticRecoveryAttempts: counts.operationalRecoveryEvents,
+      technicalAttentionRecoveryEvents: counts.technicalAttentionEvents,
+      latestObservedRecovery: latestRecovery
+        ? {
+            event: String(detailsOf(latestRecovery).operational_event || latestRecovery.action_id || ""),
+            automaticAction: String(detailsOf(latestRecovery).automatic_action || ""),
+            verificationState: String(detailsOf(latestRecovery).verification_state || ""),
+            occurredAt: latestRecovery.occurred_at,
+          }
+        : null,
     },
     founderActionRequired,
     actionOwner: founderActionRequired
@@ -411,7 +437,9 @@ export async function GET(request) {
       status === "FOUNDER_REQUIRED"
         ? "Detected the privacy boundary failure and stopped at the Founder-required boundary."
         : status === "NEEDS_ATTENTION"
-          ? "Detected and classified the operational anomaly without altering audit history or bypassing safety boundaries."
+          ? technicalRecoveryFailures.length > 0
+            ? "Detected a degraded People Experience operational event, recorded the bounded automatic action and routed the unresolved technical condition to HIISSA Technical Operations without asking the Founder to repair it."
+            : "Detected and classified the operational anomaly without altering audit history or bypassing safety boundaries."
           : status === "HEALTHY"
             ? "Monitored the connected evidence source and verified the current cadence, privacy and record-integrity rules."
             : "Confirmed the monitoring connection and reported that there is not enough recent activity to claim Healthy.",
