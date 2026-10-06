@@ -27,6 +27,7 @@ import {
   STAFF_WORKSPACE_SHELL_STANDARD,
   FOUNDER_PROVIDER_SUBSCRIPTION_SPEND_STANDARD,
   FOUNDER_AI_PRODUCT_INTELLIGENCE_STANDARD,
+  FOUNDER_ADMIN_SECURITY_AUDIT_STANDARD,
   HIISSA_PEOPLE_EXPERIENCE_LAYER,
 } from "../../../lib/experience-registry.js";
 
@@ -333,6 +334,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             onOpenSystemOperations={() =>
               chooseModule(CONTROL_ROOM_MODULES.systemOperations)
             }
+            onOpenSecurityAudit={() =>
+              chooseModule(CONTROL_ROOM_MODULES.adminSecurityAudit)
+            }
           />
         ) : null}
 
@@ -395,6 +399,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 }
                 onOpenSystemOperations={() =>
                   chooseModule(CONTROL_ROOM_MODULES.systemOperations)
+                }
+                onOpenSecurityAudit={() =>
+                  chooseModule(CONTROL_ROOM_MODULES.adminSecurityAudit)
                 }
                 onShowFullOverview={() => setCalmStart(false)}
               />
@@ -914,6 +921,61 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
           "module9-founder-action"
         ),
     },
+    {
+      label: "Security Health",
+      detail: "Security & Audit · live access, permission and audit health",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-security-health"
+        ),
+    },
+    {
+      label: "Roles & Permissions",
+      detail: "Security & Audit · roles, permission rules and assignments",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-roles-permissions"
+        ),
+    },
+    {
+      label: "Approvals & Sensitive Actions",
+      detail: "Security & Audit · Founder gate and L3 sensitive actions",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-approvals"
+        ),
+    },
+    {
+      label: "Staff Access & Onboarding",
+      detail: "Security & Audit · staff access lifecycle and onboarding",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-staff-access"
+        ),
+    },
+    {
+      label: "Audit Trail",
+      detail: "Security & Audit · attributable Admin activity",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-audit"
+        ),
+    },
+    {
+      label: "Exceptional Access & Break-Glass",
+      detail: "Security & Audit · reserved exceptional access boundaries",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-exceptional-access"
+        ),
+    },
+
     ...MODULES.filter((module) => module.id !== CONTROL_ROOM_MODULES.overview).map((module) => ({
       label: module.label,
       detail: module.find || module.purpose,
