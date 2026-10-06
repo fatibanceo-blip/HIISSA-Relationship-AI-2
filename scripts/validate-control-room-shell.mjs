@@ -42,6 +42,15 @@ const activityTimelinePath = path.join(
   "activity-timeline",
   "route.js"
 );
+const peopleExperienceHealthPath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "people-experience-health",
+  "route.js"
+);
 const recordTimePath = path.join(root, "lib", "hiissa-record-time.js");
 const gentleCheckInPolicyPath = path.join(
   root,
@@ -88,6 +97,7 @@ if (!fs.existsSync(stylePath)) errors.push("Founder Control Room stylesheet is m
 if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security summary endpoint is missing.");
 if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI provider summary endpoint is missing.");
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
+if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activity timeline endpoint is missing.");
 if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
 if (!fs.existsSync(gentleCheckInPolicyPath)) errors.push("Shared gentle check-in policy is missing.");
@@ -139,6 +149,9 @@ const founderWelcome = fs.existsSync(founderWelcomePath)
   : "";
 const activityTimeline = fs.existsSync(activityTimelinePath)
   ? fs.readFileSync(activityTimelinePath, "utf8")
+  : "";
+const peopleExperienceHealth = fs.existsSync(peopleExperienceHealthPath)
+  ? fs.readFileSync(peopleExperienceHealthPath, "utf8")
   : "";
 const recordTime = fs.existsSync(recordTimePath)
   ? fs.readFileSync(recordTimePath, "utf8")
@@ -237,6 +250,12 @@ for (const required of [
   'fetch("/api/admin/control-room/workday-close"',
   "Before you finish for now…",
   "FATI BANCE · FOUNDER",
+  "PEOPLE EXPERIENCE · LIVE STAGING OPERATIONAL HEALTH",
+  'fetch("/api/admin/control-room/people-experience-health"',
+  "MODULE 6 — LIVE STAGING RELIABILITY VIEW",
+  "PEOPLE EXPERIENCE CONNECTED",
+  "What failed, what HIISSA did, and whether you need to act",
+  "PRODUCTION UNTOUCHED",
 ]) requireText("Control Room shell", page, required);
 
 for (const required of [
@@ -307,6 +326,7 @@ for (const protectedSelector of [
 }
 
 for (const feature of [
+  "peopleExperience",
   "youngHiissa",
   "hiissaRest",
   "hiissaAlongside",
@@ -326,6 +346,29 @@ for (const required of [
   "SEPARATE_FOUNDER_ACTIVATION_APPROVAL",
   "Production deployment and Production activation are two different Founder-controlled decisions",
 ]) requireText("Corrected Production hibernation Registry standard", registry, required);
+
+for (const required of [
+  'connectionStatus: "staging-live-operational-health-wired"',
+  "people-experience-operational-source-readable",
+  "gentle-checkin-daypart-cadence-within-approved-limits",
+  "private-emotional-answer-or-score-recorded",
+  "CONTROL_ROOM_MODULES.failuresReliability",
+  "CONTROL_ROOM_MODULES.systemOperations",
+]) requireText("People Experience Control Room contract", registry, required);
+
+for (const required of [
+  "people_experience_checkin_offered",
+  "people_experience_checkin_snoozed",
+  "people_experience_checkin_resolved",
+  "PEOPLE_EXPERIENCE_PRIVACY_BOUNDARY_FAILURE",
+  "DAILY_MAXIMUM_EXCEEDED",
+  "DAYPART_DUPLICATE_OFFER",
+  "MINIMUM_GAP_VIOLATION",
+  "CONNECTED_NO_ACTIVITY",
+  "HIISSA_TECHNICAL_OPERATIONS",
+  "observedAutomaticRecoveryAttempts",
+  "productionEffectEnabled: false",
+]) requireText("People Experience health endpoint", peopleExperienceHealth, required);
 
 for (const required of [
   "interactionFeedbackRule",
