@@ -958,6 +958,56 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     }, 120);
   }
 
+  const registryFeatureDestinations = Object.entries(EXPERIENCE_REGISTRY)
+    .filter(([, feature]) => feature && typeof feature === "object" && feature.id)
+    .map(([key, feature]) => {
+      const modules = Array.isArray(feature.controlRoom?.modules)
+        ? feature.controlRoom.modules
+        : [];
+      const targetModule =
+        modules.find(
+          (moduleId) =>
+            moduleId !== CONTROL_ROOM_MODULES.overview &&
+            MODULES.some((module) => module.id === moduleId)
+        ) || null;
+      const label =
+        feature.publicLabel ||
+        feature.userFacingName ||
+        feature.canonicalName ||
+        feature.userFacingAccessName ||
+        feature.id ||
+        key;
+      const moduleLabels = modules
+        .map((moduleId) => MODULES.find((module) => module.id === moduleId)?.label)
+        .filter(Boolean);
+
+      return {
+        label,
+        detail: feature.controlRoom
+          ? `Feature connection · ${feature.id} · ${moduleLabels.join(" · ") || "Overview"}`
+          : `Registry feature · ${feature.id} · Control Room contract missing`,
+        registrySearchText: [
+          key,
+          feature.id,
+          feature.status,
+          feature.activationStatus,
+          feature.primaryPurpose,
+          feature.purpose,
+          feature.accessFamily,
+          moduleLabels.join(" "),
+        ]
+          .filter(Boolean)
+          .join(" "),
+        action: () => {
+          if (targetModule) {
+            onChooseModule(targetModule);
+          } else {
+            onChoosePrimary("overview");
+          }
+        },
+      };
+    });
+
   const destinations = [
     { label: "Overview", detail: "Founder operational picture", action: () => onChoosePrimary("overview") },
     { label: "Staff & Workspaces", detail: "Departments, people and work contexts", action: () => onChoosePrimary("staff") },
@@ -1429,6 +1479,7 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
       detail: "Staff workspace",
       action: () => onChoosePrimary("staff"),
     })),
+    ...registryFeatureDestinations,
   ];
 
   const searchAliases = {
@@ -1480,7 +1531,7 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
   const normalised = query.trim().toLowerCase();
   const results = normalised
     ? destinations.filter((item) =>
-        `${item.label} ${item.detail} ${searchAliases[item.label] || ""}`
+        `${item.label} ${item.detail} ${searchAliases[item.label] || ""} ${item.registrySearchText || ""}`
           .toLowerCase()
           .includes(normalised)
       ).slice(0, 12)
@@ -3632,6 +3683,35 @@ function Overview({
   onShowFullOverview,
 }) {
   const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
+  const allRegistryFeatures = useMemo(
+    () =>
+      Object.entries(EXPERIENCE_REGISTRY)
+        .filter(([, feature]) => feature && typeof feature === "object" && feature.id)
+        .map(([key, feature]) => ({
+          key,
+          feature,
+          label:
+            feature.publicLabel ||
+            feature.userFacingName ||
+            feature.canonicalName ||
+            feature.userFacingAccessName ||
+            feature.id ||
+            key,
+        })),
+    []
+  );
+  const featuresWithControlRoom = allRegistryFeatures.filter(
+    ({ feature }) => feature.controlRoom
+  );
+  const missingControlRoom = allRegistryFeatures.filter(
+    ({ feature }) => !feature.controlRoom
+  );
+  const liveWiredFeatureCount = featuresWithControlRoom.filter(
+    ({ feature }) =>
+      String(feature.controlRoom?.status || "").includes("live") ||
+      String(feature.controlRoom?.status || "").includes("wired")
+  ).length;
+
   if (calmStart) {
     return (
       <>
@@ -3743,7 +3823,7 @@ function Overview({
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>FEATURE OPERATIONAL VISIBILITY</div>
-            <h3>Registered features and their Control Room connection</h3>
+            <h3>Selected feature examples</h3>
           </div>
           <StatusPill label="REGISTRY DRIVEN" />
         </div>
@@ -3774,6 +3854,112 @@ function Overview({
             </article>
           ))}
         </div>
+      </section>
+
+      <section className={styles.section} id="feature-connections">
+        <div className={styles.sectionHeading}>
+          <div>
+            <div className={styles.kicker}>ALL REGISTRY FEATURE CONNECTIONS</div>
+            <h3>Can every registered HIISSA experience be found in the Control Room?</h3>
+          </div>
+          <StatusPill
+            label={
+              missingControlRoom.length === 0
+                ? "ALL CONTRACTS PRESENT"
+                : `${missingControlRoom.length} MISSING`
+            }
+          />
+        </div>
+
+        <p className={styles.sectionCopy}>
+          This directory reads the Experience Registry itself. It does not make
+          every feature live merely because a contract exists. “Contract defined”
+          and “live-wired” remain deliberately different states. Use global Search
+          to find a feature by ordinary name, Registry ID or mapped module.
+        </p>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="TOP-LEVEL REGISTRY ENTRIES"
+            value={String(allRegistryFeatures.length)}
+            detail="Current top-level registered HIISSA experiences/features considered by this Founder visibility audit."
+          />
+          <InfoCard
+            title="CONTROL ROOM CONTRACTS"
+            value={String(featuresWithControlRoom.length)}
+            detail="Registry entries that explicitly declare where operational intelligence belongs."
+          />
+          <InfoCard
+            title="LIVE-WIRED / LIVE-STATUS CONTRACTS"
+            value={String(liveWiredFeatureCount)}
+            detail="A live/wired label is shown only when the Registry contract itself says so."
+          />
+          <InfoCard
+            title="MISSING CONTROL ROOM CONTRACT"
+            value={String(missingControlRoom.length)}
+            detail={
+              missingControlRoom.length === 0
+                ? "No top-level Registry entry is currently missing its Control Room contract."
+                : "These entries must be reconciled before they can be called operationally complete."
+            }
+          />
+        </div>
+
+        {missingControlRoom.length > 0 ? (
+          <details className={styles.featureConnectionGroup}>
+            <summary>
+              <strong>Needs reconciliation</strong>
+              <span>{missingControlRoom.length} Registry entries</span>
+            </summary>
+            <div className={styles.featureConnectionItems}>
+              {missingControlRoom.map(({ key, feature, label }) => (
+                <article className={styles.featureConnectionItem} key={key}>
+                  <strong>{label}</strong>
+                  <span>{feature.id}</span>
+                  <small>CONTROL ROOM CONTRACT MISSING</small>
+                </article>
+              ))}
+            </div>
+          </details>
+        ) : null}
+
+        {MODULES.map((module) => {
+          const connected = featuresWithControlRoom.filter(({ feature }) =>
+            Array.isArray(feature.controlRoom?.modules)
+              ? feature.controlRoom.modules.includes(module.id)
+              : false
+          );
+
+          if (connected.length === 0) return null;
+
+          return (
+            <details className={styles.featureConnectionGroup} key={module.id}>
+              <summary>
+                <strong>{module.label}</strong>
+                <span>{connected.length} feature connection{connected.length === 1 ? "" : "s"}</span>
+              </summary>
+              <div className={styles.featureConnectionItems}>
+                {connected.map(({ key, feature, label }) => (
+                  <article className={styles.featureConnectionItem} key={`${module.id}-${key}`}>
+                    <div>
+                      <strong>{label}</strong>
+                      <span>{feature.id}</span>
+                    </div>
+                    <small>
+                      {feature.controlRoom?.status ===
+                      "staging-live-operational-health-wired"
+                        ? "LIVE-WIRED · STAGING"
+                        : statusLabel(
+                            feature.controlRoom?.status ||
+                              "CONTRACT DEFINED"
+                          )}
+                    </small>
+                  </article>
+                ))}
+              </div>
+            </details>
+          );
+        })}
       </section>
 
       <section className={styles.section}>
