@@ -2711,7 +2711,7 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
           <h2>{module.label}</h2>
           <p>{module.purpose}</p>
         </div>
-        <StatusPill label="PEOPLE EXPERIENCE CONNECTED" />
+        <StatusPill label="2 LIVE SOURCES" />
       </div>
 
       <section className={styles.notice}>
@@ -2725,6 +2725,17 @@ function FailuresReliabilityModule({ module, onOverview, onBack }) {
       </section>
 
       <PeopleExperienceOperationalHealth authenticated context="failures" />
+
+      <section className={styles.notice}>
+        <strong>Authentication & Sync reliability cross-reference</strong>
+        <p>
+          Module 7 owns identity and continuity health. Module 6 reuses the same
+          protected source when an Auth & Sync condition becomes a reliability
+          incident. No second incident record is created.
+        </p>
+      </section>
+
+      <AuthSyncOperationalHealth authenticated />
 
       <section className={styles.detailBlueprint}>
         <div className={styles.kicker}>PEOPLE EXPERIENCE RELIABILITY CONTRACT</div>
@@ -3556,6 +3567,110 @@ function SystemOperationsModule({ module, onOverview, onBack }) {
   );
 }
 
+function AuthSyncSecurityBoundarySummary() {
+  const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          setError("Founder Admin session could not be confirmed.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch("/api/admin/control-room/auth-sync-health", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!active) return;
+
+        if (!response.ok || !data) {
+          setError("Auth & Sync security-relevant evidence could not be loaded.");
+          setLoading(false);
+          return;
+        }
+
+        setHealth(data);
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError("Auth & Sync security-relevant evidence could not be loaded.");
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const conflicts =
+    health?.sections?.guestAccountMigration?.possibleIdentityConflicts;
+  const status = loading
+    ? "MONITORING"
+    : error
+      ? "UNAVAILABLE"
+      : Number(conflicts || 0) > 0
+        ? "CRITICAL"
+        : "MONITORING";
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>AUTH & SYNC · SECURITY CROSS-REFERENCE</div>
+          <h3>Identity and ownership boundary</h3>
+        </div>
+        <StatusPill label={statusLabel(status)} compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        This is the same Module 7 source, not a duplicate security record.
+        Different device sessions are normal. Only evidence suggesting conflicting
+        permanent ownership reaches this security boundary.
+      </p>
+
+      <div className={styles.grid}>
+        <InfoCard
+          title="POSSIBLE IDENTITY CONFLICTS"
+          value={loading ? "Checking…" : error ? "Unavailable" : String(conflicts ?? 0)}
+          detail="Similar-looking accounts are never auto-merged. A genuine ownership conflict requires authorised review."
+        />
+        <InfoCard
+          title="AUTH & SYNC FOUNDER ACTION"
+          value={
+            health?.founderActionRequired
+              ? "REQUIRED"
+              : loading
+                ? "Checking…"
+                : "NOT REQUIRED"
+          }
+          detail={
+            health?.founderView?.doINeedToAct ||
+            "No security-relevant Auth & Sync Founder action is currently established."
+          }
+        />
+      </div>
+    </section>
+  );
+}
+
 function AdminSecurityAuditModule({ module, onOverview, onBack }) {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState(null);
@@ -3680,6 +3795,8 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
           detail="Recorded Admin security/action events in the new audit foundation."
         />
       </div>
+
+      <AuthSyncSecurityBoundarySummary />
 
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
