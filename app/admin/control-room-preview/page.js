@@ -901,6 +901,106 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
     { label: "Staff & Workspaces", detail: "Departments, people and work contexts", action: () => onChoosePrimary("staff") },
     { label: "Approvals", detail: "Founder Command / Approval Inbox", action: () => onChoosePrimary("approvals") },
     {
+      label: "Provider Health",
+      detail: "System & Operations · live provider status, outages and attention",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-provider-health"
+        ),
+    },
+    {
+      label: "Usage & Billing",
+      detail: "System & Operations · usage, capacity, billing sources and renewals",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-usage-billing"
+        ),
+    },
+    {
+      label: "Provider Register",
+      detail: "System & Operations · everything HIISSA depends on",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-provider-register"
+        ),
+    },
+    {
+      label: "Historical Evidence",
+      detail: "System & Operations · previously verified provider evidence",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-history"
+        ),
+    },
+    {
+      label: "Founder Action / Next Step",
+      detail: "System & Operations · what needs you and what happens next",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.systemOperations,
+          "module9-founder-action"
+        ),
+    },
+    {
+      label: "Security Health",
+      detail: "Security & Audit · live access, permission and audit health",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-security-health"
+        ),
+    },
+    {
+      label: "Roles & Permissions",
+      detail: "Security & Audit · roles, permission rules and assignments",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-roles-permissions"
+        ),
+    },
+    {
+      label: "Approvals & Sensitive Actions",
+      detail: "Security & Audit · Founder gate and L3 sensitive actions",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-approvals"
+        ),
+    },
+    {
+      label: "Staff Access & Onboarding",
+      detail: "Security & Audit · staff access lifecycle and onboarding",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-staff-access"
+        ),
+    },
+    {
+      label: "Audit Trail",
+      detail: "Security & Audit · attributable Admin activity",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-audit"
+        ),
+    },
+    {
+      label: "Exceptional Access & Break-Glass",
+      detail: "Security & Audit · reserved exceptional access boundaries",
+      action: () =>
+        openModuleSection(
+          CONTROL_ROOM_MODULES.adminSecurityAudit,
+          "module10-exceptional-access"
+        ),
+    },
+
+    {
       label: "Feedback ratings",
       detail: "Feedback & Recommendations · rating distribution and aggregate feedback health",
       action: () =>
@@ -1023,106 +1123,6 @@ function FounderSearchPanel({ onClose, onChoosePrimary, onChooseModule }) {
       detail: "Staff & Workspaces · Founder-side people view",
       action: () => openPrimarySection("staff", "staff-directory"),
     },
-    {
-      label: "Provider Health",
-      detail: "System & Operations · live provider status, outages and attention",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.systemOperations,
-          "module9-provider-health"
-        ),
-    },
-    {
-      label: "Usage & Billing",
-      detail: "System & Operations · usage, capacity, billing sources and renewals",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.systemOperations,
-          "module9-usage-billing"
-        ),
-    },
-    {
-      label: "Provider Register",
-      detail: "System & Operations · everything HIISSA depends on",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.systemOperations,
-          "module9-provider-register"
-        ),
-    },
-    {
-      label: "Historical Evidence",
-      detail: "System & Operations · previously verified provider evidence",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.systemOperations,
-          "module9-history"
-        ),
-    },
-    {
-      label: "Founder Action / Next Step",
-      detail: "System & Operations · what needs you and what happens next",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.systemOperations,
-          "module9-founder-action"
-        ),
-    },
-    {
-      label: "Security Health",
-      detail: "Security & Audit · live access, permission and audit health",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.adminSecurityAudit,
-          "module10-security-health"
-        ),
-    },
-    {
-      label: "Roles & Permissions",
-      detail: "Security & Audit · roles, permission rules and assignments",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.adminSecurityAudit,
-          "module10-roles-permissions"
-        ),
-    },
-    {
-      label: "Approvals & Sensitive Actions",
-      detail: "Security & Audit · Founder gate and L3 sensitive actions",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.adminSecurityAudit,
-          "module10-approvals"
-        ),
-    },
-    {
-      label: "Staff Access & Onboarding",
-      detail: "Security & Audit · staff access lifecycle and onboarding",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.adminSecurityAudit,
-          "module10-staff-access"
-        ),
-    },
-    {
-      label: "Audit Trail",
-      detail: "Security & Audit · attributable Admin activity",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.adminSecurityAudit,
-          "module10-audit"
-        ),
-    },
-    {
-      label: "Exceptional Access & Break-Glass",
-      detail: "Security & Audit · reserved exceptional access boundaries",
-      action: () =>
-        openModuleSection(
-          CONTROL_ROOM_MODULES.adminSecurityAudit,
-          "module10-exceptional-access"
-        ),
-    },
-
     ...MODULES.filter((module) => module.id !== CONTROL_ROOM_MODULES.overview).map((module) => ({
       label: module.label,
       detail: module.find || module.purpose,
