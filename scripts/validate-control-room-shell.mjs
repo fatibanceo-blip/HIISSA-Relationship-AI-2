@@ -1140,6 +1140,22 @@ for (const required of [
   'welcomeMode === "QUIET_RETURN"',
 ]) requireText("Gentle check-in privacy policy", gentleCheckInPolicy, required);
 
+const pendingCareMarker = gentleCheckInPolicy.indexOf('"EARLIER_OPPORTUNITY_PENDING"');
+const quietReturnGuard = gentleCheckInPolicy.indexOf('if (welcomeMode === "QUIET_RETURN") {');
+const dailyMaximumGuard = gentleCheckInPolicy.indexOf(
+  "if (sameDateOffers.length >= PEOPLE_CHECKIN_MAX_PER_ACTIVE_DAY) {"
+);
+if (
+  pendingCareMarker < 0 ||
+  quietReturnGuard < 0 ||
+  dailyMaximumGuard < 0 ||
+  !(pendingCareMarker < quietReturnGuard && quietReturnGuard < dailyMaximumGuard)
+) {
+  errors.push(
+    "Gentle check-in quiet-return guard must preserve an already-offered pending opportunity and suppress only creation of a new opportunity."
+  );
+}
+
 for (const required of [
   "HIISSA · GENTLE CHECK-IN",
   "How are you doing today",
@@ -1502,7 +1518,7 @@ console.log("- Founder gentle check-in is 48-hour cadence-limited and privacy-sa
 console.log("- Founder Calm Start temporarily prioritises Alerts and Approvals without removing Overview");
 console.log("- Check-in answers are not persisted to the Founder/Admin audit trail");
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
-console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap and suppresses quiet returns");
+console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap; quiet returns suppress only new opportunities and cannot hide pending care");
 console.log("- All ten Founder-approved People Experience capability contracts plus Care Pause are registered");
 console.log("- Founder Workday Close uses verified approval/audit sources and states critical-source coverage limits");
 console.log("- Shared Workday Close component is presentation-only and reduced-motion protected");
