@@ -184,6 +184,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   const [calmStartExpanded, setCalmStartExpanded] = useState(false);
   const [founderWorkdayCloseOpen, setFounderWorkdayCloseOpen] = useState(false);
   const [founderCheckInPreviewKey, setFounderCheckInPreviewKey] = useState(0);
+  const [calmTaskFocusRequest, setCalmTaskFocusRequest] = useState(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -193,6 +194,25 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
       setPrimaryView(requestedView);
     }
   }, []);
+
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      !calmTaskFocusRequest ||
+      toolPanel !== "alerts"
+    ) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      const destination = document.getElementById("founder-calm-task-destination");
+      if (!destination) return;
+      destination.focus({ preventScroll: true });
+      destination.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [calmTaskFocusRequest, toolPanel]);
 
   const activeModule = useMemo(
     () => MODULES.find((item) => item.id === activeId) || moduleList[0],
@@ -365,32 +385,38 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
         ) : null}
 
         {toolPanel === "alerts" ? (
-          <FounderAlertsPanel
-            authenticated={authenticated}
-            onClose={() => setToolPanel("")}
-            onOpenApprovals={() => choosePrimary("approvals")}
-            onOpenFailures={() =>
-              chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
-            }
-            onOpenUsersIdentity={() =>
-              chooseModule(CONTROL_ROOM_MODULES.usersIdentity)
-            }
-            onOpenSafetyPrivacy={() =>
-              chooseModule(CONTROL_ROOM_MODULES.safetyPrivacyModeration)
-            }
-            onOpenAuthSync={() =>
-              chooseModule(CONTROL_ROOM_MODULES.authSync)
-            }
-            onOpenAiProduct={() =>
-              chooseModule(CONTROL_ROOM_MODULES.aiProduct)
-            }
-            onOpenSystemOperations={() =>
-              chooseModule(CONTROL_ROOM_MODULES.systemOperations)
-            }
-            onOpenSecurityAudit={() =>
-              chooseModule(CONTROL_ROOM_MODULES.adminSecurityAudit)
-            }
-          />
+          <div
+            id="founder-calm-task-destination"
+            tabIndex={-1}
+            aria-label="Founder Calmer Start next task"
+          >
+            <FounderAlertsPanel
+              authenticated={authenticated}
+              onClose={() => setToolPanel("")}
+              onOpenApprovals={() => choosePrimary("approvals")}
+              onOpenFailures={() =>
+                chooseModule(CONTROL_ROOM_MODULES.failuresReliability)
+              }
+              onOpenUsersIdentity={() =>
+                chooseModule(CONTROL_ROOM_MODULES.usersIdentity)
+              }
+              onOpenSafetyPrivacy={() =>
+                chooseModule(CONTROL_ROOM_MODULES.safetyPrivacyModeration)
+              }
+              onOpenAuthSync={() =>
+                chooseModule(CONTROL_ROOM_MODULES.authSync)
+              }
+              onOpenAiProduct={() =>
+                chooseModule(CONTROL_ROOM_MODULES.aiProduct)
+              }
+              onOpenSystemOperations={() =>
+                chooseModule(CONTROL_ROOM_MODULES.systemOperations)
+              }
+              onOpenSecurityAudit={() =>
+                chooseModule(CONTROL_ROOM_MODULES.adminSecurityAudit)
+              }
+            />
+          </div>
         ) : null}
 
         {primaryView === "modules" ? (
@@ -469,6 +495,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 onContinueCalmTask={() => {
                   setCalmStartExpanded(true);
                   setToolPanel("alerts");
+                  setCalmTaskFocusRequest((value) => value + 1);
                 }}
                 onExpandCalmStart={() => setCalmStartExpanded(true)}
                 onExitCalmStart={() => {
