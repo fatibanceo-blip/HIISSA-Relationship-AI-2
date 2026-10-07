@@ -367,6 +367,7 @@ for (const required of [
   "previewRequestKey",
   "FOUNDER_MANUAL_PREVIEW",
   "manualPreview",
+  "manualPreviewOnly",
   "requestCareEligibility",
   "recordCareState",
   "recordCareOperationalEvent",
@@ -1294,6 +1295,23 @@ for (const required of [
   automaticGentleCheckIn,
   required
 );
+for (const required of [
+  "manualPreviewOnly = false",
+  "if (manualPreviewOnly)",
+  'reason: "FOUNDER_MANUAL_PREVIEW"',
+  "setOpen(true)",
+]) requireText(
+  "Founder explicit preview immediate-open contract",
+  automaticGentleCheckIn,
+  required
+);
+
+if (!page.includes("manualPreviewOnly")) {
+  errors.push(
+    "Founder Control Room Preview check-in must invoke the shared controller in immediate, non-consuming preview mode."
+  );
+}
+
 
 const founderAutomaticController = page.indexOf("<AutomaticGentleCheckIn");
 const founderCareEligibility = page.indexOf("requestEligibility={requestCareEligibility}");
@@ -1695,7 +1713,7 @@ console.log("- Founder Activity Timeline reads real Staging audit timestamps");
 console.log("- Approval and staff records use the shared local-time display formatter");
 console.log("- Created/updated/history preservation and no-fabricated-time rules are protected");
 console.log("- Founder Gentle Check-In now reuses the canonical automatic Daypart Care controller with private snooze/resolve lifecycle");
-console.log("- Founder-level Preview check-in replays the shared experience without consuming, snoozing or resolving a real care opportunity");
+console.log("- Founder-level Preview check-in replays the shared experience immediately, bypassing automatic pause gates without consuming, snoozing or resolving a real care opportunity");
 console.log("- Founder Calmer Start Golden Journey is protected: automatic/replayed check-in -> Calmer Start Moment -> Start gently -> shared one-next-step CalmerStartMode");
 console.log("- Check-in answers remain private; only care-delivery state is recorded");
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
