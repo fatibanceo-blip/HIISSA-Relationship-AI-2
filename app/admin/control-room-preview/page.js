@@ -168,6 +168,96 @@ function statusLabel(value) {
     .toUpperCase();
 }
 
+function founderFeatureEvidence(feature) {
+  return [
+    feature?.status,
+    feature?.activationStatus,
+    feature?.certification?.stage,
+    feature?.certification?.founderTest,
+    feature?.certification?.regression,
+    feature?.certification?.connection,
+    feature?.certification?.release,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toUpperCase();
+}
+
+function founderFeatureIsProtected(feature) {
+  const evidence = founderFeatureEvidence(feature);
+  return (
+    evidence.includes("FOUNDER-TESTED") ||
+    evidence.includes("FOUNDER_TESTED") ||
+    evidence.includes("FOUNDER PRACTICAL PASS") ||
+    evidence.includes("FOUNDER_PRACTICAL_PASS") ||
+    /FOUNDER[^\n]*PASS/.test(evidence) ||
+    evidence.includes("PASS_HISTORICAL_PRODUCTION_ACCEPTANCE") ||
+    evidence.includes("PROTECTED")
+  );
+}
+
+function founderFeatureLifecycle(feature) {
+  const evidence = founderFeatureEvidence(feature);
+  const connection = String(feature?.controlRoom?.status || "").toUpperCase();
+
+  if (connection.includes("LIVE") || connection.includes("WIRED")) {
+    return {
+      key: "working",
+      label: "WORKING & CONNECTED",
+    };
+  }
+
+  if (
+    evidence.includes("STAGING") ||
+    evidence.includes("PREVIEW") ||
+    evidence.includes("IMPLEMENTED") ||
+    evidence.includes("DEPLOYED") ||
+    evidence.includes("BUILD VERIFIED") ||
+    evidence.includes("BUILD_VERIFIED")
+  ) {
+    return {
+      key: "built",
+      label: "BUILT / TESTING",
+    };
+  }
+
+  if (
+    evidence.includes("APPROVED") ||
+    evidence.includes("DESIGN") ||
+    evidence.includes("CONCEPT") ||
+    evidence.includes("PENDING") ||
+    evidence.includes("RESERVED") ||
+    evidence.includes("NOT YET") ||
+    evidence.includes("NOT_YET") ||
+    evidence.includes("NOT PUBLICLY") ||
+    evidence.includes("NOT_PUBLICLY")
+  ) {
+    return {
+      key: "planned",
+      label: "APPROVED / PLANNED",
+    };
+  }
+
+  return {
+    key: "registered",
+    label: "REGISTERED / NOT LIVE-WIRED",
+  };
+}
+
+function founderFeatureHealthVisibility(feature) {
+  const connection = String(feature?.controlRoom?.status || "").toUpperCase();
+
+  if (connection.includes("LIVE") || connection.includes("WIRED")) {
+    return "HEALTH CONNECTED · STAGING";
+  }
+
+  if (feature?.controlRoom) {
+    return "CONTROL ROOM CONTRACT · HEALTH NOT LIVE-WIRED";
+  }
+
+  return "CONTROL ROOM CONNECTION MISSING";
+}
+
 
 const FOUNDER_NEXT_ACTION_STATUSES = new Set([
   "CRITICAL",
@@ -4224,6 +4314,17 @@ function Overview({
       String(feature.controlRoom?.status || "").includes("live") ||
       String(feature.controlRoom?.status || "").includes("wired")
   ).length;
+  const founderProtectedFeatureCount = allRegistryFeatures.filter(({ feature }) =>
+    founderFeatureIsProtected(feature)
+  ).length;
+  const founderLifecycleCounts = allRegistryFeatures.reduce(
+    (counts, { feature }) => {
+      const lifecycle = founderFeatureLifecycle(feature);
+      counts[lifecycle.key] = Number(counts[lifecycle.key] || 0) + 1;
+      return counts;
+    },
+    { working: 0, built: 0, planned: 0, registered: 0 }
+  );
 
   const founderNextTask = founderNextActionPresentation(founderNextActionState);
   const founderNextAction = founderNextActionState?.action || null;
@@ -4444,6 +4545,14 @@ function Overview({
                       : "MISSING"}
                 </span>
                 <span>Certification: {feature.certification?.stage || "UNKNOWN"}</span>
+                <span>Founder view: {founderFeatureLifecycle(feature).label}</span>
+                <span>Health visibility: {founderFeatureHealthVisibility(feature)}</span>
+                <span>
+                  Protection:{" "}
+                  {founderFeatureIsProtected(feature)
+                    ? "FOUNDER-TESTED · PROTECTED"
+                    : "NOT YET FOUNDER-PROTECTED"}
+                </span>
               </div>
             </article>
           ))}
@@ -4474,6 +4583,42 @@ function Overview({
           and “live-wired” remain deliberately different states. Use global Search
           to find a feature by ordinary name, Registry ID or mapped module.
         </p>
+
+        <section className={styles.notice}>
+          <strong>Founder feature status — plain English, same Registry.</strong>
+          <p>
+            Nothing here creates a second dashboard or a second source of truth.
+            Working & connected means the existing Registry says the Control Room
+            health connection is live/wired. Built / testing means implementation
+            evidence exists but it is not being presented as fully live-wired.
+            Approved / planned remains preserved but not active. Founder-tested ·
+            Protected means Founder-pass evidence exists and the permanent Golden
+            Journey protection rule applies. It does not mean Production release.
+          </p>
+        </section>
+
+        <div className={styles.grid}>
+          <InfoCard
+            title="WORKING & CONNECTED"
+            value={String(founderLifecycleCounts.working)}
+            detail="Registry entries with a live/wired Control Room connection now."
+          />
+          <InfoCard
+            title="BUILT / TESTING"
+            value={String(founderLifecycleCounts.built)}
+            detail="Implementation or Preview evidence exists, but the Registry is not claiming a fully live-wired Control Room health connection."
+          />
+          <InfoCard
+            title="APPROVED / PLANNED"
+            value={String(founderLifecycleCounts.planned)}
+            detail="Approved or preserved work that is not being presented as active."
+          />
+          <InfoCard
+            title="FOUNDER-TESTED · PROTECTED"
+            value={String(founderProtectedFeatureCount)}
+            detail="Registry evidence indicates Founder-tested/pass protection. This is visibility of the existing protection rule, not a new protection engine."
+          />
+        </div>
 
         <div className={styles.grid}>
           <InfoCard
@@ -4542,15 +4687,11 @@ function Overview({
                       <strong>{label}</strong>
                       <span>{feature.id}</span>
                     </div>
-                    <small>
-                      {feature.controlRoom?.status ===
-                      "staging-live-operational-health-wired"
-                        ? "LIVE-WIRED · STAGING"
-                        : statusLabel(
-                            feature.controlRoom?.status ||
-                              "CONTRACT DEFINED"
-                          )}
-                    </small>
+                    <small>{founderFeatureLifecycle(feature).label}</small>
+                    <small>{founderFeatureHealthVisibility(feature)}</small>
+                    {founderFeatureIsProtected(feature) ? (
+                      <small>FOUNDER-TESTED · PROTECTED</small>
+                    ) : null}
                   </article>
                 ))}
               </div>
