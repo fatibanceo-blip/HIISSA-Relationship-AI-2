@@ -1351,7 +1351,6 @@ for (const required of [
   'aria-label="Founder Calmer Start next task"',
   "calmTaskFocusRequest",
   "setCalmTaskFocusRequest((value) => value + 1)",
-  'setToolPanel("alerts")',
   'destination.focus({ preventScroll: true })',
   'destination.scrollIntoView({ behavior: "smooth", block: "start" })',
 ]) requireText(
@@ -1359,6 +1358,21 @@ for (const required of [
   page,
   required
 );
+
+const semanticNextTaskPresent =
+  page.includes("useFounderNextAction") &&
+  page.includes("founderNextAction") &&
+  page.includes("No verified Founder task needs your attention right now.");
+
+const legacyAlertDestinationPresent =
+  page.includes('setToolPanel("alerts")') &&
+  page.includes("<FounderAlertsPanel");
+
+if (!semanticNextTaskPresent && !legacyAlertDestinationPresent) {
+  errors.push(
+    "Founder Continue with this task must retain either the current protected Alerts fallback or the approved connected one-next-action source during the migration."
+  );
+}
 
 const continueTaskStart = page.indexOf("onContinueCalmTask={() => {");
 const continueTaskEnd = page.indexOf("}}", continueTaskStart);
@@ -1368,7 +1382,6 @@ const continueTaskWiring =
     : "";
 for (const required of [
   "setCalmStartExpanded(true)",
-  'setToolPanel("alerts")',
   "setCalmTaskFocusRequest((value) => value + 1)",
 ]) {
   if (!continueTaskWiring.includes(required)) {
@@ -1747,7 +1760,7 @@ console.log("- Created/updated/history preservation and no-fabricated-time rules
 console.log("- Founder Gentle Check-In now reuses the canonical automatic Daypart Care controller with private snooze/resolve lifecycle");
 console.log("- Founder-level Preview check-in replays the shared experience immediately, bypassing automatic pause gates without consuming, snoozing or resolving a real care opportunity");
 console.log("- Founder Calmer Start Golden Journey is protected: automatic/replayed check-in -> Calmer Start Moment -> Start gently -> shared one-next-step CalmerStartMode");
-console.log("- Continue with this task is protected as click -> visible Alerts destination while Calmer Start remains active");
+console.log("- Continue with this task migration gate accepts the current Alerts fallback or the approved connected one-next-action source while preserving Calmer Start");
 console.log("- Check-in answers remain private; only care-delivery state is recorded");
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
 console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap; quiet returns suppress only new opportunities and cannot hide pending care");
