@@ -1383,6 +1383,25 @@ if (!semanticNextTaskPresent) {
   );
 }
 
+for (const required of [
+  'continueLabel = "Continue with this task"',
+  "{continueLabel}",
+]) requireText(
+  "Shared Calmer Start contextual continue-label contract",
+  calmerStartMode,
+  required
+);
+
+for (const required of [
+  '"View Founder operational picture"',
+  'founderNextAction ? "Continue with this task"',
+  "founderNextAction ? openFounderNextAction : onContinueCalmTask",
+]) requireText(
+  "Founder Calmer Start task/no-task behaviour contract",
+  page,
+  required
+);
+
 for (const forbidden of [
   'taskTitle="Review verified Alerts or work waiting for your decision."',
   'taskTitle="Start with verified Alerts or work waiting for your decision."',
@@ -1785,7 +1804,7 @@ console.log("- Created/updated/history preservation and no-fabricated-time rules
 console.log("- Founder Gentle Check-In now reuses the canonical automatic Daypart Care controller with private snooze/resolve lifecycle");
 console.log("- Founder-level Preview check-in replays the shared experience immediately, bypassing automatic pause gates without consuming, snoozing or resolving a real care opportunity");
 console.log("- Founder Calmer Start Golden Journey is protected: automatic/replayed check-in -> Calmer Start Moment -> Start gently -> shared one-next-step CalmerStartMode");
-console.log("- Continue with this task is protected as verified Founder-owned source -> identical visible task card -> existing exact destination, with honest no-task/source-unavailable states");
+console.log("- Founder Calmer Start is protected: real task -> Continue with this task -> exact existing destination; no verified task -> View Founder operational picture; shared default behaviour remains unchanged elsewhere");
 console.log("- Check-in answers remain private; only care-delivery state is recorded");
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
 console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap; quiet returns suppress only new opportunities and cannot hide pending care");
