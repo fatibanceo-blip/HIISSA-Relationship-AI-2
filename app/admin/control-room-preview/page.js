@@ -889,18 +889,11 @@ function FounderWelcomeMoment({ authenticated, onCalmStart }) {
         ) : null}
         <button
           type="button"
-          className={styles.welcomeEnter}
+          className={styles.welcomeClose}
           onClick={finishWelcome}
+          aria-label="Close Founder welcome"
         >
-          Enter Control Room →
-        </button>
-        <button
-          type="button"
-          className={styles.welcomeDismiss}
-          onClick={finishWelcome}
-          aria-label="Dismiss Founder welcome"
-        >
-          Skip welcome
+          ×
         </button>
       </section>
     </div>
