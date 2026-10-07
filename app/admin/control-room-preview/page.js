@@ -4014,6 +4014,108 @@ function PeopleExperienceOperationalHealth({
   );
 }
 
+function FounderProtectionRegressionSummary() {
+  const source =
+    FOUNDER_CONTROL_ROOM_STRENGTHENING_PACKAGE.protectionRegressionFounderSummary;
+  const items = Array.isArray(source?.items) ? source.items : [];
+  const passing = items.filter((item) => item.evidenceClass === "PASS");
+  const attention = items.filter((item) => item.evidenceClass === "ATTENTION");
+  const latestVerified =
+    items.find((item) => item.id === source?.latestFounderVerifiedEvidenceId) ||
+    null;
+  const latestVerifiedLabel = latestVerified?.founderObservedLocalTime
+    ? latestVerified.founderObservedLocalTime.replace(
+        " · FOUNDER DEVICE",
+        ""
+      )
+    : "NO DATED FOUNDER EVIDENCE";
+
+  return (
+    <section
+      className={styles.section}
+      aria-label="Founder protection and regression summary"
+    >
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>PROTECTION & REGRESSION</div>
+          <h3>What is protected, what passed, and what still needs evidence</h3>
+        </div>
+        <StatusPill label="REAL EVIDENCE ONLY" compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        This is a read-only Founder summary over the existing Registry,
+        Certification Gate and protected regression evidence. It does not create
+        another protection engine or another source of truth.
+      </p>
+
+      <div className={styles.grid}>
+        <InfoCard
+          title="TRACKED PROTECTED JOURNEYS"
+          value={String(items.length)}
+          detail="Current Founder protection evidence carried by the existing Control Room strengthening record."
+        />
+        <InfoCard
+          title="PASSING / NO DEFECT"
+          value={String(passing.length)}
+          detail="Only recorded Founder PASS or explicitly accepted no-defect evidence is counted here."
+        />
+        <InfoCard
+          title="ATTENTION / EVIDENCE PENDING"
+          value={String(attention.length)}
+          detail="Pending or conditional practical evidence is not automatically a regression or broken feature."
+        />
+        <InfoCard
+          title="LAST FOUNDER VERIFIED"
+          value={latestVerifiedLabel}
+          detail={
+            latestVerified
+              ? latestVerified.label
+              : "No dated Founder verification is recorded in this evidence set."
+          }
+        />
+      </div>
+
+      <div className={styles.featureList}>
+        {items.map((item) => (
+          <article className={styles.featureCard} key={item.id}>
+            <div className={styles.featureTop}>
+              <strong>{item.label}</strong>
+              <StatusPill
+                label={
+                  item.evidenceClass === "PASS"
+                    ? "PASSING · PROTECTED"
+                    : "ATTENTION · EVIDENCE PENDING"
+                }
+                compact
+              />
+            </div>
+            <p>{item.evidence}</p>
+            <div className={styles.featureMeta}>
+              <span>Status: {statusLabel(item.status)}</span>
+              <span>Protection: {statusLabel(item.protectionState)}</span>
+              <span>{item.environment || "STAGING ONLY"}</span>
+              {item.founderObservedLocalTime ? (
+                <span>Founder evidence: {item.founderObservedLocalTime}</span>
+              ) : null}
+              {item.deploymentId ? (
+                <span>Deployment evidence: {item.deploymentId}</span>
+              ) : null}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className={styles.timestampStandardNote}>
+        <strong>Evidence rule:</strong> a build, commit or READY deployment is
+        not promoted to Founder practical PASS unless the Founder evidence
+        itself supports that claim. Pending evidence remains visible rather
+        than being silently treated as healthy.
+      </div>
+    </section>
+  );
+}
+
 function FounderActivityTimeline({ authenticated }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [events, setEvents] = useState([]);
@@ -4524,6 +4626,8 @@ function Overview({
       </section>
 
       <FounderActivityTimeline authenticated={authenticated} />
+
+      <FounderProtectionRegressionSummary />
 
       <ControlRoomOverviewLiveSummary
         authenticated={authenticated}
