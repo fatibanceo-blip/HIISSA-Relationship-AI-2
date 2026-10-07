@@ -471,6 +471,35 @@
   gap:9px;
   flex-wrap:wrap;
 }
+.featureConnectionsShortcut{
+  min-height:40px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:9px 13px;
+  border:1px solid #245b48;
+  border-radius:12px;
+  background:#245b48;
+  color:#fff;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.01em;
+}
+.featureConnectionsShortcut:hover,
+.featureConnectionsShortcut:focus-visible{
+  background:#1f4f3f;
+  border-color:#1f4f3f;
+  outline:3px solid rgba(36,91,72,.18);
+  outline-offset:2px;
+}
+.sectionHeadingHint{
+  margin:6px 0 0;
+  color:#627269;
+  font-size:13px;
+  line-height:1.45;
+  max-width:660px;
+}
 .finishForNowButton{
   min-height:40px;
   padding:9px 13px;
