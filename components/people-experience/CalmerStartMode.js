@@ -10,6 +10,7 @@ export default function CalmerStartMode({
   taskTitle = "",
   taskDetail = "",
   taskStatus = "",
+  continueLabel = "Continue with this task",
   expanded = false,
   onContinueTask,
   onShowAll,
@@ -83,7 +84,7 @@ export default function CalmerStartMode({
 
       <div className={styles.actions}>
         <button type="button" className={styles.primary} onClick={onContinueTask}>
-          Continue with this task
+          {continueLabel}
         </button>
         {!expanded ? (
           <button type="button" className={styles.secondary} onClick={onShowAll}>
