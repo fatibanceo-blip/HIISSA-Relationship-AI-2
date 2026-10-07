@@ -4073,6 +4073,20 @@ function FounderActivityTimeline({ authenticated }) {
     };
   }, [authenticated]);
 
+  const founderVisitEvents = events.filter(
+    (event) => event.title === "Founder entered the Control Room"
+  );
+  const previousFounderVisitAt = founderVisitEvents[1]?.occurredAt || "";
+  const activitySincePreviousVisit = previousFounderVisitAt
+    ? events.filter(
+        (event) =>
+          event.title !== "Founder entered the Control Room" &&
+          new Date(event.occurredAt).getTime() >
+            new Date(previousFounderVisitAt).getTime()
+      )
+    : [];
+  const latestChangeSincePreviousVisit = activitySincePreviousVisit[0] || null;
+
   return (
     <section className={styles.activityTimelineSection}>
       <div className={styles.sectionHeading}>
@@ -4091,6 +4105,34 @@ function FounderActivityTimeline({ authenticated }) {
         event time and shows it here in your local time. No activity is invented
         to fill the timeline.
       </p>
+
+      {!loading && !error ? (
+        <div className={styles.notice}>
+          <strong>Since your earlier visit</strong>
+          {previousFounderVisitAt ? (
+            <>
+              <p>
+                {activitySincePreviousVisit.length === 0
+                  ? "No new verified operational event was recorded between your previous Control Room visit and this one."
+                  : `${activitySincePreviousVisit.length} verified Staging ${activitySincePreviousVisit.length === 1 ? "event was" : "events were"} recorded between your previous Control Room visit and this one.`}
+              </p>
+              {latestChangeSincePreviousVisit ? (
+                <p>
+                  Latest recorded change:{" "}
+                  <strong>{latestChangeSincePreviousVisit.title}</strong> ·{" "}
+                  {formatHiissaRecordTime(latestChangeSincePreviousVisit.occurredAt)}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p>
+              HIISSA does not yet have an earlier Control Room visit inside the
+              current verified timeline window, so it is not inventing a
+              comparison.
+            </p>
+          )}
+        </div>
+      ) : null}
 
       {error ? (
         <div className={styles.errorPanel}>
