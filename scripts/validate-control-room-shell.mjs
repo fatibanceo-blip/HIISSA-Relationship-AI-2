@@ -1393,8 +1393,10 @@ for (const required of [
 );
 
 for (const required of [
-  '"View Founder operational picture"',
-  'founderNextAction ? "Continue with this task"',
+  "continueLabel={",
+  '? "Continue with this task"',
+  ': "View Founder operational picture"',
+  "onContinueTask={",
   "founderNextAction ? openFounderNextAction : onContinueCalmTask",
 ]) requireText(
   "Founder Calmer Start task/no-task behaviour contract",
