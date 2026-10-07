@@ -1361,17 +1361,37 @@ for (const required of [
 
 const semanticNextTaskPresent =
   page.includes("useFounderNextAction") &&
-  page.includes("founderNextAction") &&
-  page.includes("No verified Founder task needs your attention right now.");
+  page.includes("founderNextActionPresentation") &&
+  page.includes("founderNextActionState") &&
+  page.includes("No verified Founder task needs your attention right now.") &&
+  page.includes("HIISSA cannot verify one Founder next task from every connected source right now.") &&
+  page.includes('destination: "approvals"') &&
+  page.includes('destination: "security"') &&
+  page.includes('destination: "safety"') &&
+  page.includes('destination: "auth"') &&
+  page.includes('destination: "people"') &&
+  page.includes('destination: "identity"') &&
+  page.includes('destination: "ai"') &&
+  page.includes('destination: "operations"') &&
+  page.includes("founderActionRequired === true") &&
+  page.includes('actionOwner.includes("FOUNDER")') &&
+  page.includes('/^YES\\b/i.test(founderDirective)');
 
-const legacyAlertDestinationPresent =
-  page.includes('setToolPanel("alerts")') &&
-  page.includes("<FounderAlertsPanel");
-
-if (!semanticNextTaskPresent && !legacyAlertDestinationPresent) {
+if (!semanticNextTaskPresent) {
   errors.push(
-    "Founder Continue with this task must retain either the current protected Alerts fallback or the approved connected one-next-action source during the migration."
+    "Founder Calmer Start must derive one next task from connected Founder-owned sources, preserve an honest no-task state, and avoid inventing work."
   );
+}
+
+for (const forbidden of [
+  'taskTitle="Review verified Alerts or work waiting for your decision."',
+  'taskTitle="Start with verified Alerts or work waiting for your decision."',
+]) {
+  if (page.includes(forbidden)) {
+    errors.push(
+      `Founder Calmer Start must not use the superseded generic next-task wording: ${forbidden}`
+    );
+  }
 }
 
 const continueTaskStart = page.indexOf("onContinueCalmTask={() => {");
@@ -1386,9 +1406,14 @@ for (const required of [
 ]) {
   if (!continueTaskWiring.includes(required)) {
     errors.push(
-      `Founder Continue with this task must visibly navigate to the named work while Calmer Start stays active: missing ${required}`
+      `Founder Continue with this task must reveal the same verified task while Calmer Start stays active: missing ${required}`
     );
   }
+}
+if (continueTaskWiring.includes('setToolPanel("alerts")')) {
+  errors.push(
+    "Founder Continue with this task must not reopen the superseded generic Alerts-dashboard destination."
+  );
 }
 
 const founderWelcomeStart = page.indexOf("<FounderWelcomeMoment");
@@ -1760,7 +1785,7 @@ console.log("- Created/updated/history preservation and no-fabricated-time rules
 console.log("- Founder Gentle Check-In now reuses the canonical automatic Daypart Care controller with private snooze/resolve lifecycle");
 console.log("- Founder-level Preview check-in replays the shared experience immediately, bypassing automatic pause gates without consuming, snoozing or resolving a real care opportunity");
 console.log("- Founder Calmer Start Golden Journey is protected: automatic/replayed check-in -> Calmer Start Moment -> Start gently -> shared one-next-step CalmerStartMode");
-console.log("- Continue with this task migration gate accepts the current Alerts fallback or the approved connected one-next-action source while preserving Calmer Start");
+console.log("- Continue with this task is protected as verified Founder-owned source -> identical visible task card -> existing exact destination, with honest no-task/source-unavailable states");
 console.log("- Check-in answers remain private; only care-delivery state is recorded");
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
 console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap; quiet returns suppress only new opportunities and cannot hide pending care");
