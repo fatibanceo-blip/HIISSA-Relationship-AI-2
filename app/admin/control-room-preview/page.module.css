@@ -1697,6 +1697,20 @@
   font-size:12px;
   line-height:1.55;
 }
+.welcomeSkip{
+  position:relative;
+  z-index:1;
+  display:block;
+  margin:11px auto 0;
+  padding:7px 9px;
+  border:0;
+  background:transparent;
+  color:#78867e;
+  font:inherit;
+  font-size:11px;
+  font-weight:750;
+  cursor:pointer;
+}
 .welcomeClose{
   position:absolute;
   z-index:2;
@@ -1746,6 +1760,7 @@
 .prototypeApprove,
 .prototypeReturn,
 .prototypeReject,
+.welcomeSkip,
 .welcomeClose,
 .criticalAlertActions button{
   transition:background .14s ease,border-color .14s ease,box-shadow .14s ease,transform .1s ease,color .14s ease;
@@ -1780,6 +1795,8 @@
 .prototypeReturn:not(:disabled):focus-visible,
 .prototypeReject:not(:disabled):hover,
 .prototypeReject:not(:disabled):focus-visible,
+.welcomeSkip:hover,
+.welcomeSkip:focus-visible,
 .welcomeClose:hover,
 .welcomeClose:focus-visible,
 .criticalAlertActions button:hover,
@@ -1803,6 +1820,7 @@
 .prototypeApprove:not(:disabled):active,
 .prototypeReturn:not(:disabled):active,
 .prototypeReject:not(:disabled):active,
+.welcomeSkip:active,
 .welcomeClose:active,
 .criticalAlertActions button:active{
   transform:translateY(1px);
@@ -1847,7 +1865,7 @@
   box-shadow:inset 4px 0 0 #46745e,0 0 0 3px rgba(36,91,72,.12);
 }
 
-.welcomeDismiss:active{
+.welcomeSkip:active{
   background:#eef3ed;
 }
 
@@ -1896,7 +1914,7 @@
   .prototypeReturn,
   .prototypeReject,
   .welcomeEnter,
-  .welcomeDismiss,
+  .welcomeSkip,
   .criticalAlertActions button{
     animation:none !important;
     transition:none !important;
