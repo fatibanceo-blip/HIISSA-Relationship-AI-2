@@ -4116,6 +4116,385 @@ function FounderProtectionRegressionSummary() {
   );
 }
 
+function FounderDailyBrief({
+  authenticated,
+  onOpenAlerts,
+  onOpenApprovals,
+}) {
+  const [state, setState] = useState({
+    loading: Boolean(authenticated),
+    approvals: null,
+    security: null,
+    people: null,
+    usersIdentity: null,
+    safetyPrivacy: null,
+    authSync: null,
+    aiProduct: null,
+    systemOperations: null,
+    events: [],
+    sourceErrors: 0,
+  });
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setState((current) => ({
+        ...current,
+        loading: false,
+        sourceErrors: authenticated ? 9 : 0,
+      }));
+      return undefined;
+    }
+
+    let active = true;
+
+    async function loadBrief() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          if (active) {
+            setState((current) => ({
+              ...current,
+              loading: false,
+              sourceErrors: 9,
+            }));
+          }
+          return;
+        }
+
+        const headers = { Authorization: `Bearer ${session.access_token}` };
+        const responses = await Promise.all([
+          fetch("/api/admin/control-room/staff-approval-inbox", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/security-summary", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/people-experience-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/users-identity-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/safety-privacy-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/auth-sync-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/ai-product-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/system-operations-health", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          fetch("/api/admin/control-room/activity-timeline", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+        ]);
+
+        const data = await Promise.all(
+          responses.map((response) => response.json().catch(() => null))
+        );
+
+        if (!active) return;
+
+        const [
+          approvals,
+          security,
+          people,
+          usersIdentity,
+          safetyPrivacy,
+          authSync,
+          aiProduct,
+          systemOperations,
+          activity,
+        ] = data;
+
+        setState({
+          loading: false,
+          approvals: responses[0].ok && approvals ? approvals : null,
+          security: responses[1].ok && security ? security : null,
+          people: responses[2].ok && people ? people : null,
+          usersIdentity:
+            responses[3].ok && usersIdentity ? usersIdentity : null,
+          safetyPrivacy:
+            responses[4].ok && safetyPrivacy ? safetyPrivacy : null,
+          authSync: responses[5].ok && authSync ? authSync : null,
+          aiProduct: responses[6].ok && aiProduct ? aiProduct : null,
+          systemOperations:
+            responses[7].ok && systemOperations ? systemOperations : null,
+          events:
+            responses[8].ok && Array.isArray(activity?.events)
+              ? activity.events
+              : [],
+          sourceErrors: responses.reduce(
+            (count, response, index) =>
+              count + Number(!response.ok || !data[index]),
+            0
+          ),
+        });
+      } catch {
+        if (!active) return;
+        setState({
+          loading: false,
+          approvals: null,
+          security: null,
+          people: null,
+          usersIdentity: null,
+          safetyPrivacy: null,
+          authSync: null,
+          aiProduct: null,
+          systemOperations: null,
+          events: [],
+          sourceErrors: 9,
+        });
+      }
+    }
+
+    loadBrief();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  const attentionStatuses = new Set([
+    "NEEDS_ATTENTION",
+    "NEEDS ATTENTION",
+    "DEGRADED",
+    "UNAVAILABLE",
+    "CRITICAL",
+  ]);
+
+  const healthRows = [
+    [
+      "Admin Security",
+      String(
+        state.security?.displayHealthStatus ||
+          state.security?.status ||
+          "UNAVAILABLE"
+      ),
+    ],
+    [
+      "People Experience",
+      String(state.people?.displayHealthStatus || "UNAVAILABLE"),
+    ],
+    [
+      "Users & Identity",
+      String(state.usersIdentity?.displayHealthStatus || "UNAVAILABLE"),
+    ],
+    [
+      "Safety / Privacy",
+      String(state.safetyPrivacy?.displayHealthStatus || "UNAVAILABLE"),
+    ],
+    [
+      "Auth & Sync",
+      String(state.authSync?.displayHealthStatus || "UNAVAILABLE"),
+    ],
+    [
+      "AI & Product",
+      String(state.aiProduct?.displayHealthStatus || "UNAVAILABLE"),
+    ],
+    [
+      "System & Operations",
+      String(state.systemOperations?.displayHealthStatus || "UNAVAILABLE"),
+    ],
+  ];
+
+  const pendingApprovals = Number(state.approvals?.pendingCount || 0);
+  const healthAttention = healthRows.reduce(
+    (count, [, value]) =>
+      count +
+      Number(
+        attentionStatuses.has(
+          String(value || "").trim().toUpperCase().replaceAll("-", "_")
+        )
+      ),
+    0
+  );
+  const attentionCount = pendingApprovals + healthAttention;
+
+  const today = new Date();
+  const isToday = (value) => {
+    const date = new Date(value);
+    return (
+      Number.isFinite(date.getTime()) &&
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
+  };
+
+  const todayEvents = state.events.filter((event) => isToday(event?.occurredAt));
+  const automaticEvents = todayEvents.filter((event) =>
+    String(event?.title || "").startsWith("HIISSA ")
+  );
+  const latestEvent = state.events[0] || null;
+  const reachableSources = Math.max(0, 9 - Number(state.sourceErrors || 0));
+  const dateLabel = today.toLocaleDateString(undefined, {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  return (
+    <section className={styles.section} aria-label="Daily Founder Brief">
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>DAILY FOUNDER BRIEF · {dateLabel}</div>
+          <h3>Your verified picture for today</h3>
+        </div>
+        <StatusPill
+          label={state.loading ? "CHECKING" : "CONNECTED SOURCES ONLY"}
+          compact
+        />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        A concise management summary over the existing Control Room sources.
+        HIISSA does not create a second dashboard, second approval queue or
+        second activity history for this brief.
+      </p>
+
+      <div className={styles.grid}>
+        <InfoCard
+          title="NEEDS YOU NOW"
+          value={
+            state.loading
+              ? "Checking…"
+              : `${attentionCount} connected item${attentionCount === 1 ? "" : "s"}`
+          }
+          detail={
+            attentionCount > 0
+              ? "Only verified connected attention signals are counted."
+              : "No connected source is currently asking for Founder attention. Missing sources are not treated as healthy."
+          }
+        />
+        <InfoCard
+          title="STAFF APPROVALS"
+          value={state.loading ? "Checking…" : String(pendingApprovals)}
+          detail="The same Founder Command / Approval Inbox is used; the brief does not create another queue."
+        />
+        <InfoCard
+          title="AUTOMATIC HANDLING TODAY"
+          value={state.loading ? "Checking…" : String(automaticEvents.length)}
+          detail="Counted only when the verified Activity Timeline explicitly identifies HIISSA automatic handling."
+        />
+        <InfoCard
+          title="LATEST VERIFIED ACTIVITY"
+          value={
+            state.loading
+              ? "Checking…"
+              : latestEvent?.title || "No verified recent activity"
+          }
+          detail={
+            latestEvent?.occurredAt
+              ? `${formatHiissaRecordTime(latestEvent.occurredAt)} · ${latestEvent.source || "HIISSA"}`
+              : "The brief does not invent a last-change time."
+          }
+        />
+        <InfoCard
+          title="BRIEF SOURCE COVERAGE"
+          value={state.loading ? "Checking…" : `${reachableSources} / 9`}
+          detail="Approval, seven connected health sources and the Founder Activity Timeline are checked independently."
+        />
+      </div>
+
+      <article className={styles.featureCard}>
+        <div className={styles.featureTop}>
+          <strong>Connected operational health</strong>
+          <StatusPill
+            label={
+              healthAttention > 0
+                ? `${healthAttention} NEED ATTENTION`
+                : "NO CONNECTED HEALTH ALERT"
+            }
+            compact
+          />
+        </div>
+        <p>
+          These labels come from the existing specialist Control Room sources;
+          Monitoring remains Monitoring and is not relabelled Healthy.
+        </p>
+        <div className={styles.featureMeta}>
+          {healthRows.map(([label, value]) => (
+            <span key={label}>
+              {label}: {statusLabel(value)}
+            </span>
+          ))}
+        </div>
+      </article>
+
+      <div className={styles.timestampStandardNote}>
+        <strong>Coverage boundary:</strong> Feedback & Recommendations is still
+        available in Module 4 but is not yet a shared Daily Brief health input.
+        Live customer subscriptions, live money, a complete support-SLA source
+        and a certified staff access-review schedule are also not yet connected
+        to this brief. HIISSA will not fabricate those results.
+      </div>
+
+      <div className={styles.overviewPathways}>
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenAlerts}
+        >
+          <span>FOUNDER ATTENTION</span>
+          <strong>
+            {attentionCount > 0
+              ? "Review the verified items that need you"
+              : "No connected attention item right now"}
+          </strong>
+          <small>Open the existing Founder Alerts view →</small>
+        </button>
+        <button
+          type="button"
+          className={styles.overviewPathway}
+          onClick={onOpenApprovals}
+        >
+          <span>FOUNDER APPROVALS</span>
+          <strong>
+            {pendingApprovals > 0
+              ? `${pendingApprovals} submission${pendingApprovals === 1 ? "" : "s"} waiting`
+              : "No staff submission waiting right now"}
+          </strong>
+          <small>Open the existing Founder Approval Inbox →</small>
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function FounderActivityTimeline({ authenticated }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [events, setEvents] = useState([]);
@@ -4624,6 +5003,12 @@ function Overview({
           Live health, user-registration, entitlement, failure and recovery values will appear only when an authorised real data source is connected and verified.
         </p>
       </section>
+
+      <FounderDailyBrief
+        authenticated={authenticated}
+        onOpenAlerts={onOpenAlerts}
+        onOpenApprovals={onOpenApprovals}
+      />
 
       <FounderActivityTimeline authenticated={authenticated} />
 
