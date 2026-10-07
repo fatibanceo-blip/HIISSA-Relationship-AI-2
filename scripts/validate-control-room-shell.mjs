@@ -51,6 +51,15 @@ const founderCarePath = path.join(
   "founder-care",
   "route.js"
 );
+const founderEmergencyPausePath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "founder-emergency-pause",
+  "route.js"
+);
 const activityTimelinePath = path.join(
   root,
   "app",
@@ -171,6 +180,7 @@ if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI pro
 if (!fs.existsSync(systemOperationsHealthPath)) errors.push("Protected System & Operations health endpoint is missing.");
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
 if (!fs.existsSync(founderCarePath)) errors.push("Protected Founder Daypart Care endpoint is missing.");
+if (!fs.existsSync(founderEmergencyPausePath)) errors.push("Protected Founder Emergency Pause endpoint is missing.");
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
 if (!fs.existsSync(aiProductHealthPath)) errors.push("Protected AI & Product health endpoint is missing.");
@@ -233,6 +243,9 @@ const founderWelcome = fs.existsSync(founderWelcomePath)
   : "";
 const founderCare = fs.existsSync(founderCarePath)
   ? fs.readFileSync(founderCarePath, "utf8")
+  : "";
+const founderEmergencyPause = fs.existsSync(founderEmergencyPausePath)
+  ? fs.readFileSync(founderEmergencyPausePath, "utf8")
   : "";
 const activityTimeline = fs.existsSync(activityTimelinePath)
   ? fs.readFileSync(activityTimelinePath, "utf8")
@@ -366,6 +379,15 @@ for (const required of [
   "What happened, and exactly when",
   "FounderProtectionRegressionSummary",
   "FounderDailyBrief",
+  "FounderEmergencyPauseCentre",
+  "FOUNDER EMERGENCY PAUSE · STAGING",
+  "Record a scoped pause instruction while you investigate",
+  "ACTIVE STAGING PAUSE SIGNALS",
+  "EXTERNAL ENFORCEMENT",
+  "Not connected yet",
+  "Record Staging pause signal",
+  "Restore after verification",
+  '"/api/admin/control-room/founder-emergency-pause"',
   "DAILY FOUNDER BRIEF",
   "Your verified picture for today",
   "CONNECTED SOURCES ONLY",
@@ -1515,6 +1537,23 @@ for (const required of [
   'environment !== "production"',
   'verificationClient.auth.getUser(accessToken)',
   '.from("admin_users")',
+  '.from("admin_audit_events")',
+  '"founder_emergency_pause_started"',
+  '"founder_emergency_pause_restored"',
+  '"PAUSE_REASON_REQUIRED"',
+  '"RESTORE_VERIFICATION_REQUIRED"',
+  '"EXTERNAL_ENFORCEMENT_NOT_CONNECTED"',
+  '"founder-emergency-pause-staging-control-foundation"',
+  "externalEnforcementPerformed: false",
+  "productionEffectPerformed: false",
+  '"Cache-Control": "no-store"',
+]) requireText("Founder Emergency Pause endpoint", founderEmergencyPause, required);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verificationClient.auth.getUser(accessToken)',
+  '.from("admin_users")',
   '.from("admin_approval_requests")',
   '.from("admin_audit_events")',
   '"people_experience_workday_close_opened"',
@@ -1612,6 +1651,14 @@ for (const registryRule of [
   "dpl_ChpQD5a8451NZ2eVVvctLxfgMvV7",
   "founder-approval-inbox",
   "founder-emergency-pause",
+  "STAGING_CONTROL_FOUNDATION_IMPLEMENTED_BUILD_VERIFICATION_PENDING",
+  "The first Staging implementation records a Founder pause instruction",
+  "EXTERNAL_ENFORCEMENT_NOT_CONNECTED",
+  "Existing Staging admin_audit_events. No second incident store or pause-history table is introduced.",
+  "/api/admin/control-room/founder-emergency-pause",
+  "protection-founder-emergency-pause",
+  "BUILD_VERIFICATION_PENDING",
+  "IMPLEMENTATION_PRESENT_NOT_YET_FOUNDER_TESTED",
   "staff-session-device-control",
   "preview-as-role",
   "founder-decision-pack",
