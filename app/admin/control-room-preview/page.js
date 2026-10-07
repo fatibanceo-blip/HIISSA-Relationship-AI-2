@@ -183,6 +183,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   const [calmStart, setCalmStart] = useState(false);
   const [calmStartExpanded, setCalmStartExpanded] = useState(false);
   const [founderWorkdayCloseOpen, setFounderWorkdayCloseOpen] = useState(false);
+  const [founderCheckInPreviewKey, setFounderCheckInPreviewKey] = useState(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -247,6 +248,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
       <section className={styles.shell}>
         <FounderWelcomeMoment
           authenticated={authenticated}
+          previewRequestKey={founderCheckInPreviewKey}
           pauseCare={
             calmStartMomentOpen ||
             calmStart ||
@@ -474,6 +476,9 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                   setCalmStartExpanded(false);
                 }}
                 onOpenWorkdayClose={() => setFounderWorkdayCloseOpen(true)}
+                onPreviewCheckIn={() =>
+                  setFounderCheckInPreviewKey((value) => value + 1)
+                }
               />
             ) : null}
 
@@ -832,7 +837,12 @@ function FounderAlertButton({ authenticated, active, onClick }) {
   );
 }
 
-function FounderWelcomeMoment({ authenticated, pauseCare = false, onCalmStart }) {
+function FounderWelcomeMoment({
+  authenticated,
+  pauseCare = false,
+  previewRequestKey = 0,
+  onCalmStart,
+}) {
   const [welcome, setWelcome] = useState(null);
   const [visible, setVisible] = useState(false);
   const [checkInManualKey, setCheckInManualKey] = useState(0);
@@ -895,6 +905,11 @@ function FounderWelcomeMoment({ authenticated, pauseCare = false, onCalmStart })
     setCheckInManualKey((value) => value + 1);
   }, [welcome, visible]);
 
+  useEffect(() => {
+    if (!authenticated || !welcome || !previewRequestKey) return;
+    setCheckInManualKey((value) => value + 1);
+  }, [authenticated, welcome, previewRequestKey]);
+
   async function founderAccessToken() {
     const {
       data: { session },
@@ -903,6 +918,29 @@ function FounderWelcomeMoment({ authenticated, pauseCare = false, onCalmStart })
   }
 
   async function requestCareEligibility(context) {
+    if (context?.manualPreview) {
+      const previewHour = Number(context.localHour);
+      const previewDaypart =
+        previewHour >= 5 && previewHour < 12
+          ? "morning"
+          : previewHour >= 12 && previewHour < 17
+            ? "afternoon"
+            : "evening";
+
+      return {
+        due: true,
+        reason: "FOUNDER_MANUAL_PREVIEW",
+        daypart: previewDaypart,
+        maximumPerActiveDay: 3,
+        activeWorkDelayMinutes: 30,
+        pollMinutes: 15,
+        snoozeMinutes: 30,
+        previewOnly: true,
+        privacy:
+          "Founder Preview only. No emotional answer is stored, scored or shown to a manager.",
+      };
+    }
+
     try {
       const accessToken = await founderAccessToken();
       if (!accessToken) return null;
@@ -3841,6 +3879,7 @@ function Overview({
   onExpandCalmStart,
   onExitCalmStart,
   onOpenWorkdayClose,
+  onPreviewCheckIn,
 }) {
   const allRegistryFeatures = useMemo(
     () =>
@@ -3916,6 +3955,13 @@ function Overview({
             Feature Connections ↓
           </a>
           <StatusPill label="FOUNDATION" />
+          <button
+            type="button"
+            className={styles.finishForNowButton}
+            onClick={onPreviewCheckIn}
+          >
+            Preview check-in
+          </button>
           <button
             type="button"
             className={styles.finishForNowButton}
