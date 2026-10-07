@@ -515,8 +515,7 @@ for (const required of [
   ".prototypeApprove:not(:disabled):active",
   ".prototypeReturn:not(:disabled):active",
   ".prototypeReject:not(:disabled):active",
-  ".welcomeEnter:active",
-  ".welcomeDismiss:active",
+  ".welcomeClose:active",
   ".criticalAlertActions button:active",
 ]) requireText("Founder Control Room styles", styles, required);
 
@@ -529,6 +528,22 @@ const welcomeNameChunk =
 if (!welcomeNameChunk.includes("font-family:ui-serif")) {
   errors.push("Founder welcome name must keep the premium type treatment.");
 }
+
+for (const forbidden of [
+  "Enter Control Room →",
+  "Skip welcome",
+  "welcomeEnter",
+  "welcomeDismiss",
+]) {
+  if (page.includes(forbidden)) {
+    errors.push(`Founder welcome must remain separate from Control Room navigation: ${forbidden}`);
+  }
+}
+
+for (const required of [
+  "Close Founder welcome",
+  "welcomeClose",
+]) requireText("Founder welcome-only dismissal", page, required);
 
 for (const protectedSelector of [
   ".founderIdentityMini{",
