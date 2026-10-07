@@ -571,6 +571,23 @@ for (const required of [
   "Production hibernation deployment",
 ]) requireText("Founder Access Centre staging-versus-hibernation truth", page, required);
 
+for (const forbidden of [
+  'outcome: "offered"',
+  'outcome: state',
+]) {
+  if (gentleCheckIn.includes(forbidden)) {
+    errors.push(`Gentle Check-In uses unsupported audit outcome: ${forbidden}`);
+  }
+}
+
+for (const required of [
+  'action_id: "offer_private_checkin"',
+  'outcome: "recorded"',
+  "people_experience_checkin_offered",
+  "people_experience_checkin_snoozed",
+  "people_experience_checkin_resolved",
+]) requireText("Gentle Check-In runtime audit contract", gentleCheckIn, required);
+
 for (const required of [
   "Gentle Check-In was offered",
   "HIISSA deferred Gentle Check-In to a safer moment",
