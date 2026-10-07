@@ -109,6 +109,38 @@ for (let index = 0; index < entryMatches.length; index += 1) {
   }
 }
 
+const experienceRegistryStart = source.indexOf(
+  "export const EXPERIENCE_REGISTRY = Object.freeze({"
+);
+
+if (experienceRegistryStart < 0) {
+  fail("EXPERIENCE_REGISTRY definition is missing");
+} else {
+  const experienceSource = source.slice(experienceRegistryStart);
+  const topLevelExperienceMatches = [
+    ...experienceSource.matchAll(/^  ([A-Za-z0-9_]+): Object\.freeze\(\{/gm),
+  ];
+
+  for (let index = 0; index < topLevelExperienceMatches.length; index += 1) {
+    const match = topLevelExperienceMatches[index];
+    const start = match.index;
+    const end =
+      index + 1 < topLevelExperienceMatches.length
+        ? topLevelExperienceMatches[index + 1].index
+        : experienceSource.length;
+    const chunk = experienceSource.slice(start, end);
+    const id = chunk.match(/\bid:\s*"([^"]+)"/)?.[1];
+
+    if (!id) continue;
+
+    if (!/controlRoom:\s*controlRoomContract\(\{/.test(chunk)) {
+      fail(
+        `${id}: top-level Experience Registry feature has no Control Room contract`
+      );
+    }
+  }
+}
+
 const targetMatches = [...source.matchAll(/canonicalTargetId:\s*"([^"]+)"/g)];
 for (const match of targetMatches) {
   const target = match[1];
