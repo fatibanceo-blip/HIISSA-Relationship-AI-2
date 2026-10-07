@@ -114,7 +114,7 @@ async function verifyFounder(request) {
 }
 
 function periodFromHour(hour) {
-  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 0 && hour < 12) return "morning";
   if (hour >= 12 && hour < 17) return "afternoon";
   return "evening";
 }
