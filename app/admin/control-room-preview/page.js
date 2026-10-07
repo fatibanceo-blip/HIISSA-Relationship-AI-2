@@ -7,8 +7,9 @@ import {
   formatHiissaFullRecordTime,
   formatHiissaRecordTime,
 } from "../../../lib/hiissa-record-time.js";
-import GentleCheckIn from "../../../components/people-experience/GentleCheckIn.js";
+import AutomaticGentleCheckIn from "../../../components/people-experience/AutomaticGentleCheckIn.js";
 import CalmerStartMoment from "../../../components/people-experience/CalmerStartMoment.js";
+import CalmerStartMode from "../../../components/people-experience/CalmerStartMode.js";
 import WorkdayClose from "../../../components/people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../../../components/people-experience/PrivateAppreciation.js";
 import styles from "./page.module.css";
@@ -180,6 +181,8 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   const [navigationHistory, setNavigationHistory] = useState([]);
   const [calmStartMomentOpen, setCalmStartMomentOpen] = useState(false);
   const [calmStart, setCalmStart] = useState(false);
+  const [calmStartExpanded, setCalmStartExpanded] = useState(false);
+  const [founderWorkdayCloseOpen, setFounderWorkdayCloseOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -244,8 +247,15 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
       <section className={styles.shell}>
         <FounderWelcomeMoment
           authenticated={authenticated}
+          pauseCare={
+            calmStartMomentOpen ||
+            calmStart ||
+            founderWorkdayCloseOpen ||
+            Boolean(toolPanel)
+          }
           onCalmStart={() => {
             setCalmStart(false);
+            setCalmStartExpanded(false);
             setCalmStartMomentOpen(true);
           }}
         />
@@ -259,11 +269,27 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             setCalmStartMomentOpen(false);
             setPrimaryView("overview");
             setToolPanel("");
+            setCalmStartExpanded(false);
             setCalmStart(true);
           }}
           onContinueNormally={() => {
             setCalmStartMomentOpen(false);
             setCalmStart(false);
+            setCalmStartExpanded(false);
+          }}
+        />
+
+        <FounderWorkdayClose
+          authenticated={authenticated}
+          open={founderWorkdayCloseOpen}
+          onClose={() => setFounderWorkdayCloseOpen(false)}
+          onOpenApprovals={() => {
+            setFounderWorkdayCloseOpen(false);
+            choosePrimary("approvals");
+          }}
+          onOpenAlerts={() => {
+            setFounderWorkdayCloseOpen(false);
+            setToolPanel("alerts");
           }}
         />
 
@@ -409,6 +435,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 registeredFeatures={registeredFeatures}
                 authenticated={authenticated}
                 calmStart={calmStart}
+                calmStartExpanded={calmStartExpanded}
                 onBack={goBack}
                 onOpenAlerts={() => setToolPanel("alerts")}
                 onOpenStaff={() => choosePrimary("staff")}
@@ -437,7 +464,16 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 onOpenSecurityAudit={() =>
                   chooseModule(CONTROL_ROOM_MODULES.adminSecurityAudit)
                 }
-                onShowFullOverview={() => setCalmStart(false)}
+                onContinueCalmTask={() => {
+                  setCalmStartExpanded(true);
+                  setToolPanel("alerts");
+                }}
+                onExpandCalmStart={() => setCalmStartExpanded(true)}
+                onExitCalmStart={() => {
+                  setCalmStart(false);
+                  setCalmStartExpanded(false);
+                }}
+                onOpenWorkdayClose={() => setFounderWorkdayCloseOpen(true)}
               />
             ) : null}
 
@@ -796,10 +832,10 @@ function FounderAlertButton({ authenticated, active, onClick }) {
   );
 }
 
-function FounderWelcomeMoment({ authenticated, onCalmStart }) {
+function FounderWelcomeMoment({ authenticated, pauseCare = false, onCalmStart }) {
   const [welcome, setWelcome] = useState(null);
   const [visible, setVisible] = useState(false);
-  const [checkInVisible, setCheckInVisible] = useState(false);
+  const [checkInManualKey, setCheckInManualKey] = useState(0);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) return;
@@ -842,9 +878,7 @@ function FounderWelcomeMoment({ authenticated, onCalmStart }) {
         if (!active || !response.ok || !data) return;
 
         setWelcome(data);
-        const showFullWelcome = Boolean(data.showFullWelcome);
-        setVisible(showFullWelcome);
-        setCheckInVisible(!showFullWelcome && Boolean(data.checkIn?.due));
+        setVisible(Boolean(data.showFullWelcome));
       } catch {
         // Welcome is an enhancement. Control Room access must not depend on it.
       }
@@ -856,73 +890,176 @@ function FounderWelcomeMoment({ authenticated, onCalmStart }) {
     };
   }, [authenticated]);
 
+  useEffect(() => {
+    if (!welcome || visible || !welcome.checkIn?.due) return;
+    setCheckInManualKey((value) => value + 1);
+  }, [welcome, visible]);
+
+  async function founderAccessToken() {
+    const {
+      data: { session },
+    } = await adminDataClient.auth.getSession();
+    return session?.access_token || "";
+  }
+
+  async function requestCareEligibility(context) {
+    try {
+      const accessToken = await founderAccessToken();
+      if (!accessToken) return null;
+
+      const params = new URLSearchParams({
+        localDate: context.localDate,
+        localHour: String(context.localHour),
+        timeZone: context.timeZone || "local-device",
+        welcomeMode: welcome?.mode || "",
+      });
+
+      const response = await fetch(
+        `/api/admin/control-room/founder-care?${params.toString()}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.checkIn) return null;
+      return data.checkIn;
+    } catch {
+      return null;
+    }
+  }
+
+  async function recordCareState(state, context) {
+    try {
+      const accessToken = await founderAccessToken();
+      if (!accessToken) return null;
+
+      const response = await fetch("/api/admin/control-room/founder-care", {
+        method: "POST",
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "checkin_state",
+          state,
+          localDate: context.localDate,
+          localHour: context.localHour,
+          daypart: context.daypart,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.careState) return null;
+      return data.careState;
+    } catch {
+      return null;
+    }
+  }
+
+  async function recordCareOperationalEvent(event, context) {
+    try {
+      const accessToken = await founderAccessToken();
+      if (!accessToken) return null;
+
+      const response = await fetch("/api/admin/control-room/founder-care", {
+        method: "POST",
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "operational_event",
+          event,
+          localDate: context.localDate,
+          localHour: context.localHour,
+          daypart: context.daypart,
+          reason: context.reason || "",
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.operationalEvent) return null;
+      return data.operationalEvent;
+    } catch {
+      return null;
+    }
+  }
+
   if (!welcome) return null;
 
-  if (!visible) {
-    return (
-      <>
+  function finishWelcome() {
+    setVisible(false);
+  }
+
+  return (
+    <>
+      {!visible ? (
         <div className={styles.quietWelcome} role="status">
           <span>{welcome.greeting},</span>
           <strong>{welcome.founderName}</strong>
           <span className={styles.quietFounderBadge}>{welcome.role}</span>
         </div>
-        <GentleCheckIn
-          open={checkInVisible}
-          displayName={welcome.founderName}
-          roleLabel={welcome.role}
-          choices={welcome.checkIn?.choices}
-          privacyText={welcome.checkIn?.privacy}
-          daypart={welcome.checkIn?.daypart}
-          previewOnly={false}
-          onClose={() => setCheckInVisible(false)}
-          onCalmStart={() => {
-            setCheckInVisible(false);
-            onCalmStart?.();
-          }}
-        />
-      </>
-    );
-  }
+      ) : null}
 
-  function finishWelcome() {
-    setVisible(false);
-    if (welcome.checkIn?.due) setCheckInVisible(true);
-  }
+      <AutomaticGentleCheckIn
+        enabled={authenticated}
+        displayName={welcome.founderName}
+        roleLabel={welcome.role}
+        privacyText={welcome.checkIn?.privacy}
+        previewOnly={false}
+        pause={visible || pauseCare}
+        requestEligibility={requestCareEligibility}
+        recordState={recordCareState}
+        recordOperationalEvent={recordCareOperationalEvent}
+        manualRequestKey={checkInManualKey}
+        onCalmStart={() => {
+          onCalmStart?.();
+        }}
+      />
 
-  return (
-    <div className={styles.welcomeOverlay} role="dialog" aria-modal="true" aria-label="Founder welcome">
-      <section className={styles.welcomeCard} data-period={welcome.period}>
-        <div className={styles.welcomeGlow} aria-hidden="true" />
-        <div className={styles.welcomeKicker}>HIISSA · FOUNDER WELCOME</div>
-        <div className={styles.welcomeGreeting}>{welcome.greeting}</div>
-        <div className={styles.welcomeName}>{welcome.founderName}</div>
-        <div className={styles.welcomeRoleWrap}>
-          <span className={styles.welcomeRole}>{welcome.role}</span>
+      {visible ? (
+        <div className={styles.welcomeOverlay} role="dialog" aria-modal="true" aria-label="Founder welcome">
+          <section className={styles.welcomeCard} data-period={welcome.period}>
+            <div className={styles.welcomeGlow} aria-hidden="true" />
+            <div className={styles.welcomeKicker}>HIISSA · FOUNDER WELCOME</div>
+            <div className={styles.welcomeGreeting}>{welcome.greeting}</div>
+            <div className={styles.welcomeName}>{welcome.founderName}</div>
+            <div className={styles.welcomeRoleWrap}>
+              <span className={styles.welcomeRole}>{welcome.role}</span>
+            </div>
+            <p className={styles.welcomeMessage}>{welcome.motivation}</p>
+            {welcome.mode === "WELCOME_BACK" ? (
+              <p className={styles.welcomeReturnNote}>
+                Good to have you back. HIISSA can now bring forward what matters since your earlier visit.
+              </p>
+            ) : null}
+            <button
+              type="button"
+              className={styles.welcomeSkip}
+              onClick={finishWelcome}
+              aria-label="Skip Founder welcome for now"
+            >
+              Skip now
+            </button>
+            <button
+              type="button"
+              className={styles.welcomeClose}
+              onClick={finishWelcome}
+              aria-label="Close Founder welcome"
+            >
+              ×
+            </button>
+          </section>
         </div>
-        <p className={styles.welcomeMessage}>{welcome.motivation}</p>
-        {welcome.mode === "WELCOME_BACK" ? (
-          <p className={styles.welcomeReturnNote}>
-            Good to have you back. HIISSA can now bring forward what matters since your earlier visit.
-          </p>
-        ) : null}
-        <button
-          type="button"
-          className={styles.welcomeSkip}
-          onClick={finishWelcome}
-          aria-label="Skip Founder welcome for now"
-        >
-          Skip now
-        </button>
-        <button
-          type="button"
-          className={styles.welcomeClose}
-          onClick={finishWelcome}
-          aria-label="Close Founder welcome"
-        >
-          ×
-        </button>
-      </section>
-    </div>
+      ) : null}
+    </>
   );
 }
 
@@ -3687,6 +3824,7 @@ function Overview({
   registeredFeatures,
   authenticated,
   calmStart,
+  calmStartExpanded,
   onBack,
   onOpenAlerts,
   onOpenStaff,
@@ -3699,9 +3837,11 @@ function Overview({
   onOpenAiProduct,
   onOpenSystemOperations,
   onOpenSecurityAudit,
-  onShowFullOverview,
+  onContinueCalmTask,
+  onExpandCalmStart,
+  onExitCalmStart,
+  onOpenWorkdayClose,
 }) {
-  const [workdayCloseOpen, setWorkdayCloseOpen] = useState(false);
   const allRegistryFeatures = useMemo(
     () =>
       Object.entries(EXPERIENCE_REGISTRY)
@@ -3731,44 +3871,25 @@ function Overview({
       String(feature.controlRoom?.status || "").includes("wired")
   ).length;
 
-  if (calmStart) {
+  const protectedCalmerStart = calmStart ? (
+    <CalmerStartMode
+      active
+      previewOnly={false}
+      workspaceLabel="Founder Control Room"
+      taskTitle="Review verified Alerts or work waiting for your decision."
+      taskDetail="HIISSA is keeping one clear next step in front of you. Nothing has been removed or reprioritised."
+      expanded={Boolean(calmStartExpanded)}
+      onContinueTask={onContinueCalmTask}
+      onShowAll={onExpandCalmStart}
+      onExit={onExitCalmStart}
+    />
+  ) : null;
+
+  if (calmStart && !calmStartExpanded) {
     return (
       <>
         <FounderContextBack onBack={onBack} fallbackLabel="Admin Dashboard" />
-        <section className={styles.calmStartPanel}>
-          <div className={styles.kicker}>FOUNDER CALM START</div>
-          <h2>Calmer Start is on.</h2>
-          <p>
-            Only what may need you first. HIISSA is keeping the opening view simple.
-            Nothing has been removed. Start with verified Alerts or work waiting for
-            your decision, then return to the full Overview whenever you are ready.
-          </p>
-          <div className={styles.calmStartActions}>
-            <button type="button" onClick={onOpenAlerts}>
-              Open Alerts
-            </button>
-            <button type="button" onClick={onOpenApprovals}>
-              Open Approvals
-            </button>
-            <button type="button" onClick={onShowFullOverview}>
-              Show full Overview
-            </button>
-            <button type="button" onClick={() => setWorkdayCloseOpen(true)}>
-              Finish for now
-            </button>
-          </div>
-          <div className={styles.calmStartPrivacy}>
-            Your check-in answer was not sent to the Founder/Admin audit trail.
-            This calmer presentation exists only for your current browser experience.
-          </div>
-        </section>
-        <FounderWorkdayClose
-          authenticated={authenticated}
-          open={workdayCloseOpen}
-          onClose={() => setWorkdayCloseOpen(false)}
-          onOpenApprovals={onOpenApprovals}
-          onOpenAlerts={onOpenAlerts}
-        />
+        {protectedCalmerStart}
       </>
     );
   }
@@ -3776,6 +3897,7 @@ function Overview({
   return (
     <>
       <FounderContextBack onBack={onBack} fallbackLabel="Admin Dashboard" />
+      {protectedCalmerStart}
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>OVERVIEW / CONTROL ROOM</div>
@@ -3797,7 +3919,7 @@ function Overview({
           <button
             type="button"
             className={styles.finishForNowButton}
-            onClick={() => setWorkdayCloseOpen(true)}
+            onClick={onOpenWorkdayClose}
           >
             Finish for now
           </button>
