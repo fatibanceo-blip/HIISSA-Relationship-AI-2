@@ -1346,6 +1346,38 @@ if (
   );
 }
 
+for (const required of [
+  'id="founder-calm-task-destination"',
+  'aria-label="Founder Calmer Start next task"',
+  "calmTaskFocusRequest",
+  "setCalmTaskFocusRequest((value) => value + 1)",
+  'setToolPanel("alerts")',
+  'destination.focus({ preventScroll: true })',
+  'destination.scrollIntoView({ behavior: "smooth", block: "start" })',
+]) requireText(
+  "Founder Calmer Start Continue with this task visible-result contract",
+  page,
+  required
+);
+
+const continueTaskStart = page.indexOf("onContinueCalmTask={() => {");
+const continueTaskEnd = page.indexOf("}}", continueTaskStart);
+const continueTaskWiring =
+  continueTaskStart >= 0 && continueTaskEnd > continueTaskStart
+    ? page.slice(continueTaskStart, continueTaskEnd + 2)
+    : "";
+for (const required of [
+  "setCalmStartExpanded(true)",
+  'setToolPanel("alerts")',
+  "setCalmTaskFocusRequest((value) => value + 1)",
+]) {
+  if (!continueTaskWiring.includes(required)) {
+    errors.push(
+      `Founder Continue with this task must visibly navigate to the named work while Calmer Start stays active: missing ${required}`
+    );
+  }
+}
+
 const founderWelcomeStart = page.indexOf("<FounderWelcomeMoment");
 const founderWelcomeEnd = page.indexOf("/>", founderWelcomeStart);
 const founderWelcomeWiring =
@@ -1715,6 +1747,7 @@ console.log("- Created/updated/history preservation and no-fabricated-time rules
 console.log("- Founder Gentle Check-In now reuses the canonical automatic Daypart Care controller with private snooze/resolve lifecycle");
 console.log("- Founder-level Preview check-in replays the shared experience immediately, bypassing automatic pause gates without consuming, snoozing or resolving a real care opportunity");
 console.log("- Founder Calmer Start Golden Journey is protected: automatic/replayed check-in -> Calmer Start Moment -> Start gently -> shared one-next-step CalmerStartMode");
+console.log("- Continue with this task is protected as click -> visible Alerts destination while Calmer Start remains active");
 console.log("- Check-in answers remain private; only care-delivery state is recorded");
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
 console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap; quiet returns suppress only new opportunities and cannot hide pending care");
