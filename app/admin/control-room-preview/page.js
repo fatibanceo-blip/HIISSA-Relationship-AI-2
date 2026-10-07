@@ -3768,6 +3768,12 @@ function Overview({
           </p>
         </div>
         <div className={styles.overviewHeadingActions}>
+          <a
+            href="#feature-connections"
+            className={styles.featureConnectionsShortcut}
+          >
+            Feature Connections ↓
+          </a>
           <StatusPill label="FOUNDATION" />
           <button
             type="button"
@@ -3860,7 +3866,10 @@ function Overview({
         <div className={styles.sectionHeading}>
           <div>
             <div className={styles.kicker}>ALL REGISTRY FEATURE CONNECTIONS</div>
-            <h3>Can every registered HIISSA experience be found in the Control Room?</h3>
+            <h3>All Registry Feature Connections</h3>
+            <p className={styles.sectionHeadingHint}>
+              Can every registered HIISSA experience be found in the Control Room?
+            </p>
           </div>
           <StatusPill
             label={
