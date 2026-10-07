@@ -515,6 +515,7 @@ for (const required of [
   ".prototypeApprove:not(:disabled):active",
   ".prototypeReturn:not(:disabled):active",
   ".prototypeReject:not(:disabled):active",
+  ".welcomeSkip:active",
   ".welcomeClose:active",
   ".criticalAlertActions button:active",
 ]) requireText("Founder Control Room styles", styles, required);
@@ -543,7 +544,17 @@ for (const forbidden of [
 for (const required of [
   "Close Founder welcome",
   "welcomeClose",
-]) requireText("Founder welcome-only dismissal", page, required);
+]) requireText("Founder welcome close control", page, required);
+
+for (const required of [
+  "Skip now",
+  "welcomeSkip",
+  "Skip Founder welcome for now",
+]) requireText("Founder welcome optional Skip now control", page, required);
+
+if (!styles.includes(".welcomeSkip{")) {
+  errors.push("Founder welcome Skip now control must keep its protected understated style.");
+}
 
 for (const protectedSelector of [
   ".founderIdentityMini{",
