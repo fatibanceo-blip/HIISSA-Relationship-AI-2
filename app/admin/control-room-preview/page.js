@@ -168,6 +168,296 @@ function statusLabel(value) {
     .toUpperCase();
 }
 
+
+const FOUNDER_NEXT_ACTION_STATUSES = new Set([
+  "CRITICAL",
+  "NEEDS_ATTENTION",
+  "DEGRADED",
+  "UNAVAILABLE",
+]);
+
+const FOUNDER_NEXT_ACTION_SEVERITY = Object.freeze({
+  CRITICAL: 400,
+  NEEDS_ATTENTION: 300,
+  DEGRADED: 200,
+  UNAVAILABLE: 100,
+});
+
+function founderNextActionStatus(payload) {
+  return String(
+    payload?.displayHealthStatus ||
+      payload?.founderView?.currentStatus ||
+      payload?.status ||
+      ""
+  )
+    .trim()
+    .toUpperCase()
+    .replaceAll(" ", "_");
+}
+
+function founderNextActionPresentation(state) {
+  if (state?.loading) {
+    return {
+      title: "Checking verified Founder work…",
+      detail:
+        "HIISSA is checking the already-connected Staging sources before naming one next task.",
+      status: "CHECKING",
+    };
+  }
+
+  if (state?.action) {
+    return {
+      title: state.action.title,
+      detail: state.action.detail,
+      status: state.action.status,
+    };
+  }
+
+  if (Number(state?.sourceErrors || 0) > 0) {
+    return {
+      title: "HIISSA cannot verify one Founder next task from every connected source right now.",
+      detail:
+        "No task is being invented. The unreadable source must be restored or rechecked before HIISSA can name a verified next action.",
+      status: "SOURCE CHECK",
+    };
+  }
+
+  return {
+    title: "No verified Founder task needs your attention right now.",
+    detail:
+      "HIISSA checked the connected Staging sources and found no verified Founder-owned action. Unwired areas are not silently treated as healthy.",
+    status: "CLEAR",
+  };
+}
+
+function useFounderNextAction(authenticated) {
+  const [state, setState] = useState({
+    loading: Boolean(authenticated),
+    action: null,
+    sourceErrors: 0,
+  });
+
+  useEffect(() => {
+    if (!authenticated || !adminDataClient) {
+      setState({
+        loading: false,
+        action: null,
+        sourceErrors: authenticated ? 1 : 0,
+      });
+      return undefined;
+    }
+
+    let active = true;
+
+    async function load() {
+      try {
+        const {
+          data: { session },
+        } = await adminDataClient.auth.getSession();
+
+        if (!session?.access_token || !active) {
+          if (active) {
+            setState({ loading: false, action: null, sourceErrors: 1 });
+          }
+          return;
+        }
+
+        const headers = { Authorization: `Bearer ${session.access_token}` };
+        const sourceDefinitions = [
+          {
+            id: "security",
+            label: "Admin Security & Audit",
+            endpoint: "/api/admin/control-room/security-summary",
+            destination: "security",
+            destinationLabel: "Open Security & Audit",
+            domainPriority: 80,
+          },
+          {
+            id: "safety",
+            label: "Safety, Privacy & Moderation",
+            endpoint: "/api/admin/control-room/safety-privacy-health",
+            destination: "safety",
+            destinationLabel: "Open Safety, Privacy & Moderation",
+            domainPriority: 70,
+          },
+          {
+            id: "auth",
+            label: "Authentication & Sync",
+            endpoint: "/api/admin/control-room/auth-sync-health",
+            destination: "auth",
+            destinationLabel: "Open Auth & Sync",
+            domainPriority: 60,
+          },
+          {
+            id: "people",
+            label: "People Experience",
+            endpoint: "/api/admin/control-room/people-experience-health",
+            destination: "people",
+            destinationLabel: "Open Failures & Reliability",
+            domainPriority: 50,
+          },
+          {
+            id: "identity",
+            label: "Users & Identity",
+            endpoint: "/api/admin/control-room/users-identity-health",
+            destination: "identity",
+            destinationLabel: "Open Users & Identity",
+            domainPriority: 40,
+          },
+          {
+            id: "ai",
+            label: "HIISSA AI & Product Intelligence",
+            endpoint: "/api/admin/control-room/ai-product-health",
+            destination: "ai",
+            destinationLabel: "Open AI & Product",
+            domainPriority: 30,
+          },
+          {
+            id: "operations",
+            label: "System & Operations",
+            endpoint: "/api/admin/control-room/system-operations-health",
+            destination: "operations",
+            destinationLabel: "Open System & Operations",
+            domainPriority: 20,
+          },
+        ];
+
+        const [approvalResponse, ...healthResponses] = await Promise.all([
+          fetch("/api/admin/control-room/staff-approval-inbox", {
+            method: "GET",
+            cache: "no-store",
+            credentials: "same-origin",
+            headers,
+          }),
+          ...sourceDefinitions.map((source) =>
+            fetch(source.endpoint, {
+              method: "GET",
+              cache: "no-store",
+              credentials: "same-origin",
+              headers,
+            })
+          ),
+        ]);
+
+        const [approvalData, ...healthData] = await Promise.all([
+          approvalResponse.json().catch(() => null),
+          ...healthResponses.map((response) =>
+            response.json().catch(() => null)
+          ),
+        ]);
+
+        if (!active) return;
+
+        const sourceErrors =
+          Number(!approvalResponse.ok || !approvalData) +
+          healthResponses.reduce(
+            (count, response, index) =>
+              count + Number(!response.ok || !healthData[index]),
+            0
+          );
+
+        const candidates = [];
+        const pendingApproval = Array.isArray(approvalData?.items)
+          ? approvalData.items.find(
+              (item) => String(item?.requestStatus || "") === "pending"
+            )
+          : null;
+
+        if (approvalResponse.ok && pendingApproval) {
+          const caseCode = String(pendingApproval.caseCode || "").trim();
+          const itemTitle = String(
+            pendingApproval.title || "staff submission"
+          ).trim();
+          const itemPriority = String(
+            pendingApproval.priority || ""
+          ).toUpperCase();
+          const priorityBoost =
+            itemPriority === "CRITICAL"
+              ? 90
+              : itemPriority === "HIGH"
+                ? 60
+                : itemPriority === "MEDIUM"
+                  ? 30
+                  : 10;
+
+          candidates.push({
+            id: `approval:${pendingApproval.requestId}`,
+            title: `Review ${caseCode ? `${caseCode}: ` : ""}${itemTitle}`,
+            detail:
+              String(pendingApproval.summary || "").trim() ||
+              "This verified Staging staff submission is waiting for your Founder decision.",
+            status: "NEEDS DECISION",
+            destination: "approvals",
+            destinationLabel: "Open Approvals",
+            priority: 250 + priorityBoost,
+          });
+        }
+
+        sourceDefinitions.forEach((source, index) => {
+          const response = healthResponses[index];
+          const payload = healthData[index];
+          if (!response?.ok || !payload) return;
+
+          const status = founderNextActionStatus(payload);
+          if (!FOUNDER_NEXT_ACTION_STATUSES.has(status)) return;
+
+          const founderDirective = String(
+            payload?.founderView?.doINeedToAct || ""
+          ).trim();
+          const actionOwner = String(payload?.actionOwner || "")
+            .trim()
+            .toUpperCase();
+          const founderOwned =
+            payload?.founderActionRequired === true ||
+            actionOwner.includes("FOUNDER") ||
+            /^YES\b/i.test(founderDirective);
+
+          if (!founderOwned) return;
+
+          const directiveTitle =
+            founderDirective.replace(/^YES\s*[—-]\s*/i, "").trim() ||
+            `${source.label} requires Founder review.`;
+          const whatHappened = String(
+            payload?.founderView?.whatHappened || ""
+          ).trim();
+
+          candidates.push({
+            id: `health:${source.id}`,
+            title: directiveTitle,
+            detail:
+              whatHappened ||
+              `A verified connected ${source.label} source requires Founder review.`,
+            status: statusLabel(status),
+            destination: source.destination,
+            destinationLabel: source.destinationLabel,
+            priority:
+              (FOUNDER_NEXT_ACTION_SEVERITY[status] || 0) +
+              source.domainPriority,
+          });
+        });
+
+        candidates.sort((left, right) => right.priority - left.priority);
+
+        setState({
+          loading: false,
+          action: candidates[0] || null,
+          sourceErrors,
+        });
+      } catch {
+        if (!active) return;
+        setState({ loading: false, action: null, sourceErrors: 8 });
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  return state;
+}
+
 export default function FounderControlRoomPreview({ authenticated = false, onSignOut = null, environmentLabel = "ISOLATED PREVIEW", environmentNote = "Structure and Registry wiring only — no fabricated live metrics" } = {}) {
   const moduleList = MODULES.filter(
     (module) => module.id !== CONTROL_ROOM_MODULES.overview
@@ -185,6 +475,8 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   const [founderWorkdayCloseOpen, setFounderWorkdayCloseOpen] = useState(false);
   const [founderCheckInPreviewKey, setFounderCheckInPreviewKey] = useState(0);
   const [calmTaskFocusRequest, setCalmTaskFocusRequest] = useState(0);
+  const founderNextActionState = useFounderNextAction(authenticated);
+  const founderNextTask = founderNextActionPresentation(founderNextActionState);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -196,11 +488,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   }, []);
 
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !calmTaskFocusRequest ||
-      toolPanel !== "alerts"
-    ) {
+    if (typeof window === "undefined" || !calmTaskFocusRequest) {
       return;
     }
 
@@ -212,7 +500,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [calmTaskFocusRequest, toolPanel]);
+  }, [calmTaskFocusRequest, calmStartExpanded]);
 
   const activeModule = useMemo(
     () => MODULES.find((item) => item.id === activeId) || moduleList[0],
@@ -286,7 +574,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
           open={calmStartMomentOpen}
           displayName="FATI BANCE"
           previewOnly={false}
-          taskTitle="Start with verified Alerts or work waiting for your decision."
+          taskTitle={founderNextTask.title}
           onStartGently={() => {
             setCalmStartMomentOpen(false);
             setPrimaryView("overview");
@@ -385,11 +673,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
         ) : null}
 
         {toolPanel === "alerts" ? (
-          <div
-            id="founder-calm-task-destination"
-            tabIndex={-1}
-            aria-label="Founder Calmer Start next task"
-          >
+          <div>
             <FounderAlertsPanel
               authenticated={authenticated}
               onClose={() => setToolPanel("")}
@@ -464,6 +748,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 authenticated={authenticated}
                 calmStart={calmStart}
                 calmStartExpanded={calmStartExpanded}
+                founderNextActionState={founderNextActionState}
                 onBack={goBack}
                 onOpenAlerts={() => setToolPanel("alerts")}
                 onOpenStaff={() => choosePrimary("staff")}
@@ -494,7 +779,8 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 }
                 onContinueCalmTask={() => {
                   setCalmStartExpanded(true);
-                  setToolPanel("alerts");
+                  // Superseded failure: setToolPanel("alerts") opened a generic dashboard
+                  // instead of the exact verified task named by Calmer Start.
                   setCalmTaskFocusRequest((value) => value + 1);
                 }}
                 onExpandCalmStart={() => setCalmStartExpanded(true)}
@@ -3891,6 +4177,7 @@ function Overview({
   authenticated,
   calmStart,
   calmStartExpanded,
+  founderNextActionState,
   onBack,
   onOpenAlerts,
   onOpenStaff,
@@ -3938,19 +4225,97 @@ function Overview({
       String(feature.controlRoom?.status || "").includes("wired")
   ).length;
 
+  const founderNextTask = founderNextActionPresentation(founderNextActionState);
+  const founderNextAction = founderNextActionState?.action || null;
+
+  function openFounderNextAction() {
+    if (!founderNextAction) return;
+
+    switch (founderNextAction.destination) {
+      case "approvals":
+        onOpenApprovals();
+        return;
+      case "security":
+        onOpenSecurityAudit();
+        return;
+      case "safety":
+        onOpenSafetyPrivacy();
+        return;
+      case "auth":
+        onOpenAuthSync();
+        return;
+      case "people":
+        onOpenFailures();
+        return;
+      case "identity":
+        onOpenUsersIdentity();
+        return;
+      case "ai":
+        onOpenAiProduct();
+        return;
+      case "operations":
+        onOpenSystemOperations();
+        return;
+      default:
+        return;
+    }
+  }
+
   const protectedCalmerStart = calmStart ? (
     <CalmerStartMode
       active
       previewOnly={false}
       workspaceLabel="Founder Control Room"
-      taskTitle="Review verified Alerts or work waiting for your decision."
-      taskDetail="HIISSA is keeping one clear next step in front of you. Nothing has been removed or reprioritised."
+      taskTitle={founderNextTask.title}
+      taskDetail={founderNextTask.detail}
+      taskStatus={founderNextTask.status}
       expanded={Boolean(calmStartExpanded)}
       onContinueTask={onContinueCalmTask}
       onShowAll={onExpandCalmStart}
       onExit={onExitCalmStart}
     />
   ) : null;
+
+  const founderCalmTaskDestination =
+    calmStart && calmStartExpanded ? (
+      <section
+        id="founder-calm-task-destination"
+        tabIndex={-1}
+        className={styles.globalPanel}
+        aria-label="Founder Calmer Start next task"
+      >
+        <div className={styles.globalPanelHeading}>
+          <div>
+            <div className={styles.kicker}>CALMER START · VERIFIED NEXT ACTION</div>
+            <strong>{founderNextTask.title}</strong>
+          </div>
+          <StatusPill label={founderNextTask.status} />
+        </div>
+        <div className={styles.alertList}>
+          <article
+            className={
+              founderNextAction
+                ? styles.alertItemAttention
+                : styles.alertItem
+            }
+          >
+            <div>
+              <strong>{founderNextTask.title}</strong>
+              <p>{founderNextTask.detail}</p>
+            </div>
+            {founderNextAction ? (
+              <button
+                type="button"
+                className={styles.alertAction}
+                onClick={openFounderNextAction}
+              >
+                {founderNextAction.destinationLabel} →
+              </button>
+            ) : null}
+          </article>
+        </div>
+      </section>
+    ) : null;
 
   if (calmStart && !calmStartExpanded) {
     return (
@@ -3965,6 +4330,7 @@ function Overview({
     <>
       <FounderContextBack onBack={onBack} fallbackLabel="Admin Dashboard" />
       {protectedCalmerStart}
+      {founderCalmTaskDestination}
       <div className={styles.pageHeading}>
         <div>
           <div className={styles.kicker}>OVERVIEW / CONTROL ROOM</div>
