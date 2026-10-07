@@ -575,7 +575,7 @@ for (const forbidden of [
   'outcome: "offered"',
   'outcome: state',
 ]) {
-  if (gentleCheckIn.includes(forbidden)) {
+  if (gentleCheckInPolicy.includes(forbidden)) {
     errors.push(`Gentle Check-In uses unsupported audit outcome: ${forbidden}`);
   }
 }
@@ -586,7 +586,7 @@ for (const required of [
   "people_experience_checkin_offered",
   "people_experience_checkin_snoozed",
   "people_experience_checkin_resolved",
-]) requireText("Gentle Check-In runtime audit contract", gentleCheckIn, required);
+]) requireText("Gentle Check-In runtime audit contract", gentleCheckInPolicy, required);
 
 for (const required of [
   "Gentle Check-In was offered",
