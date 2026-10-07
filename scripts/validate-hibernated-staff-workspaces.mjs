@@ -90,6 +90,8 @@ for (const required of [
 ]) requireText("Build-complete then hibernate Registry contract", registry, required);
 
 for (const required of [
+  "Authentication latency signal review",
+  "A fictional Staging health signal shows slower authentication completion.",
   "Technical Operations provides technical oversight",
   "Finance manages HIISSA's commercial relationship",
   "Safety & Safeguarding provides qualified human judgement",
@@ -121,6 +123,10 @@ for (const required of [
   "Preview returned outcome",
   "Preview verified completed outcome",
   "Replay gentle check-in preview",
+  "Finish for now",
+  "Refresh",
+  "Secure sign out",
+  "Founder Preview as",
   "AutomaticGentleCheckIn",
   "CalmerStartMode",
   "CalmerStartMoment",
@@ -145,6 +151,34 @@ for (const required of [
   "This is not yet a hibernated Production feature.",
   "browser session only",
 ]) requireText("Staging Staff Workspace engine", component, required);
+
+const technicalReplayIndex = component.indexOf("Replay gentle check-in preview");
+const technicalFinishIndex = component.indexOf("Finish for now", technicalReplayIndex);
+const technicalRefreshIndex = component.indexOf("Refresh", technicalFinishIndex);
+const technicalSignOutIndex = component.indexOf("Secure sign out", technicalRefreshIndex);
+if (
+  technicalReplayIndex < 0 ||
+  technicalFinishIndex < 0 ||
+  technicalRefreshIndex < 0 ||
+  technicalSignOutIndex < 0 ||
+  !(technicalReplayIndex < technicalFinishIndex &&
+    technicalFinishIndex < technicalRefreshIndex &&
+    technicalRefreshIndex < technicalSignOutIndex)
+) {
+  throw new Error(
+    "Founder Preview protected entrance must preserve Replay gentle check-in preview -> Finish for now -> Refresh -> Secure sign out."
+  );
+}
+
+const technicalCalmerTitle = catalog.indexOf('title: "Authentication latency signal review"');
+const technicalCalmerSummary = catalog.indexOf(
+  '"A fictional Staging health signal shows slower authentication completion.'
+);
+if (technicalCalmerTitle < 0 || technicalCalmerSummary < technicalCalmerTitle) {
+  throw new Error(
+    "Technical Operations protected Calmer Start reference task must remain Authentication latency signal review with its approved fictional Staging summary."
+  );
+}
 
 for (const required of [
   "HIISSA · CALMER START",
@@ -233,6 +267,8 @@ console.log("- Universal Founder submission gate remains visible; scenario contr
 console.log("- Gentle Check-In, Workday Close and Private Appreciation receiving surfaces are present");
 console.log("- Calmer Start Moment sits between the check-in and workspace mode with Breathe / Quiet / Focus choices");
 console.log("- Calmer Start reduces the workspace to one next step only after Start gently, then allows deliberate expansion or return to normal workspace");
+console.log("- Staging Founder previews preserve the Founder-approved entrance: Replay gentle check-in preview -> Finish for now -> Refresh -> Secure sign out");
+console.log("- Technical Operations Calmer Start preserves the approved Authentication latency signal review one-next-step reference");
 console.log("- Staging Founder previews auto-offer Gentle Check-In after a short test delay and keep manual replay only as a test control");
 console.log("- The same maximum-three/daypart/snooze/privacy contract is inherited from the shared People Experience Registry");
 console.log("- No database persistence, external execution, Production deployment or Production effect is introduced by the Staging preview engine");
