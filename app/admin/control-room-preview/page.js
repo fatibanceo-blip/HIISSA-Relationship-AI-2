@@ -779,8 +779,8 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 }
                 onContinueCalmTask={() => {
                   setCalmStartExpanded(true);
-                  // Superseded failure: setToolPanel("alerts") opened a generic dashboard
-                  // instead of the exact verified task named by Calmer Start.
+                  // Superseded failure: the generic Alerts dashboard did not
+                  // match the exact verified task named by Calmer Start.
                   setCalmTaskFocusRequest((value) => value + 1);
                 }}
                 onExpandCalmStart={() => setCalmStartExpanded(true)}
