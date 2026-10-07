@@ -42,6 +42,15 @@ const founderWelcomePath = path.join(
   "founder-welcome",
   "route.js"
 );
+const founderCarePath = path.join(
+  root,
+  "app",
+  "api",
+  "admin",
+  "control-room",
+  "founder-care",
+  "route.js"
+);
 const activityTimelinePath = path.join(
   root,
   "app",
@@ -109,11 +118,23 @@ const gentleCheckInComponentPath = path.join(
   "people-experience",
   "GentleCheckIn.js"
 );
+const automaticGentleCheckInPath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "AutomaticGentleCheckIn.js"
+);
 const calmerStartMomentPath = path.join(
   root,
   "components",
   "people-experience",
   "CalmerStartMoment.js"
+);
+const calmerStartModePath = path.join(
+  root,
+  "components",
+  "people-experience",
+  "CalmerStartMode.js"
 );
 const workdayClosePath = path.join(
   root,
@@ -149,6 +170,7 @@ if (!fs.existsSync(securitySummaryPath)) errors.push("Protected Admin Security s
 if (!fs.existsSync(openAiProviderSummaryPath)) errors.push("Protected OpenAI provider summary endpoint is missing.");
 if (!fs.existsSync(systemOperationsHealthPath)) errors.push("Protected System & Operations health endpoint is missing.");
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
+if (!fs.existsSync(founderCarePath)) errors.push("Protected Founder Daypart Care endpoint is missing.");
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
 if (!fs.existsSync(aiProductHealthPath)) errors.push("Protected AI & Product health endpoint is missing.");
@@ -158,7 +180,9 @@ if (!fs.existsSync(activityTimelinePath)) errors.push("Protected Founder activit
 if (!fs.existsSync(recordTimePath)) errors.push("Shared HIISSA record time formatter is missing.");
 if (!fs.existsSync(gentleCheckInPolicyPath)) errors.push("Shared gentle check-in policy is missing.");
 if (!fs.existsSync(gentleCheckInComponentPath)) errors.push("Shared gentle check-in component is missing.");
+if (!fs.existsSync(automaticGentleCheckInPath)) errors.push("Shared automatic Gentle Check-In controller is missing.");
 if (!fs.existsSync(calmerStartMomentPath)) errors.push("Shared Calmer Start Moment component is missing.");
+if (!fs.existsSync(calmerStartModePath)) errors.push("Shared Calmer Start Mode component is missing.");
 if (!fs.existsSync(workdayClosePath)) errors.push("Protected Founder Workday Close endpoint is missing.");
 if (!fs.existsSync(workdayCloseComponentPath)) errors.push("Shared Workday Close component is missing.");
 if (!fs.existsSync(workdayCloseStylePath)) errors.push("Shared Workday Close styles are missing.");
@@ -207,6 +231,9 @@ const systemOperationsHealth = fs.existsSync(systemOperationsHealthPath)
 const founderWelcome = fs.existsSync(founderWelcomePath)
   ? fs.readFileSync(founderWelcomePath, "utf8")
   : "";
+const founderCare = fs.existsSync(founderCarePath)
+  ? fs.readFileSync(founderCarePath, "utf8")
+  : "";
 const activityTimeline = fs.existsSync(activityTimelinePath)
   ? fs.readFileSync(activityTimelinePath, "utf8")
   : "";
@@ -234,8 +261,14 @@ const gentleCheckInPolicy = fs.existsSync(gentleCheckInPolicyPath)
 const gentleCheckInComponent = fs.existsSync(gentleCheckInComponentPath)
   ? fs.readFileSync(gentleCheckInComponentPath, "utf8")
   : "";
+const automaticGentleCheckIn = fs.existsSync(automaticGentleCheckInPath)
+  ? fs.readFileSync(automaticGentleCheckInPath, "utf8")
+  : "";
 const calmerStartMoment = fs.existsSync(calmerStartMomentPath)
   ? fs.readFileSync(calmerStartMomentPath, "utf8")
+  : "";
+const calmerStartMode = fs.existsSync(calmerStartModePath)
+  ? fs.readFileSync(calmerStartModePath, "utf8")
   : "";
 const workdayClose = fs.existsSync(workdayClosePath)
   ? fs.readFileSync(workdayClosePath, "utf8")
@@ -328,19 +361,19 @@ for (const required of [
   "Submitted for processing",
   "recordTimeGrid",
   "HIISSA timestamp rule:",
-  "GentleCheckIn",
-  "checkInVisible",
+  "AutomaticGentleCheckIn",
+  "requestCareEligibility",
+  "recordCareState",
+  "recordCareOperationalEvent",
+  '"/api/admin/control-room/founder-care"',
   "CalmerStartMoment",
   "calmStartMomentOpen",
   "setCalmStartMomentOpen(true)",
-  "calmStart",
-  "FOUNDER CALM START",
-  "Calmer Start is on.",
-  "Only what may need you first",
-  "Open Alerts",
-  "Open Approvals",
-  "Show full Overview",
-  "Your check-in answer was not sent to the Founder/Admin audit trail.",
+  "CalmerStartMode",
+  "calmStartExpanded",
+  "Continue with this task",
+  "View all workspace areas",
+  "Return to normal workspace",
   "FounderWorkdayClose",
   "Finish for now",
   'fetch("/api/admin/control-room/workday-close"',
@@ -1201,19 +1234,68 @@ for (const required of [
   "Private by default.",
 ]) requireText("Shared Calmer Start Moment protected journey", calmerStartMoment, required);
 
+for (const required of [
+  "Gentle check-in snoozed",
+  "A gentle check-in is waiting",
+  "Respond now",
+  "Not now",
+  "onNotNow={snooze}",
+  "onResponded={resolveWithoutAnswerValue}",
+  "manualRequestKey",
+]) requireText("Shared automatic Gentle Check-In protected lifecycle", automaticGentleCheckIn, required);
+
+for (const required of [
+  "HIISSA · CALMER START",
+  "Calmer Start is on.",
+  "YOUR NEXT STEP",
+  "Continue with this task",
+  "View all workspace areas",
+  "Return to normal workspace",
+]) requireText("Shared Calmer Start Mode protected ending", calmerStartMode, required);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  "prepareGentleCheckIn",
+  "recordGentleCheckInState",
+  "recordPeopleExperienceOperationalEvent",
+  'moduleId: "overview"',
+  'actorMode: "FOUNDER"',
+  'contextLabel: "Founder Control Room"',
+  '"founder-daypart-care-staging"',
+  "productionEffect: false",
+]) requireText("Founder canonical Daypart Care endpoint", founderCare, required);
+
+const founderAutomaticController = page.indexOf("<AutomaticGentleCheckIn");
+const founderCareEligibility = page.indexOf("requestEligibility={requestCareEligibility}");
+const founderCareState = page.indexOf("recordState={recordCareState}");
+const founderCareOperational = page.indexOf("recordOperationalEvent={recordCareOperationalEvent}");
+if (
+  founderAutomaticController < 0 ||
+  founderCareEligibility < founderAutomaticController ||
+  founderCareState < founderAutomaticController ||
+  founderCareOperational < founderAutomaticController
+) {
+  errors.push(
+    "Founder Control Room must use the shared AutomaticGentleCheckIn controller with eligibility, snooze/resolve state and operational recovery wiring."
+  );
+}
+
 const founderCalmerEntry = page.indexOf("setCalmStartMomentOpen(true)");
 const founderCalmerMoment = page.indexOf("<CalmerStartMoment");
 const founderStartGently = page.indexOf("onStartGently={() => {");
 const founderCalmMode = page.indexOf("setCalmStart(true)", founderStartGently);
+const sharedFounderCalmMode = page.indexOf("<CalmerStartMode");
 if (
   founderCalmerEntry < 0 ||
   founderCalmerMoment < 0 ||
   founderStartGently < 0 ||
   founderCalmMode < 0 ||
+  sharedFounderCalmMode < 0 ||
   !(founderCalmerEntry < founderCalmerMoment && founderCalmerMoment < founderStartGently && founderStartGently < founderCalmMode)
 ) {
   errors.push(
-    "Founder Calmer Start Golden Journey must be check-in -> Calmer Start Moment -> Start gently -> active Calmer Start; direct check-in-to-Overview activation is forbidden."
+    "Founder Calmer Start Golden Journey must be automatic/replayed check-in -> acknowledgement -> Calmer Start Moment -> Start gently -> shared CalmerStartMode; superseded Founder-only shortcut endings are forbidden."
   );
 }
 
@@ -1228,6 +1310,23 @@ if (founderWelcomeWiring.includes("setCalmStart(true)")) {
     "Founder Welcome must not activate Calmer Start directly. It must open the protected Calmer Start Moment first."
   );
 }
+
+for (const forbidden of [
+  "FOUNDER CALM START",
+  "Show full Overview",
+  "Your check-in answer was not sent to the Founder/Admin audit trail.",
+]) {
+  if (page.includes(forbidden)) {
+    errors.push(`Superseded Founder-only Calmer Start ending must not remain authoritative: ${forbidden}`);
+  }
+}
+
+for (const required of [
+  "pauseCare={",
+  "founderWorkdayCloseOpen",
+  "Boolean(toolPanel)",
+  "onOpenWorkdayClose",
+]) requireText("Founder care safe-moment integration", page, required);
 
 for (const required of [
   'branch === "feature/founder-control-room-staging"',
@@ -1566,9 +1665,9 @@ console.log("- Universal Timestamp & Activity Record Standard is registered");
 console.log("- Founder Activity Timeline reads real Staging audit timestamps");
 console.log("- Approval and staff records use the shared local-time display formatter");
 console.log("- Created/updated/history preservation and no-fabricated-time rules are protected");
-console.log("- Founder gentle check-in is 48-hour cadence-limited and privacy-safe");
-console.log("- Founder Calmer Start Golden Journey is protected: check-in -> Calmer Start Moment -> Start gently -> simplified Founder Overview");
-console.log("- Check-in answers are not persisted to the Founder/Admin audit trail");
+console.log("- Founder Gentle Check-In now reuses the canonical automatic Daypart Care controller with private snooze/resolve lifecycle");
+console.log("- Founder Calmer Start Golden Journey is protected: automatic/replayed check-in -> Calmer Start Moment -> Start gently -> shared one-next-step CalmerStartMode");
+console.log("- Check-in answers remain private; only care-delivery state is recorded");
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
 console.log("- Daypart Care enforces a 180-minute cross-daypart minimum gap; quiet returns suppress only new opportunities and cannot hide pending care");
 console.log("- All ten Founder-approved People Experience capability contracts plus Care Pause are registered");
