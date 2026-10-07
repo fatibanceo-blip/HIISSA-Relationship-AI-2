@@ -44,6 +44,7 @@ export default function AutomaticGentleCheckIn({
   recordState,
   recordOperationalEvent,
   manualRequestKey = 0,
+  manualPreviewOnly = false,
   onCalmStart,
 }) {
   const [offer, setOffer] = useState(null);
@@ -227,8 +228,29 @@ export default function AutomaticGentleCheckIn({
   useEffect(() => {
     if (manualRequestKey === lastManualRequest.current) return;
     lastManualRequest.current = manualRequestKey;
+
+    if (manualPreviewOnly) {
+      const previewDaypart = currentDaypart();
+      setOffer({
+        due: true,
+        reason: "FOUNDER_MANUAL_PREVIEW",
+        daypart: previewDaypart,
+        maximumPerActiveDay: 3,
+        activeWorkDelayMinutes: 30,
+        pollMinutes: 15,
+        snoozeMinutes: 30,
+        previewOnly: true,
+        privacy:
+          "Founder Preview only. No emotional answer is stored, scored or shown to a manager.",
+      });
+      setReminder("");
+      setSnoozedUntil(null);
+      setOpen(true);
+      return;
+    }
+
     evaluateCare({ manual: true });
-  }, [manualRequestKey]);
+  }, [manualRequestKey, manualPreviewOnly]);
 
   useEffect(() => {
     if (!snoozedUntil) return undefined;
