@@ -4121,6 +4121,367 @@ function FounderProtectionRegressionSummary() {
   );
 }
 
+function FounderEmergencyPauseCentre({ authenticated }) {
+  const [state, setState] = useState({
+    loading: Boolean(authenticated),
+    activePauses: [],
+    allowedScopes: [],
+    caution: "",
+    error: "",
+  });
+  const [scopeKey, setScopeKey] = useState("");
+  const [reason, setReason] = useState("");
+  const [restoreNotes, setRestoreNotes] = useState({});
+  const [busy, setBusy] = useState("");
+  const [notice, setNotice] = useState("");
+
+  async function founderToken() {
+    if (!authenticated || !adminDataClient) return "";
+    const {
+      data: { session },
+    } = await adminDataClient.auth.getSession();
+    return session?.access_token || "";
+  }
+
+  async function loadState() {
+    const token = await founderToken();
+    if (!token) {
+      setState({
+        loading: false,
+        activePauses: [],
+        allowedScopes: [],
+        caution: "",
+        error: "Founder session could not be verified.",
+      });
+      return;
+    }
+
+    const response = await fetch(
+      "/api/admin/control-room/founder-emergency-pause",
+      {
+        method: "GET",
+        cache: "no-store",
+        credentials: "same-origin",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data) {
+      setState((current) => ({
+        ...current,
+        loading: false,
+        error: "The Staging emergency-pause control state could not be loaded.",
+      }));
+      return;
+    }
+
+    const scopes = Array.isArray(data.allowedScopes) ? data.allowedScopes : [];
+    setState({
+      loading: false,
+      activePauses: Array.isArray(data.activePauses) ? data.activePauses : [],
+      allowedScopes: scopes,
+      caution: data.caution || "",
+      error: "",
+    });
+    setScopeKey((current) => current || scopes[0]?.key || "");
+  }
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      if (!active) return;
+      try {
+        await loadState();
+      } catch {
+        if (!active) return;
+        setState((current) => ({
+          ...current,
+          loading: false,
+          error: "The Staging emergency-pause control state could not be loaded.",
+        }));
+      }
+    }
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, [authenticated]);
+
+  async function submit(action, targetScopeKey, verification = "") {
+    const token = await founderToken();
+    if (!token) {
+      setNotice("Founder session could not be verified.");
+      return;
+    }
+
+    setBusy(`${action}:${targetScopeKey}`);
+    setNotice("");
+
+    try {
+      const response = await fetch(
+        "/api/admin/control-room/founder-emergency-pause",
+        {
+          method: "POST",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action,
+            scopeKey: targetScopeKey,
+            reason: action === "pause" ? reason : "",
+            verification: action === "restore" ? verification : "",
+          }),
+        }
+      );
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data) {
+        const message =
+          data?.status === "PAUSE_REASON_REQUIRED"
+            ? "A clear reason of at least 10 characters is required."
+            : data?.status === "RESTORE_VERIFICATION_REQUIRED"
+              ? "A restore verification note of at least 10 characters is required."
+              : data?.status === "SCOPE_ALREADY_PAUSED"
+                ? "That Staging scope already has an active pause signal."
+                : data?.status === "SCOPE_NOT_PAUSED"
+                  ? "That Staging scope is not currently paused."
+                  : "HIISSA could not record this Staging control instruction.";
+        setNotice(message);
+        setBusy("");
+        return;
+      }
+
+      setState((current) => ({
+        ...current,
+        activePauses: Array.isArray(data.activePauses)
+          ? data.activePauses
+          : current.activePauses,
+        error: "",
+      }));
+
+      if (action === "pause") {
+        setNotice(
+          "Staging pause signal recorded and audited. External enforcement is still not connected."
+        );
+        setReason("");
+      } else {
+        setNotice(
+          "Restore signal recorded and audited. Historical pause evidence remains preserved."
+        );
+        setRestoreNotes((current) => ({
+          ...current,
+          [targetScopeKey]: "",
+        }));
+      }
+    } catch {
+      setNotice("HIISSA could not record this Staging control instruction.");
+    } finally {
+      setBusy("");
+    }
+  }
+
+  const activeKeys = new Set(
+    (state.activePauses || []).map((item) => item.scopeKey)
+  );
+  const selectedIsPaused = activeKeys.has(scopeKey);
+  const pauseReady =
+    Boolean(scopeKey) && reason.trim().length >= 10 && !selectedIsPaused;
+
+  return (
+    <section
+      className={styles.section}
+      id="founder-emergency-pause-controls"
+      aria-label="Founder Emergency Pause Controls"
+    >
+      <div className={styles.sectionHeading}>
+        <div>
+          <div className={styles.kicker}>FOUNDER EMERGENCY PAUSE · STAGING</div>
+          <h3>Record a scoped pause instruction while you investigate</h3>
+        </div>
+        <StatusPill label="CONTROL FOUNDATION" compact />
+      </div>
+
+      <p className={styles.sectionCopy}>
+        This Founder-only control records an explicit Staging pause instruction
+        with a required reason, attributable audit evidence and a verified restore
+        path. It does not silently delete history or create a second incident
+        system.
+      </p>
+
+      <div className={styles.grid}>
+        <InfoCard
+          title="ACTIVE STAGING PAUSE SIGNALS"
+          value={state.loading ? "Checking…" : String(state.activePauses.length)}
+          detail="Visible governance signals recorded in the existing Admin audit trail."
+        />
+        <InfoCard
+          title="EXTERNAL ENFORCEMENT"
+          value="Not connected yet"
+          detail="This foundation does not claim to block an external executor until enforcement is separately certified."
+        />
+        <InfoCard
+          title="PRODUCTION EFFECT"
+          value="None"
+          detail="Production remains untouched. This control is branch- and environment-gated to Staging."
+        />
+      </div>
+
+      <div className={styles.prototypeSafetyNote}>
+        <strong>Important boundary.</strong> {state.caution ||
+          "This records a Staging control signal only. External enforcement is not connected yet."}
+      </div>
+
+      {state.error ? (
+        <div className={styles.prototypeSafetyNote}>
+          <strong>Could not verify control state.</strong> {state.error}
+        </div>
+      ) : null}
+
+      <div className={styles.prototypePanel}>
+        <div className={styles.prototypeHeading}>
+          <div>
+            <div className={styles.kicker}>NEW PAUSE INSTRUCTION</div>
+            <h4>Choose exactly what you are pausing</h4>
+          </div>
+          <StatusPill label="REASON REQUIRED" compact />
+        </div>
+
+        <div className={styles.prototypeFormGrid}>
+          <label className={styles.prototypeField}>
+            <span>Scope</span>
+            <select
+              value={scopeKey}
+              onChange={(event) => setScopeKey(event.target.value)}
+              disabled={state.loading || Boolean(busy)}
+            >
+              {(state.allowedScopes || []).map((scope) => (
+                <option value={scope.key} key={scope.key}>
+                  {scope.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label
+            className={
+              styles.prototypeField + " " + styles.prototypeFieldWide
+            }
+          >
+            <span>Why is this pause needed?</span>
+            <textarea
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              rows={3}
+              placeholder="Describe the material uncertainty or risk you are investigating."
+              disabled={Boolean(busy)}
+            />
+          </label>
+        </div>
+
+        {selectedIsPaused ? (
+          <div className={styles.prototypeSafetyNote}>
+            This scope already has an active Staging pause signal. Restore it
+            through the active-pause card below before recording another one.
+          </div>
+        ) : null}
+
+        <div className={styles.prototypeActions}>
+          <button
+            type="button"
+            className={styles.prototypeReject}
+            disabled={!pauseReady || Boolean(busy)}
+            onClick={() => submit("pause", scopeKey)}
+          >
+            {busy === `pause:${scopeKey}`
+              ? "Recording…"
+              : "Record Staging pause signal"}
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.featureList}>
+        {(state.activePauses || []).length ? (
+          state.activePauses.map((pause) => {
+            const verification = restoreNotes[pause.scopeKey] || "";
+            const restoreReady = verification.trim().length >= 10;
+            return (
+              <article className={styles.featureCard} key={pause.scopeKey}>
+                <div className={styles.featureTop}>
+                  <strong>{pause.scopeLabel}</strong>
+                  <StatusPill label="PAUSED · STAGING SIGNAL" compact />
+                </div>
+                <p>{pause.reason}</p>
+                <div className={styles.featureMeta}>
+                  <span>
+                    Recorded: {formatHiissaRecordTime(pause.pausedAt)}
+                  </span>
+                  <span>EXTERNAL ENFORCEMENT: NOT CONNECTED</span>
+                  <span>PRODUCTION EFFECT: NONE</span>
+                </div>
+
+                <label className={styles.prototypeField}>
+                  <span>Restore verification</span>
+                  <textarea
+                    rows={2}
+                    value={verification}
+                    onChange={(event) =>
+                      setRestoreNotes((current) => ({
+                        ...current,
+                        [pause.scopeKey]: event.target.value,
+                      }))
+                    }
+                    placeholder="What did you verify before restoring this scope?"
+                    disabled={Boolean(busy)}
+                  />
+                </label>
+
+                <div className={styles.prototypeActions}>
+                  <button
+                    type="button"
+                    className={styles.prototypeApprove}
+                    disabled={!restoreReady || Boolean(busy)}
+                    onClick={() =>
+                      submit("restore", pause.scopeKey, verification)
+                    }
+                  >
+                    {busy === `restore:${pause.scopeKey}`
+                      ? "Restoring…"
+                      : "Restore after verification"}
+                  </button>
+                </div>
+              </article>
+            );
+          })
+        ) : (
+          <article className={styles.featureCard}>
+            <div className={styles.featureTop}>
+              <strong>No active Staging pause signal</strong>
+              <StatusPill label="NO PAUSE RECORDED" compact />
+            </div>
+            <p>
+              HIISSA will not invent an emergency. A pause appears here only after
+              the Founder deliberately records one with an explicit scope and
+              reason.
+            </p>
+          </article>
+        )}
+      </div>
+
+      {notice ? (
+        <div className={styles.prototypeSuccess}>
+          <strong>{notice}</strong>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function FounderDailyBrief({
   authenticated,
   onOpenAlerts,
@@ -5028,6 +5389,8 @@ function Overview({
         onOpenAlerts={onOpenAlerts}
         onOpenApprovals={onOpenApprovals}
       />
+
+      <FounderEmergencyPauseCentre authenticated={authenticated} />
 
       <FounderActivityTimeline authenticated={authenticated} />
 
