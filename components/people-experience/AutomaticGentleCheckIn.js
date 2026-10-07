@@ -114,7 +114,10 @@ export default function AutomaticGentleCheckIn({
       let result = null;
 
       if (typeof requestEligibility === "function") {
-        result = await requestEligibility(nowContext());
+        result = await requestEligibility({
+          ...nowContext(),
+          manualPreview: manual,
+        });
       } else if (previewOnly) {
         const nextDaypart = currentDaypart();
         const alreadyOffered = previewDayparts.current.has(nextDaypart);
@@ -246,7 +249,7 @@ export default function AutomaticGentleCheckIn({
   }, [snoozedUntil]);
 
   async function resolveWithoutAnswerValue() {
-    if (typeof recordState === "function") {
+    if (!offer?.previewOnly && typeof recordState === "function") {
       const result = await recordState("resolved", {
         ...nowContext(),
         daypart,
@@ -270,7 +273,7 @@ export default function AutomaticGentleCheckIn({
   async function snooze({ hideReminder = false } = {}) {
     let nextUntil = new Date(Date.now() + snoozeMs);
 
-    if (typeof recordState === "function") {
+    if (!offer?.previewOnly && typeof recordState === "function") {
       const result = await recordState("snoozed", {
         ...nowContext(),
         daypart,
