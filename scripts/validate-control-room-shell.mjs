@@ -1542,7 +1542,7 @@ for (const required of [
   '"founder_emergency_pause_restored"',
   '"PAUSE_REASON_REQUIRED"',
   '"RESTORE_VERIFICATION_REQUIRED"',
-  '"EXTERNAL_ENFORCEMENT_NOT_CONNECTED"',
+  "externalEnforcementConnected: false",
   '"founder-emergency-pause-staging-control-foundation"',
   "externalEnforcementPerformed: false",
   "productionEffectPerformed: false",
