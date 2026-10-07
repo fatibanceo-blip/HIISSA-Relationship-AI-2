@@ -1057,6 +1057,7 @@ function FounderWelcomeMoment({
         recordState={recordCareState}
         recordOperationalEvent={recordCareOperationalEvent}
         manualRequestKey={checkInManualKey}
+        manualPreviewOnly
         onCalmStart={() => {
           onCalmStart?.();
         }}
