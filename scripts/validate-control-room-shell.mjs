@@ -362,6 +362,11 @@ for (const required of [
   "recordTimeGrid",
   "HIISSA timestamp rule:",
   "AutomaticGentleCheckIn",
+  "Preview check-in",
+  "founderCheckInPreviewKey",
+  "previewRequestKey",
+  "FOUNDER_MANUAL_PREVIEW",
+  "manualPreview",
   "requestCareEligibility",
   "recordCareState",
   "recordCareOperationalEvent",
@@ -1266,6 +1271,30 @@ for (const required of [
   "productionEffect: false",
 ]) requireText("Founder canonical Daypart Care endpoint", founderCare, required);
 
+const founderPreviewButton = page.indexOf(">\n            Preview check-in\n          </button>");
+const founderPreviewKey = page.indexOf("setFounderCheckInPreviewKey((value) => value + 1)");
+const founderPreviewReason = page.indexOf('reason: "FOUNDER_MANUAL_PREVIEW"');
+const founderPreviewOnly = page.indexOf("previewOnly: true", founderPreviewReason);
+if (
+  founderPreviewButton < 0 ||
+  founderPreviewKey < 0 ||
+  founderPreviewReason < 0 ||
+  founderPreviewOnly < founderPreviewReason
+) {
+  errors.push(
+    "Founder Control Room must preserve a Founder-only Preview check-in doorway that reuses the canonical check-in engine without consuming real Daypart Care."
+  );
+}
+
+for (const required of [
+  "manualPreview: manual",
+  "if (!offer?.previewOnly && typeof recordState === \"function\")",
+]) requireText(
+  "Automatic Gentle Check-In preview non-consumption",
+  automaticGentleCheckIn,
+  required
+);
+
 const founderAutomaticController = page.indexOf("<AutomaticGentleCheckIn");
 const founderCareEligibility = page.indexOf("requestEligibility={requestCareEligibility}");
 const founderCareState = page.indexOf("recordState={recordCareState}");
@@ -1666,6 +1695,7 @@ console.log("- Founder Activity Timeline reads real Staging audit timestamps");
 console.log("- Approval and staff records use the shared local-time display formatter");
 console.log("- Created/updated/history preservation and no-fabricated-time rules are protected");
 console.log("- Founder Gentle Check-In now reuses the canonical automatic Daypart Care controller with private snooze/resolve lifecycle");
+console.log("- Founder-level Preview check-in replays the shared experience without consuming, snoozing or resolving a real care opportunity");
 console.log("- Founder Calmer Start Golden Journey is protected: automatic/replayed check-in -> Calmer Start Moment -> Start gently -> shared one-next-step CalmerStartMode");
 console.log("- Check-in answers remain private; only care-delivery state is recorded");
 console.log("- Daypart Care supersedes the historical 48-hour cadence: morning / afternoon / evening, once per daypart");
