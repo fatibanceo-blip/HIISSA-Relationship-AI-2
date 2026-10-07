@@ -8,6 +8,7 @@ import {
   formatHiissaRecordTime,
 } from "../../../lib/hiissa-record-time.js";
 import GentleCheckIn from "../../../components/people-experience/GentleCheckIn.js";
+import CalmerStartMoment from "../../../components/people-experience/CalmerStartMoment.js";
 import WorkdayClose from "../../../components/people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../../../components/people-experience/PrivateAppreciation.js";
 import styles from "./page.module.css";
@@ -177,6 +178,7 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
   const [menuOpen, setMenuOpen] = useState(false);
   const [toolPanel, setToolPanel] = useState("");
   const [navigationHistory, setNavigationHistory] = useState([]);
+  const [calmStartMomentOpen, setCalmStartMomentOpen] = useState(false);
   const [calmStart, setCalmStart] = useState(false);
 
   useEffect(() => {
@@ -243,9 +245,25 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
         <FounderWelcomeMoment
           authenticated={authenticated}
           onCalmStart={() => {
+            setCalmStart(false);
+            setCalmStartMomentOpen(true);
+          }}
+        />
+
+        <CalmerStartMoment
+          open={calmStartMomentOpen}
+          displayName="FATI BANCE"
+          previewOnly={false}
+          taskTitle="Start with verified Alerts or work waiting for your decision."
+          onStartGently={() => {
+            setCalmStartMomentOpen(false);
             setPrimaryView("overview");
             setToolPanel("");
             setCalmStart(true);
+          }}
+          onContinueNormally={() => {
+            setCalmStartMomentOpen(false);
+            setCalmStart(false);
           }}
         />
 
@@ -3719,11 +3737,11 @@ function Overview({
         <FounderContextBack onBack={onBack} fallbackLabel="Admin Dashboard" />
         <section className={styles.calmStartPanel}>
           <div className={styles.kicker}>FOUNDER CALM START</div>
-          <h2>Only what may need you first</h2>
+          <h2>Calmer Start is on.</h2>
           <p>
-            HIISSA is keeping the opening view simple. Nothing has been removed.
-            Start with verified Alerts or work waiting for your decision, then
-            return to the full Overview whenever you are ready.
+            Only what may need you first. HIISSA is keeping the opening view simple.
+            Nothing has been removed. Start with verified Alerts or work waiting for
+            your decision, then return to the full Overview whenever you are ready.
           </p>
           <div className={styles.calmStartActions}>
             <button type="button" onClick={onOpenAlerts}>
