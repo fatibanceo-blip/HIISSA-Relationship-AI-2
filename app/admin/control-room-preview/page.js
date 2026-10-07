@@ -2417,7 +2417,12 @@ function FounderAlertsPanel({
   const securityNeedsAttention = securityStatus === "NEEDS_ATTENTION";
 
   return (
-    <section className={styles.globalPanel} aria-label="Founder Alerts">
+    <section
+      id="founder-alerts-panel"
+      tabIndex={-1}
+      className={styles.globalPanel}
+      aria-label="Founder Alerts"
+    >
       <div className={styles.globalPanelHeading}>
         <div>
           <div className={styles.kicker}>FOUNDER ALERTS</div>
@@ -4367,6 +4372,20 @@ function FounderDailyBrief({
     year: "numeric",
   });
 
+  function openAlertsAndTakeFounderThere() {
+    if (typeof onOpenAlerts === "function") onOpenAlerts();
+
+    if (typeof window === "undefined") return;
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const panel = document.getElementById("founder-alerts-panel");
+        if (!panel) return;
+        panel.focus({ preventScroll: true });
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
   return (
     <section className={styles.section} aria-label="Daily Founder Brief">
       <div className={styles.sectionHeading}>
@@ -4467,7 +4486,7 @@ function FounderDailyBrief({
         <button
           type="button"
           className={styles.overviewPathway}
-          onClick={onOpenAlerts}
+          onClick={openAlertsAndTakeFounderThere}
         >
           <span>FOUNDER ATTENTION</span>
           <strong>
