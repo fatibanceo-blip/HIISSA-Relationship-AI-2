@@ -4269,8 +4269,15 @@ function Overview({
       taskTitle={founderNextTask.title}
       taskDetail={founderNextTask.detail}
       taskStatus={founderNextTask.status}
+      continueLabel={
+        founderNextAction
+          ? "Continue with this task"
+          : "View Founder operational picture"
+      }
       expanded={Boolean(calmStartExpanded)}
-      onContinueTask={onContinueCalmTask}
+      onContinueTask={
+        founderNextAction ? openFounderNextAction : onContinueCalmTask
+      }
       onShowAll={onExpandCalmStart}
       onExit={onExitCalmStart}
     />
