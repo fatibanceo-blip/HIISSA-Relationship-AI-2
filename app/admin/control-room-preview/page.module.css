@@ -1697,34 +1697,23 @@
   font-size:12px;
   line-height:1.55;
 }
-.welcomeEnter{
-  position:relative;
-  z-index:1;
-  display:inline-flex;
-  margin-top:24px;
-  padding:12px 18px;
-  border:1px solid #245b48;
-  border-radius:13px;
-  background:#245b48;
-  color:#fff;
+.welcomeClose{
+  position:absolute;
+  z-index:2;
+  top:16px;
+  right:16px;
+  width:38px;
+  height:38px;
+  display:inline-grid;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(36,91,72,.16);
+  border-radius:999px;
+  background:rgba(255,255,255,.74);
+  color:#527064;
   font:inherit;
-  font-size:14px;
-  font-weight:900;
-  cursor:pointer;
-  box-shadow:0 12px 30px rgba(36,91,72,.18);
-}
-.welcomeDismiss{
-  position:relative;
-  z-index:1;
-  display:block;
-  margin:11px auto 0;
-  padding:7px 9px;
-  border:0;
-  background:transparent;
-  color:#78867e;
-  font:inherit;
-  font-size:11px;
-  font-weight:750;
+  font-size:24px;
+  line-height:1;
   cursor:pointer;
 }
 @keyframes welcomeCardIn{
@@ -1757,8 +1746,7 @@
 .prototypeApprove,
 .prototypeReturn,
 .prototypeReject,
-.welcomeEnter,
-.welcomeDismiss,
+.welcomeClose,
 .criticalAlertActions button{
   transition:background .14s ease,border-color .14s ease,box-shadow .14s ease,transform .1s ease,color .14s ease;
 }
@@ -1792,10 +1780,8 @@
 .prototypeReturn:not(:disabled):focus-visible,
 .prototypeReject:not(:disabled):hover,
 .prototypeReject:not(:disabled):focus-visible,
-.welcomeEnter:hover,
-.welcomeEnter:focus-visible,
-.welcomeDismiss:hover,
-.welcomeDismiss:focus-visible,
+.welcomeClose:hover,
+.welcomeClose:focus-visible,
 .criticalAlertActions button:hover,
 .criticalAlertActions button:focus-visible{
   outline:none;
@@ -1817,8 +1803,7 @@
 .prototypeApprove:not(:disabled):active,
 .prototypeReturn:not(:disabled):active,
 .prototypeReject:not(:disabled):active,
-.welcomeEnter:active,
-.welcomeDismiss:active,
+.welcomeClose:active,
 .criticalAlertActions button:active{
   transform:translateY(1px);
 }
