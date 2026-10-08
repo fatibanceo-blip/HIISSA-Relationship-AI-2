@@ -1,0 +1,10 @@
+# HIISSA rolling checkpoint — 8 October 2026
+Founder approval: "Approve" for the first Staging-only Employee Register & Attendance visual design preview; no real employee or attendance actions.
+WHAT: Existing Staging branch commit 6a28103f1a55fcac92c7cc0117f455a1213f0064 added preview, new Registry identity, readonly validator and prior detailed checkpoint.
+WHERE: Founder Control Room > Staff & Workspaces; Staging only.
+WHO: Founder approval; assistant implementation and Vercel build inspection.
+EVIDENCE: Vercel deployment dpl_AAYCfMEckxvVLxoASSQfzPGt9YtS, target staging, READY, exact app SHA 6a28103f1a55fcac92c7cc0117f455a1213f0064, URL https://hiissa-relationship-ai-2-bxcj4ewdw-hiissa-relationship-ai.vercel.app; build logs show new preview readonly gate, prototype staff, Registry, protected core, My HIISSA route, account journey, FREE navigation and Founder Control Room shell PASS; Next.js compiled and deployed.
+FAILURE/CORRECTION: CSS Autoprefixer warned that align-items:end has mixed support and recommends flex-end. Build remained READY. Attempted scoped correction in this chat was blocked by the tool safety system, so NO correction commit or second deployment is claimed. Node module-type warning also observed, not a build failure.
+STATUS: BUILT, STAGING READY, STATIC CHECKS PASS, FOUNDER PRACTICAL ACCEPTANCE PENDING, CSS WARNING OPEN; not fully certified. No real staff access/attendance or Production modification. No new Module 11.
+NON-EFFECT: Existing protected journeys, authentication, Save & Sync, real users, Supabase, payment, Production and 13 original Controlled Close DOCX documents not intentionally modified.
+NEXT: Founder practical visual test via existing Staging Control Room; inspect 10 fictional persons, two tabs, mobile layout, search, accurate unconnected states. Fix non-fatal CSS warning only when safe to do so and verify another Staging build. Document all outcomes under Document 12 and 13.
