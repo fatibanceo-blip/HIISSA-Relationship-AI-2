@@ -45,6 +45,11 @@ export async function GET(request){
   const f=await founder(request); if(!f.ok) return json({status:f.reason},f.status);
   try {
     const staff=await inventory(f.admin);
+    const {data:accessRows,error:accessError}=await f.admin.rpc("founder_staff_access_inventory");
+    if(accessError) throw accessError;
+    const accessByUser=new Map((accessRows||[]).map(row=>[row.user_id,row]));
+    for(const person of staff){const access=accessByUser.get(person.targetKey); person.accessState=access?.access_state||"active"; person.accessChangedAt=access?.changed_at||null;}
+    for(const row of accessRows||[]){if(!staff.some(p=>p.targetKey===row.user_id)) staff.push({targetKey:row.user_id,role:safeRole(row.role_id),sessions:[],label:`${safeRole(row.role_id)} staff ${staff.length+1}`,sessionCount:Number(row.session_count||0),accessState:row.access_state||"active",accessChangedAt:row.changed_at||null});}
     return json({
       status:"MONITORING", scope:"staging-staff-session-device-control", staff,
       boundaries:{
@@ -62,9 +67,23 @@ export async function POST(request){
   const targetUserId=String(body.targetUserId||"").trim();
   const targetSessionId=body.targetSessionId?String(body.targetSessionId).trim():null;
   const reason=String(body.reason||"").trim();
+  const accessAction=String(body.accessAction||"").trim();
   if(!targetUserId||reason.length<10) return json({status:"REASON_AND_TARGET_REQUIRED"},400);
   if(targetUserId===f.id) return json({status:"FOUNDER_SELF_REVOCATION_BLOCKED"},400);
   try{
+    if(["suspend","restore","permanently_revoke"].includes(accessAction)){
+      const {data:changed,error:changeError}=await f.admin.rpc("founder_change_staff_access",{target_user_id:targetUserId,requested_action:accessAction,action_reason:reason,founder_user_id:f.id});
+      if(changeError) throw changeError;
+      const result=changed?.[0]||{};
+      const {error:auditError}=await f.admin.from("admin_audit_events").insert({
+        event_type:accessAction==="suspend"?"founder_staff_access_suspended":accessAction==="restore"?"founder_staff_access_restored":"founder_staff_access_permanently_revoked",
+        actor_user_id:f.id,target_user_id:targetUserId,module_id:"admin-security-audit",resource_id:"staff-access",
+        action_id:accessAction,outcome:"recorded",oversight_level:3,environment:"staging",
+        details:{reason,new_state:result.new_state,revoked_session_count:Number(result.revoked_sessions||0),founder_lockout_protection:true,historical_evidence_preserved:true,production_effect:false}
+      });
+      if(auditError) throw auditError;
+      return json({status:"ACCESS_CHANGE_RECORDED_AND_EXECUTED",accessState:result.new_state,revokedSessionCount:Number(result.revoked_sessions||0),historicalEvidencePreserved:true,productionEffect:false});
+    }
     const {data,error}=await f.admin.rpc("founder_revoke_staff_session",{target_user_id:targetUserId,target_session_id:targetSessionId});
     if(error) throw error;
     const revoked=Number(data?.[0]?.revoked_count||0);
