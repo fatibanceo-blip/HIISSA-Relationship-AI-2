@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import FounderStaffAccessPractice from "./FounderStaffAccessPractice.js";
 
 const client = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) : null;
@@ -51,9 +52,10 @@ export default function FounderStaffSessionDeviceControl({ authenticated }) {
   }
 
   return <section id="founder-staff-session-device-control" style={section}>
-    <div style={heading}><div><div style={kicker}>STAFF SESSION & DEVICE CONTROL · STAGING</div><h3 style={title}>See active staff sessions and force a controlled sign-out</h3></div><span style={pill}>FOUNDER ONLY</span></div>
+    <div style={heading}><div><div style={kicker}>STAFF SESSION & DEVICE CONTROL · STAGING</div><h3 style={title}>Manage staff access: sign out, suspend, restore or permanently revoke</h3></div><span style={pill}>FOUNDER ONLY</span></div>
     <p style={copy}>This control is limited to active Staging staff identities. It never targets the Founder, never changes Production, and never pretends a browser/app session proves the identity of a physical device.</p>
     <div style={cards}><Card title="ACTIVE STAGING STAFF" value={state.loading?"Checking…":String(state.staff.length)} text="Only active Staging staff role assignments are eligible."/><Card title="DEVICE EVIDENCE" value="Session-level" text="HIISSA identifies Auth sessions, not the physical phone or computer."/><Card title="PRODUCTION EFFECT" value="None" text="This control is restricted to Staging."/></div>
+    <FounderStaffAccessPractice />
     <div style={note}><strong>Important boundary.</strong> Force Sign Out revokes the selected refresh session, or all refresh sessions for that staff identity. An already-issued access token may remain valid until its normal expiry.</div>
     {state.error?<div style={note}><strong>Could not verify session state.</strong> {state.error}</div>:null}
     {!state.loading&&!state.staff.length?<div style={item}><strong>No active Staging staff identity is currently assigned</strong><p>HIISSA will not invent a staff account or session just to test this control. Practical revocation evidence remains conditional until a genuine Staging staff identity exists.</p></div>:null}
