@@ -60,6 +60,9 @@ const founderEmergencyPausePath = path.join(
   "founder-emergency-pause",
   "route.js"
 );
+const staffSessionControlPath = path.join(root,"app","api","admin","control-room","staff-session-device-control","route.js");
+const staffSessionControlComponentPath = path.join(root,"app","admin","control-room-preview","FounderStaffSessionDeviceControl.js");
+const staffSessionControlPagePath = path.join(root,"app","admin","staff-session-device-control","page.js");
 const activityTimelinePath = path.join(
   root,
   "app",
@@ -181,6 +184,9 @@ if (!fs.existsSync(systemOperationsHealthPath)) errors.push("Protected System & 
 if (!fs.existsSync(founderWelcomePath)) errors.push("Protected Founder welcome intelligence endpoint is missing.");
 if (!fs.existsSync(founderCarePath)) errors.push("Protected Founder Daypart Care endpoint is missing.");
 if (!fs.existsSync(founderEmergencyPausePath)) errors.push("Protected Founder Emergency Pause endpoint is missing.");
+if (!fs.existsSync(staffSessionControlPath)) errors.push("Protected Staff Session & Device Control endpoint is missing.");
+if (!fs.existsSync(staffSessionControlComponentPath)) errors.push("Protected Staff Session & Device Control component is missing.");
+if (!fs.existsSync(staffSessionControlPagePath)) errors.push("Protected Staff Session & Device Control page is missing.");
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
 if (!fs.existsSync(aiProductHealthPath)) errors.push("Protected AI & Product health endpoint is missing.");
@@ -247,6 +253,9 @@ const founderCare = fs.existsSync(founderCarePath)
 const founderEmergencyPause = fs.existsSync(founderEmergencyPausePath)
   ? fs.readFileSync(founderEmergencyPausePath, "utf8")
   : "";
+const staffSessionControl = fs.existsSync(staffSessionControlPath) ? fs.readFileSync(staffSessionControlPath,"utf8") : "";
+const staffSessionControlComponent = fs.existsSync(staffSessionControlComponentPath) ? fs.readFileSync(staffSessionControlComponentPath,"utf8") : "";
+const staffSessionControlPage = fs.existsSync(staffSessionControlPagePath) ? fs.readFileSync(staffSessionControlPagePath,"utf8") : "";
 const activityTimeline = fs.existsSync(activityTimelinePath)
   ? fs.readFileSync(activityTimelinePath, "utf8")
   : "";
@@ -1552,6 +1561,36 @@ for (const required of [
   "productionEffectPerformed: false",
   '"Cache-Control": "no-store"',
 ]) requireText("Founder Emergency Pause endpoint", founderEmergencyPause, required);
+
+for (const required of [
+  'branch === "feature/founder-control-room-staging"',
+  'environment !== "production"',
+  'verify.auth.getUser(token)',
+  '.from("admin_users")',
+  'founder_staff_session_inventory',
+  'founder_revoke_staff_session',
+  'FOUNDER_SELF_REVOCATION_BLOCKED',
+  'event_type:"founder_staff_session_revoked"',
+  'outcome:"recorded"',
+  'physical_device_identity_claimed:false',
+  'production_effect:false',
+  '"Cache-Control": "private, no-store"',
+]) requireText("Staff Session & Device Control endpoint", staffSessionControl, required);
+
+for (const required of [
+  "STAFF SESSION & DEVICE CONTROL · STAGING",
+  "FOUNDER ONLY",
+  "No active Staging staff identity is currently assigned",
+  "HIISSA will not invent a staff account or session just to test this control.",
+  "Force Sign Out this session",
+  "Production effect: none.",
+]) requireText("Staff Session & Device Control component", staffSessionControlComponent, required);
+
+for (const required of [
+  "FounderStaffSessionDeviceControl",
+  "← Back to Founder Control Room",
+  'href="/admin/control-room"',
+]) requireText("Staff Session & Device Control page", staffSessionControlPage, required);
 
 for (const required of [
   'branch === "feature/founder-control-room-staging"',
