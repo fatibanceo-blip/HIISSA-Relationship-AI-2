@@ -11,20 +11,24 @@ export default function FounderStaffAccessPractice(){
  const [selected,setSelected]=useState("");
  const [people,setPeople]=useState(initial);
  const [reason,setReason]=useState("");
+ const [department,setDepartment]=useState("all");
+ const [showSampleTools,setShowSampleTools]=useState(false);
+ const [reasonChoice,setReasonChoice]=useState("");
  const [events,setEvents]=useState([]);
  const [message,setMessage]=useState("");
  const person=examples.find(p=>p.id===selected);
+ const departments=[...new Set(examples.map(p=>p.role))];
  const current=people[selected];
  function act(action){
   if(!person)return;
-  if(reason.trim().length<10){setMessage("Please enter a reason of at least 10 characters.");return;}
+  if((reasonChoice==="Other reason"?reason.trim():reasonChoice).length<10){setMessage("Please enter a reason of at least 10 characters.");return;}
   if(current.status==="permanently_revoked"){setMessage("This identity is permanently revoked. Normal actions cannot restore it.");return;}
   if(action==="restore"&&current.status!=="suspended"){setMessage("Only a suspended identity can be restored.");return;}
   if(action==="permanently_revoke"&&!window.confirm("SIMULATION ONLY: permanently revoke this sample staff member? No real account is affected."))return;
   const next=action==="force_sign_out"?{...current,sessions:0}:action==="restore"?{status:"active",sessions:0}:{status:action==="suspend"?"suspended":"permanently_revoked",sessions:0};
   setPeople(old=>({...old,[selected]:next}));
-  setEvents(old=>[{name:person.name,action,reason:reason.trim(),at:new Date().toISOString()},...old]);
-  setReason("");setMessage("Sample action completed. No real staff account or Production data was changed.");
+  setEvents(old=>[{name:person.name,action,reason:reasonChoice==="Other reason"?reason.trim():reasonChoice,at:new Date().toISOString()},...old]);
+  setReason("");setReasonChoice("");setMessage("Sample action completed. No real staff account or Production data was changed.");
  }
  function reset(){
   if(!person)return;
@@ -35,22 +39,25 @@ export default function FounderStaffAccessPractice(){
  return <section style={panel}>
   <strong>INTERACTIVE STAFF ACCESS PRACTICE · SAMPLE IDENTITIES ONLY</strong>
   <p>Choose a sample staff member to test every button. These fictional identities are not real staff accounts. Changes and history are demonstrations only and are not saved to the real audit database.</p>
-  <div style={actions}>{examples.map(p=><button key={p.id} type="button" style={selected===p.id?chosen:button} onClick={()=>{setSelected(p.id);setReason("");setMessage("");}}>{p.name}</button>)}</div>
+  <label htmlFor="sample-department-filter">Choose department</label><select id="sample-department-filter" style={field} value={department} onChange={e=>{setDepartment(e.target.value);setSelected("");}}><option value="all">All departments</option>{departments.map(d=><option key={d} value={d}>{d}</option>)}</select>
+  <div style={actions}>{examples.filter(p=>department==="all"||p.role===department).map(p=><button key={p.id} type="button" style={selected===p.id?chosen:button} onClick={()=>{setSelected(p.id);setReason("");setMessage("");}}>{p.name}</button>)}</div>
   {person?<div style={detail}>
    <h4>{person.name}</h4>
    <p>Department: {person.role}</p>
    <p>Access status: <strong>{current.status.replaceAll("_"," ").toUpperCase()}</strong> · Sample sessions: {current.sessions}</p>
    <label htmlFor="sample-staff-access-reason">Reason for action</label>
-   <textarea id="sample-staff-access-reason" rows={2} style={field} value={reason} onChange={e=>setReason(e.target.value)} placeholder="Enter a reason (at least 10 characters)"/>
+   <select id="sample-staff-access-reason" style={field} value={reasonChoice} onChange={e=>setReasonChoice(e.target.value)}><option value="">Choose a reason</option>{["Security precaution","Pending investigation","Temporary leave or absence","Security issue resolved","Approved return to work","Confirmed serious misconduct","Serious security breach","Other reason"].map(r=><option key={r} value={r}>{r}</option>)}</select>
+   {reasonChoice==="Other reason"?<textarea rows={2} style={field} value={reason} onChange={e=>setReason(e.target.value)} placeholder="Explain the reason (10+ characters)"/>:null}
    <div style={actions}>
     <button type="button" style={button} disabled={!current.sessions||current.status!=="active"} onClick={()=>act("force_sign_out")}>Force Sign Out</button>
     <button type="button" style={button} disabled={current.status!=="active"} onClick={()=>act("suspend")}>Suspend Access</button>
     <button type="button" style={button} disabled={current.status!=="suspended"} onClick={()=>act("restore")}>Restore Access</button>
     <button type="button" style={danger} disabled={current.status==="permanently_revoked"} onClick={()=>act("permanently_revoke")}>Permanently Revoke Access</button>
-    <button type="button" style={button} onClick={reset}>Reset Sample Only</button>
+
    </div>
    <p>Permanent revocation disables normal access actions. Reset Sample Only restarts the fictional demonstration, never a genuine revocation.</p>
   </div>:<p>Select a sample name above to open its controls.</p>}
+  <div style={detail}><button type="button" style={button} onClick={()=>setShowSampleTools(!showSampleTools)}>{showSampleTools?"Hide":"Show"} sample testing tools</button>{showSampleTools&&person?<button type="button" style={button} onClick={reset}>Reset Sample Only</button>:null}</div>
   {message?<p role="status" style={feedback}>{message}</p>:null}
   <div style={detail}><strong>Sample activity history</strong>{events.length?events.slice(0,10).map((e,i)=><p key={i}>{new Date(e.at).toLocaleString()} · {e.name} · {e.action.replaceAll("_"," ")} · {e.reason}</p>):<p>No sample actions recorded yet.</p>}</div>
  </section>;
