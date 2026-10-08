@@ -11,6 +11,7 @@ export default function FounderStaffAccessPractice(){
  const [selected,setSelected]=useState("");
  const [selectedMany,setSelectedMany]=useState([]);
  const [search,setSearch]=useState("");
+ const [pickerOpen,setPickerOpen]=useState(false);
  const [review,setReview]=useState(null);
  const [statusFilter,setStatusFilter]=useState("all");
  const [people,setPeople]=useState(initial);
@@ -63,9 +64,11 @@ export default function FounderStaffAccessPractice(){
   <div style={detail}><strong>Access status by staff member</strong>{examples.filter(p=>statusFilter==="all"||people[p.id].status===statusFilter).map(p=><p key={p.id}>{p.name} · {p.role} · <strong>{people[p.id].status.replaceAll("_"," ")}</strong></p>)}<small>Counts reflect sample identities, not real staff.</small></div>
   <p>Choose a sample staff member to test every button. These fictional identities are not real staff accounts. Changes and history are demonstrations only and are not saved to the real audit database.</p>
   <label htmlFor="sample-department-filter">Choose department</label><select id="sample-department-filter" style={field} value={department} onChange={e=>{setDepartment(e.target.value);setSelected("");}}><option value="all">All departments</option>{departments.map(d=><option key={d} value={d}>{d}</option>)}</select>
-  <label htmlFor="sample-staff-search">Search staff or department</label><input id="sample-staff-search" style={field} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search sample staff"/>
-  <div style={actions}><button style={button} onClick={()=>setSelectedMany(old=>[...new Set([...old,...visible.map(p=>p.id)])])}>Select all shown</button><button style={button} onClick={()=>setSelectedMany([])}>Clear selection</button><span>{selectedMany.length} selected</span></div>
-  <div style={detail}>{visible.map(p=><label key={p.id} style={{display:"block",padding:7}}><input type="checkbox" checked={selectedMany.includes(p.id)} onChange={e=>setSelectedMany(old=>e.target.checked?[...old,p.id]:old.filter(id=>id!==p.id))}/> {p.name} · {p.role} · {people[p.id].status}</label>)}</div>
+  <label htmlFor="sample-staff-search">Find and choose staff</label><input id="sample-staff-search" style={field} value={search} onFocus={()=>setPickerOpen(true)} onChange={e=>{setSearch(e.target.value);setPickerOpen(true);}} placeholder="Tap to see staff, or type a name" aria-expanded={pickerOpen} aria-controls="sample-staff-picker"/>
+  <p style={{fontSize:13}}>Tap the search box to open the staff list. Tick individual names, or use Select all shown. Selection remains when you change departments.</p>
+  <div style={actions}><button type="button" style={button} onClick={()=>{setPickerOpen(true);setSelectedMany(old=>[...new Set([...old,...visible.map(p=>p.id)])]);}}>Select all shown ({visible.length})</button><button type="button" style={button} onClick={()=>{setSelectedMany([]);setReview(null);}}>Clear selection</button><button type="button" style={button} onClick={()=>setPickerOpen(v=>!v)}>{pickerOpen?"Hide":"Show"} staff list</button></div>
+  <div style={detail}><strong>Selected staff · {selectedMany.length}</strong><p style={{fontSize:13}}>These selections stay selected across departments. Clear selection removes all ticks, not staff access.</p>{selectedMany.length?examples.filter(p=>selectedMany.includes(p.id)).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",padding:"7px 0"}}><span>{p.name} · {p.role}</span><button type="button" style={button} aria-label={"Remove "+p.name} onClick={()=>{setSelectedMany(old=>old.filter(id=>id!==p.id));setReview(null);}}>Remove</button></div>):<p>No staff selected yet.</p>}</div>
+  {pickerOpen?<div id="sample-staff-picker" style={detail}><strong>Choose specific staff · {visible.length} shown</strong>{visible.length?visible.map(p=><label key={p.id} style={{display:"block",padding:12,borderBottom:"1px solid #dbe5dd"}}><input type="checkbox" checked={selectedMany.includes(p.id)} onChange={e=>{setSelectedMany(old=>e.target.checked?[...new Set([...old,p.id])]:old.filter(id=>id!==p.id));setReview(null);}}/> {p.name} · {p.role} · {people[p.id].status}</label>):<p>No matching staff. Try a different name or department.</p>}</div>:null}
   <div style={actions}>{visible.map(p=><button key={p.id} type="button" style={selected===p.id?chosen:button} onClick={()=>{setSelected(p.id);setReason("");setMessage("");}}>{p.name}</button>)}</div>
   {person?<div style={detail}>
    <h4>{person.name}</h4>
