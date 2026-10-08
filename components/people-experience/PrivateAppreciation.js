@@ -6,64 +6,15 @@ import {
   hiissaResolvedLocale,
   hiissaResolvedTimeZone,
 } from "../../lib/hiissa-record-time";
+import {
+  HIISSA_PROTOTYPE_STAFF_DEPARTMENTS,
+  HIISSA_PROTOTYPE_STAFF,
+} from "../../lib/hiissa-prototype-staff-directory.js";
 import styles from "./PrivateAppreciation.module.css";
 
 const MAX_MESSAGE_LENGTH = 320;
 
-const DEMO_DEPARTMENTS = Object.freeze([
-  {
-    id: "customer_support",
-    label: "Customer Support",
-    people: [
-      { id: "demo-sarah", name: "Sarah Mensah", role: "Customer Support Specialist", locale: "en-GB", timeZone: "Europe/London" },
-      { id: "demo-mary", name: "Mary Okafor", role: "Customer Support Specialist", locale: "en-GH", timeZone: "Africa/Accra" },
-    ],
-  },
-  {
-    id: "finance_subscriptions",
-    label: "Finance & Subscriptions",
-    people: [
-      { id: "demo-john", name: "John Adeyemi", role: "Finance Specialist", locale: "en-GB", timeZone: "Europe/London" },
-      { id: "demo-claire", name: "Claire Martin", role: "Subscriptions Specialist", locale: "fr-FR", timeZone: "Europe/Paris" },
-    ],
-  },
-  {
-    id: "technical_operations",
-    label: "Technical Operations",
-    people: [
-      { id: "demo-amina", name: "Amina Diallo", role: "Technical Operations Specialist", locale: "fr-FR", timeZone: "Africa/Dakar" },
-      { id: "demo-daniel", name: "Daniel Kim", role: "Technical Operations Specialist", locale: "en-SG", timeZone: "Asia/Singapore" },
-    ],
-  },
-  {
-    id: "safety_safeguarding",
-    label: "Safety & Safeguarding",
-    people: [
-      { id: "demo-nadia", name: "Nadia Hassan", role: "Safeguarding Specialist", locale: "en-GB", timeZone: "Europe/London" },
-    ],
-  },
-  {
-    id: "privacy_data_protection",
-    label: "Privacy & Data Protection",
-    people: [
-      { id: "demo-elena", name: "Elena Rossi", role: "Privacy Specialist", locale: "it-IT", timeZone: "Europe/Rome" },
-    ],
-  },
-  {
-    id: "content_moderation",
-    label: "Content & Moderation",
-    people: [
-      { id: "demo-kwame", name: "Kwame Boateng", role: "Content Specialist", locale: "en-GH", timeZone: "Africa/Accra" },
-    ],
-  },
-  {
-    id: "product_quality",
-    label: "Product & Quality",
-    people: [
-      { id: "demo-mei", name: "Mei Chen", role: "Product Quality Specialist", locale: "en-SG", timeZone: "Asia/Singapore" },
-    ],
-  },
-]);
+const DEMO_DEPARTMENTS = HIISSA_PROTOTYPE_STAFF_DEPARTMENTS;
 
 const CATEGORIES = Object.freeze([
   "Thank you",
@@ -138,17 +89,7 @@ function hiissaSuggestions(category, tone, offset = 0) {
   return [0, 1, 2].map((index) => pool[(index + offset) % pool.length]);
 }
 
-function flattenPeople() {
-  return DEMO_DEPARTMENTS.flatMap((department) =>
-    department.people.map((person) => ({
-      ...person,
-      departmentId: department.id,
-      departmentLabel: department.label,
-    }))
-  );
-}
-
-const ALL_DEMO_PEOPLE = flattenPeople();
+const ALL_DEMO_PEOPLE = HIISSA_PROTOTYPE_STAFF;
 
 function firstName(name) {
   return String(name || "").trim().split(/\s+/)[0] || "there";

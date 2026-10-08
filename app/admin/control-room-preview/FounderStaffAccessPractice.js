@@ -1,11 +1,11 @@
 "use client";
 import {useState} from "react";
+import {HIISSA_PROTOTYPE_STAFF} from "../../../lib/hiissa-prototype-staff-directory.js";
 
-const examples=[
-{id:"sample-customer-support",name:"Sample Customer Support Worker",role:"Customer Support"},
-{id:"sample-technical-operations",name:"Sample Technical Operations Worker",role:"Technical Operations"},
-{id:"sample-finance",name:"Sample Finance Worker",role:"Finance & Subscriptions"}
-];
+// The two Founder previews use one protected fictional staff source; no real accounts.
+const examples=HIISSA_PROTOTYPE_STAFF.map(person=>({
+ id:person.id,name:person.name,role:person.departmentLabel,staffRole:person.role
+}));
 const initial=()=>Object.fromEntries(examples.map(p=>[p.id,{status:"active",sessions:1}]));
 export default function FounderStaffAccessPractice(){
  const [selected,setSelected]=useState("");
@@ -24,7 +24,7 @@ export default function FounderStaffAccessPractice(){
  const person=examples.find(p=>p.id===selected);
  const departments=[...new Set(examples.map(p=>p.role))];
  const current=people[selected];
- const visible=examples.filter(p=>(department==="all"||p.role===department)&&(p.name+" "+p.role).toLowerCase().includes(search.toLowerCase()));
+ const visible=examples.filter(p=>(department==="all"||p.role===department)&&(p.name+" "+p.role+" "+p.staffRole).toLowerCase().includes(search.trim().toLowerCase()));
  const counts={active:examples.filter(p=>people[p.id].status==="active").length,suspended:examples.filter(p=>people[p.id].status==="suspended").length,permanently_revoked:examples.filter(p=>people[p.id].status==="permanently_revoked").length};
  function bulk(action){
   const chosen=examples.filter(p=>selectedMany.includes(p.id));
@@ -69,7 +69,7 @@ export default function FounderStaffAccessPractice(){
   <p style={{fontSize:13}}>Tap the search box to open the staff list. Tick individual names, or use Select all shown. Selection remains when you change departments.</p>
   <div style={actions}><button type="button" style={button} onClick={()=>{setPickerOpen(true);setSelectedMany(old=>[...new Set([...old,...visible.map(p=>p.id)])]);}}>Select all shown ({visible.length})</button><button type="button" style={button} onClick={()=>{setSelectedMany([]);setReview(null);}}>Clear selection</button><button type="button" style={button} onClick={()=>setPickerOpen(v=>!v)}>{pickerOpen?"Hide":"Show"} staff list</button></div>
   <div style={detail}><strong>Selected staff · {selectedMany.length}</strong><p style={{fontSize:13}}>These selections stay selected across departments. Clear selection removes all ticks, not staff access.</p>{selectedMany.length?examples.filter(p=>selectedMany.includes(p.id)).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",padding:"7px 0"}}><span>{p.name} · {p.role}</span><button type="button" style={button} aria-label={"Remove "+p.name} onClick={()=>{setSelectedMany(old=>old.filter(id=>id!==p.id));setReview(null);}}>Remove</button></div>):<p>No staff selected yet.</p>}</div>
-  {pickerOpen?<div id="sample-staff-picker" style={detail}><strong>Choose specific staff · {visible.length} shown</strong>{visible.length?visible.map(p=><label key={p.id} style={{display:"block",padding:12,borderBottom:"1px solid #dbe5dd"}}><input type="checkbox" checked={selectedMany.includes(p.id)} onChange={e=>{setSelectedMany(old=>e.target.checked?[...new Set([...old,p.id])]:old.filter(id=>id!==p.id));setReview(null);}}/> {p.name} · {p.role} · {people[p.id].status}</label>):<div><p>No matching sample staff found for “{search}”. The sample directory contains three role-labelled workers, not personal names such as Sarah.</p><button type="button" style={button} onClick={()=>{setSearch("");setDepartment("all");setPickerOpen(true);}}>Show all sample staff</button></div>}</div>:null}
+  {pickerOpen?<div id="sample-staff-picker" style={detail}><strong>Choose specific staff · {visible.length} shown</strong>{visible.length?visible.map(p=><label key={p.id} style={{display:"block",padding:12,borderBottom:"1px solid #dbe5dd"}}><input type="checkbox" checked={selectedMany.includes(p.id)} onChange={e=>{setSelectedMany(old=>e.target.checked?[...new Set([...old,p.id])]:old.filter(id=>id!==p.id));setReview(null);}}/> {p.name} · {p.role} · {people[p.id].status}</label>):<div><p>No matching sample staff found for “{search}”. Try another fictional prototype name or clear the department filter.</p><button type="button" style={button} onClick={()=>{setSearch("");setDepartment("all");setPickerOpen(true);}}>Show all sample staff</button></div>}</div>:null}
   <div style={actions}>{visible.map(p=><button key={p.id} type="button" style={selected===p.id?chosen:button} onClick={()=>{setSelected(p.id);setReason("");setMessage("");}}>{p.name}</button>)}</div>
   {person?<div style={detail}>
    <h4>{person.name}</h4>
