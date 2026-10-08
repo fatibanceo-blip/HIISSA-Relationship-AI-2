@@ -222,7 +222,7 @@ export async function POST(request) {
       module_id: "overview",
       resource_id: scopeKey,
       action_id: "founder_emergency_pause",
-      outcome: "staging_pause_signal_recorded",
+      outcome: "recorded",
       oversight_level: 3,
       environment: "staging",
       details: {
@@ -262,7 +262,7 @@ export async function POST(request) {
       module_id: "overview",
       resource_id: scopeKey,
       action_id: "founder_emergency_restore",
-      outcome: "staging_pause_signal_restored",
+      outcome: "recorded",
       oversight_level: 3,
       environment: "staging",
       details: {
