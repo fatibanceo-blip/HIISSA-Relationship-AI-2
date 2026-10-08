@@ -31,6 +31,6 @@
 .departmentList{display:grid;gap:15px;margin:14px 0}.barHeading{display:flex;justify-content:space-between;gap:9px;font-size:13px}.barTrack{height:12px;background:#ecf2ed;border-radius:20px;margin-top:7px;overflow:hidden}.barTrack>div{height:100%;background:#327653;border-radius:20px}
 .eventList{display:grid;gap:10px}.eventList>div{padding:11px;border-radius:10px;border:1px solid #d8e6d9;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
 .footer{margin-top:13px;padding:14px;border-radius:12px;background:#f0f5f1;color:#41624d;font-size:12px;line-height:1.6}.footer p{margin:5px 0 0}
-.tab:focus-visible,.activeTab:focus-visible,.actionButton:focus-visible,.inlineButton:focus-visible,.ghostButton:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #bc8f34;outline-offset:2px}
+.tab:focus-visible,.activeTab:focus-visible,.actionButton:focus-visible,.inlineButton:focus-visible,.ghostButton:focus-visible,.shell input:focus-visible,.shell select:focus-visible{outline:3px solid #bc8f34;outline-offset:2px}
 @media(max-width:950px){.metricGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:580px){.shell{padding:9px}.hero{padding:15px}.panel{padding:12px}.metric{padding:10px}.metric strong{font-size:23px}.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.tab,.activeTab{border-bottom:1px solid #dce6dd}.filters{grid-template-columns:minmax(0,1fr)}.heroRow{align-items:flex-start}}
