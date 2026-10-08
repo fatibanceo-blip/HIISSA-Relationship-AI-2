@@ -9,6 +9,10 @@ const examples=[
 const initial=()=>Object.fromEntries(examples.map(p=>[p.id,{status:"active",sessions:1}]));
 export default function FounderStaffAccessPractice(){
  const [selected,setSelected]=useState("");
+ const [selectedMany,setSelectedMany]=useState([]);
+ const [search,setSearch]=useState("");
+ const [review,setReview]=useState(null);
+ const [statusFilter,setStatusFilter]=useState("all");
  const [people,setPeople]=useState(initial);
  const [reason,setReason]=useState("");
  const [department,setDepartment]=useState("all");
@@ -19,6 +23,23 @@ export default function FounderStaffAccessPractice(){
  const person=examples.find(p=>p.id===selected);
  const departments=[...new Set(examples.map(p=>p.role))];
  const current=people[selected];
+ const visible=examples.filter(p=>(department==="all"||p.role===department)&&(p.name+" "+p.role).toLowerCase().includes(search.toLowerCase()));
+ const counts={active:examples.filter(p=>people[p.id].status==="active").length,suspended:examples.filter(p=>people[p.id].status==="suspended").length,permanently_revoked:examples.filter(p=>people[p.id].status==="permanently_revoked").length};
+ function bulk(action){
+  const chosen=examples.filter(p=>selectedMany.includes(p.id));
+  const why=reasonChoice==="Other reason"?reason.trim():reasonChoice;
+  if(!chosen.length||why.length<10){setMessage("Select staff and a valid reason before reviewing.");return;}
+  if(chosen.some(p=>action==="restore"?people[p.id].status!=="suspended":action==="force_sign_out"?people[p.id].status!=="active"||!people[p.id].sessions:people[p.id].status!=="active")){setMessage("One or more selected staff are not eligible for this action. Review their status.");return;}
+  setReview({action,chosen,why});setMessage("");
+ }
+ function confirmBulk(){
+  if(!review)return;
+  if(review.action==="permanently_revoke"&&!window.confirm("SIMULATION ONLY: permanently revoke "+review.chosen.length+" sample identities?"))return;
+  const at=new Date().toISOString();
+  setPeople(old=>{const next={...old};for(const p of review.chosen){const cur=next[p.id];next[p.id]=review.action==="force_sign_out"?{...cur,sessions:0}:review.action==="restore"?{status:"active",sessions:0}:{status:review.action==="suspend"?"suspended":"permanently_revoked",sessions:0};}return next;});
+  setEvents(old=>[...review.chosen.map(p=>({name:p.name,action:review.action,reason:review.why,at})),...old]);
+  setReview(null);setSelectedMany([]);setReasonChoice("");setReason("");setMessage("Sample bulk action completed. No real accounts were changed.");
+ }
  function act(action){
   if(!person)return;
   if((reasonChoice==="Other reason"?reason.trim():reasonChoice).length<10){setMessage("Please enter a reason of at least 10 characters.");return;}
@@ -37,10 +58,15 @@ export default function FounderStaffAccessPractice(){
   setMessage("Sample reset for another demonstration. This cannot reset real revocations.");
  }
  return <section style={panel}>
-  <strong>INTERACTIVE STAFF ACCESS PRACTICE · SAMPLE IDENTITIES ONLY</strong>
+  <div style={{background:"linear-gradient(125deg,#294d3f,#567864)",color:"white",padding:22,borderRadius:15}}><small style={{letterSpacing:2}}>FOUNDER CONTROL ROOM · ACCESS & SECURITY</small><h3 style={{fontSize:24,margin:"8px 0"}}>Staff Access Overview & History</h3><p>Professional staff access oversight, with clear decisions and accountability.</p><strong>INTERACTIVE SAMPLE · FICTIONAL STAFF ONLY</strong></div>
+  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(125px,1fr))",gap:10,marginTop:16}}>{[["Total staff",examples.length,"all"],["Active",counts.active,"active"],["Suspended",counts.suspended,"suspended"],["Permanently revoked",counts.permanently_revoked,"permanently_revoked"]].map(([label,value,key])=><button key={key} style={{...button,textAlign:"left",background:statusFilter===key?"#e1eee5":"white"}} onClick={()=>setStatusFilter(key)}><small>{label}</small><div style={{fontSize:27}}>{value}</div></button>)}</div>
+  <div style={detail}><strong>Access status by staff member</strong>{examples.filter(p=>statusFilter==="all"||people[p.id].status===statusFilter).map(p=><p key={p.id}>{p.name} · {p.role} · <strong>{people[p.id].status.replaceAll("_"," ")}</strong></p>)}<small>Counts reflect sample identities, not real staff.</small></div>
   <p>Choose a sample staff member to test every button. These fictional identities are not real staff accounts. Changes and history are demonstrations only and are not saved to the real audit database.</p>
   <label htmlFor="sample-department-filter">Choose department</label><select id="sample-department-filter" style={field} value={department} onChange={e=>{setDepartment(e.target.value);setSelected("");}}><option value="all">All departments</option>{departments.map(d=><option key={d} value={d}>{d}</option>)}</select>
-  <div style={actions}>{examples.filter(p=>department==="all"||p.role===department).map(p=><button key={p.id} type="button" style={selected===p.id?chosen:button} onClick={()=>{setSelected(p.id);setReason("");setMessage("");}}>{p.name}</button>)}</div>
+  <label htmlFor="sample-staff-search">Search staff or department</label><input id="sample-staff-search" style={field} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search sample staff"/>
+  <div style={actions}><button style={button} onClick={()=>setSelectedMany(old=>[...new Set([...old,...visible.map(p=>p.id)])])}>Select all shown</button><button style={button} onClick={()=>setSelectedMany([])}>Clear selection</button><span>{selectedMany.length} selected</span></div>
+  <div style={detail}>{visible.map(p=><label key={p.id} style={{display:"block",padding:7}}><input type="checkbox" checked={selectedMany.includes(p.id)} onChange={e=>setSelectedMany(old=>e.target.checked?[...old,p.id]:old.filter(id=>id!==p.id))}/> {p.name} · {p.role} · {people[p.id].status}</label>)}</div>
+  <div style={actions}>{visible.map(p=><button key={p.id} type="button" style={selected===p.id?chosen:button} onClick={()=>{setSelected(p.id);setReason("");setMessage("");}}>{p.name}</button>)}</div>
   {person?<div style={detail}>
    <h4>{person.name}</h4>
    <p>Department: {person.role}</p>
@@ -57,6 +83,7 @@ export default function FounderStaffAccessPractice(){
    </div>
    <p>Permanent revocation disables normal access actions. Reset Sample Only restarts the fictional demonstration, never a genuine revocation.</p>
   </div>:<p>Select a sample name above to open its controls.</p>}
+  <div style={detail}><strong>Bulk sample actions · review required</strong><p>Select multiple sample staff above, then choose a reason in the selected staff controls.</p><div style={actions}>{["force_sign_out","suspend","restore","permanently_revoke"].map(a=><button key={a} style={a==="permanently_revoke"?danger:button} onClick={()=>bulk(a)}>{a.replaceAll("_"," ")}</button>)}</div>{review?<div style={detail}><strong>Review {review.chosen.length} sample staff</strong><p>{review.action.replaceAll("_"," ")} · {review.why}</p>{review.chosen.map(p=><p key={p.id}>{p.name} · {p.role}</p>)}<button style={danger} onClick={confirmBulk}>Confirm sample action</button> <button style={button} onClick={()=>setReview(null)}>Cancel</button></div>:null}</div>
   <div style={detail}><button type="button" style={button} onClick={()=>setShowSampleTools(!showSampleTools)}>{showSampleTools?"Hide":"Show"} sample testing tools</button>{showSampleTools&&person?<button type="button" style={button} onClick={reset}>Reset Sample Only</button>:null}</div>
   {message?<p role="status" style={feedback}>{message}</p>:null}
   <div style={detail}><strong>Sample activity history</strong>{events.length?events.slice(0,10).map((e,i)=><p key={i}>{new Date(e.at).toLocaleString()} · {e.name} · {e.action.replaceAll("_"," ")} · {e.reason}</p>):<p>No sample actions recorded yet.</p>}</div>
