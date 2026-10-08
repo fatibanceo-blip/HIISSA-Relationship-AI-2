@@ -110,7 +110,7 @@ export default function FounderEmployeeRegisterAttendancePreview() {
         <div><div className={styles.kicker}>FOUNDER STAFF MANAGEMENT</div><h4>{tabs.find(([id])=>id===tab)?.[1]}</h4></div>
         <div className={styles.actions}>
           {tab==="reports"?<button type="button" onClick={exportReport} className={styles.actionButton} disabled={!visible.length}>↓ Export CSV</button>:null}
-          <a className={styles.actionButton} href="/admin/control-room?view=modules#module10-staff-access">Existing Staff Onboarding ↗</a>
+          <a className={styles.actionButton} href="/admin/control-room?view=modules&focus=staff-onboarding#module10-staff-access">Existing Staff Onboarding ↗</a>
         </div>
       </div>
       <div className={styles.filters}>

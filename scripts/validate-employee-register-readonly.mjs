@@ -23,6 +23,17 @@ assert.ok(!api.includes("export async function POST"));
 assert.ok(!api.includes("export async function PATCH"));
 assert.ok(!api.includes("export async function DELETE"));
 const preview=read("app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js");
+const authenticatedShell=read("app/admin/control-room/AuthenticatedControlRoom.js");
+const expectedOnboardingShortcut="/admin/control-room?view=modules&focus=staff-onboarding#module10-staff-access";
+assert.ok(preview.includes(expectedOnboardingShortcut),"Existing Staff Onboarding shortcut must request exact module focus");
+assert.ok(authenticatedShell.includes('query.get("focus") === "staff-onboarding"'),"Only explicit onboarding shortcut should activate module focus");
+assert.ok(authenticatedShell.includes('query.get("view") === "modules"'),"Do not alter unrelated primary views");
+assert.ok(authenticatedShell.includes('window.location.hash === "#module10-staff-access"'),"Require protected subsection target");
+assert.ok(authenticatedShell.includes('aria-label="Founder Control Room modules"'),"Use existing navigation instead of replacing approved shell");
+assert.ok(authenticatedShell.includes('=== "Security & Audit"'),"Select existing Module 10");
+assert.ok(authenticatedShell.includes('document.getElementById("module10-staff-access")'),"Focus approved onboarding section, not generic Modules");
+assert.ok(authenticatedShell.includes('attempts < 300'),"Navigation retry must be bounded");
+assert.ok(authenticatedShell.includes("role=\"alert\""),"Navigation failures must be visible rather than silently inert");
 for(const label of ["Employee Register","Attendance","Department Overview","Reports","Verified Staging records","Fictional demonstration team","Prototype Employees","No verified attendance events","Not recorded","Prototype ID","NO REAL RECORDS"]){
   assert.ok(preview.includes(label),"Missing truth-safe preview text: "+label);
 }
