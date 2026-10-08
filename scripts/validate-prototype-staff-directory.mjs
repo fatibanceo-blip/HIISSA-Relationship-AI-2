@@ -42,7 +42,7 @@ assert.ok(!["fetch(", "localStorage", "sessionStorage"].some((snippet)=>access.i
 const employeePreview=read("app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js");
 const founderPreviewPage=read("app/admin/control-room-preview/page.js");
 assert.ok(employeePreview.includes('from "../../../lib/hiissa-prototype-staff-directory.js"'));
-assert.ok(employeePreview.includes("HIISSA_PROTOTYPE_STAFF.length"));
+assert.ok(employeePreview.includes("const demo=HIISSA_PROTOTYPE_STAFF.map("));
 assert.ok(employeePreview.includes("Attendance not connected"));
 assert.ok(employeePreview.includes("Not recorded"));
 assert.ok(employeePreview.includes("Prototype ID"));

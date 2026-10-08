@@ -2,7 +2,7 @@ import fs from "node:fs";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 const read=path=>fs.readFileSync(path,"utf8");
-const blobSha=text=>createHash("sha1").update("blob "+Buffer.byteLength(text)+"\\0").update(text).digest("hex");
+const blobSha=text=>createHash("sha1").update("blob "+Buffer.byteLength(text)).update(Buffer.from([0])).update(text).digest("hex");
 const onboarding=read("app/admin/control-room-preview/page.js");
 assert.equal(blobSha(onboarding),"d123b707477854d1811f6f7e2534248c5c7ba056",
   "STOP: Founder-approved onboarding host source changed; explicit Founder permission is required");
