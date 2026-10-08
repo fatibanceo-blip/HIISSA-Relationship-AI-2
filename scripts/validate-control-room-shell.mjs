@@ -1595,6 +1595,7 @@ for (const required of [
   "Suspend Access",
   "Restore Access",
   "Permanently Revoke Access",
+  "FounderStaffAccessPractice",
   "historical evidence preserved",
   "Production effect: none.",
 ]) requireText("Staff Session & Device Control component", staffSessionControlComponent, required);
