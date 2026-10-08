@@ -38,5 +38,5 @@ assert.ok(access.includes("INTERACTIVE SAMPLE · FICTIONAL STAFF ONLY"));
 assert.ok(!access.includes('sample-customer-support') && !access.includes('Sample Finance Worker'));
 assert.ok(registry.includes('id: "hiissa.founder.staff-prototype-directory"'));
 assert.ok(registry.includes('"prototype-staff-source-divergence"'));
-assert.ok(!/(?:fetch\\(|localStorage|sessionStorage)/.test(access),"Staff practice must remain local fictional simulation");
+assert.ok(!["fetch(", "localStorage", "sessionStorage"].some((snippet)=>access.includes(snippet)), "Staff practice must remain local fictional simulation");
 console.log("HIISSA Prototype Staff Directory gate: PASS — 10 stable fictional identities, shared screens, guarded Control Room contract; no real access effects");
