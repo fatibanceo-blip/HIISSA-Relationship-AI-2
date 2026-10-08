@@ -26,6 +26,15 @@ export default function FounderStaffSessionDeviceControl({ authenticated }) {
   }
   useEffect(()=>{load().catch(()=>setState({loading:false,staff:[],error:"Staff session evidence could not be loaded."}));},[authenticated]);
 
+  async function changeAccess(person,accessAction){
+    const key=`access-${person.targetKey}`; const why=String(reason[key]||"").trim();
+    if(why.length<10){setNotice("Enter a clear reason of at least 10 characters.");return;}
+    if(accessAction==="permanently_revoke"&&!window.confirm("Permanently revoke this person’s HIISSA staff/admin access? This preserves audit history and cannot be restored through the normal Founder control.")) return;
+    const token=await accessToken(); if(!token){setNotice("Founder session could not be verified.");return;}
+    setBusy(key); setNotice("");
+    try{const response=await fetch("/api/admin/control-room/staff-session-device-control",{method:"POST",cache:"no-store",credentials:"same-origin",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:JSON.stringify({targetUserId:person.targetKey,accessAction,reason:why})}); const data=await response.json().catch(()=>null); if(!response.ok||!data){setNotice("HIISSA could not complete this Staging access change.");return;} setNotice(`Access change executed and audited: ${data.accessState}. Historical evidence preserved. Production effect: none.`); setReason(cur=>({...cur,[key]:""})); await load();}finally{setBusy("");}
+  }
+
   async function forceSignOut(person,sessionKey){
     const key=sessionKey||person.targetKey;
     const why=String(reason[key]||"").trim();
@@ -48,7 +57,7 @@ export default function FounderStaffSessionDeviceControl({ authenticated }) {
     <div style={note}><strong>Important boundary.</strong> Force Sign Out revokes the selected refresh session, or all refresh sessions for that staff identity. An already-issued access token may remain valid until its normal expiry.</div>
     {state.error?<div style={note}><strong>Could not verify session state.</strong> {state.error}</div>:null}
     {!state.loading&&!state.staff.length?<div style={item}><strong>No active Staging staff identity is currently assigned</strong><p>HIISSA will not invent a staff account or session just to test this control. Practical revocation evidence remains conditional until a genuine Staging staff identity exists.</p></div>:null}
-    {state.staff.map(person=><div style={item} key={person.targetKey}><strong>{person.label} · {person.sessionCount} active session{person.sessionCount===1?"":"s"}</strong><p>Role: {person.role}. No token, password, IP address or private conversation content is shown.</p>{person.sessions.map((session,index)=><div style={sessionBox} key={session.sessionKey}><strong>Session {index+1}</strong><p>Last active: {new Date(session.lastActiveAt).toLocaleString()}</p><textarea style={field} rows={2} value={reason[session.sessionKey]||""} onChange={e=>setReason(cur=>({...cur,[session.sessionKey]:e.target.value}))} placeholder="Why must this staff session be signed out?"/><button style={button} disabled={busy===session.sessionKey||(reason[session.sessionKey]||"").trim().length<10} onClick={()=>forceSignOut(person,session.sessionKey)}>{busy===session.sessionKey?"Signing out…":"Force Sign Out this session"}</button></div>)}</div>)}
+    {state.staff.map(person=><div style={item} key={person.targetKey}><strong>{person.label} · {person.sessionCount} active session{person.sessionCount===1?"":"s"}</strong><p>Role: {person.role}. No token, password, IP address or private conversation content is shown.</p><div style={sessionBox}><strong>Access state: {String(person.accessState||"active").replaceAll("_"," ").toUpperCase()}</strong><p>Choose the level that matches the situation. Suspension can be restored. Permanent revocation cannot be restored through this normal control.</p><textarea style={field} rows={2} value={reason[`access-${person.targetKey}`]||""} onChange={e=>setReason(cur=>({...cur,[`access-${person.targetKey}`]:e.target.value}))} placeholder="Why are you changing this person’s access?"/><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{person.accessState==="suspended"?<button style={button} disabled={busy===`access-${person.targetKey}`} onClick={()=>changeAccess(person,"restore")}>Restore Access</button>:person.accessState==="permanently_revoked"?<strong>PERMANENTLY REVOKED · historical evidence preserved</strong>:<><button style={button} disabled={busy===`access-${person.targetKey}`} onClick={()=>changeAccess(person,"suspend")}>Suspend Access</button><button style={dangerButton} disabled={busy===`access-${person.targetKey}`} onClick={()=>changeAccess(person,"permanently_revoke")}>Permanently Revoke Access</button></>}</div></div>{person.sessions.map((session,index)=><div style={sessionBox} key={session.sessionKey}><strong>Session {index+1}</strong><p>Last active: {new Date(session.lastActiveAt).toLocaleString()}</p><textarea style={field} rows={2} value={reason[session.sessionKey]||""} onChange={e=>setReason(cur=>({...cur,[session.sessionKey]:e.target.value}))} placeholder="Why must this staff session be signed out?"/><button style={button} disabled={busy===session.sessionKey||(reason[session.sessionKey]||"").trim().length<10} onClick={()=>forceSignOut(person,session.sessionKey)}>{busy===session.sessionKey?"Signing out…":"Force Sign Out this session"}</button></div>)}</div>)}
     {notice?<div style={success}><strong>{notice}</strong></div>:null}
   </section>;
 }
@@ -64,4 +73,5 @@ const item={padding:16,border:"1px solid rgba(49,91,70,.12)",borderRadius:16,mar
 const sessionBox={padding:14,borderRadius:14,background:"#f7faf7",marginTop:10};
 const field={width:"100%",boxSizing:"border-box",padding:10,borderRadius:10,border:"1px solid rgba(49,91,70,.25)",margin:"8px 0"};
 const button={padding:"10px 14px",borderRadius:10,border:"1px solid #8a4d4d",background:"#fff",fontWeight:800,cursor:"pointer"};
+const dangerButton={...button,background:"#7b2f2f",color:"#fff"};
 const success={padding:14,borderRadius:14,background:"#edf7ef",marginTop:12};
