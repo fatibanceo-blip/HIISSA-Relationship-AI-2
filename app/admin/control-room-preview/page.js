@@ -13,6 +13,7 @@ import CalmerStartMode from "../../../components/people-experience/CalmerStartMo
 import WorkdayClose from "../../../components/people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../../../components/people-experience/PrivateAppreciation.js";
 import FounderStaffSessionDeviceControl from "./FounderStaffSessionDeviceControl.js";
+import FounderEmployeeRegisterAttendancePreview from "./FounderEmployeeRegisterAttendancePreview.js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -5683,6 +5684,7 @@ function FounderAccessCentre({ authenticated }) {
           ["Departments & workspaces", "staff-departments"],
           ["Private Appreciation", "staff-private-appreciation"],
           ["Staff Directory", "staff-directory"],
+          ["Employee Register & Attendance", "staff-employee-register-attendance"],
           ["Access & Security", "staff-access-security"],
         ]}
       />
@@ -5805,6 +5807,8 @@ function FounderAccessCentre({ authenticated }) {
           <span>ACCESS AUDIT REQUIRED</span>
         </div>
       </div>
+
+      <FounderEmployeeRegisterAttendancePreview />
 
       <div id="staff-access-security">
         <FounderStaffSessionDeviceControl authenticated={authenticated} />

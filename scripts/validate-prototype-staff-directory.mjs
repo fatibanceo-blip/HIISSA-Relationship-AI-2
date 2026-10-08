@@ -39,4 +39,17 @@ assert.ok(!access.includes('sample-customer-support') && !access.includes('Sampl
 assert.ok(registry.includes('id: "hiissa.founder.staff-prototype-directory"'));
 assert.ok(registry.includes('"prototype-staff-source-divergence"'));
 assert.ok(!["fetch(", "localStorage", "sessionStorage"].some((snippet)=>access.includes(snippet)), "Staff practice must remain local fictional simulation");
+const employeePreview=read("app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js");
+const founderPreviewPage=read("app/admin/control-room-preview/page.js");
+assert.ok(employeePreview.includes('from "../../../lib/hiissa-prototype-staff-directory.js"'));
+assert.ok(employeePreview.includes("HIISSA_PROTOTYPE_STAFF.length"));
+assert.ok(employeePreview.includes("Attendance not connected"));
+assert.ok(employeePreview.includes("Not recorded"));
+assert.ok(employeePreview.includes("Prototype ID"));
+assert.ok(employeePreview.includes("NO REAL RECORDS"));
+assert.ok(founderPreviewPage.includes('<FounderEmployeeRegisterAttendancePreview />'));
+assert.ok(founderPreviewPage.includes('["Employee Register & Attendance", "staff-employee-register-attendance"]'));
+assert.ok(registry.includes('id: "hiissa.founder.employee-register-attendance-preview"'));
+assert.ok(!["fetch(", "localStorage", "sessionStorage", "supabase.", "window.", "document.cookie"].some(snippet=>employeePreview.includes(snippet)),"Employee Register design preview must make no network or persistent/real staff changes");
+console.log("Employee Register & Attendance Staging design preview gate: PASS — shared fiction-only roster; read-only UI; no actual attendance, staff account, security or persistence effects");
 console.log("HIISSA Prototype Staff Directory gate: PASS — 10 stable fictional identities, shared screens, guarded Control Room contract; no real access effects");
