@@ -1,12 +1,7 @@
-"use client";
-import Link from "next/link";
-import FounderStaffSessionDeviceControl from "../control-room-preview/FounderStaffSessionDeviceControl.js";
-
+import { notFound } from "next/navigation";
+import AuthenticatedStaffSessionDeviceControl from "./AuthenticatedStaffSessionDeviceControl.js";
+export const dynamic = "force-dynamic";
 export default function StaffSessionDeviceControlPage(){
-  return <main style={{minHeight:"100vh",padding:"24px",background:"linear-gradient(145deg,#edf4ee,#fffaf0)"}}>
-    <div style={{maxWidth:1100,margin:"0 auto"}}>
-      <Link href="/admin/control-room" style={{display:"inline-block",marginBottom:12,color:"#245b48",fontWeight:800}}>← Back to Founder Control Room</Link>
-      <FounderStaffSessionDeviceControl authenticated />
-    </div>
-  </main>;
+  if(process.env.VERCEL_ENV==="production") notFound();
+  return <AuthenticatedStaffSessionDeviceControl />;
 }
