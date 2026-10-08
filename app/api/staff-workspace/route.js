@@ -145,6 +145,24 @@ async function verifyActor(request, actionId = "view_assigned_work") {
     };
   }
 
+  const { data: accessRestriction, error: restrictionError } = await clients.adminClient
+    .from("admin_access_restrictions")
+    .select("state")
+    .eq("user_id", user.id)
+    .eq("environment", "staging")
+    .is("restored_at", null)
+    .maybeSingle();
+
+  if (restrictionError) {
+    return { ok: false, status: 503, reason: "STAFF_ACCESS_STATE_UNAVAILABLE" };
+  }
+  if (accessRestriction?.state === "suspended") {
+    return { ok: false, status: 403, reason: "STAFF_ACCESS_SUSPENDED" };
+  }
+  if (accessRestriction?.state === "permanently_revoked") {
+    return { ok: false, status: 403, reason: "STAFF_ACCESS_PERMANENTLY_REVOKED" };
+  }
+
   const { data: assignment, error: assignmentError } = await clients.adminClient
     .from("admin_role_assignments")
     .select("role_id")
