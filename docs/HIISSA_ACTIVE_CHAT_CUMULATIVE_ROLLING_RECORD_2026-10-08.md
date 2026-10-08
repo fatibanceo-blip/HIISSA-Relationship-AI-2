@@ -557,3 +557,38 @@ Earlier assistants made Founder hunt for the link; actual old deployed URL remai
 **NON-EFFECT:** No app code/DB/production change as of this checkpoint. Planned work does not change protected onboarding UI, names of ten prototype identities, Admin/Supabase security, attendance policy, Staff Access, identity/account core or Production.
 
 **NEXT:** Implement bounded UI and tests; verify Vercel build and canonical Staging alias before declaring deployed; require Founder practical acceptance for every department, search, View, Reports/CSV, responsive/mobile behaviour; continue further workflow batches only when evidence and separate permissions allow.
+
+---
+
+## SUCCESSOR CHAT S05 — 8 October 2026 — Founder-approved Employee Register test-roster correction implemented and Staging build tests PASS (deployment initially BUILDING)
+
+**WHAT:** Implemented Founder's S04 correction in existing isolated Employee Register & Attendance: the immutable approved ten-person shared prototype team now opens as the DEFAULT test employee source; real records remain a separate selectable “Verified Staging records (real employees)” source. The prototype source is labelled test-only/not real hires, retains identical IDs/names/roles/departments across existing experiences, and displays “Prototype Employees” count 10. When all departments is selected, the roster includes all ten prototypes; when an individual department is selected, it narrows to that department. Live register search, selected-row detail (unchanged), filtered Department Overview bars/counts, and filtered Reports/CSV now consume the same `visible` matching list. No prototype person was inserted into actual employee or attendance tables.
+
+**WHY:** Founder expressly objected to opening the Employee Register in an empty real-data source and then being told “0 staff” was expected even when “All departments” was selected. While real Staging rows genuinely remain zero, the agreed Founder test journey must use the already-existing shared prototype team so the Founder can test familiar sample people, seven department behaviours and subsequent isolated features.
+
+**HOW:** Atomic Git commit `14d56f3a6108a506bdb035cad47eecb62c0527cb` on established Staging branch `feature/founder-control-room-staging` changed exactly three files:
+1. `app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js`: source initial state `demo`; clear prototype vs real labels; filtered count/department bar behaviour and CSV test filename; same untouched four-tab architecture.
+2. New `lib/hiissa-employee-register-prototype-view.js`: PURE read-only filter and per-department count helpers; no persistence, roles or attendance.
+3. `scripts/validate-employee-register-readonly.mjs`: additional automated assertions that prototype source is default, both helpers are wired, “All departments” returns 10, name searches find Sarah and John case-insensitively, all seven individually approved department membership/counts match the canonical roster, charts follow filters and wrong department/name returns none. Existing protected onboarding source hash check and API GET-only/no-write checks preserved. Canonical `lib/hiissa-prototype-staff-directory.js` WAS NOT MODIFIED.
+
+**PROCESS:** Read Founder exact correction and last screenshots → identify root UX cause (default source="staging" not prototype; department filter scoped to selected source) → save pre-code S04 checkpoint `5df770046e299f1b4e55a34c1820891d7bb07e61` → prepare isolated three-file update → two unsuccessful *tool-call assembly attempts* (one invalid repository key on Git tool tree/commit; another repeated-string patch expectation; neither modified the branch) → successfully construct new Git tree/commit and atomically move original branch with expected-SHA guard → explicitly create Vercel deployment on SAME project target `staging`, with exact Git code SHA → inspect build events and status. Failures did not impact Production or original READY Staging alias.
+
+**WHERE:** Source repo `fatibanceo-blip/HIISSA-Relationship-AI-2`; existing branch `feature/founder-control-room-staging`. Vercel existing project `prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0` named hiissa-relationship-ai-2, Staging deployment ID `dpl_EGuuwo6QcbgVrMQcLzmuuLMbDSUv`, canonical alias `https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app`. Existing real Staging Supabase project unchanged; original onboarding `app/admin/control-room-preview/page.js` unchanged.
+
+**WHO:** Founder approved behaviour/corrected assistant's previous explanation. Assistant implemented Staging-only UI/testing logic, created exact-SHA deployment and reviewed actual Vercel build logs. Founder practical acceptance remains a separate stage.
+
+**EVIDENCE:** Git code commit SHA `14d56f3a6108a506bdb035cad47eecb62c0527cb` and code diff; Vercel `dpl_EGuuwo6QcbgVrMQcLzmuuLMbDSUv` build events explicitly report:
+- `Employee Register & Attendance Staging design preview gate: PASS`
+- `HIISSA Prototype Staff Directory gate: PASS`
+- `Prototype filter gate: PASS — All departments=10, Sarah/John, seven department filters, filtered chart counts`
+- `Employee Register Staging live-read gate: PASS`
+- `Founder Control Room shell contract: PASS`
+The build also reports Node ESM typeless-package warning from existing canonical directory file; nonfatal and NOT an authorization to edit unrelated package settings.
+
+**STATUS:** FOUNDER-APPROVED IMPLEMENTATION COMMITTED; AUTOMATED PROTOTYPE/READ-ONLY/CONTROL ROOM CHECKS PASS from Vercel build logs; Vercel exact-SHA STAGING deployment `dpl_EGuuwo6QcbgVrMQcLzmuuLMbDSUv` was BUILDING when initially polled. A READY result and alias assignment, all subsequent automated build stages, Founder phone tests, and actual onboarding/attendance functions are NOT YET VERIFIED as of this checkpoint. Do not claim READY until later independent provider proof.
+
+**FAILURES & CORRECTIONS:** Operational misunderstanding: separate real-empty records source was wrongly made the first practical test view; fixed default source and filter-visible counts while preserving real source truthful 0. Two internal failed staging-code assembly tool invocations due argument/patch construction were corrected; they never moved Git branch. No app compile failure observed at this checkpoint. Do not erase prior historical CSS compile failures from 8 October previous records.
+
+**NON-EFFECT:** Protected onboarding design/source `app/admin/control-room-preview/page.js`, original shared prototype identities, other staff/admin interfaces, Supabase HR tables, genuine applications/employee IDs/attendance events, Founder Admin Auth, Production, deployment activation, unrelated experiences and protected Documents 11–13 unchanged. Demo/test employees are NEVER silently promoted into hired status or employee accounts.
+
+**NEXT:** Confirm deployment READY and existing Staging alias points to same deployment and SHA. Review final build logs for no compile errors and scripts PASS. Then ask Founder to reopen canonical Staging link, expect “Prototype Employees 10” with All departments selected by default, Sarah searchable and each department filtered; request Founder screenshot and test outcomes before marking PRACTICAL PASS. Separately document remaining auth/API/mobile CSV and future real onboarding→verified engagement→attendance readiness; protect Phase approval boundaries and roll this cumulative checkpoint into next Doc12-compliant 13-DOCX Controlled Close.
