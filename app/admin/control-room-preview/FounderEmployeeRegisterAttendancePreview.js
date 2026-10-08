@@ -3,6 +3,7 @@
 import {useCallback,useEffect,useMemo,useState} from "react";
 import {createClient} from "@supabase/supabase-js";
 import {HIISSA_PROTOTYPE_STAFF} from "../../../lib/hiissa-prototype-staff-directory.js";
+import {filterHiissaEmployeeRegister,summarizeHiissaEmployeeDepartments} from "../../../lib/hiissa-employee-register-prototype-view.js";
 import styles from "./FounderEmployeeRegisterAttendancePreview.module.css";
 
 const apiClient=(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
@@ -27,7 +28,7 @@ function csvFor(rows) {
 
 export default function FounderEmployeeRegisterAttendancePreview() {
   const [tab,setTab]=useState("register");
-  const [source,setSource]=useState("staging");
+  const [source,setSource]=useState("demo");
   const [remote,setRemote]=useState(null);
   const [state,setState]=useState("loading");
   const [error,setError]=useState("");
@@ -62,13 +63,8 @@ export default function FounderEmployeeRegisterAttendancePreview() {
   const rows=source==="demo"?demo:(remote?.employees||[]);
   const attendance=remote?.attendanceEvents||[];
   const departments=useMemo(()=>[...new Set(rows.map(p=>p.department).filter(Boolean))].sort(),[rows]);
-  const visible=useMemo(()=>rows.filter(p=>{
-    if(department!=="all" && p.department!==department) return false;
-    if(type!=="all" && p.engagement_type!==type) return false;
-    if(status!=="all" && p.employment_state!==status) return false;
-    return (p.display_name+" "+p.role_label+" "+p.department+" "+p.employee_id).toLowerCase().includes(search.trim().toLowerCase());
-  }),[rows,search,department,type,status]);
-  const breakdown=useMemo(()=>departments.map(name=>({name,count:rows.filter(p=>p.department===name).length})),[departments,rows]);
+  const visible=useMemo(()=>filterHiissaEmployeeRegister(rows,{search,department,type,status}),[rows,search,department,type,status]);
+  const breakdown=useMemo(()=>summarizeHiissaEmployeeDepartments(visible),[visible]);
   const detail=visible.find(p=>p.employee_id===selected);
   const report=csvFor(visible);
   function exportReport(){
@@ -76,7 +72,7 @@ export default function FounderEmployeeRegisterAttendancePreview() {
     const blob=new Blob([report],{type:"text/csv;charset=utf-8"});
     const href=URL.createObjectURL(blob);
     const a=document.createElement("a");
-    a.href=href;a.download=source==="demo"?"hiissa-FICTIONAL-demo-directory.csv":"hiissa-staging-employee-register.csv";
+    a.href=href;a.download=source==="demo"?"hiissa-FICTIONAL-prototype-test-employees.csv":"hiissa-staging-employee-register.csv";
     document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(href);
     setDownloadMessage("Report exported from the selected "+(source==="demo"?"fictional":"verified Staging")+" data source.");
   }
@@ -91,16 +87,16 @@ export default function FounderEmployeeRegisterAttendancePreview() {
     </header>
     <div className={styles.modeBox}>
       <label><span>Data source</span><select value={source} onChange={e=>{setSource(e.target.value);setDepartment("all");setType("all");setStatus("all");setSelected("");setSearch("");}}>
-        <option value="staging">Verified Staging records</option><option value="demo">Fictional demonstration team</option>
+        <option value="demo">Prototype employees (10) — Fictional demonstration team</option><option value="staging">Verified Staging records (real employees)</option>
       </select></label>
-      <p>{source==="demo"?"FICTIONAL STAFF ONLY · NO REAL RECORDS. This view cannot show employment or attendance facts.":
+      <p>{source==="demo"?"10 PROTOTYPE EMPLOYEES FOR STAGING TESTING · NO REAL RECORDS. All departments includes all ten test profiles; selecting one department narrows the same test roster. These are not actual hires or attendance facts.":
         "Real Staging source, Founder-authorised read only. No employee or attendance actions are activated by this view."}</p>
-      <button type="button" className={styles.ghostButton} onClick={reload} disabled={state==="loading"}>↻ Refresh Staging data</button>
+      {source==="staging"?<button type="button" className={styles.ghostButton} onClick={reload} disabled={state==="loading"}>↻ Refresh Staging data</button>:null}
     </div>
     {state==="error"&&source==="staging"?<p role="alert" className={styles.error}>{error}</p>:null}
     {state==="loading"&&source==="staging"?<p role="status" className={styles.notice}>Checking verified Staging data…</p>:null}
     <div className={styles.metricGrid}>
-      <article className={styles.metric}><span>♧</span><div>Total Staff<strong>{source==="demo"?demo.length:state==="ready"?remote.realEmployeeCount:"—"}</strong><small>{source==="demo"?"Ten fictional identities": "Verified employee records only"}</small></div></article>
+      <article className={styles.metric}><span>♧</span><div>{source==="demo"?"Prototype Employees":"Total Staff"}<strong>{source==="demo"?demo.length:state==="ready"?remote.realEmployeeCount:"—"}</strong><small>{source==="demo"?"Ten test employees · not real hires":"Verified employee records only"}</small></div></article>
       <article className={styles.metric}><span>✓</span><div>Present Today<strong>—</strong><small>Awaiting certified attendance rules</small></div></article>
       <article className={styles.metric}><span>◷</span><div>On Leave<strong>—</strong><small>No verified leave classification</small></div></article>
       <article className={styles.metric}><span>▣</span><div>Not Checked In<strong>—</strong><small>Cannot infer from sign-in or roster</small></div></article>
@@ -124,6 +120,7 @@ export default function FounderEmployeeRegisterAttendancePreview() {
         <label><span>Employment state</span><select value={status} onChange={e=>setStatus(e.target.value)}><option value="all">All states</option>{[...new Set(rows.map(p=>p.employment_state))].map(x=><option key={x} value={x}>{x}</option>)}</select></label>
       </div>
       {tab==="register"?<>
+        {source==="demo"?<p className={styles.notice}>{visible.length} of {rows.length} prototype employees match the current search and department filters.</p>:null}
         {source==="staging"&&state==="ready"&&remote.realEmployeeCount===0?<p className={styles.notice}>No real employee records exist in Staging yet. Use the existing approved onboarding journey; staff records must wait for appropriate approval and confirmation.</p>:null}
         <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Name</th><th>Reference</th><th>Role</th><th>Department</th><th>Engagement</th><th>Employment</th><th>Start date</th><th>Action</th></tr></thead>
           <tbody>{visible.map(person=><tr key={person.employee_id}>
@@ -134,7 +131,7 @@ export default function FounderEmployeeRegisterAttendancePreview() {
             <td><button type="button" className={styles.inlineButton} aria-expanded={selected===person.employee_id}
               onClick={()=>setSelected(old=>old===person.employee_id?"":person.employee_id)}>View</button></td>
           </tr>)}</tbody></table></div>
-        {!visible.length?<p className={styles.empty}>No matching {source==="demo"?"fictional profiles":"Staging employee records"}. Try clearing your filters.</p>:null}
+        {!visible.length && (source==="demo"||state==="ready")?<p className={styles.empty}>No matching {source==="demo"?"prototype employees":"Staging employee records"}. Try clearing your filters.</p>:null}
         {detail?<div className={styles.detail} aria-live="polite"><strong>{detail.display_name}</strong><p>{detail.department} · {detail.role_label}</p>
           <p>{detail.isFictional?"Prototype ID — not an issued employee ID":"Internal record UUID — not a public staff number"}: {detail.employee_id}</p>
           <p>Attendance is never inferred from employment status. Account access is managed separately.</p>
@@ -149,11 +146,12 @@ export default function FounderEmployeeRegisterAttendancePreview() {
           <p className={styles.empty}>No verified attendance events to show.</p>}
       </div>:null}
       {tab==="department"?<div className={styles.contentBlock}>
-        <p>{source==="demo"?"The bars below count fictional preview people; they are not real staffing levels.":"Department counts are calculated from verified Staging employee records."}</p>
+        <p>{source==="demo"?"The bars below count the matching prototype employees after filters; they are not real staffing levels.":"Department counts follow the selected filters on verified Staging employee records."}</p>
+        <p>{visible.length} matching {source==="demo"?"prototype employees":"verified employees"} across {breakdown.length} {breakdown.length===1?"department":"departments"}.</p>
         {breakdown.length?<div className={styles.departmentList}>{breakdown.map(item=><div key={item.name}>
           <div className={styles.barHeading}><strong>{item.name}</strong><span>{item.count}</span></div>
-          <div className={styles.barTrack}><div style={{width:(rows.length?item.count/rows.length*100:0)+"%"}}/></div>
-        </div>)}</div>:<p className={styles.empty}>No departments have confirmed Staging employees yet.</p>}
+          <div className={styles.barTrack}><div style={{width:(visible.length?item.count/visible.length*100:0)+"%"}}/></div>
+        </div>)}</div>:<p className={styles.empty}>No departments match these filters.</p>}
       </div>:null}
       {tab==="reports"?<div className={styles.contentBlock}>
         <h5>Department and employee report</h5>
