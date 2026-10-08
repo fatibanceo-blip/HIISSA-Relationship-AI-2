@@ -644,3 +644,31 @@ The build also reports Node ESM typeless-package warning from existing canonical
 **NON-EFFECT:** No new app code, schema edits, real prototype-as-hire insert, attendance event, user account or access grant, Production change, original onboarding screen edit, or protected Docs 11–13 amendment. This record is a Git documentation-only checkpoint; no claim these images have been embedded as media in Word documents.
 
 **NEXT:** Founder clears Sarah search while leaving All departments selected and checks that 10 employees appear and Department Overview shows 7 departments, then selects “Customer Support” to see Sarah Mensah + Mary Okafor only, and other departments individually as practical check. Check individual row View, report CSV and mobile/back behaviour with screenshots. Preserve each outcome separately; then continue Founder-approved integration of original onboarding with actual legally confirmed employee identity and separately recorded attendance behind existing design, permissions and Control Room monitoring; do not fabricate real staff or attendance for prototype data.
+
+---
+
+## SUCCESSOR CHAT S08 — 9 October 2026, around 00:40 Europe/London handset clock — Founder corrects interpretation of Employee Register / Department Overview; NO UI CHANGE AUTHORISED
+
+**FOUNDER INITIAL OBSERVATION (verbatim):** “He said it is showing true, but it has to show the names of the staff, right? Which it is, which is not showing. So why is it not bringing up the names of the staff?” An attached mobile screenshot `1000375755.jpg` at displayed phone time 00:40 showed Department Overview selected, search field empty, Department=Customer Support, Engagement=All engagement types and Employment state=All states; results “2 matching prototype employees across 1 department” and a count/bar labelled Customer Support 2, without individual employee names.
+
+**FOUNDER SUBSEQUENT CLARIFICATION (verbatim):** “Sorry, I didn't do it right earlier. I did it now. Earlier on I didn't choose the register, so now I did it. But unfortunately I can't send picture.”
+
+**WHAT:** Founder clarified the previous complaint originated from being on the **Department Overview** tab (intended to display department totals) rather than the separate **Employee Register** tab (intended to display employee names and per-row View details). Founder says she has now selected Employee Register but cannot attach a further screenshot. Assistant accepted correction immediately, withdrew speculative redesign, explained tab purposes and did NOT declare Employee Register names independently confirmed or missing.
+
+**WHY:** Distinguish a mistaken navigation expectation from a real UI defect; avoid changing Founder-approved designs and introducing accidental regressions. A correct department count without names in an overview bar is not itself proof of a defect when Employee Register offers the names. Practical test should be based on correct tab and source.
+
+**HOW / PROCESS:** Compared screenshot tab label and visible “Customer Support 2” to existing read-only code architecture where Department Overview groups counts/bars and Employee Register contains a table of person names. Before the Founder clarification, assistant considered adding duplicate member-name lists to Department Overview; Founder intervened before any implementation or code commit. That proposal is superseded and **NOT APPROVED FOR ACTION** in light of correction. The prospective S08 pre-implementation checkpoint was NOT written to Git (checked current ledger) and must not be misrepresented as authorised scope. Preserve both the initial and corrective Founder words chronologically in this single truthful checkpoint.
+
+**WHERE:** Conversation screenshot `1000375755.jpg` (original image held in chat attachment, NOT claimed saved as binary to repository), protected UI `app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js`, Staging branch `feature/founder-control-room-staging`, canonical alias `https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app` and this cumulative repository evidence record.
+
+**WHO:** Founder supplied screenshot and immediately clarified user navigation; assistant interpreted the correction and documented non-change.
+
+**EVIDENCE:** Screenshot displays count “2”, Customer Support 2, Department Overview; code contains separate `tab==="department"` (bar chart/counts) and `tab==="register"` (employee table with `visible.map` names). Founder confirms she has now selected register but cannot send a screenshot. This verbal information is sufficient to continue the conversational test, though whether Sarah Mensah and Mary Okafor appeared is **NOT YET EXPLICITLY REPORTED**.
+
+**STATUS:** **DEPARTMENT FILTER COUNT PASS ON FOUNDER MOBILE: Customer Support 2** (consistent with stable prototype identities Sarah Mensah and Mary Okafor). Tab navigation correction by Founder acknowledged. **EMPLOYEE REGISTER NAMES DISPLAY AFTER SWITCH: NOT VERIFIED**, pending a simple verbal response. Not a confirmed name-render defect. Prior S07 Founder visual checks remain valid. No full phase or attendance PASS.
+
+**FAILURES & CORRECTIONS:** Assistant began to plan unnecessary department-view name rendering based on initial misunderstanding; founder supplied corrective explanation before any code action. Correction: do not modify design; check correct Employee Register tab instead. Missing ability to send an image is not a blocker; accept exact verbal observation.
+
+**NON-EFFECT:** NO app UI/CSS/logic code change or build/deployment, no Production modification, no new Supabase write, no prototype identity changes, no Staff Onboarding/Staff Access changes, and no change to protected Docs 11–13; solely append chronological documentation evidence to Git.
+
+**NEXT:** Ask Founder one direct question: When selecting Employee Register with Customer Support filter, are Sarah Mensah and Mary Okafor displayed? Record her verbal PASS or FAIL accurately without demanding screenshot. If PASS, proceed to other filter/details/Reports tests; if FAIL, inspect narrow actual issue using source and observations before any approved code modification.
