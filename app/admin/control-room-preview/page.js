@@ -12,6 +12,7 @@ import CalmerStartMoment from "../../../components/people-experience/CalmerStart
 import CalmerStartMode from "../../../components/people-experience/CalmerStartMode.js";
 import WorkdayClose from "../../../components/people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../../../components/people-experience/PrivateAppreciation.js";
+import FounderStaffSessionDeviceControl from "./FounderStaffSessionDeviceControl.js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -5682,6 +5683,7 @@ function FounderAccessCentre({ authenticated }) {
           ["Departments & workspaces", "staff-departments"],
           ["Private Appreciation", "staff-private-appreciation"],
           ["Staff Directory", "staff-directory"],
+          ["Access & Security", "staff-access-security"],
         ]}
       />
 
@@ -5802,6 +5804,10 @@ function FounderAccessCentre({ authenticated }) {
           <span>NO INVISIBLE IMPERSONATION</span>
           <span>ACCESS AUDIT REQUIRED</span>
         </div>
+      </div>
+
+      <div id="staff-access-security">
+        <FounderStaffSessionDeviceControl authenticated={authenticated} />
       </div>
     </section>
   );
@@ -9809,7 +9815,11 @@ function AdminSecurityAuditModule({ module, onOverview, onBack }) {
         </a>
       </section>
 
-      <StaffAccessControlPrototype />
+      <section className={styles.section} id="founder-staff-access-canonical-reference">
+        <div className={styles.sectionHeading}><div><div className={styles.kicker}>STAFF ACCESS CONTROL</div><h3>One canonical Founder control</h3></div><StatusPill label="CONNECTED" compact /></div>
+        <p className={styles.sectionCopy}>The earlier simulation has been superseded by the working Founder control in Staff & Workspaces → Access & Security. This Security & Audit area keeps the governance reference without creating a second access engine.</p>
+        <Link className={styles.sectionReturnLink} href="/admin/control-room?view=staff#staff-access-security">Open canonical Staff Access Control →</Link>
+      </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
