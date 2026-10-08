@@ -1574,6 +1574,12 @@ for (const required of [
   'founder_revoke_staff_session',
   'FOUNDER_SELF_REVOCATION_BLOCKED',
   'event_type:"founder_staff_session_revoked"',
+  '"founder_staff_access_suspended"',
+  '"founder_staff_access_restored"',
+  '"founder_staff_access_permanently_revoked"',
+  'founder_change_staff_access',
+  "historical_evidence_preserved:true",
+  "founder_lockout_protection:true",
   'outcome:"recorded"',
   'physical_device_identity_claimed:false',
   'production_effect:false',
@@ -1586,6 +1592,10 @@ for (const required of [
   "No active Staging staff identity is currently assigned",
   "HIISSA will not invent a staff account or session just to test this control.",
   "Force Sign Out this session",
+  "Suspend Access",
+  "Restore Access",
+  "Permanently Revoke Access",
+  "historical evidence preserved",
   "Production effect: none.",
 ]) requireText("Staff Session & Device Control component", staffSessionControlComponent, required);
 
