@@ -63,6 +63,7 @@ const founderEmergencyPausePath = path.join(
 const staffSessionControlPath = path.join(root,"app","api","admin","control-room","staff-session-device-control","route.js");
 const staffSessionControlComponentPath = path.join(root,"app","admin","control-room-preview","FounderStaffSessionDeviceControl.js");
 const staffSessionControlPagePath = path.join(root,"app","admin","staff-session-device-control","page.js");
+const staffSessionControlGatePath = path.join(root,"app","admin","staff-session-device-control","AuthenticatedStaffSessionDeviceControl.js");
 const activityTimelinePath = path.join(
   root,
   "app",
@@ -187,6 +188,7 @@ if (!fs.existsSync(founderEmergencyPausePath)) errors.push("Protected Founder Em
 if (!fs.existsSync(staffSessionControlPath)) errors.push("Protected Staff Session & Device Control endpoint is missing.");
 if (!fs.existsSync(staffSessionControlComponentPath)) errors.push("Protected Staff Session & Device Control component is missing.");
 if (!fs.existsSync(staffSessionControlPagePath)) errors.push("Protected Staff Session & Device Control page is missing.");
+if (!fs.existsSync(staffSessionControlGatePath)) errors.push("Protected Staff Session & Device Control Founder gate is missing.");
 if (!fs.existsSync(peopleExperienceHealthPath)) errors.push("Protected People Experience health endpoint is missing.");
 if (!fs.existsSync(authSyncHealthPath)) errors.push("Protected Auth & Sync health endpoint is missing.");
 if (!fs.existsSync(aiProductHealthPath)) errors.push("Protected AI & Product health endpoint is missing.");
@@ -256,6 +258,7 @@ const founderEmergencyPause = fs.existsSync(founderEmergencyPausePath)
 const staffSessionControl = fs.existsSync(staffSessionControlPath) ? fs.readFileSync(staffSessionControlPath,"utf8") : "";
 const staffSessionControlComponent = fs.existsSync(staffSessionControlComponentPath) ? fs.readFileSync(staffSessionControlComponentPath,"utf8") : "";
 const staffSessionControlPage = fs.existsSync(staffSessionControlPagePath) ? fs.readFileSync(staffSessionControlPagePath,"utf8") : "";
+const staffSessionControlGate = fs.existsSync(staffSessionControlGatePath) ? fs.readFileSync(staffSessionControlGatePath,"utf8") : "";
 const activityTimeline = fs.existsSync(activityTimelinePath)
   ? fs.readFileSync(activityTimelinePath, "utf8")
   : "";
@@ -1587,10 +1590,19 @@ for (const required of [
 ]) requireText("Staff Session & Device Control component", staffSessionControlComponent, required);
 
 for (const required of [
+  'process.env.VERCEL_ENV==="production"',
+  "notFound()",
+  "AuthenticatedStaffSessionDeviceControl",
+]) requireText("Staff Session & Device Control page", staffSessionControlPage, required);
+
+for (const required of [
+  "supabase.auth.getSession()",
+  '"is_hiissa_admin"',
+  'window.location.replace("/admin/login")',
   "FounderStaffSessionDeviceControl",
   "← Back to Founder Control Room",
   'href="/admin/control-room"',
-]) requireText("Staff Session & Device Control page", staffSessionControlPage, required);
+]) requireText("Staff Session & Device Control Founder gate", staffSessionControlGate, required);
 
 for (const required of [
   'branch === "feature/founder-control-room-staging"',
