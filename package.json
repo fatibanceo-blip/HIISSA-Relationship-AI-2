@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "test:registry": "node scripts/validate-experience-registry.mjs",
-    "prebuild": "npm run test:prototype-staff && npm run test:registry && npm run test:protected-core && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run test:share-handoffs && npm run test:staff-workspace && npm run test:hibernated-staff-workspaces",
+    "prebuild": "npm run test:prototype-staff && npm run test:employee-readonly && npm run test:registry && npm run test:protected-core && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run test:share-handoffs && npm run test:staff-workspace && npm run test:hibernated-staff-workspaces",
     "build": "next build",
-    "verify:foundation": "npm run test:prototype-staff && npm run test:registry && npm run test:protected-core && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run test:share-handoffs && npm run test:staff-workspace && npm run test:hibernated-staff-workspaces && npm run build",
+    "verify:foundation": "npm run test:prototype-staff && npm run test:employee-readonly && npm run test:registry && npm run test:protected-core && npm run test:my-hiissa-routing && npm run test:account-journey && npm run test:free-navigation && npm run test:control-room-shell && npm run test:recommendation-flow && npm run test:referral-foundation && npm run test:share-handoffs && npm run test:staff-workspace && npm run test:hibernated-staff-workspaces && npm run build",
     "start": "next start",
     "test:my-hiissa-routing": "node scripts/validate-my-hiissa-routing.mjs",
     "test:account-journey": "node scripts/validate-account-journey.mjs",
@@ -19,7 +19,8 @@
     "test:share-handoffs": "node scripts/validate-share-handoffs.mjs",
     "test:staff-workspace": "node scripts/validate-staff-workspace.mjs",
     "test:hibernated-staff-workspaces": "node scripts/validate-hibernated-staff-workspaces.mjs",
-    "test:prototype-staff": "node scripts/validate-prototype-staff-directory.mjs"
+    "test:prototype-staff": "node scripts/validate-prototype-staff-directory.mjs",
+    "test:employee-readonly": "node scripts/validate-employee-register-readonly.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
