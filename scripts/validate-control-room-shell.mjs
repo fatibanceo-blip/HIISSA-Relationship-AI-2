@@ -1595,13 +1595,17 @@ for (const required of [
   "Suspend Access",
   "Restore Access",
   "Permanently Revoke Access",
+  "historical evidence preserved",
+  "Production effect: none.",
+]) requireText("Staff Session & Device Control component", staffSessionControlComponent, required);
+
+for (const required of [
   "Access & Security",
   "staff-access-security",
   "One canonical Founder control",
   "superseded by the working Founder control",
-  "historical evidence preserved",
-  "Production effect: none.",
-]) requireText("Staff Session & Device Control component", staffSessionControlComponent, required);
+  "FounderStaffSessionDeviceControl",
+]) requireText("Founder Control Room canonical staff access doorway", page, required);
 
 for (const required of [
   'process.env.VERCEL_ENV==="production"',
