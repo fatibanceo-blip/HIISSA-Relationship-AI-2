@@ -378,3 +378,59 @@ Earlier assistants made Founder hunt for the link; actual old deployed URL remai
 ## R13 — Founder confirmed continuation and asked if it is time to prepare 13 documents
 **Founder words:** “Okay, since you followed through the instruction and then you were saving it, that is fine. So what are we doing now? Carry on. Um, I don't know. Is it yet time for you to prepare the documents? I don't have to remind you the 13 documents. You know when it is time, right?”
 **WHAT/WHY:** User requested timely proactive Controlled Close; many substantial checkpoints accrued. **HOW/PROCESS:** Doc13 early stop invoked: freeze new product changes, collect this rolling ledger, make append-only detailed revisions to original living Docs 01–10; preserve 11–13 exact binaries, render, inspect, validate Word/ZIP/media and deliver one 13-DOCX ZIP with next action. **WHERE:** Existing 13-source package and new downloadable version; existing GitHub Staging branch. **WHO:** Assistant performs controlled documentation work; Founder gets final package. **EVIDENCE:** Doc 13 explicit trigger and current user instruction. **STATUS:** CONTROLLED CLOSE INITIATED; completion NOT claimed until independent file verification. **FAILURES:** Prior missed early rolling accumulator; correction underway. **NON-EFFECT:** No Production or app modification. **NEXT:** Verify one consistent package before handover.
+
+---
+
+## R14 — First 13-document ZIP delivered; final QA checkpoint initially omitted from Word package
+**Founder/context:** After Founder explicitly required mandatory Document 12 for the new entries, the assistant delivered `HIISSA_CONTROLLED_CLOSE_2026-10-08_SUCCESSOR_UPDATE_13_DOCUMENTS.zip`.
+
+**WHAT:** Prepared ten additive DOCX updates (Documents 01–10) and preserved Documents 11–13. Ran structural preservation, Word ZIP CRC, media, 13-file count and render/layout validations. Recorded completed *final ZIP* QA results to a separate GitHub checkpoint `docs/HIISSA_ROLLING_CHECKPOINT_2026-10-08_FINAL_13_DOC_CONTROLLED_CLOSE_QA_AND_HANDOVER.md`, commit `f220b913069ed453d8bec97cf5e2eaa4b4e781e9`, AFTER generating the Word files.
+**WHY:** Founder mandated one robust handover package and evidence-based certification, not overconfident declarations.
+**HOW:** The earlier package's build script `/mnt/data/_hiissa_close_20261008/build.py`, validation scripts `verify_structure.py`, `renderqa.py`, `package_qa.py` and reports in `/mnt/data/_hiissa_close_20261008/` were used. Earlier results: 13 DOCX; total 2,103 PDF-rendered pages; geometry scan 0 out-of-page words; source prior Word document body children preserved; original embedded media byte-identical; Docs 11–13 exactly binary-identical; ZIP CRC PASS; 13 unique DOCX; prior ZIP SHA-256 `de61ea275bd32bc1e708a8ec8bdbfd0a7b59dcbd9db7b10844de6f7ed81bda18`, size 40,047,306 bytes. THESE VALUES APPLY TO PREVIOUS ZIP, NOT AUTOMATICALLY TO THE CORRECTED ZIP.
+**PROCESS:** Original DOCX parse → append role-specific entries → preserve protected originals → compare XML/media → render all 13 → geometry and visual samples → create/CRC ZIP → save GitHub final QA checkpoint. This exposed a sequencing problem: final QA metadata was committed only after the Word handover had already been sealed.
+**WHERE:** Previous ZIP as above; Staging GitHub branch `feature/founder-control-room-staging`; final Git checkpoint under `docs/`. Original/current app and deployment SHA unchanged.
+**WHO:** Founder required mandatory documentation; assistant ran file creation, evidence QA and delivered ZIP.
+**EVIDENCE:** Earlier automation reports and Git checkpoint `f220b913...`; the package itself and prior rendered PDF evidence.
+**STATUS:** Prior ZIP STRUCTURAL/PACKAGING PASS, NEW WORK LEGDER materially documented, but final QA closure evidence was NOT FULLY INSIDE WORD PACKAGE.
+**FAILURES & CORRECTIONS:** Must explicitly restore omitted final QA results within living Word Documents 04/07/09/10; must re-audit each new record's Document 12 fields; cannot claim universal historical per-page visual or feature acceptance.
+**NON-EFFECT:** No app, database, Production or protected Docs 11–13 changes.
+**NEXT:** Correct Word package additively, verify the corrected ZIP and report its new artifact SHA separately to avoid circular self-hash.
+
+## R15 — Founder narrows compliance question to ONLY entries authored in this chat
+**FOUNDER ORIGINAL WORDING:** “Not the ones you inherited, because you didn't do that. But focus on what you did today. Are they in line with my mandatory document standard? As simple as that. Remove it from there!”
+**WHAT:** Founder expressly excluded inherited historical documentation from a question about whether THIS successor's additions satisfy Document 12.
+**WHY:** Accountability should track the assistant's actual work, not make the Founder responsible for older materials.
+**HOW/PROCESS:** Review only material written during the successor chat, while preserving historical documents without making unproved claims of their historical content completeness. Answer separately about newly authored event-field coverage and final QA omission.
+**WHERE:** Documents 01–10 new successor sections and prior DOCX package.
+**WHO:** Founder corrected scope; assistant accepted it.
+**EVIDENCE:** Verbatim Founder request and existing previous package entry audit showing 11-field R00–R10 entries in Documents 04/07/09/10.
+**STATUS:** SCOPED COMPLIANCE ASSESSMENT; NEW ENTRIES FIELD COVERAGE RECHECK REQUIRED; final QA inclusion still pending.
+**FAILURES & CORRECTIONS:** Earlier broad caveats about inherited docs distracted from user's narrow question; rectify focused audit with evidence.
+**NON-EFFECT:** No historical records altered or erased.
+**NEXT:** Restore final QA and verify all new entries, including these later corrections.
+
+## R16 — Founder asks what was excluded; identifies QA omission specifically
+**FOUNDER ORIGINAL WORDING:** “What's final packaging omission? I don't understand that bit. Did you exclude anything from the updates you made today?”
+**WHAT:** Assistant explained that the final ZIP verification results were not incorporated inside the Word files; feature decisions, investigations, Staging link reconciliation, screenshots and Production safeguards were included. No other omission is independently established.
+**WHY:** Founder must know exactly what was missed, not receive ambiguous assurances.
+**HOW/PROCESS:** Compare earlier package contents to Git post-packaging QA record; identify missing results and record corrective scope.
+**WHERE:** DOCX documents 04/07/09/10, final Git QA checkpoint `f220b913...`.
+**WHO:** Founder asked; assistant investigated and acknowledged omission.
+**EVIDENCE:** Word appendices R00–R10 and Git QA record produced after packaging.
+**STATUS:** CONFIRMED MISSING *FINAL QA EVIDENCE INSIDE WORD PACKAGE*; no basis to claim all possible omissions ruled out without full targeted audit.
+**FAILURES & CORRECTIONS:** Last QA report was outside the Word package. It must be integrated into updated Docs and a new final QA must be run.
+**NON-EFFECT:** No lost Founder-approved UI change established; protected Docs 11–13 untouched.
+**NEXT:** Amend Word records and redo checks.
+
+## R17 — Founder mandates correction and a single fully detailed replacement controlled package
+**FOUNDER ORIGINAL WORDING:** “If there are omissions that are included in it, you have been given the instructions. I don't want any issues. You have to follow it to the letter. So if there is anything you have omitted, include it now and then prepare a complete certing document for me in line with my mandatory document standard.”
+**WHAT:** Founder required complete correction of any identified missing material and one replacement 13-document Controlled Close package respecting Document 12; not just a verbal correction.
+**WHY:** Avoid delivering an incomplete handover that forces future chat recovery or another Founder reminder.
+**HOW/PROCESS:** Freeze app work; reread Docs 12/13 and source 13-doc package; retrieve prior ZIP and Git QA ledger; create this additive R14–R17 extension, then amend role-specific living DOCX 01–10 with QA, corrections and handover status; preserve protected 11–13; render/verify changed pages and ZIP; keep honest limits.
+**WHERE:** This cumulative GitHub master and corrected single ZIP under conversation artifacts; Vercel Staging alias remains existing, Production untouched.
+**WHO:** Founder gave mandatory direction; assistant responsible for verification and delivery.
+**EVIDENCE:** Founder exact words in this conversation and existing durable Git QA sources; new corrected ZIP verification remains to be completed.
+**STATUS:** CORRECTION AUTHORISED, DOCUMENTARY WORK IN PROGRESS.
+**FAILURES & CORRECTIONS:** First package omitted final QA closure record; this appendix restores material before Word rebuild. No fabricated verification status.
+**NON-EFFECT:** No code/UI changes, no deployment, no environment/permissions/Supabase change, no Production action, no amended Docs 11–13.
+**NEXT:** Complete document-specific appendices, structural and media comparisons, targeted full new-page rendering/visual inspection and package checks; issue one corrected ZIP, not two competing finals. Any exact corrected ZIP SHA must be reported after creation, never embedded within its own bytes.
