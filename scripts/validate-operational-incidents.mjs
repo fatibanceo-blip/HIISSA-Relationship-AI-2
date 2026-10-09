@@ -20,7 +20,7 @@ assert.ok(!route.includes("export async function POST"));
 assert.ok(route.includes("FOUNDER_GATE_REQUIRED") && route.includes("status:404"));
 const existingTimeline=readFileSync("app/api/admin/control-room/activity-timeline/route.js","utf8");
 assert.ok(existingTimeline.includes('hiissa_operational_incident_state_change'),"Operational history must appear in existing Founder timeline");
-assert.ok(existingTimeline.includes('HIISSA verified an operational recovery'),"Verified and attempted recoveries must not be confused");
+assert.ok(existingTimeline.includes('Operational recovery independently verified'),"Verified and attempted recoveries must not be confused");
 const valid={incidentKey:"check.voice.latency",featureId:"hiissa.voice.live",ownerModuleId:"failures-reliability",title:"Voice response unavailable",summary:"Technical voice service did not answer.",severity:"degraded",oversightLevel:2,recoveryClassification:"SAFE_WITH_LIMIT",maxSafeRetries:2};
 assert.equal(validateNewIncident(valid).ok,true);
 assert.equal(validateNewIncident({...valid,ownerModuleId:"new-module-11"}).ok,false);
@@ -32,5 +32,6 @@ assert.equal(validateIncidentTransition(current,"verified_resolved","verified-ch
 assert.equal(validateIncidentTransition({...current,state:"needs_attention"},"verified_resolved","verified-check-20261009").ok,false);
 assert.equal(validateIncidentTransition({...current,state:"investigating",recovery_classification:"NEVER_AUTOMATE"},"recovery_attempted").ok,false);
 assert.equal(validateIncidentTransition({...current,state:"investigating",retry_attempts:2},"recovery_attempted").ok,false);
+assert.ok(!existingTimeline.includes('return "HIISSA detected an operational problem"'),"Incident detection must not be misreported as automatic handling");
 console.log("Shared incident foundation static and transition validator: PASS");
 console.log("Founder approved host SHA preserved; no public write route; Staging-only checks present.");
