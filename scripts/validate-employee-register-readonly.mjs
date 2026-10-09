@@ -70,3 +70,22 @@ assert.equal(summarizeHiissaEmployeeDepartments(filterHiissaEmployeeRegister(pro
 assert.equal(filterHiissaEmployeeRegister(prototype,{search:"Unlisted Person"}).length,0);
 console.log("Prototype filter gate: PASS — All departments=10, Sarah/John, seven department filters, filtered chart counts");
 console.log("Employee Register Staging live-read gate: PASS — Founder-only GET, honest source separation, protected onboarding blob and RLS migration contracts");
+
+/* Additive Founder canonical-incident screen protections, part of mandatory prebuild. */
+const incidentApi=read("app/api/admin/control-room/operational-incidents/route.js");
+assert.ok(preview.includes("<CanonicalOperationalIncidentReadOnly />"),"Shared incident feed must appear in existing Employee Register");
+assert.ok(preview.includes("Recorded operational incidents — Staging only"),"Truthful incident title");
+assert.ok(preview.includes("No recorded incidents in the shared Staging register. This is not proof"),"No false healthy empty source");
+assert.ok(preview.includes("Recorded incident source unavailable — this is not a healthy or empty result."),"Read errors fail closed");
+assert.ok(preview.includes("Global alert-badge delivery, scheduled checks and automatic recovery are not yet connected or certified."),"No falsely completed alerts");
+assert.ok(preview.includes('fetch("/api/admin/control-room/operational-incidents"'),"Reuse existing canonical incident GET");
+assert.ok(preview.includes('method:"GET",cache:"no-store",credentials:"same-origin"'),"Read-only, no-cache");
+assert.ok(preview.includes("!session?.access_token"),"No anonymous incident visibility");
+assert.ok(preview.includes('aria-live="polite"'),"Live accessible feedback");
+assert.ok(preview.includes("Refresh recorded incidents"),"User-controlled refresh");
+assert.ok(incidentApi.includes("export async function GET")&&!incidentApi.includes("export async function POST"),"Incident reader remains GET-only");
+assert.ok(incidentApi.includes("FOUNDER_GATE_REQUIRED")&&incidentApi.includes("UNAUTHENTICATED"),"Founder gate unchanged");
+assert.ok(incidentApi.includes("hiissa_operational_incidents"),"Canonical incident source unchanged");
+assert.ok(preview.includes("Operational source health — real Staging records only"),"Original source-health section remains");
+assert.ok(preview.includes("MONITORING · All three sources are readable"),"Original source-health display remains");
+console.log("Additive Founder canonical incident read display: STATIC PROTECTION PASS; live Founder acceptance pending.");

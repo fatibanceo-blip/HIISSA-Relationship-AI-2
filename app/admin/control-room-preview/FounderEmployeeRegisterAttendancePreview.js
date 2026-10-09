@@ -26,6 +26,73 @@ function csvFor(rows) {
   ])].map(row=>row.map(safeCsv).join(",")).join("\r\n");
 }
 
+
+// ADDITIVE, STAGING-ONLY, READ-ONLY: existing canonical incidents are the only source.
+// No polling, fault injection, personnel writes, auto recovery or second incident store.
+function CanonicalOperationalIncidentReadOnly() {
+  const [revision,setRevision]=useState(0);
+  const [feed,setFeed]=useState({loading:true,error:"",payload:null});
+  useEffect(()=>{
+    let active=true;
+    async function load(){
+      setFeed({loading:true,error:"",payload:null});
+      try{
+        if(!apiClient)throw new Error("UNAVAILABLE");
+        const {data:{session},error:authError}=await apiClient.auth.getSession();
+        if(authError||!session?.access_token)throw new Error("SIGN_IN_REQUIRED");
+        const response=await fetch("/api/admin/control-room/operational-incidents",{
+          method:"GET",cache:"no-store",credentials:"same-origin",
+          headers:{Authorization:"Bearer "+session.access_token}
+        });
+        const payload=await response.json().catch(()=>null);
+        if(!response.ok||payload?.status!=="MONITORING"||
+           !Array.isArray(payload.incidents)||!Number.isSafeInteger(payload.openIncidentCount))
+          throw new Error("INCIDENT_SOURCE_UNAVAILABLE");
+        if(active)setFeed({loading:false,error:"",payload});
+      }catch(e){
+        if(active)setFeed({loading:false,error:e?.message==="SIGN_IN_REQUIRED"?
+          "Founder sign-in is required to check recorded incidents.":
+          "Recorded incident source unavailable — this is not a healthy or empty result.",payload:null});
+      }
+    }
+    load();
+    return ()=>{active=false;};
+  },[revision]);
+  const incidents=feed.payload?.incidents||[];
+  const openCount=feed.payload?.openIncidentCount;
+  return (
+    <section className={styles.modeBox} aria-label="Recorded operational incidents — real Staging audit source">
+      <strong>Recorded operational incidents — Staging only</strong>
+      <p role={feed.error?"alert":"status"} aria-live="polite">
+        {feed.loading?"Checking the protected incident register…":
+         feed.error||(
+           incidents.length===0
+           ?"No recorded incidents in the shared Staging register. This is not proof that every service is healthy."
+           :openCount+" unresolved incident(s) in the shared Staging register; "+incidents.length+" recorded item(s) returned."
+         )}
+      </p>
+      {!feed.loading&&!feed.error&&incidents.length>0?(
+        <ul>
+          {incidents.slice(0,5).map(item=>(
+            <li key={item.incidentId}>
+              <strong>{item.title}</strong>
+              {" — "+String(item.state||"state unavailable").replaceAll("_"," ")}
+              {" · L"+String(item.oversightLevel??"?")}
+              {item.lastObservedAt&&Number.isFinite(Date.parse(item.lastObservedAt))
+                ?" · "+new Intl.DateTimeFormat(undefined,{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"short"}).format(new Date(item.lastObservedAt))
+                :""}
+            </li>
+          ))}
+        </ul>
+      ):null}
+      <button type="button" className={styles.ghostButton} disabled={feed.loading}
+        onClick={()=>setRevision(value=>value+1)}>↻ Refresh recorded incidents</button>
+      <p>Read-only Founder visibility from the existing canonical incident source. This does not trigger faults, staff actions or recovery.
+        Global alert-badge delivery, scheduled checks and automatic recovery are not yet connected or certified.</p>
+    </section>
+  );
+}
+
 export default function FounderEmployeeRegisterAttendancePreview() {
   const [tab,setTab]=useState("register");
   const [source,setSource]=useState("demo");
@@ -131,6 +198,7 @@ export default function FounderEmployeeRegisterAttendancePreview() {
         Persistent Control Room alerts and automatic recovery are <strong>not connected yet</strong>.
         Fictional test employees are never counted as real hires.</p>
     </section>
+    <CanonicalOperationalIncidentReadOnly />
     {state==="error"&&source==="staging"?<p role="alert" className={styles.error}>{error}</p>:null}
     {state==="loading"&&source==="staging"?<p role="status" className={styles.notice}>Checking verified Staging data…</p>:null}
     <div className={styles.metricGrid}>
