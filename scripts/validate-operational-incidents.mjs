@@ -18,6 +18,9 @@ assert.ok(!migration.includes("create table if not exists public.admin_approval_
 assert.ok(route.includes("export async function GET"));
 assert.ok(!route.includes("export async function POST"));
 assert.ok(route.includes("FOUNDER_GATE_REQUIRED") && route.includes("status:404"));
+const existingTimeline=readFileSync("app/api/admin/control-room/activity-timeline/route.js","utf8");
+assert.ok(existingTimeline.includes('hiissa_operational_incident_state_change'),"Operational history must appear in existing Founder timeline");
+assert.ok(existingTimeline.includes('HIISSA verified an operational recovery'),"Verified and attempted recoveries must not be confused");
 const valid={incidentKey:"check.voice.latency",featureId:"hiissa.voice.live",ownerModuleId:"failures-reliability",title:"Voice response unavailable",summary:"Technical voice service did not answer.",severity:"degraded",oversightLevel:2,recoveryClassification:"SAFE_WITH_LIMIT",maxSafeRetries:2};
 assert.equal(validateNewIncident(valid).ok,true);
 assert.equal(validateNewIncident({...valid,ownerModuleId:"new-module-11"}).ok,false);
