@@ -5,7 +5,7 @@
  */
 import {createClient} from "@supabase/supabase-js";
 import {NextResponse} from "next/server";
-import {monitorEmployeeOperationalSources} from "../../../../../lib/admin/employee-operational-incident-producer-staging.js";
+import {monitorEmployeeOperationalSources} from "../../../../../../lib/admin/employee-operational-incident-producer-staging.js";
 
 export const dynamic="force-dynamic";
 const clientOptions={auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}};
@@ -28,7 +28,7 @@ export async function POST(request){
   if(Number(request.headers.get("content-length")||0)>0 || request.headers.get("transfer-encoding"))
     return reply({status:"REQUEST_BODY_NOT_ALLOWED"},400);
   const bearer=request.headers.get("authorization")||"";
-  const match=/^Bearer ([^\\s]+)$/.exec(bearer);
+  const match=/^Bearer (\S+)$/.exec(bearer);
   if(!match) return reply({status:"UNAUTHENTICATED"},401);
   try {
     const verifier=createClient(url,publicKey,clientOptions);
