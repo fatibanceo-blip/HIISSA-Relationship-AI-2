@@ -886,3 +886,31 @@ D. New shortcut navigation adapter: `app/admin/control-room/AuthenticatedControl
 **NON-EFFECT:** Only additive repo documentation (notice and this checkpoint). Original 13 Word documents/visuals untouched as of this step, protected Docs 11–13 not amended; onboarding forms, Registry implementation, Prod/Main, Supabase and real staffing untouched.
 
 **NEXT:** Staging-only integrated source/health → Control Room approved module presentation and shared alerts without altering approved onboarding; implement bounded tests and classify explicit PASS/FAIL; record every action; stop early for 13-DOCX controlled-close with one verified ZIP and next-chat obligations.
+
+---
+
+## SUCCESSOR CHAT S16 — 9 October 2026 — EARLY CONTROLLED CLOSE ACTIVATED; current 13 Word docs compiled, initial structural/media/ZIP gate PASS, page-render gate IN PROGRESS
+
+**FOUNDER AUTHORITY:** Original S15 approved “every feature ... connected to the admin dashboard” and requested permanent notice for every successor chat. Permanent Documents 12/13 require immediate checkpoints, additive Documents 01–10, protected 11–13 unchanged and early Controlled Close. Recent S01–S15 constitute many substantial actions and three Staging development/test rounds, so further application implementation was stopped and Controlled Close initiated automatically.
+
+**WHAT:** Generated one 09 October controlled close artifact `HIISSA_CONTROLLED_CLOSE_2026-10-09_COMPLETE_13_DOCUMENT_PACKAGE.zip` (local conversation artifact, NOT YET RELEASED UNTIL FINAL CHECKS), containing exactly 13 unique, separate Word documents in numbered sequence. Documents 01–10 are additive copies of the Founder-provided 8 October originals, with 09 October role-specific appendices, complete permanent S15 successor notice in each, Document12 11-field chronological S01–S15 records (full details in Documents 04/07/09/10, selected role-relevant records in 01/02/03/05/06/08), exact Founder wording, the protected current stopping point, valid statuses and explicit remaining operational gaps. New screenshots `1000375689.jpg`, `1000375698.jpg`, `1000375700.jpg`, `1000375751.jpg`, `1000375753.jpg`, `1000375755.jpg`, `1000375757.jpg`, `1000375759.jpg` were embedded as original image evidence in living Documents 04,07,08,10. Documents 11–13 were copied BYTE-FOR-BYTE unchanged.
+
+**WHY:** Prevent chat-size memory loss, preserve Founder approval and exact feature-to-Control Room rule for next chats, deliver detailed and non-destructive continuity, and avoid falsely treating operational health metadata as a completed implementation.
+
+**HOW:** Used mounted original 13 DOCX and conversation screenshot files; programmatically appended only to 01–10 with python-docx; cloned 11–13 byte-identically; ran source-vs-output original OOXML body-child structural semantic-equivalence check, all old embedded media byte-for-byte check, 13 unique Word file and ZIP CRC checks. Generated QA manifest JSON `HIISSA_CONTROLLED_CLOSE_2026-10-09_QA_REPORT.json` as internal evidence. Rendering of ALL Word documents with the mandated docx renderer was started and is still ongoing at this precise checkpoint; full visual certification NOT YET CLAIMED.
+
+**PROCESS:** Read DOCX skill → inspect each of 13 original files/media → create additive role-specific entries from S01–S15 and full forward notice → add original screenshot evidence → structural source-preservation checks → ZIP build/CRC/hash → start all-document Word render → further visual review and final certification/limitations remain to follow.
+
+**WHERE:** Local conversation artifact `/mnt/data/HIISSA_CONTROLLED_CLOSE_2026-10-09_COMPLETE_13_DOCUMENT_PACKAGE.zip` of 43,957,998 bytes; SHA256 `55f9a7297b82b276d3aebf7c0fcab2102c59542a4e8b8b9aa086c44ad2645e29`; 13 DOCX content directory `/mnt/data/HIISSA_CONTROLLED_CLOSE_2026-10-09_COMPLETE_13_WORD_DOCS`; output QA render directory `/mnt/data/_HIISSA_QA_RENDER`. Git durable prior notice `docs/HIISSA_PERMANENT_SUCCESSOR_CHAT_FEATURE_CONTROL_ROOM_CONNECTION_NOTICE_2026-10-09.md`, commit `3a578f619a4f386a49b5d7c70aabe362578d8ed1`.
+
+**WHO:** Founder approved future-chat notice and continuing authorised Staging integration; assistant compiled and checked package and initiated render. Practical feature acceptance remains Founder only.
+
+**EVIDENCE:** ZIP SHA/size above, 13 unique DOCX CRC PASS; original body children preserved across Docs 01–10 without structural rewrite; original media counts [4,4,3,11,12,2,18,91,10,15] retained and protected 11–13 byte-for-byte same; 8 additional screenshots embedded in each of Doc04/07/08/10; actual new media counts for each respectively 19,26,99,23. Structural results printed by internal QA builder. Complete-page rendering is IN PROGRESS, not yet PASS.
+
+**STATUS:** CONTROLLED CLOSE PREPARED; STRUCTURAL/OXML/ORIGINAL MEDIA/PROTECTED GOV DOCS/ZIP INTEGRITY: PASS; DOCX PAGE-RENDER AND VISUAL MANUAL AUDIT: IN PROGRESS; final user handover NOT yet issued. Not a Production release or new Staging deployment. Current app Staging source remains `5f9a5f2a19d83c09541ae850f42ed759e5d80e8e`, READY deployment `dpl_BhN5JySVFdkCPjY6TNtSe8mTfFxL`, previously verified same alias; latest Git commits since are documentation only.
+
+**FAILURES AND CORRECTIONS:** Initial standalone notice/git create_commit tool call had a missing repository key but was corrected with one final notice commit; no app or Word content damage. No new Word integrity failure detected. If full visual render cannot complete, disclose exactly and withhold “fully certified” wording.
+
+**NON-EFFECT:** No application source changes, real staff/attendance/permission/Supabase changes, new environments, protected Docs11–13 modifications, Production deployment/activation or change to approved onboarding interface; original embedded images from 8 October all preserved.
+
+**NEXT:** Finish rendering/visual layout inspection and QA; if PASS, update QA report, identify unreplayed historical evidence as NOT VERIFIED, provide ONE ZIP link and explicit handover. Record S17 final outcome and continue next Founder-approved work only after next chat reconciles latest 13 documents and confirms live Staging state.
