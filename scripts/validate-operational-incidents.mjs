@@ -5,7 +5,7 @@ import {validateNewIncident, validateIncidentTransition} from "../lib/admin/oper
 const blobSha=s=>createHash("sha1").update("blob "+Buffer.byteLength(s)+"\0"+s).digest("hex");
 const host=readFileSync("app/admin/control-room-preview/page.js","utf8");
 assert.equal(blobSha(host),"d123b707477854d1811f6f7e2534248c5c7ba056","Protected original Founder host must remain unchanged");
-const migration=readFileSync("supabase/migrations/20261009110000_shared_operational_incidents_staging.sql","utf8");
+const migration=readFileSync("supabase/migrations/20261009101553_shared_operational_incidents_staging.sql","utf8");
 const route=readFileSync("app/api/admin/control-room/operational-incidents/route.js","utf8");
 for(const requirement of [
   "create table if not exists public.hiissa_operational_incidents",
