@@ -25,8 +25,11 @@ async function founder(request) {
   if(!token) return {ok:false,status:401,reason:"UNAUTHENTICATED"};
   const {data,error}=await c.verify.auth.getUser(token);
   if(error||!data?.user) return {ok:false,status:401,reason:"UNAUTHENTICATED"};
-  const {data:adminRow,error:adminError}=await c.admin.from("admin_users").select("user_id").eq("user_id",data.user.id).maybeSingle();
-  if(adminError||!adminRow) return {ok:false,status:403,reason:"FOUNDER_GATE_REQUIRED"};
+  const {data:adminRows,error:adminError}=await c.admin.from("admin_users").select("user_id").limit(2);
+  // This Staging-only control trusts the one existing legacy Founder/Admin membership.
+  // If more members are added before a separately approved identity migration, fail closed.
+  if(adminError||adminRows?.length!==1||adminRows[0].user_id!==data.user.id)
+    return {ok:false,status:403,reason:"FOUNDER_GATE_REQUIRED"};
   return {ok:true,id:data.user.id,admin:c.admin};
 }
 function safeRole(value){return String(value||"staff").replaceAll("_"," ").replace(/\b\w/g,(m)=>m.toUpperCase());}
@@ -70,30 +73,36 @@ export async function POST(request){
   const accessAction=String(body.accessAction||"").trim();
   if(!targetUserId||reason.length<10) return json({status:"REASON_AND_TARGET_REQUIRED"},400);
   if(targetUserId===f.id) return json({status:"FOUNDER_SELF_REVOCATION_BLOCKED"},400);
+  const supportedAccessActions=["suspend","restore","permanently_revoke"];
+  if(accessAction&&!supportedAccessActions.includes(accessAction))
+    return json({status:"INVALID_ACCESS_ACTION"},400);
+  if(accessAction&&targetSessionId)
+    return json({status:"INCOMPATIBLE_ACCESS_AND_SESSION_ACTION"},400);
   try{
-    if(["suspend","restore","permanently_revoke"].includes(accessAction)){
-      const {data:changed,error:changeError}=await f.admin.rpc("founder_change_staff_access",{target_user_id:targetUserId,requested_action:accessAction,action_reason:reason,founder_user_id:f.id});
-      if(changeError) throw changeError;
-      const result=changed?.[0]||{};
-      const {error:auditError}=await f.admin.from("admin_audit_events").insert({
-        event_type:accessAction==="suspend"?"founder_staff_access_suspended":accessAction==="restore"?"founder_staff_access_restored":"founder_staff_access_permanently_revoked",
-        actor_user_id:f.id,target_user_id:targetUserId,module_id:"admin-security-audit",resource_id:"staff-access",
-        action_id:accessAction,outcome:"recorded",oversight_level:3,environment:"staging",
-        details:{reason,new_state:result.new_state,revoked_session_count:Number(result.revoked_sessions||0),founder_lockout_protection:true,historical_evidence_preserved:true,production_effect:false}
+    if(supportedAccessActions.includes(accessAction)){
+      // The Staging RPC commits the access change and audit event atomically.
+      const {data:changed,error:changeError}=await f.admin.rpc("founder_change_staff_access_audited_staging",{
+        target_user_id:targetUserId,requested_action:accessAction,action_reason:reason,founder_user_id:f.id
       });
-      if(auditError) throw auditError;
-      return json({status:"ACCESS_CHANGE_RECORDED_AND_EXECUTED",accessState:result.new_state,revokedSessionCount:Number(result.revoked_sessions||0),historicalEvidencePreserved:true,productionEffect:false});
+      if(changeError) throw changeError;
+      const result=changed?.[0];
+      if(!result?.audit_event_id||!result?.new_state) throw new Error("ATOMIC_AUDIT_RESULT_MISSING");
+      return json({
+        status:"ACCESS_CHANGE_RECORDED_AND_EXECUTED",accessState:result.new_state,
+        revokedSessionCount:Number(result.revoked_sessions||0),
+        historicalEvidencePreserved:true,auditRecorded:true,productionEffect:false
+      });
     }
-    const {data,error}=await f.admin.rpc("founder_revoke_staff_session",{target_user_id:targetUserId,target_session_id:targetSessionId});
-    if(error) throw error;
-    const revoked=Number(data?.[0]?.revoked_count||0);
-    const {error:auditError}=await f.admin.from("admin_audit_events").insert({
-      event_type:"founder_staff_session_revoked",actor_user_id:f.id,target_user_id:targetUserId,
-      module_id:"admin-security-audit",resource_id:"staff-session",action_id:targetSessionId?"revoke_one_session":"force_sign_out_all_sessions",
-      outcome:"recorded",oversight_level:3,environment:"staging",
-      details:{reason,revoked_session_count:revoked,physical_device_identity_claimed:false,production_effect:false}
+    // Session revocation and its audit event are one Staging database transaction.
+    const {data,error}=await f.admin.rpc("founder_revoke_staff_session_audited_staging",{
+      target_user_id:targetUserId,target_session_id:targetSessionId,action_reason:reason,founder_user_id:f.id
     });
-    if(auditError) throw auditError;
-    return json({status:"RECORDED_AND_EXECUTED",revokedSessionCount:revoked,productionEffect:false});
+    if(error) throw error;
+    const result=data?.[0];
+    if(!result?.audit_event_id||result.revoked_count==null) throw new Error("ATOMIC_AUDIT_RESULT_MISSING");
+    return json({
+      status:"RECORDED_AND_EXECUTED",revokedSessionCount:Number(result.revoked_count),
+      auditRecorded:true,productionEffect:false
+    });
   }catch(error){console.error("Staff session revocation failed",error); return json({status:"REVOCATION_FAILED"},500);}
 }

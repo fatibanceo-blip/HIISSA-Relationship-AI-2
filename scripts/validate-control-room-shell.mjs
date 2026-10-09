@@ -256,6 +256,10 @@ const founderEmergencyPause = fs.existsSync(founderEmergencyPausePath)
   ? fs.readFileSync(founderEmergencyPausePath, "utf8")
   : "";
 const staffSessionControl = fs.existsSync(staffSessionControlPath) ? fs.readFileSync(staffSessionControlPath,"utf8") : "";
+const staffAtomicMigrationPath = path.join(root,"supabase","migrations","20261009205439_hiissa_founder_staff_atomic_audit_staging.sql");
+const staffAtomicMigration = fs.existsSync(staffAtomicMigrationPath)
+  ? fs.readFileSync(staffAtomicMigrationPath,"utf8") : "";
+if (!staffAtomicMigration) errors.push("Staging atomic staff audit migration is missing.");
 const staffSessionControlComponent = fs.existsSync(staffSessionControlComponentPath) ? fs.readFileSync(staffSessionControlComponentPath,"utf8") : "";
 const staffSessionControlPage = fs.existsSync(staffSessionControlPagePath) ? fs.readFileSync(staffSessionControlPagePath,"utf8") : "";
 const staffSessionControlGate = fs.existsSync(staffSessionControlGatePath) ? fs.readFileSync(staffSessionControlGatePath,"utf8") : "";
@@ -1570,21 +1574,31 @@ for (const required of [
   'environment !== "production"',
   'verify.auth.getUser(token)',
   '.from("admin_users")',
+  'adminRows?.length!==1',
   'founder_staff_session_inventory',
-  'founder_revoke_staff_session',
+  'founder_revoke_staff_session_audited_staging',
+  'founder_change_staff_access_audited_staging',
   'FOUNDER_SELF_REVOCATION_BLOCKED',
-  'event_type:"founder_staff_session_revoked"',
-  '"founder_staff_access_suspended"',
-  '"founder_staff_access_restored"',
-  '"founder_staff_access_permanently_revoked"',
-  'founder_change_staff_access',
-  "historical_evidence_preserved:true",
-  "founder_lockout_protection:true",
-  'outcome:"recorded"',
-  'physical_device_identity_claimed:false',
-  'production_effect:false',
+  'INVALID_ACCESS_ACTION',
+  'audit_event_id',
+  'auditRecorded:true',
+  'productionEffect:false',
   '"Cache-Control": "private, no-store"',
 ]) requireText("Staff Session & Device Control endpoint", staffSessionControl, required);
+if(staffSessionControl.includes('.from("admin_audit_events").insert('))
+  errors.push("Staff Session API must not write audit outside its atomic Staging RPC.");
+for(const required of [
+  "CREATE OR REPLACE FUNCTION public.founder_change_staff_access_audited_staging(",
+  "CREATE OR REPLACE FUNCTION public.founder_revoke_staff_session_audited_staging(",
+  "FROM public.founder_change_staff_access(",
+  "FROM public.founder_revoke_staff_session(",
+  "INSERT INTO public.admin_audit_events",
+  "RETURNING id INTO event_id",
+  "REVOKE ALL ON FUNCTION public.founder_change_staff_access_audited_staging",
+  "REVOKE ALL ON FUNCTION public.founder_revoke_staff_session_audited_staging",
+  "TO service_role;",
+  "atomic_access_and_audit",
+]) requireText("Staging audited access migration",staffAtomicMigration,required);
 
 for (const required of [
   "STAFF SESSION & DEVICE CONTROL · STAGING",
