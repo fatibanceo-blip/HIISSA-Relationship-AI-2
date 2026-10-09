@@ -1183,11 +1183,6 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           securityData?.criticalMessage ||
           approvalData?.criticalMessage ||
           "";
-        const criticalKey =
-          criticalCount > 0
-            ? `${criticalCount}:${criticalMessage || "verified-critical-signal"}`
-            : "";
-
         setSummary({
           loading: false,
           attentionCount:
@@ -1203,12 +1198,6 @@ function FounderAlertButton({ authenticated, active, onClick }) {
           criticalMessage,
         });
 
-        if (criticalCount > 0 && criticalKey !== dismissedCriticalKey) {
-          setCriticalVisible(true);
-        } else if (criticalCount === 0) {
-          setCriticalVisible(false);
-          setDismissedCriticalKey("");
-        }
       } catch {
         if (!mounted) return;
         setSummary((current) => ({ ...current, loading: false }));
@@ -1231,8 +1220,10 @@ function FounderAlertButton({ authenticated, active, onClick }) {
   const badgeCount=combinedCriticalCount>0?combinedCriticalCount:combinedAttentionCount;
   useEffect(()=>{
     const key=`${combinedCriticalCount}:${combinedCriticalMessage||"verified-critical-signal"}`;
-    if(combinedCriticalCount===0)setCriticalVisible(false);
-    else if(key!==dismissedCriticalKey)setCriticalVisible(true);
+    if(combinedCriticalCount===0){
+      setCriticalVisible(false);
+      setDismissedCriticalKey("");
+    }else if(key!==dismissedCriticalKey)setCriticalVisible(true);
   },[combinedCriticalCount,combinedCriticalMessage,dismissedCriticalKey]);
 
   return (
@@ -2467,6 +2458,7 @@ function FounderAlertsPanel({
   }, [authenticated]);
 
   const securityNeedsAttention = securityStatus === "NEEDS_ATTENTION";
+  const combinedPanelCriticalCount=criticalCount+canonicalIncidents.criticalCount;
 
   return (
     <section
@@ -2484,13 +2476,13 @@ function FounderAlertsPanel({
       </div>
 
       <div className={styles.alertList}>
-        {criticalCount > 0 ? (
+        {combinedPanelCriticalCount > 0 ? (
           <article className={styles.alertItemCritical}>
             <div>
               <strong>Critical Founder alert</strong>
               <p>
-                {criticalMessage ||
-                  `${criticalCount} verified critical signal${criticalCount === 1 ? "" : "s"} currently need immediate Founder attention.`}
+                {criticalMessage || canonicalIncidents.criticalMessage ||
+                  `${combinedPanelCriticalCount} verified critical signal${combinedPanelCriticalCount === 1 ? "" : "s"} currently need immediate Founder attention.`}
               </p>
             </div>
           </article>

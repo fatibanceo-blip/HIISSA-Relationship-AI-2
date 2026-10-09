@@ -7,7 +7,7 @@ const blobSha=s=>createHash("sha1").update("blob "+Buffer.byteLength(s)+"\0"+s).
 // Founder permission 2026-10-09: explicitly authorised minimal Staging Alerts addition.
 // Previous protected baseline: d123b707477854d1811f6f7e2534248c5c7ba056 (preserved in Git history).
 const host=readFileSync("app/admin/control-room-preview/page.js","utf8");
-assert.equal(blobSha(host),"5f499eb56e31287981878558d7658045d89f8f20","Protected original Founder host must remain unchanged");
+assert.equal(blobSha(host),"f2337383d9c41e5b79edbad8795a12d8661a2f13","Protected original Founder host must remain unchanged");
 const migration=readFileSync("supabase/migrations/20261009101553_shared_operational_incidents_staging.sql","utf8");
 const route=readFileSync("app/api/admin/control-room/operational-incidents/route.js","utf8");
 for(const requirement of [
@@ -63,3 +63,10 @@ assert.ok(host.includes('onOpenRecordedIncidents={()'),"Real incident navigation
 assert.ok(host.includes('fetch("/api/admin/control-room/operational-incidents"'),"Read existing canonical Founder-gated endpoint");
 assert.ok(host.includes('method:"GET",cache:"no-store",credentials:"same-origin"'),"No stale anonymous GET");
 console.log("Staging Founder canonical alert integration projection, empty/error/verified/critical tests: PASS");
+
+/* The combined-source critical count is the ONLY critical toast reset authority. */
+assert.ok(host.includes("const combinedPanelCriticalCount=criticalCount+canonicalIncidents.criticalCount"),"Panel critical header incorporates canonical critical incidents");
+assert.ok(host.includes("criticalMessage || canonicalIncidents.criticalMessage"),"Preserve existing critical message priority");
+assert.ok(host.includes('setDismissedCriticalKey("");'),"Combined critical reset keeps old dismiss semantics");
+assert.ok(!host.includes('else if (criticalCount === 0) {\n          setCriticalVisible(false);'),"No old eight-source-only reset that suppresses genuine canonical critical notices");
+console.log("Combined critical badge + panel + dismissal protection: PASS");

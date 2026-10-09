@@ -8,7 +8,7 @@ const blobSha=text=>createHash("sha1").update("blob "+Buffer.byteLength(text)).u
 // Founder approved 2026-10-09: additive Alerts-only host change.
 // Historical immutable host baseline d123b707477854d1811f6f7e2534248c5c7ba056 remains preserved in Git history.
 const onboarding=read("app/admin/control-room-preview/page.js");
-assert.equal(blobSha(onboarding),"5f499eb56e31287981878558d7658045d89f8f20",
+assert.equal(blobSha(onboarding),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
   "STOP: Founder-approved onboarding host source changed; explicit Founder permission is required");
 const applicant=read("lib/experience-registry.js");
 assert.ok(applicant.includes('export const ADMIN_STAFF_ONBOARDING_WORKFLOW = Object.freeze({'));
