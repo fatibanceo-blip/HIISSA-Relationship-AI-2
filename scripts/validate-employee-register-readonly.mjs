@@ -5,8 +5,10 @@ import {HIISSA_PROTOTYPE_STAFF,HIISSA_PROTOTYPE_STAFF_DEPARTMENTS} from "../lib/
 import {filterHiissaEmployeeRegister,summarizeHiissaEmployeeDepartments} from "../lib/hiissa-employee-register-prototype-view.js";
 const read=path=>fs.readFileSync(path,"utf8");
 const blobSha=text=>createHash("sha1").update("blob "+Buffer.byteLength(text)).update(Buffer.from([0])).update(text).digest("hex");
+// Founder approved 2026-10-09: additive Alerts-only host change.
+// Historical immutable host baseline d123b707477854d1811f6f7e2534248c5c7ba056 remains preserved in Git history.
 const onboarding=read("app/admin/control-room-preview/page.js");
-assert.equal(blobSha(onboarding),"d123b707477854d1811f6f7e2534248c5c7ba056",
+assert.equal(blobSha(onboarding),"5f499eb56e31287981878558d7658045d89f8f20",
   "STOP: Founder-approved onboarding host source changed; explicit Founder permission is required");
 const applicant=read("lib/experience-registry.js");
 assert.ok(applicant.includes('export const ADMIN_STAFF_ONBOARDING_WORKFLOW = Object.freeze({'));

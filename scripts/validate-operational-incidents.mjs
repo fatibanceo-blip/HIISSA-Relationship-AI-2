@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {createHash} from "node:crypto";
 import {validateNewIncident, validateIncidentTransition} from "../lib/admin/operational-incident-staging.js";
+import {projectFounderCanonicalIncidentAlerts} from "../lib/admin/founder-canonical-incident-alert-projection.js";
 const blobSha=s=>createHash("sha1").update("blob "+Buffer.byteLength(s)+"\0"+s).digest("hex");
+// Founder permission 2026-10-09: explicitly authorised minimal Staging Alerts addition.
+// Previous protected baseline: d123b707477854d1811f6f7e2534248c5c7ba056 (preserved in Git history).
 const host=readFileSync("app/admin/control-room-preview/page.js","utf8");
-assert.equal(blobSha(host),"d123b707477854d1811f6f7e2534248c5c7ba056","Protected original Founder host must remain unchanged");
+assert.equal(blobSha(host),"5f499eb56e31287981878558d7658045d89f8f20","Protected original Founder host must remain unchanged");
 const migration=readFileSync("supabase/migrations/20261009101553_shared_operational_incidents_staging.sql","utf8");
 const route=readFileSync("app/api/admin/control-room/operational-incidents/route.js","utf8");
 for(const requirement of [
@@ -35,3 +38,28 @@ assert.equal(validateIncidentTransition({...current,state:"investigating",retry_
 assert.ok(!existingTimeline.includes('return "HIISSA detected an operational problem"'),"Incident detection must not be misreported as automatic handling");
 console.log("Shared incident foundation static and transition validator: PASS");
 console.log("Founder approved host SHA preserved; no public write route; Staging-only checks present.");
+
+/* New approval-gated canonical incident alert projection tests (zero mock DB writes). */
+const fixture=(incidents)=>({status:"MONITORING",sourceState:incidents.length?"RECORDED_INCIDENTS":"READABLE_EMPTY",
+  incidents,openIncidentCount:incidents.filter(x=>x.state!=="verified_resolved").length});
+const incident=(incidentId,state,severity)=>({incidentId,state,severity,title:"Source check",oversightLevel:2});
+const sample=[incident("real-incident-001","needs_attention","degraded"),incident("real-incident-002","verification_pending","critical"),incident("real-incident-003","verified_resolved","critical")];
+assert.deepEqual(projectFounderCanonicalIncidentAlerts(fixture([])).verified,true);
+assert.equal(projectFounderCanonicalIncidentAlerts(fixture([])).attentionCount,0);
+assert.equal(projectFounderCanonicalIncidentAlerts(fixture([])).criticalCount,0);
+assert.equal(projectFounderCanonicalIncidentAlerts(fixture(sample)).attentionCount,2);
+assert.equal(projectFounderCanonicalIncidentAlerts(fixture(sample)).criticalCount,1);
+assert.equal(projectFounderCanonicalIncidentAlerts(fixture(sample)).items.length,2);
+assert.equal(projectFounderCanonicalIncidentAlerts(null).verified,false);
+assert.equal(projectFounderCanonicalIncidentAlerts({...fixture(sample),openIncidentCount:0}).verified,false);
+assert.equal(projectFounderCanonicalIncidentAlerts(fixture([incident("real-incident-001","fake_state","critical")])).verified,false);
+assert.equal(projectFounderCanonicalIncidentAlerts(fixture([sample[0],sample[0]])).verified,false);
+assert.ok(host.includes('useFounderCanonicalIncidentAlerts(authenticated,60000)'),"Header must poll canonical source without disturbing existing eight");
+assert.ok(host.includes('const canonicalIncidents=useFounderCanonicalIncidentAlerts(authenticated)'),"Panel must load same canonical source");
+assert.ok(host.includes('The recorded incident source could not be confirmed. Do not treat it as zero or healthy.'),"Failed source not healthy");
+assert.ok(host.includes('combinedCriticalCount=summary.criticalCount+incidentAlerts.criticalCount'),"Keep old verified critical count and add new");
+assert.ok(host.includes('combinedAttentionCount=summary.attentionCount+incidentAlerts.attentionCount'),"Keep old attention count and add new");
+assert.ok(host.includes('onOpenRecordedIncidents={()'),"Real incident navigation must be available");
+assert.ok(host.includes('fetch("/api/admin/control-room/operational-incidents"'),"Read existing canonical Founder-gated endpoint");
+assert.ok(host.includes('method:"GET",cache:"no-store",credentials:"same-origin"'),"No stale anonymous GET");
+console.log("Staging Founder canonical alert integration projection, empty/error/verified/critical tests: PASS");

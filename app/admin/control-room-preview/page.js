@@ -14,6 +14,7 @@ import WorkdayClose from "../../../components/people-experience/WorkdayClose.js"
 import PrivateAppreciation from "../../../components/people-experience/PrivateAppreciation.js";
 import FounderStaffSessionDeviceControl from "./FounderStaffSessionDeviceControl.js";
 import FounderEmployeeRegisterAttendancePreview from "./FounderEmployeeRegisterAttendancePreview.js";
+import {projectFounderCanonicalIncidentAlerts} from "../../../lib/admin/founder-canonical-incident-alert-projection.js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -791,6 +792,12 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
               onOpenSecurityAudit={() =>
                 chooseModule(CONTROL_ROOM_MODULES.adminSecurityAudit)
               }
+              onOpenRecordedIncidents={() => {
+                choosePrimary("staff");
+                window.requestAnimationFrame(() => {
+                  document.getElementById("staff-employee-register-attendance")?.scrollIntoView({behavior:"smooth",block:"start"});
+                });
+              }}
             />
           </div>
         ) : null}
@@ -929,6 +936,40 @@ function FounderContextBack({ onBack, fallbackLabel = "Previous" }) {
   );
 }
 
+
+/**
+ * Isolated Founder-only read: failure cannot corrupt the eight existing alert sources.
+ * Fetches the same canonical incident GET as the protected Employee Register.
+ */
+function useFounderCanonicalIncidentAlerts(authenticated, refreshMs = 0) {
+  const empty = {loading:false,...projectFounderCanonicalIncidentAlerts(null)};
+  const [feed,setFeed]=useState({loading:Boolean(authenticated),...projectFounderCanonicalIncidentAlerts(null)});
+  useEffect(()=>{
+    if(!authenticated||!adminDataClient){setFeed(empty);return undefined;}
+    let active=true;
+    async function load() {
+      try {
+        const {data:{session}}=await adminDataClient.auth.getSession();
+        if(!session?.access_token)throw new Error("FOUNDER_SIGN_IN_REQUIRED");
+        const response=await fetch("/api/admin/control-room/operational-incidents",{
+          method:"GET",cache:"no-store",credentials:"same-origin",
+          headers:{Authorization:`Bearer ${session.access_token}`}
+        });
+        const payload=await response.json().catch(()=>null);
+        const projected=projectFounderCanonicalIncidentAlerts(payload);
+        if(!response.ok||!projected.verified)throw new Error("SOURCE_UNAVAILABLE");
+        if(active)setFeed({loading:false,...projected});
+      } catch {
+        if(active)setFeed({loading:false,...projectFounderCanonicalIncidentAlerts(null)});
+      }
+    }
+    load();
+    const interval=refreshMs>0?window.setInterval(load,refreshMs):null;
+    return ()=>{active=false;if(interval!==null)window.clearInterval(interval);};
+  },[authenticated,refreshMs]);
+  return feed;
+}
+
 function FounderAlertButton({ authenticated, active, onClick }) {
   const [summary, setSummary] = useState({
     loading: Boolean(authenticated),
@@ -938,6 +979,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
   });
   const [criticalVisible, setCriticalVisible] = useState(true);
   const [dismissedCriticalKey, setDismissedCriticalKey] = useState("");
+  const incidentAlerts=useFounderCanonicalIncidentAlerts(authenticated,60000);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -1182,10 +1224,16 @@ function FounderAlertButton({ authenticated, active, onClick }) {
     };
   }, [authenticated, dismissedCriticalKey]);
 
-  const badgeCount =
-    summary.criticalCount > 0
-      ? summary.criticalCount
-      : summary.attentionCount;
+  // Preserve every original alert; add only verified unresolved canonical incidents.
+  const combinedCriticalCount=summary.criticalCount+incidentAlerts.criticalCount;
+  const combinedAttentionCount=summary.attentionCount+incidentAlerts.attentionCount;
+  const combinedCriticalMessage=summary.criticalMessage||incidentAlerts.criticalMessage;
+  const badgeCount=combinedCriticalCount>0?combinedCriticalCount:combinedAttentionCount;
+  useEffect(()=>{
+    const key=`${combinedCriticalCount}:${combinedCriticalMessage||"verified-critical-signal"}`;
+    if(combinedCriticalCount===0)setCriticalVisible(false);
+    else if(key!==dismissedCriticalKey)setCriticalVisible(true);
+  },[combinedCriticalCount,combinedCriticalMessage,dismissedCriticalKey]);
 
   return (
     <>
@@ -1199,7 +1247,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
         {!summary.loading && badgeCount > 0 ? (
           <span
             className={
-              summary.criticalCount > 0
+              combinedCriticalCount > 0
                 ? styles.alertBadgeCritical
                 : styles.alertBadgeAttention
             }
@@ -1210,15 +1258,15 @@ function FounderAlertButton({ authenticated, active, onClick }) {
         ) : null}
       </button>
 
-      {summary.criticalCount > 0 && criticalVisible ? (
+      {combinedCriticalCount > 0 && criticalVisible ? (
         <div className={styles.criticalAlertToast} role="alert">
           <div>
             <div className={styles.criticalAlertKicker}>URGENT FOUNDER ALERT</div>
             <strong>
-              {summary.criticalCount} critical alert{summary.criticalCount === 1 ? "" : "s"} need attention
+              {combinedCriticalCount} critical alert{combinedCriticalCount === 1 ? "" : "s"} need attention
             </strong>
             <p>
-              {summary.criticalMessage ||
+              {combinedCriticalMessage ||
                 "HIISSA has received a verified critical signal. Open Alerts for the authorised detail and safest next action."}
             </p>
           </div>
@@ -1228,7 +1276,7 @@ function FounderAlertButton({ authenticated, active, onClick }) {
               type="button"
               onClick={() => {
                 setDismissedCriticalKey(
-                  `${summary.criticalCount}:${summary.criticalMessage || "verified-critical-signal"}`
+                  `${combinedCriticalCount}:${combinedCriticalMessage || "verified-critical-signal"}`
                 );
                 setCriticalVisible(false);
               }}
@@ -2185,6 +2233,7 @@ function FounderAlertsPanel({
   onOpenAiProduct,
   onOpenSystemOperations,
   onOpenSecurityAudit,
+  onOpenRecordedIncidents,
 }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [pending, setPending] = useState(null);
@@ -2197,6 +2246,7 @@ function FounderAlertsPanel({
   const [authSyncHealth, setAuthSyncHealth] = useState(null);
   const [aiProductHealth, setAiProductHealth] = useState(null);
   const [systemOperationsHealth, setSystemOperationsHealth] = useState(null);
+  const canonicalIncidents=useFounderCanonicalIncidentAlerts(authenticated);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -2461,6 +2511,31 @@ function FounderAlertsPanel({
           </div>
           <button type="button" className={styles.alertAction} onClick={onOpenApprovals}>
             Open Approvals →
+          </button>
+        </article>
+
+
+        <article className={canonicalIncidents.attentionCount>0?styles.alertItemAttention:styles.alertItem}>
+          <div>
+            <strong>Recorded operational incidents — Staging</strong>
+            <p role={!canonicalIncidents.loading&&!canonicalIncidents.verified?"alert":"status"}>
+              {canonicalIncidents.loading
+                ?"Checking the protected shared operational incident register…"
+                :!canonicalIncidents.verified
+                  ?"The recorded incident source could not be confirmed. Do not treat it as zero or healthy."
+                  :canonicalIncidents.attentionCount===0
+                    ?"No unresolved recorded incidents in the checked Staging register. This does not prove every HIISSA service is healthy."
+                    :`${canonicalIncidents.attentionCount} unresolved recorded incident(s) in the latest shared Staging records; critical: ${canonicalIncidents.criticalCount}.`}
+            </p>
+            {canonicalIncidents.verified&&canonicalIncidents.items.length>0?(
+              <ul>{canonicalIncidents.items.map(item=>(
+                <li key={item.incidentId}>{item.title} — {item.state.replaceAll("_"," ")}</li>
+              ))}</ul>
+            ):null}
+            <small>Read-only genuine incident evidence. Notification delivery, scheduled checks and automatic recovery are not yet certified.</small>
+          </div>
+          <button type="button" className={styles.alertAction} onClick={onOpenRecordedIncidents}>
+            Open recorded incidents →
           </button>
         </article>
 
