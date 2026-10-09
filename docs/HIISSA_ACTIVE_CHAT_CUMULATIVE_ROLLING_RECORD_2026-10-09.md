@@ -1339,3 +1339,22 @@ Protected Founder host `app/admin/control-room-preview/page.js` expected Git blo
 **NON-EFFECT:** No previous READY Staging alias reassigned yet; no Production/main/live HIISSA deployment, employee records, incident records, schema, staff journey, auth boundary, Registry source of truth, existing Employee Register practical PASS, prior screenshots or protected Document11–13 touched. Only Git Staging files and additive documentation changed.
 
 **NEXT:** Request exactly one pinned `target:staging` Vercel build at corrective app SHA `197282af0e5edff2641d5e188b6cc8863cfed791`. Inspect all 15 original mandatory tests, new critical/empty/unavailable tests, compilation and READY state; check alias and positive absence of Production-target action. Then obtain Founder visual screenshot of existing Alerts badge and panel with true incident-source empty state. Mark only proven items PASS and promptly evaluate Document13 Controlled Close.
+
+
+## CP-ALERTS-EXACT-STAGING-DEPLOYMENT-REQUEST — 2026-10-09T17:49:57.834Z UTC
+
+**WHAT:** Requested ONE Staging Vercel build for the corrected, explicitly Founder-approved, protected Alerts code commit `197282af0e5edff2641d5e188b6cc8863cfed791`. Vercel returned deployment `dpl_8Kq7uwiCUvav7NF2aoapqKQVVJwy`, `target=staging`, Git source branch `feature/founder-control-room-staging`, commit pinned to the exact app SHA, created INITIALIZING and next checked BUILDING. **NOT YET READY**; no test result at this checkpoint.
+
+**WHY:** Build and run the mandated regression tests before any further Founder practical action; never treat code commits or submitted deploy requests as a test PASS. Preserve existing safe READY version until new Staging build succeeds.
+
+**HOW / PROCESS:** Vercel `create_deployment` existing project ID `prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0`, team `team_0TvmiS7AEQTxO8DSax40SVke`, name `hiissa-relationship-ai-2`, `target=staging`, linked GitHub source `fatibanceo-blip/HIISSA-Relationship-AI-2`, `ref=feature/founder-control-room-staging`, `sha=197282af0e5edff2641d5e188b6cc8863cfed791`. Vercel returned generated preview URL `https://hiissa-relationship-ai-2-fli1oz1mo-hiissa-relationship-ai.vercel.app`; stable Staging alias `https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app` indicated but is not assumed updated until READY+alias checked. Subsequent `get_deployment` showed BUILDING and build logs only initial install so far.
+
+**WHERE / WHO:** Same isolated Vercel Staging project, no duplicate, app commit and deployment above. Founder prior explicit protected code change approval; assistant deployment operator; Vercel responsible for build; Founder practical not yet.
+
+**EVIDENCE / STATUS:** Git staged commit SHA fixed; Vercel remote returned `dpl_8Kq7uwiCUvav7NF2aoapqKQVVJwy` with `target:staging`, INITIALIZING then BUILDING. No PASS claimed.
+
+**FAILURES & CORRECTIONS:** Earlier code review found critical dismissal race and fixed it in corrected commit BEFORE this request; no runtime build failure yet. If any automated test or build fails, mark FAIL, troubleshoot and repair on Staging only, without Production risk.
+
+**NON-EFFECT:** No Production deployment target requested, no live app/main, no new environment, no DB schema/content change, no emails, no staff actions, no docs11–13 change; only normal prebuild of existing Staging project initiated. Do not claim unchanged published alias until independently checked.
+
+**NEXT:** Inspect exact build log windows and test verdicts, confirm READY and alias/commit, record automated and protection results, then offer Founder simple accurate external browser path to the existing Alerts area. Capture Founder observation with screenshot and separate click acceptance before advancing further. Apply Document13 Early Controlled Close as soon as safe.
