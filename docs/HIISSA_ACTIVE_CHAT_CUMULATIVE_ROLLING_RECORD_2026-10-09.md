@@ -1082,3 +1082,45 @@ First perform narrowly scoped authenticated/non-Founder/outside-Staging API boun
 **NON-EFFECT:** Screenshots and assistant explanation did not modify Production/main, live HIISSA, existing Staging application, deployed commit, auth permissions, Supabase tables, employee records, incident state, feature flags, protected Word Documents 11–13, or prior code. This note is documentation-only.
 
 **NEXT:** Await Founder screenshot displaying Operational source health under Employee Register & Attendance. Check observed MONITORING versus UNAVAILABLE, actual real Staging employees/onboarding/attendance counts, fictional ten demo employees exclusion, error wording; compare against independently verified Staging zero counts and record exact PASS/FAIL only for observed elements. Continue separately with authorised negative API checks and incident lifecycle tests when technically accessible. During future Controlled Close incorporate full screenshot and chronology into applicable living Word Documents 01–10 under Document12, and verify Git-to-Word parity before ZIP delivery.
+
+
+## CP-FOUNDER-SOURCE-HEALTH-2026-10-09T17-11-03-675Z — 2026-10-09T17:11:03.675Z UTC — Founder practical screenshot: L1 source monitoring works; completed Employee Register functionality NOT ACTIVE
+
+### WHAT / FOUNDER ORIGINAL WORDING
+Immediately before this screenshot the Founder stated: “It's at the top. You should be specific. I've seen it. Operational source health. It's not active. Let me take it and show it to you.”
+Founder then uploaded an original laptop-screen photograph and asked verbatim: **“Why is it not active?”**
+Assistant explained that the displayed status is **a real operational source-read indicator**, not a clickable activation control, and that the end-to-end employee management, attendance and persistent alerts/recovery functionality is still unfinished in Staging.
+
+### WHY
+Answer the Founder's genuine usability observation without wrongly claiming that an authentic read-only operational check implies the entire Employee Register feature is complete. Reconcile the explicit Founder approval that all Control Room features are to be fully implemented, active and demonstrably functional in Staging before separately gated Production hibernation/release. Avoid mistaking zero records and fictional profiles for a malfunction or a complete implementation.
+
+### HOW / PROCESS
+Visually inspected the Founder's unedited photograph and compared the displayed source-health wording with the previously inspected deployed child code `app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js` and source API `app/api/admin/control-room/employee-register-health/route.js` at app commit `d31801560696d1049e395bc2959a1c16550015e3`. Reconciled with earlier direct read-only source-table count checks in this successor chat (employee 0, application 0, attendance 0) and the latest 9 October controlled-close documentation/rolling ledger. Explained completed-vs-incomplete work plainly to Founder; no proposed fix was executed or represented as working.
+
+### WHERE
+Existing Vercel Staging branch `feature/founder-control-room-staging`, live alias `https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app`, Founder authenticated Employee Register & Attendance screen shown at browser path beginning `/admin/control-room/staff-employee-register-atten...` in photo (full URL is truncated by browser viewport; do not assert entire path). Existing Supabase Staging project `upcssfmilewwshyxyvdf`.
+Original user-provided screenshot in this turn: `/mnt/data/image-1791565774188.jpg`, JPEG 1536 × 1152, 220 KiB approximately, SHA-256 `dc59229fc44ce01bf69db31bcf33564341b89839cc0518fc353cb7272fc36707`. This original image is **attached to this conversation** and **NOT YET independently committed as a Git binary or embedded in an updated Word Controlled Close document**; successors must recover it or mark media missing honestly. The approved durable textual audit location is this Git ledger.
+
+### WHO / AUTHORITY
+Founder tested the actual signed-in Staging screen and supplied photo evidence; assistant interpreted screenshot/status and documented it. Founder retains L3 governance over personnel, permissions, privacy and Production. The source-health information is L1 read-only; failures escalate to Technical Operations L2. No staff credentials or private records used.
+
+### EVIDENCE — WHAT THE SCREENSHOT REALLY PROVES
+- Screen heading: **Employee Register & Attendance**; subtitle “View the team, departments, employment records and separately evidenced attendance.”; **STAGING · FOUNDER ONLY** displayed.
+- Data source dropdown currently **“Prototype employees (10) — Fictional demonstration team”** and visible explanatory warning that those ten profiles are not actual hires or attendance facts.
+- Actual section **“Operational source health — real Staging records only”** shows **“MONITORING · All three sources are readable and currently empty (0 real employees, 0 onboarding applications, 0 attendance events).”** Thus actual Founder browser-visible L1 health result is **PASS for successful aggregate source-read display and accurate distinction of zero real records from fictional roster**, not PASS for complete Employee Register.
+- Same section says **“Source check: L1 read-only”**, requires L2 Technical Operations investigation upon failure and L3 Founder permission for sensitive changes, explicitly states **“Persistent Control Room alerts and automatic recovery are not connected yet”** and **“Fictional test employees are never counted as real hires.”**
+- Summary tiles show **Prototype Employees 10**, **Present Today — (Awaiting certified attendance rules)**, **On Leave — (No verified leave classification)**, **Not Checked In — (Cannot infer from sign-in or roster)**. “Department Overview” tab appears highlighted; screenshot does not establish comprehensive tab behaviour.
+- Earlier independent read-only SQL query on actual Staging DB returned 0 records each for employees, onboarding and attendance, matching the displayed counts at its observed point in time. A screenshot does not prove availability of writes, real HR onboarding, persistent alert delivery, notification, automatic recovery, safe incident handling, attendance/leave computation, multi-user authorisation or Production release.
+
+### STATUS
+**FOUNDER VISUAL PRACTICAL PASS — ONLY FOR THE L1 READ-ONLY OPERATIONAL SOURCE HEALTH DISPLAY**, with matching separate DB aggregate counts previously verified. **END-TO-END EMPLOYEE REGISTER / ONBOARDING / ATTENDANCE NOT COMPLETED, NOT ACCEPTED, NOT FULLY ACTIVE.** Other system checks and actual Founder authorised POST / real incident lifecycle remain **NOT VERIFIED**. Deployed READY is build evidence, not acceptance evidence.
+
+### FAILURES & CORRECTIONS
+No evidence that the L1 read-only health check has failed in this screenshot; **MONITORING is not an activation button or error**. The legitimate Founder concern is that the end-to-end feature is unfinished and status text admits persistent alerts and automatic recovery are not yet wired to this section. Assistant corrected the explanation to separate partial working read-only monitoring from still-incomplete functionality. Do not change the UI merely to disguise unfinished implementation; do not invent staff or simulated attendance as proof. Founder navigation feedback from preceding turn (“it's at the top”) is respected.
+
+### NON-EFFECT
+The visual test, source interpretation, and this additive documentation checkpoint made **no changes** to Production/main, app code, Staging deployment, approved interface, Supabase employee/application/attendance records, permissions, incident records, staff identity, automation, feature flags, or protected Word documents 11–13. No completed feature was turned off and no new feature was activated.
+
+### NEXT
+Explain clearly that Founder need not press anything to activate MONITORING. Preserve original screenshot in the next Word package, including its date and file hash. Respect already-approved staged plan: finish canonical incident/alert/audit lifecycle and safely tested real failure/recovery/Founder visibility; implement real employee onboarding/register and verifiable attendance/leave/reporting without redesigning the approved interface or altering existing Staff Onboarding, and link all material features to the Registry and Control Room. Complete one isolated Staging batch at a time with Founder approval where required, route/security/regression testing and Document12 checkpoints. No Production changes. Do not claim completion until Founder practical acceptance with evidence.
+
