@@ -111,13 +111,13 @@ function eventTitle(event) {
   // No new timeline or Founder dashboard design; this maps the existing audit event.
   if (event.event_type === "hiissa_operational_incident_state_change") {
     const incidentState = String(event.details?.state || "");
-    if (incidentState === "needs_attention") return "HIISSA detected an operational problem";
-    if (incidentState === "investigating") return "HIISSA is investigating an operational problem";
-    if (incidentState === "recovery_attempted") return "HIISSA recorded a recovery attempt — not yet verified";
-    if (incidentState === "verification_pending") return "HIISSA is awaiting independent recovery verification";
-    if (incidentState === "verified_resolved") return "HIISSA verified an operational recovery";
-    if (incidentState === "escalated") return "HIISSA escalated an operational incident";
-    return "HIISSA recorded an operational incident update";
+    if (incidentState === "needs_attention") return "Operational problem detected";
+    if (incidentState === "investigating") return "Operational problem under investigation";
+    if (incidentState === "recovery_attempted") return "Recovery attempted — not yet verified";
+    if (incidentState === "verification_pending") return "Independent recovery verification pending";
+    if (incidentState === "verified_resolved") return "Operational recovery independently verified";
+    if (incidentState === "escalated") return "Operational incident escalated";
+    return "Operational incident updated";
   }
   if (event.event_type === "staff_work_started") {
     return "Customer Support work started";
