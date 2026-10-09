@@ -38,6 +38,28 @@ export default function FounderEmployeeRegisterAttendancePreview() {
   const [status,setStatus]=useState("all");
   const [selected,setSelected]=useState("");
   const [downloadMessage,setDownloadMessage]=useState("");
+  // Read-only operational check of the SAME real Staging sources; never the fictional roster.
+  const [sourceHealth,setSourceHealth]=useState({loading:true,data:null,error:false});
+  useEffect(()=>{
+    if(!apiClient){setSourceHealth({loading:false,data:null,error:true});return;}
+    let live=true;
+    async function inspect(){
+      try{
+        const {data:{session}}=await apiClient.auth.getSession();
+        if(!session?.access_token) throw new Error("UNAUTHENTICATED");
+        const response=await fetch("/api/admin/control-room/employee-register-health",{
+          method:"GET",cache:"no-store",credentials:"same-origin",
+          headers:{Authorization:"Bearer "+session.access_token}
+        });
+        const data=await response.json().catch(()=>null);
+        if(live)setSourceHealth({loading:false,data,error:!response.ok||!data});
+      }catch{
+        if(live)setSourceHealth({loading:false,data:null,error:true});
+      }
+    }
+    inspect();
+    return ()=>{live=false;};
+  },[]);
 
   const reload=useCallback(async()=>{
     setState("loading");setError("");
@@ -93,6 +115,22 @@ export default function FounderEmployeeRegisterAttendancePreview() {
         "Real Staging source, Founder-authorised read only. No employee or attendance actions are activated by this view."}</p>
       {source==="staging"?<button type="button" className={styles.ghostButton} onClick={reload} disabled={state==="loading"}>↻ Refresh Staging data</button>:null}
     </div>
+    <section aria-label="Employee Register operational source health" className={styles.modeBox}>
+      <strong>Operational source health — real Staging records only</strong>
+      <p role={sourceHealth.error?"alert":"status"}>
+        {sourceHealth.loading?"Checking the protected employee, onboarding and attendance sources…":
+         sourceHealth.error?"Source check unavailable — not a verified empty or healthy result.":
+         sourceHealth.data?.sourceState==="READABLE_EMPTY"?
+           "MONITORING · All three sources are readable and currently empty (0 real employees, 0 onboarding applications, 0 attendance events).":
+           sourceHealth.data?.sourceState==="READABLE_RECORDS_PRESENT"?
+           "MONITORING · Real Staging sources are readable. Their records do not certify onboarding or attendance.":
+           "Source status not verified."}
+      </p>
+      <p>Source check: L1 read-only. A failure requires L2 Technical Operations investigation and verified recheck.
+        L3 Founder approval remains required for personnel, access, privacy or Production changes.
+        Persistent Control Room alerts and automatic recovery are <strong>not connected yet</strong>.
+        Fictional test employees are never counted as real hires.</p>
+    </section>
     {state==="error"&&source==="staging"?<p role="alert" className={styles.error}>{error}</p>:null}
     {state==="loading"&&source==="staging"?<p role="status" className={styles.notice}>Checking verified Staging data…</p>:null}
     <div className={styles.metricGrid}>

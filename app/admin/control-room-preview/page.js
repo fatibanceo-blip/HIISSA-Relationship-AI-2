@@ -405,14 +405,6 @@ function useFounderNextAction(authenticated) {
             domainPriority: 30,
           },
           {
-            id: "employee-register",
-            label: "Employee Register source health",
-            endpoint: "/api/admin/control-room/employee-register-health",
-            destination: "failures",
-            destinationLabel: "Open Failures & Reliability",
-            domainPriority: 25,
-          },
-          {
             id: "operations",
             label: "System & Operations",
             endpoint: "/api/admin/control-room/system-operations-health",
@@ -5816,7 +5808,6 @@ function FounderAccessCentre({ authenticated }) {
         </div>
       </div>
 
-      <EmployeeRegisterOperationalSourceHealth authenticated={authenticated} />
       <FounderEmployeeRegisterAttendancePreview />
 
       <div id="staff-access-security">
@@ -7367,66 +7358,6 @@ function SafetyPrivacyModerationModule({
   );
 }
 
-
-// Shared read-only source truth for the EXISTING Staff & Workspaces / Failures
-// homes. It is NOT a second employee registry, incident queue, or approval flow.
-function EmployeeRegisterOperationalSourceHealth({ authenticated }) {
-  const [state, setState] = useState({ loading: Boolean(authenticated), data: null, error: "" });
-  useEffect(() => {
-    if (!authenticated || !adminDataClient) {
-      setState({ loading: false, data: null, error: "Founder authentication is required." });
-      return;
-    }
-    let active = true;
-    async function load() {
-      try {
-        const { data: { session } } = await adminDataClient.auth.getSession();
-        if (!session?.access_token) throw new Error("UNAUTHENTICATED");
-        const response = await fetch("/api/admin/control-room/employee-register-health", {
-          method: "GET", cache: "no-store", credentials: "same-origin",
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        const payload = await response.json().catch(() => null);
-        if (!active) return;
-        setState({
-          loading: false,
-          data: payload,
-          error: !response.ok || !payload ? "Source check failed; this is not a healthy or empty-source result." : "",
-        });
-      } catch {
-        if (active) setState({ loading: false, data: null, error: "Source health could not be verified." });
-      }
-    }
-    load();
-    return () => { active = false; };
-  }, [authenticated]);
-  const item = state.data;
-  const unavailable = Boolean(state.error) || item?.sourceState === "SOURCE_READ_FAILED";
-  const status = state.loading ? "CHECKING" : unavailable ? "UNAVAILABLE" : item?.status || "NOT VERIFIED";
-  return (
-    <section className={styles.section} aria-label="Employee Register source health">
-      <div className={styles.sectionHeading}>
-        <div>
-          <div className={styles.kicker}>CONNECTED STAGING SOURCE · EMPLOYEE REGISTER</div>
-          <h3>Employee, onboarding and attendance source health</h3>
-        </div>
-        <StatusPill label={status} compact />
-      </div>
-      <p className={styles.sectionCopy} role={unavailable ? "alert" : "status"}>
-        {state.loading ? "Checking the existing protected real-data sources…" :
-          state.error || item?.healthMeaning || "No verified source response."}
-      </p>
-      <div className={styles.grid}>
-        <InfoCard title="REAL EMPLOYEES" value={item?.realEmployeeCount ?? "—"} detail="Actual Staging records only; fictional staff excluded." />
-        <InfoCard title="ONBOARDING APPLICATIONS" value={item?.onboardingApplicationCount ?? "—"} detail="Existing Staging source; submission flow not active yet." />
-        <InfoCard title="ATTENDANCE EVENTS" value={item?.attendanceEventCount ?? "—"} detail="Recorded events only; presence and leave classification not certified." />
-        <InfoCard title="ALERT / RECOVERY CONNECTION" value="PARTIAL" detail="Source read failure is visible here. Persistent L2 alerts, incident audit and bounded automatic recovery are NOT YET WIRED." />
-      </div>
-      <p className={styles.sectionCopy}>L1: source read check. L2: Technical Operations investigates failures and verifies a later successful read. L3: Founder approval required for sensitive employee, access, privacy or Production changes. No automatic employee actions.</p>
-    </section>
-  );
-}
-
 function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }) {
   return (
     <>
@@ -7437,7 +7368,7 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
           <h2>{module.label}</h2>
           <p>{module.purpose}</p>
         </div>
-        <StatusPill label="7 LIVE SOURCES · EMPLOYEE READ MONITORING" />
+        <StatusPill label="7 LIVE SOURCES" />
       </div>
 
       <section className={styles.notice}>
@@ -7461,13 +7392,8 @@ function FailuresReliabilityModule({ module, authenticated, onOverview, onBack }
           ["AI & Product", "module6-ai-product"],
           ["System & Operations", "module6-system-operations"],
           ["Admin Security & Audit", "module6-admin-security"],
-          ["Employee Register source health", "module6-employee-register"],
         ]}
       />
-
-      <div id="module6-employee-register" className={styles.moduleJumpTarget}>
-        <EmployeeRegisterOperationalSourceHealth authenticated={authenticated} />
-      </div>
 
       <div id="module6-users-identity" className={styles.moduleJumpTarget}>
         <section className={styles.notice}>
