@@ -702,3 +702,16 @@ First perform narrowly scoped authenticated/non-Founder/outside-Staging API boun
 - Real failure incident→existing audit→Founder visible event; L2 delivery; genuine recovery runner/independent recheck; ongoing monitor schedule and other remaining shared foundations are still incomplete/unverified. Any protected UI change, scheduled automation or Production action requires separate Founder approval.
 - Do not confuse current Git documentation-only HEAD with last deployed application SHA, nor READY Staging with Founder acceptance or Production release.
 - Existing old package structural/embedded media checks are recorded PASS, but fully reproducible pixel checks (Docs06–10) and manual 100%-page visual certification are NOT VERIFIED. Never erase that limitation.
+
+
+### Persistence verification addendum — successor chat SC-2026-10-09-01
+**WHAT:** GitHub successfully committed and the assistant read back the first current-chat checkpoint.  
+**WHY:** Document 12/13 forbids claiming preservation that exists only in the conversation; actual saved evidence must be independently confirmed.  
+**HOW / PROCESS:** Fetched same-branch ledger → appended verbatim Founder words and detailed current-chat chronology → wrote documentation-only commit \`ef3584dbd054d4f3e817e8b9ca96f0eac6698ce0\` → fetched the saved content again by explicit branch and checked for checkpoint marker and exact Founder phrase → fetched Git commit and checked changed paths.  
+**WHERE:** \`fatibanceo-blip/HIISSA-Relationship-AI-2\` / \`feature/founder-control-room-staging\` / \`docs/HIISSA_ACTIVE_CHAT_CUMULATIVE_ROLLING_RECORD_2026-10-09.md\`. Original persistence commit: https://github.com/fatibanceo-blip/HIISSA-Relationship-AI-2/commit/ef3584dbd054d4f3e817e8b9ca96f0eac6698ce0.  
+**WHO:** Assistant carried out the GitHub tools on Founder's approved Staging documentation channel.  
+**EVIDENCE:** Readback checkpoint marker **true**, exact Founder phrase **true**, expected saved file blob SHA \`d42ea615a30b774660236390f20ca30790f3df29\`; first commit diff contained **only** \`docs/HIISSA_ACTIVE_CHAT_CUMULATIVE_ROLLING_RECORD_2026-10-09.md\`.  
+**STATUS:** FIRST SUCCESSOR-CHAT ROLLING CHECKPOINT DURABLY SAVED / READBACK VERIFIED. This short verification addendum is an additional documentation-only Git commit, not a deployed application commit.  
+**FAILURES & CORRECTIONS:** No Git write/readback error; no software test executed.  
+**NON-EFFECT:** No application-source path altered by the first commit. No Production release, Word 01–13 update, UI change, genuine operational incident verification or Founder practical PASS. Any automated downstream Vercel action caused merely by a docs commit has not been checked.  
+**NEXT:** Keep logging future material events, and incorporate this complete current chat—including this verification and later replies—into the appropriate ten additive living DOCX records at mandatory Controlled Close. Do not falsely claim the prior 13 uploaded Word files already contain this new successor-chat history.
