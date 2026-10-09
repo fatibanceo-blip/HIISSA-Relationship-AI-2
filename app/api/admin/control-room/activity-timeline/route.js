@@ -107,6 +107,18 @@ function humanise(value) {
 }
 
 function eventTitle(event) {
+  // Add-only: use the EXISTING Activity Timeline for canonical operational incidents.
+  // No new timeline or Founder dashboard design; this maps the existing audit event.
+  if (event.event_type === "hiissa_operational_incident_state_change") {
+    const incidentState = String(event.details?.state || "");
+    if (incidentState === "needs_attention") return "HIISSA detected an operational problem";
+    if (incidentState === "investigating") return "HIISSA is investigating an operational problem";
+    if (incidentState === "recovery_attempted") return "HIISSA recorded a recovery attempt — not yet verified";
+    if (incidentState === "verification_pending") return "HIISSA is awaiting independent recovery verification";
+    if (incidentState === "verified_resolved") return "HIISSA verified an operational recovery";
+    if (incidentState === "escalated") return "HIISSA escalated an operational incident";
+    return "HIISSA recorded an operational incident update";
+  }
   if (event.event_type === "staff_work_started") {
     return "Customer Support work started";
   }
@@ -196,7 +208,9 @@ function publicEvent(event, founderUserId) {
     caseCode:
       typeof details.case_code === "string" ? details.case_code.slice(0, 80) : "",
     status:
-      typeof details.status === "string"
+      event.event_type === "hiissa_operational_incident_state_change" && typeof details.state === "string"
+        ? humanise(details.state).toUpperCase()
+        : typeof details.status === "string"
         ? humanise(details.status).toUpperCase()
         : typeof details.work_item_status === "string"
           ? humanise(details.work_item_status).toUpperCase()
