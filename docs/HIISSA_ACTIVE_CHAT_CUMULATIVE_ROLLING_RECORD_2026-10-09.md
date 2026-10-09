@@ -1169,3 +1169,24 @@ Protected Founder host `app/admin/control-room-preview/page.js` expected Git blo
 **NON-EFFECT:** No Production, live HIISSA, main branch, staging database rows/schema, staff/employee operations, existing security decisions, Founder navigation/onboarding host, original L1 health GET/source message, incident write API, global badge, emails/notifications or automated recovery modified. One existing Employee Register child receives additive read-only subsection only, with existing Style class reused; new code not a new duplicated Founder dashboard. No release/activation authorisation.
 
 **NEXT:** Re-fetch branch diff and immutable protected host, inspect Staging Vercel build and automated protection gates for commit `7f70602664bf35f469b0f5b8736d2ee70dfcb164`; check compile, READY, branch and target. If build fails, record explicit FAIL + precise correction, never mark PASS. If READY, obtain Founder practical screenshot of the newly appended **Recorded operational incidents — Staging only** section and confirm genuine empty/unavailable/recorded status. Continue only after that with approved canonical alert badge connection, safe recheck and separately tested incident lifecycle. Update this Git record after each significant test and reconcile into Word01–10 before eventual Controlled Close, retaining Doc11–13 unchanged and original media preserved.
+
+
+## CP-MANUAL-EXACT-STAGING-BUILD-REQUEST — 2026-10-09T17:21:47.645Z UTC — Staging build started, NOT yet READY
+
+**WHAT:** After the isolated additive app commit `7f70602664bf35f469b0f5b8736d2ee70dfcb164`, read-only Git diff comparison verified exactly TWO changes with 68 appended lines in the Employee Register child and 19 appended regression test lines; NO deletion and no changed other app/module. Re-read protected Founder host blob `d123b707477854d1811f6f7e2534248c5c7ba056` unchanged; new child blob `741cff9565a51ba1fea158bbcba77d2a6b63b68d` as intended. The existing Vercel deployment list had not registered any new deployment after the code commit and GitHub combined commit status contained no checks. As approved next action, requested ONE explicit Git-source deployment to the existing **STAGING target only** for the exact app SHA.
+
+**WHY:** Need verifiable build and mandatory project regression results before asking Founder to open the new subsection, and never confuse a Git commit with an actually deployed new version. Avoid Production, duplicate environments, arbitrary branch-head selection, or speculative PASS.
+
+**HOW / PROCESS:** Connected Vercel `create_deployment` with project `prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0`, team `team_0TvmiS7AEQTxO8DSax40SVke`, `target: staging`, existing GitHub linked source `fatibanceo-blip/HIISSA-Relationship-AI-2`, branch `feature/founder-control-room-staging`, and pinned `sha: 7f70602664bf35f469b0f5b8736d2ee70dfcb164`. No Prod target, changes to project settings, database, environment credentials or git branch.
+
+**WHERE:** New Staging deployment `dpl_7eHXYGNY8t9UTX96j9RcdxioJu2W`; generated version URL `https://hiissa-relationship-ai-2-iwmd9qk3d-hiissa-relationship-ai.vercel.app`; original stable staging alias `https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app`; existing Node/Next.js project. Prior READY app remains `dpl_23CUUCnvpp94KVesb51Lfs1HkY9x` until confirmed replacement.
+
+**WHO:** Founder approved safe Staging continuation; assistant invoked limited existing Staging build; Vercel builds/tests automatically; Founder acceptance only later in own browser.
+
+**EVIDENCE / STATUS:** Vercel create_deployment returned `id=dpl_7eHXYGNY8t9UTX96j9RcdxioJu2W`, `target=staging`, `state=INITIALIZING`, pinned Git commit SHA and branch, Staging alias indicated. **DEPLOYMENT REQUEST ACCEPTED / INITIALIZING, NOT READY, BUILD TESTS NOT YET VERIFIED.** GitHub source scope/host blob verified independently as above.
+
+**FAILURES & CORRECTIONS:** Automatic build for earlier commit had not materialised; used explicit tightly scoped pinned Staging deployment instead of guessing. No app runtime error yet evidenced. If ERROR, investigate build logs and apply narrow correction while old working alias is protected; never claim success from request acceptance.
+
+**NON-EFFECT:** No Production/main, live HIISSA app, staff/onboarding/attendance rows, Supabase schema, credentials, approved Founder Control Room host, legacy Get health output, official Registry identity or final 13-document package altered. This record is a documentation-only checkpoint on the existing branch.
+
+**NEXT:** Inspect this exact Vercel deployment state and build logs for all mandated regressions, then verify alias assigned to correct commit and one honest observed state in Founder browser. Record failure/repair or READY; do not instruct Founder to test the new view before READY and alias verification.
