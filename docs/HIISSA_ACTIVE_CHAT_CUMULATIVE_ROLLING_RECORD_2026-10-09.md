@@ -847,3 +847,31 @@ First perform narrowly scoped authenticated/non-Founder/outside-Staging API boun
 **NON-EFFECT:** No application source edits, Vercel build/deployment/promotion, config change, SSO bypass, scheduled runner, fake incident, Supabase table/row or permission mutations, protected UI/onboarding host, original designs, Registry, staff permissions, Production/main or production auth/database access. Protected Docs 11–13 unchanged; uploaded Docs01–10 not yet additively updated in this chat. Documentation-only Git commit will be tracked as separate from deployed app.
 
 **NEXT:** Preserve and verify this checkpoint. If an approved authenticated test channel is available without extracting tokens or weakening Vercel protection, do the proper Founder session positive healthy source GET and protected POST, negative unauthenticated/unauthorised gates and exact audit/timeline responses with expected/actual evidence. Until then keep NOT VERIFIED. Before broadening to schedules, L2 delivery and independently tested recovery or changing existing GET guard/permissions, prepare a narrow risk/effect explanation and obtain required Founder approval. On mandatory Early Controlled Close, embed this entire chronology (including both exact Founder phrases, code SHAs, one-row admin count, three DNS blockers, risk/proposal, and no-effects) in the role-appropriate living Documents01–10; preserve Docs11–13 and run 13-DOCX QA.
+
+
+---
+
+## SC-2026-10-09-05 — Founder orders Document12 pre-read before Controlled Close package
+**DATE:** 9 October 2026, Europe/London. GitHub persistence commit supplies exact authoritative timestamp.
+
+**FOUNDER ORIGINAL WORDS VERBATIM:** “Please read the mandatory document standard before you write the 13th document, and make sure the documents are all in line with the mandatory document standard. Most importantly, from the beginning of this chat to the end.”
+
+**WHAT:** During Early Controlled Close the Founder reiterated full Document12 pre-reading, compliance across the complete 13-document package, and full original current-chat chronological coverage. Acknowledged this as a binding compliance clarification, not as authority to amend protected Document13 (or Documents11–12). Initiated full local DOCX extraction and standard audit before writing any living Word updates.
+
+**WHY:** Earlier HIISSA packages omitted details that remained Git-only; the Founder wants complete reproducible history in actual Word files, with no late reconstruction, missing original words, overlooked failures or silent historical replacement.
+
+**HOW / PROCESS:** Pause new development under Document13; read the actual original uploaded DOCX12 (not a historical summary), including mandatory all-eleven material fields, 58 feature dimensions when relevant, per-document role matrix, provenance/evidence gate, visual/layout/source/media preservation, fixed 13-file packaging, and precise successor handover. Read Document13 rolling checkpoint and protection instructions. Compare current working 13 actual .docx files to extracted history; append role-specific chronology to DOCX01–10; preserve original byte streams of protected DOCX11–13; ensure all Founder messages and assistant discussions, Git checkpoints, technical probe successes and failures, plus this latest instruction are included. Verify the edited actual DOCX integrity, original content/media preservation, rendering to the feasible extent, final 13-name ZIP. Distinguish automated checks from manual full page inspection and do not certify absent checks.
+
+**WHERE:** Existing Git Staging rolling record; actual 13 numbered source Word files from this chat; final single successor 13-DOCX ZIP. No new Vercel/Supabase work authorised during close.
+
+**WHO:** Founder required the compliance standard; assistant is responsible for execution, honest reporting and final delivery.
+
+**EVIDENCE:** This exact Founder message; underlying DOCX12 and DOCX13 uploads and their extracted original text, rather than an assistant paraphrase; previously saved CP01–04 Git evidence. DOCX update/render/QA claims must be entered only AFTER actual work.
+
+**STATUS:** FOUNDER INSTRUCTION ACTIVE; ADDITIVE CONTROLLED CLOSE IN PROGRESS. Do not preclaim updated Word package completion.
+
+**FAILURES & CORRECTIONS:** Prior source chat documented Git-only omissions and unrepeatable DOCX pixel QA. This close must not repeat those errors. New conflict seen for reconciliation: protected Docs11–13 include earlier Chat26 “Emergency Pause” stopping-point reference and commit \`cfafcc3ac37350b931c9fd15cc5b3887196bb5fc\` / deployment \`dpl_35H1S1JudV89VUZzgesZ7QasEXdD\`, while living Docs01–10 have later 09 October source \`d31801560696d1049e395bc2959a1c16550015e3\` / deployment \`dpl_23CUUCnvpp94KVesb51Lfs1HkY9x\`. Independent Vercel canonical alias and branch deployment list previously confirmed latter is currently READY. Preserve former as immutable historical record and flag chronological conflict instead of modifying protected texts.
+
+**NON-EFFECT:** No original approved UI, Staging application runtime/incident state, Supabase, authentication, Production/main, protected Docs11–13 or feature activation changed. This is documentation-only.
+
+**NEXT:** Finish exact current-chat chronology, role-specific additive Word coverage, structural/media/render QA, compare protected bytes, package exactly 13 separate Word files and hand over with honest unverified gates; commit separate post-package closing notice only when full Word incorporation is not thereby contradicted.
