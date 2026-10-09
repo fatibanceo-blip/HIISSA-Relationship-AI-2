@@ -1,0 +1,50 @@
+# HIISSA — ACTIVE CHAT CUMULATIVE ROLLING RECORD — 9 OCTOBER 2026
+
+**Status:** ACTIVE SUCCESSOR CHAT — VERIFICATION BEFORE ANY DEVELOPMENT.
+**Checkpoint creation time:** 2026-10-09T09:05:10.305Z (UTC); United Kingdom timezone Europe/London.
+**Environment:** EXISTING STAGING ONLY. Production and live HIISSA protected; NO release or activation authority.
+**Approved evidence location:** `fatibanceo-blip/HIISSA-Relationship-AI-2` / `feature/founder-control-room-staging` / `docs/HIISSA_ACTIVE_CHAT_CUMULATIVE_ROLLING_RECORD_2026-10-09.md`.
+**Prior authoritative source:** Founder-supplied numbered 9 October 2026 Controlled Close Documents 01–13; most recent appended handover in Documents 04 and 10; protected Documents 11–13 govern.
+**Additive record rule:** Preserve this chronological record in full. Each later material action adds a dated checkpoint without removing past entries. Incorporate the detailed entries into the appropriate living Documents 01–10 at a properly verified Controlled Close. This file is not itself a new authorised 13-document ZIP, phase completion, or test certification.
+
+## CP-00 — Source receipt, reconciliation and safe continuation
+**WHAT:** Founder supplied individually numbered current 13-document Word package, directed "Read all 13 Documents", then "Carry on, what are we doing next?" The latest appended Document 04 / Document 10 handover was identified as overriding older historical stopping points for continuation, without deleting history.
+**WHY:** Prevent restart, inherited-state confusion, accidental code changes and uninformed Production operations.
+**HOW:** Reviewed file text, governance and latest dated handover sections. Cross-checked with read-only connected GitHub/Vercel project data.
+**PROCESS:** Source receipt → governance consultation → identify latest technical checkpoint → read-only repository branch comparison and Vercel deployment read → inspect approved protected UI and Employee Register child/health API code.
+**WHERE:** `fatibanceo-blip/HIISSA-Relationship-AI-2`; `feature/founder-control-room-staging`; `app/admin/control-room-preview/page.js`; `app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js`; `app/api/admin/control-room/employee-register-health/route.js`; `app/api/admin/control-room/employee-register/route.js`.
+**WHO:** Founder directs development and holds approval gates; assistant performs read-only verification and maintains documentary evidence; access to employee operations remains Founder-gated.
+**EVIDENCE:** The connected GitHub comparison of `74982adc0a6b227d0ca0b6db9ffa46d6229e7b94` with `feature/founder-control-room-staging` returned IDENTICAL (0 ahead, 0 behind). Vercel returned project `prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0`, current deployment `dpl_3sDnUKVWFha89jYRzSczDjaXmYHD`, state READY, target staging, commit `228d1534989943b5a89939935c27c8be79730f64`, alias `https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app`. The prior `dpl_6CnF7DpHCQ9dHH3dfK4CaKDS4X4M` was ERROR, then corrected by the READY build.
+**STATUS:** READ-ONLY REPOSITORY AND VERCEL CHECKS VERIFIED AT CHECKPOINT. Deployment READY is NOT practical acceptance of Employee Register, real onboarding, attendance, or any feature. Browser-dependent functionality and 401/403/404 negative HTTP checks NOT VERIFIED in this successor chat. Prior historical claims remain at their original evidence levels.
+**FAILURES & CORRECTIONS:** Previous failed build explicitly distinguished from corrected READY deployment; no new runtime failure diagnosed or fixed. Historical read-only checks are not misrepresented as newly passed Founder tests.
+**NON-EFFECT:** No application code, approved designs, Supabase data, Vercel deployments, Production/main, live app, identity, or working journeys were changed by these read-only checks.
+**NEXT:** Founder practical phone/browser test: existing Staging link → Founder login → Staff & Workspaces → Employee Register & Attendance → verify real Staging source-health message, independently identify the fictional ten prototype staff and real records, verify navigation/mobile. Record screenshot PASS/FAIL. Then test authorised API negative boundaries (401, 403, 404) without credentials disclosure or Production requests.
+
+## CP-01 — Founder renewed Production, live-app and all-feature protection instructions
+**WHAT / ORIGINAL FOUNDER WORDING:**
+> "Do not touch production. All working features must not be broken. They should be preserved and they should not be trusted. Live Hisa app must not be touched neither. Must not be broken."
+> "And make sure every feature you create in this chat, you must protect it. It's very important so that they don't get broken. So you can carry on."
+
+**WHY:** Every working, approved or newly introduced HIISSA capability must survive later feature work without unintended changes; Production and live HIISSA must be safe.
+**HOW:** Apply approved-feature protection to each new Staging feature before and throughout implementation: document exact scope/approval/visual and behaviour; identify canonical Experience Registry identity and Control Room operational linkage; capture protected source paths and baseline blob/hash where feasible; keep all changes modular and isolated; inspect changes and compare to baseline; preserve prior functionality; run targeted regression and permission tests; require explicit Founder practical acceptance before claiming PASS. Do not redesign or alter approved onboarding.
+**PROCESS:** Record the Founder wording and approval boundary → establish baseline → propose specific work → obtain explicit approval for substantive change → implement ONLY the approved narrow Staging scope → test intended and non-effect journeys → record PASS/FAIL/correction evidence → preserve protection evidence → hold Production and activation under separate approval gates.
+**WHERE:** Same existing isolated Staging environment and branch listed above, protected Founder Control Room host `app/admin/control-room-preview/page.js` previously confirmed source blob `d123b707477854d1811f6f7e2534248c5c7ba056` at app SHA `228d153...`. Docs 11–13 remain protected. No new parallel environment.
+**WHO:** Founder grants approvals and performs/accepts practical UI checks; assistant performs non-destructive verification, implements only authorised changes and records every material event; subsequent chats inherit the full protection rule.
+**EVIDENCE:** Two Founder messages in this chat; read-only source fetch confirmed protected host blob; app-deployment meta and target staging confirmed via Vercel. No new feature has been created in this chat.
+**STATUS:** RULE REAFFIRMED / MUST FOLLOW; NOT a production release or new implementation approval. Wording "should not be trusted" is preserved verbatim; no silent reinterpretation or permission to touch features is inferred.
+**FAILURES & CORRECTIONS:** No new app regression observed in this chat. Historical failure modes include mistaken older immutable Staging URL and prior failed build; both require guarding against regression. Practical test still due.
+**NON-EFFECT:** No Production, live HIISSA, existing code, database data, approved UI or protected journeys changed as a result of the renewed instruction.
+**NEXT:** Complete source-health practical Founder test. If any screen/permission deviation occurs, stop, record FAIL and screenshot, investigate narrowly, and seek approval before correction.
+
+## CP-02 — Existing Employee Register source inspection, not functional certification
+**WHAT:** Read deployed sources to identify exact expected UX and security boundaries without altering any file.
+**WHY:** Offer Founder a precise practical test, prevent confusing fictional staff with real hires, avoid false PASS claims from code-only review.
+**HOW:** Inspected `FounderEmployeeRegisterAttendancePreview.js`, protected host source and the two relevant read-only Next.js API routes at deployed app SHA.
+**PROCESS:** Inspect source → record visible labels and expected remote conditions → distinguish static safeguards from runtime-tested outcomes.
+**WHERE:** `app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js` source blob `dfd4368273928e39f085c98ba98330ff17535dbe`; `app/api/admin/control-room/employee-register-health/route.js` blob `9fff0f207bff6651a76088c2a1e85a379c5c6a9c`; `app/api/admin/control-room/employee-register/route.js` blob `58301c6ad23ad1e06ed0f6eca442fc1aa812d88f`.
+**WHO:** Founder authorised user; fictional demo identities are not real staff. Technical Operations L2 investigates failures; L3 Founder approval needed for personnel/access/privacy/Production changes.
+**EVIDENCE:** Source-health user copy checks employee, onboarding and attendance source aggregate counts, displays MONITORING only when reads succeed, and displays "Source check unavailable — not a verified empty or healthy result." on read error; `sharedAlertPersistence` and `incidentEventPersistence` return NOT_WIRED. Code requires Staging branch/non-Production; no bearer yields 401 if configured; non-Founder yields 403; outside allowed environment yields 404; read failure yields 503. These are code-level expected outcomes ONLY.
+**STATUS:** CODE INSPECTED, functionality and negative HTTP responses NOT YET PRACTICALLY CERTIFIED. Source UI initially defaults to 10 fictional demo profiles with a separate verified-real selector. Real employee and attendance lifecycle NOT COMPLETE.
+**FAILURES & CORRECTIONS:** None newly evidenced during inspection; earlier failed deployment already corrected as above. Alert persistence/automatic recovery remain unfinished, not silently promoted to ready.
+**NON-EFFECT:** No writes, employee actions, attendance actions, invitations, permissions, live app changes, deployment or Production effects from inspection.
+**NEXT:** Founder practical UI test and screenshot; then narrowly scoped negative API testing; follow remaining authorised work only after evidence and any required approvals.
