@@ -340,3 +340,19 @@ First perform narrowly scoped authenticated/non-Founder/outside-Staging API boun
 **FAILURES AND CORRECTIONS:** Past broader parent host change was blocked by immutable guard; never repeat. The proposal must not create a second approval queue or duplicate existing audit history, and a new state store is conditional upon demonstrated genuine missing lifecycle functionality.
 **NON-EFFECT:** This recording changes no app code, database rows/schema, Vercel deployment, Production or live HIISSA, existing approved onboarding/Save & Sync/Talk/FREE/PLUS, security boundaries, or protected Documents 11–13.
 **NEXT:** Verify exact Staging server schema/constraints and route/data patterns, implement only justified additive capabilities, run safe tests, distinguish code committed vs Staging READY vs Founder practical PASS; persist detailed next checkpoints before proceeding.
+
+
+## CP-16 — 2026-10-09T10:04:13.601Z UTC — FOUNDER MANDATORY NO-REDESIGN / ADDITIVE-ONLY RESTATEMENT DURING FIRST SHARED INCIDENT BATCH
+
+**WHAT / FOUNDER ORIGINAL WORDING (verbatim):**
+> "Please don't change the design. Don't change any design I have approved. You can only add to it, but don't change anything I have already approved. You can add to it."
+
+**WHY:** Strengthen protection of every approved working screen, style, phrasing, interaction, interface layout and approved functionality; avoid repeating previous protected-host build failure.
+
+**HOW / PROCESS / REQUIRED DEVELOPMENT BOUNDARY:** Treat all Founder-approved UI design, pages and styles as immutable for this incident/alert batch. Reinspect baseline sources before and after any change; **NO edits** to existing Control Room host, styles or child screen, onboarding, core Talk, saved conversation journeys, supported regional/voice interfaces or any other approved design. New isolated server-side modules/files, idempotent audit and Staging-only operational schema may be added if the earlier strictly additive scoped Founder approval supports it. New user-visible additions, if needed later, must respect approved interface design and require a separate explicit Founder review where there is any risk of altering approved placement/wording. Do not modify or weaken protection validator or Doc11/12/13. Preserve the branch, current working Staging deployment and test status until new batch independently passes.
+**WHERE:** `app/admin/control-room-preview/page.js` protected blob baseline `d123b707477854d1811f6f7e2534248c5c7ba056`; `app/admin/control-room-preview/page.module.css`; `app/admin/control-room-preview/FounderEmployeeRegisterAttendancePreview.js`; all other approved screens and working features unchanged. Approved isolated Staging repo `fatibanceo-blip/HIISSA-Relationship-AI-2`, branch `feature/founder-control-room-staging`.
+**WHO:** Founder provided binding instruction. Assistant records, audits, and implements only additive work within previous narrowly scoped Staging approval.
+**EVIDENCE / STATUS:** Founder statement above; documentation-only checkpoint, no UI changes. First batch source analysis remains in progress; protected-host edit previously caused FAIL and is explicitly prohibited.
+**FAILURES & CORRECTIONS:** Prohibited any stealth UI redesign in the course of backend monitoring integration. Absent meaningful UI change, avoid claiming Founder visual PASS.
+**NON-EFFECT:** No Production, live HIISSA, feature activation, current working UI, approved design, app deployment, existing source or database altered by this checkpoint.
+**NEXT:** Continue isolated additive first batch, verifying a zero-diff for approved UI files in GitHub and in test gates. Record exact changes, failures, security tests and deployment evidence under Document 12.
