@@ -2099,3 +2099,28 @@ NEXT: Give Founder a tightly scoped, plain-English proposal with (1) Founder-onl
 **NON-EFFECT:** Production/main, live HIISSA, Supabase roles/rows/functions, staff accounts/sessions, permission/identity gate, Registry, Founder Approval Inbox, Incident Charts, Magic Link and Save & Sync, Emergency Pause and protected visual designs not changed by startup or scope selection. Documents 11–13 remain protected and untouched.
 
 **NEXT:** Implement the narrowly scoped component-only repair on this branch; verify actual Git commit and Staging deployment/build when available; add a fresh timestamped post-implementation checkpoint here and reconcile Word01–10 before any final Controlled Close. Keep practical Founder and negative HTTP tests pending until legitimate evidence exists.
+
+
+---
+
+## 2026-10-10 — R21 — Staging Staff Session & Device Control truthful-source and uncertain-action repair CODE COMMITTED
+
+**WHAT:** Implemented the R20 pre-scoped application repair. The Staff Session & Device Control screen now separately records whether the API roster is actually verified before displaying an empty roster or a numeric active-staff count. Failed source read/JSON/unexpected response, missing session or network exception instead shows “Unverified” and an explicit source-unavailable explanation. Staging access-state change and Force Sign Out now handle request/network failures and distinguish confirmed, audit-reported success from an unknown outcome. A successful state-changing response followed by a failed verification refresh reports the action as recorded but does not misrepresent refreshed roster as verified. No automatic retry of state-changing actions; Founder is prompted to verify first.
+
+**WHY:** Prevent the specific false healthy-empty message and unhandled action fetch errors in the real existing UI. Safeguard against unsafe double action when a POST may have succeeded but its HTTP response is lost. Fulfil previously approved truthful operational monitoring, controlled recovery and clear Founder guidance.
+
+**HOW / PROCESS:** Kept existing page structure, styling, route, permissions and user journey. Modified only existing React child component: added state.verified; load() independently validates API response status MONITORING and staff array and catches failures; active-staff card now displays Unverified if not confirmed; empty state only renders when verified; action functions require the approved status plus auditRecorded === true, use catch/finally and reload feedback. Confirmed changed blob by independent GitHub fetch after commit. Compared Git HEAD to prior R18 SHA and confirmed the two new files changed so far are existing Founder component and rolling ledger.
+
+**WHERE:** Existing GitHub repository fatibanceo-blip/HIISSA-Relationship-AI-2; branch feature/founder-control-room-staging; application path app/admin/control-room-preview/FounderStaffSessionDeviceControl.js; commit 36045f1a243de5db7b1c5c8201c43ef0d631ca57; new source blob 35d4648ebaaaba10bc5bf70e21bbed7efe567add. Earlier R20 evidence-ledger commit a9105597dbe9bf679ed91179255572dde57794f0.
+
+**WHO / SECURITY:** Only existing Founder-gated route can perform actual staff access actions; no privileges or identity flows changed; no private tokens displayed in UI. Source-examination and Git commit completed by assistant.
+
+**EVIDENCE:** GitHub write returned commit 36045f1a...; independent GitHub fetch on same branch returned the new blob and required status guards. Git compare e15273f2...→branch reported 2 commits ahead, exactly component and ledger changed. Vercel list_deployments at checkpoint returned latest existing READY deployment dpl_4tMho9YGyC5WXogEWF7uEvrcX3Jm for old application 9ee078e0..., NOT the new application commit. Thus new source is Git COMMITTED but NOT VERIFIED DEPLOYED/READY; new browser test NOT VERIFIED. No real staff actions performed.
+
+**STATUS:** CODE COMMITTED / REMOTE SOURCE VERIFIED. New Staging BUILD, runtime behaviour and Founder practical acceptance PENDING. Prior original Staging build remains READY, but its existence does not prove the new commit.
+
+**FAILURES & CORRECTIONS:** Original source read/error misclassification and uncaught access-action network exception corrected at code level; runtime regression unknown. No claim of actual failed HTTP/staff action. Staging deployment trigger currently not evidenced.
+
+**NON-EFFECT:** No changes to server staff access route, Founder membership, staff role assignments, Supabase schema/rows/RPC, pending approvals, original Registry, incident alert projection, production/main, protected live user journeys, or protected Documents11–13. No action executed against staff.
+
+**NEXT:** Add narrow automated regression checks for this newly fixed truthful-source contract without weakening existing gates; verify Staging build/deploy against *new application SHA* and capture actual result. Keep practical Founder Access & Security and Emergency Pause tests pending until performed; append another material checkpoint after test/deployment. Reconcile full R20+ events in living Word01–10 BEFORE any ZIP.
