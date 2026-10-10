@@ -2231,3 +2231,24 @@ NEXT: Give Founder a tightly scoped, plain-English proposal with (1) Founder-onl
 **FAILURES / CORRECTIONS:** No observed build failure; none claimed. Static visibility and security gate testing still needed. Existing test/document requirement forbids presenting successful source commit as functional PASS. A permanent incident key suppresses duplicate recording, and unresolved incident reactivation/independent recovery remains future separately approved work.
 
 **NON-EFFECT / NEXT:** Production/main untouched; real staff, test people, sessions, role assignments, Founder Approval Inbox, existing Activity Timeline, protected Founder page, Registry, Magic Link/Save & Sync, audit DB rows, protected Doc11–13 unchanged. Next add deterministic mocked contract test, wire it into existing prebuild and foundation suite, run build only on existing Staging and immediately checkpoint actual deployment or failures.
+
+
+---
+
+## 10 October 2026 — R27 — Staff source incident regression added; exact prebuild candidate freeze
+
+**WHAT:** Added deterministic mocked regression to new Staff Session & Device Control source incident helper and registered it in BOTH prebuild and verify:foundation. Test source commit 648b06c37a296f5867e4391f5e766bcf5293019c; package registration commit da1a3d10b583a2fd6cb4429a48b4227a5f9c346c. Prior new route and helper from R26 unchanged.
+
+**WHY:** Ensure future edits cannot silently turn real source errors into healthy zero counts, insert an incident for empty-but-readable data, disclose actual staff information, manufacture staff errors, disable Founder-only checks, remove original tests, or bypass canonical incident/audit handling.
+
+**HOW / PROCESS:** New scripts/validate-staff-session-operational-incident-producer.mjs tests mock RPC arrays for verified zero and records present, exception/error/malformed source, insertion on actual mocked source failure, canonical metadata and L2/no-retry policy, duplicate suppression (23505), insert failure fail-closed, missing service client, and route/source/founder/staging/protected suite contracts. Mock objects only; NO actual real staff, client auth, database writes, mocked identities placed in Staging, or live incident creation. Added npm run test:staff-session-incident-producer after prior test:staff-session-source-truth in existing prebuild and verify:foundation; retained old commands and protected host. This is a required regression gate for the actual new build, not runtime certification.
+
+**WHERE / WHO:** Same known Staging branch, existing project, tested source paths in R25/R26. Assistant wrote code; Founder still approves practical acceptance/releases. Current app build candidate after test registration da1a3d10b583a2fd6cb4429a48b4227a5f9c346c, preceding checkpoint HEAD 79b5c2156cf8f0e2d3dc3f589fadf624b9427463.
+
+**EVIDENCE / STATUS:** GitHub compare from R24 ab0f1fd70c646e6737517c47354486e6ac8781e3 to candidate branch showed six commits, only expected new POST route, new helper, new test, package scripts and additive ledger changes. Protected app/admin/control-room-preview/page.js blob f2337383d9c41e5b79edbad8795a12d8661a2f13 EXACT unchanged. Existing previous Vercel READY remains dpl_6Q4XLWffF6ZJdxkkfoVsmJ3jnBG6 for R23 app SHA 0b2065c964fcc330dc2bcac230ec1e25957045d9. New test COMMITTED but not yet executed; new application NOT YET DEPLOYED; browser/auth practical NOT VERIFIED.
+
+**FAILURES & CORRECTIONS:** No new build run yet, no PASS claimed. Vercel automatic branch deployment not present in observed latest listing, so next explicit existing Staging deployment must be against the exact current SHA and preserve target staging, followed by log inspection. If new test/build fails, do NOT treat previous READY as a new successful build.
+
+**NON-EFFECT:** No protected host, Production/main, Supabase data/schema, staff action/personnel/permission, 10 demo examples, Registry identity, prior tests, auth, incident table, audit trigger, Founder Inbox or Docs 11–13 changed.
+
+**NEXT:** Freeze this new app candidate after documentation checkpoint, confirm exact latest SHA and create deployment ONLY to existing Vercel Staging project targeting staging; capture actual prebuild PASS/FAIL and Next build or errors. Write next checkpoint immediately, including any fix and exact SHA. Early Controlled Close required after this substantial code sequence, with all material Git/chat-to-Word parity under Document12.
