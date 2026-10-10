@@ -2072,3 +2072,30 @@ NEXT: Give Founder a tightly scoped, plain-English proposal with (1) Founder-onl
 **STATUS / FAILURES & CORRECTIONS:** The Founder explicitly rejects a recurring pattern of self-claimed compliance without actual pre-delivery source parity; earlier post-ZIP d6ba0c16 omission was confirmed and amended historically. R17 corrected R13's invented attempted HTTP URL check, which was NOT ACTUALLY ATTEMPTED. This new document-strengthening work is a protected-doc Founder-approved ADDITIVE amendment, not a product feature implementation; do not label delivery-workflow approval as Staging build or Production release. Never promise every development chat can ship a feature despite true dependencies.
 
 **NON-EFFECT / NEXT:** No Production/main, live HIISSA app, Staging application code, Supabase records/roles, staff identities, genuine incidents, existing protected journeys or Docs11/13 are changed in this documentary correction. Keep all pre-existing Doc12 text, tables/media unchanged. Freeze this final ledger commit, reflect R13–R18 in appropriate Word01–10 and approved Doc12 appendix, render and run actual gate, create one verified 13 DOCX ZIP and make it accessible. On successor restart, choose next approved application delivery slice rather than more repetitive baseline checks.
+
+
+---
+
+## 2026-10-10 — R20 — Successor startup verified; approved Staging Staff Session source-truth repair scoped (PRE-IMPLEMENTATION)
+
+**WHO / ORIGINAL REQUEST:** The Founder provided all 13 R18 Word documents, directed “Read all 13 documents,” then “Carry on.” Existing Document12 R18 directs one genuine already-approved Staging delivery in each substantive development chat; Document10 successor handover specifically permits an independently previously approved Staff & Workspaces/incident operational slice in parallel with outstanding Founder acceptance.
+
+**WHAT:** Independently confirmed GitHub branch feature/founder-control-room-staging equals documentary head e15273f2b0c45579e5b2924ab43e42dbe563e3eb (compare identical, zero commits ahead/behind). Independently retrieved Vercel deployment dpl_4tMho9YGyC5WXogEWF7uEvrcX3Jm: READY, target=staging, application commit 9ee078e0d0fdb175c473e27d3d12920a65cd09c4, existing alias. Supabase project upcssfmilewwshyxyvdf identified ACTIVE_HEALTHY. Inspected the existing Founder Staff Session & Device Control code and found two truthfulness/recovery gaps: a failed roster request also displays the misleading “No active Staging staff identity” empty state; staff access/sign-out action fetch exceptions are uncaught, leaving an uncertain action result without safe explicit Founder feedback.
+
+**WHY:** The Founder requires active, reliably monitored real systems, honest unavailable versus zero states, private security operations and explicit error/recovery behaviour; a communication failure must not imply zero staff, nor induce risky blind repeat of an access-changing operation.
+
+**HOW / PROCESS:** Read current authority and latest appended R18 package → independent read-only GitHub/Vercel/Supabase checks → inspect actual source at app/admin/control-room-preview/FounderStaffSessionDeviceControl.js and authorised route app/api/admin/control-room/staff-session-device-control/route.js → identify the narrow UI-only correction → prepare implementation with no backend/security/role change. The authorised scope is existing already-approved Staff Session & Device Control, not the proposed management delegation feature, and does not bypass outstanding Founder practical acceptance.
+
+**WHERE:** Repo fatibanceo-blip/HIISSA-Relationship-AI-2; existing branch feature/founder-control-room-staging; existing Staging deployment and staging database. Existing source component and unchanged protected Founder gate.
+
+**WHO / PERMISSIONS:** Only the authenticated Founder may submit existing Staging staff access actions. Assistant may implement this narrow frontend reliability fix under existing approval; no fabricated identities, no background staff actions, no Founder practical PASS without actual observation.
+
+**EVIDENCE:** Connector GitHub compare e15273f2... to branch: identical; Vercel deployment actual READY metadata; Supabase list_projects returned upcssfmilewwshyxyvdf ACTIVE_HEALTHY; source blob c1fd609ddb143a9ab64a22f3ae04e7634cae4bee and server route blob e5d672c5b6ad5c685633c5db107e3f897800251a inspected. Static bug identified by actual rendered JSX condition !state.loading&&!state.staff.length even when state.error exists; fetch calls without catch in action functions.
+
+**STATUS:** STARTUP VERIFIED READ-ONLY; DESIGN FOR NARROW ALREADY-APPROVED REPAIR ESTABLISHED; NOT YET CODE-COMMITTED, BUILT, DEPLOYED OR FOUNDER-TESTED. Historical 401/403 runtime and Emergency Pause/Access & Security practical acceptance remain NOT VERIFIED.
+
+**FAILURES & CORRECTIONS:** This is source-level diagnosis, not an observed incident or fabricated practical FAIL. Correct by representing verified-readability explicitly and showing uncertainty when an access action cannot be confirmed; never automatically retry a state-changing request.
+
+**NON-EFFECT:** Production/main, live HIISSA, Supabase roles/rows/functions, staff accounts/sessions, permission/identity gate, Registry, Founder Approval Inbox, Incident Charts, Magic Link and Save & Sync, Emergency Pause and protected visual designs not changed by startup or scope selection. Documents 11–13 remain protected and untouched.
+
+**NEXT:** Implement the narrowly scoped component-only repair on this branch; verify actual Git commit and Staging deployment/build when available; add a fresh timestamped post-implementation checkpoint here and reconcile Word01–10 before any final Controlled Close. Keep practical Founder and negative HTTP tests pending until legitimate evidence exists.
