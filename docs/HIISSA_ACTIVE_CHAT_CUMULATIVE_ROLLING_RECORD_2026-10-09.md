@@ -2124,3 +2124,22 @@ NEXT: Give Founder a tightly scoped, plain-English proposal with (1) Founder-onl
 **NON-EFFECT:** No changes to server staff access route, Founder membership, staff role assignments, Supabase schema/rows/RPC, pending approvals, original Registry, incident alert projection, production/main, protected live user journeys, or protected Documents11–13. No action executed against staff.
 
 **NEXT:** Add narrow automated regression checks for this newly fixed truthful-source contract without weakening existing gates; verify Staging build/deploy against *new application SHA* and capture actual result. Keep practical Founder Access & Security and Emergency Pause tests pending until performed; append another material checkpoint after test/deployment. Reconcile full R20+ events in living Word01–10 BEFORE any ZIP.
+
+
+---
+
+## 2026-10-10 — R22 — Permanent Staging prebuild regression added; deployment gate pending
+
+**WHAT / WHY:** Added a specific automatic build-time regression check for the already-implemented Staff Session & Device Control source truth and access-action uncertainty safeguards. The Founder requires working features to stay protected during later Control Room work; the previously added UI fix alone could regress silently.
+
+**HOW / PROCESS:** Created scripts/validate-staff-session-source-truth.mjs and registered npm run test:staff-session-source-truth in package.json. Prepended that check to existing prebuild and verify:foundation chains without deleting or weakening any prior tests. The static contract asserts 11 explicit source safeguards, including verified-only empty states and verified/audited action results. It intentionally does NOT claim mocked runtime, actual 401/403, staff revocation, browser acceptance or a real database operation.
+
+**WHERE / WHO:** Only existing Staging branch feature/founder-control-room-staging; test file commit 8dd69cb9e01cacf2dac17ed0a01e96571c029048, package.json commit ae772c5f6bfb61946e92d69ed71a1cb10ee3d6bf. Assistant authored/reviewed static source contract; Founder keeps practical acceptance and Production approval.
+
+**EVIDENCE / STATUS:** GitHub create_file and update_file both returned commits; branch comparison against R18 head showed new paths as expected. No Vercel deployment for new application commit had appeared in the latest branch-list check (latest deployed still 9ee078e0...); therefore build, execution of new test script and runtime function are NOT YET VERIFIED, do not report them PASS. Existing previous READY deployment remains old.
+
+**FAILURES / CORRECTIONS:** Recognised absent auto-deployment evidence; next action must explicitly deploy only the known existing Staging target and observe build outcome. New regression script is static source-contract only, not a behavioural functional test; distinguish this in handover and stop before claiming runtime safety.
+
+**NON-EFFECT:** package.json prebuild preserves all previously required test commands. No SQL, role, permissions, Founder membership, session state, account, live app, Production/main, UI visual redesign, incident policy, Registry, protected Docs11–13, or customer activation changed.
+
+**NEXT:** Freeze this build candidate, confirm latest Git branch SHA, trigger only existing Vercel Staging environment from exact GitHub branch SHA; inspect logs and READY/error. Record exact deployment and whether new test ran. No other operational writes or staff changes. After verification and ledger update, reconcile into living Word01–10 before Controlled Close.
