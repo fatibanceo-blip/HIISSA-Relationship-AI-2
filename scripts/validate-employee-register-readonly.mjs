@@ -8,8 +8,20 @@ const blobSha=text=>createHash("sha1").update("blob "+Buffer.byteLength(text)).u
 // Founder approved 2026-10-09: additive Alerts-only host change.
 // Historical immutable host baseline d123b707477854d1811f6f7e2534248c5c7ba056 remains preserved in Git history.
 const onboarding=read("app/admin/control-room-preview/page.js");
-assert.equal(blobSha(onboarding),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
-  "STOP: Founder-approved onboarding host source changed; explicit Founder permission is required");
+// Founder-approved 10 October 2026: accept ONLY the exact local Staff & Workspaces Back link.
+// Retain the original protected host fingerprint after removing those authorised JSX additions.
+const approvedNavigatorId='        id="staff-workspaces-areas"\n';
+const approvedLocalBack=[
+  '        <a className={styles.sectionBackLink} href="#staff-workspaces-areas">',
+  "          ← Back to Staff & Workspaces",
+  "        </a>",
+].join("\n")+"\n";
+for(const [label,fragment] of [["navigator ID",approvedNavigatorId],["local Back link",approvedLocalBack]]){
+  assert.equal(onboarding.split(fragment).length-1,1,`Exactly one approved ${label} must exist`);
+}
+const protectedOnboarding=onboarding.replace(approvedNavigatorId,"").replace(approvedLocalBack,"");
+assert.equal(blobSha(protectedOnboarding),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
+  "STOP: Founder-approved onboarding host differs beyond the specifically approved Back link");
 const applicant=read("lib/experience-registry.js");
 assert.ok(applicant.includes('export const ADMIN_STAFF_ONBOARDING_WORKFLOW = Object.freeze({'));
 assert.ok(applicant.includes('export const STAFF_SECURE_ONBOARDING_EXPERIENCE_STANDARD = Object.freeze({'));
