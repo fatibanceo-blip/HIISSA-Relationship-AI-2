@@ -2314,3 +2314,30 @@ NEXT: Give Founder a tightly scoped, plain-English proposal with (1) Founder-onl
 **NON-EFFECT:** No application change, Production release, Supabase schema/data, staff role, Auth/Save & Sync, Experience Registry, original 10 fictional staff or tested feature, Vercel Staging deployment, or protected Word11–13 content changed by this documentary checkpoint. No extra duplicate environment or competing final package.
 
 **NEXT / FAIL-CLOSED PREVENTION:** Future chat must pass Document12 gate with source-event matrix linking each event to specific actual Word paragraph/table and source ref and all 58 applicable feature fields, require 11 complete explanatory fields per event, verify evidence/approval/runtime honesty, compare older OOXML/media, and visually inspect pages. Generate a signed-off status PASS or OPEN for every check with evidence; no check may be declared PASS based on heading presence only. If ANY mandatory field/mapping unverified, stop FINAL packaging/delivery and mark CHECKPOINT OPEN, not Founder-ready. Never call package fully compliant/certified until all required checks genuinely pass. Correct R29 documents now as requested.
+
+
+---
+
+## 10 October 2026 — R31 — Founder asks which question was meant; clarification and full-document correction continuation
+
+**FOUNDER VERBATIM:** “What question are you talking about?”
+
+**WHAT:** Founder queried an unclear assistant reference to a “question” during correction of the R29 13-document package. Assistant clarified that it meant the Founder's previously expressed question, “Now, how do I make sure this never happens in the next chat again?” and the Founder instruction to follow ALL Document12 requirements. The assistant was NOT asking the Founder a new question and must not make the Founder repeat previously answered details.
+
+**WHY:** Communication should be plain and unambiguous while the assistant fulfills mandatory documentation work; otherwise discussion of the mandated check can create more repetitive Founder clarification effort.
+
+**HOW / PROCESS:** Read the conversation sequence → identify that “question” referred to the Founder's earlier governance/prevention concern, not a new information request → explain the referent plainly → add this supplementary 11-field event to the durable checkpoint before rebuilding the corrected 13 documents.
+
+**WHERE:** Existing rolling Staging Git documentation ledger, successor-chat governance and corrected R31 addenda to living Word01–10. No new Founder dashboard user journey or interface change.
+
+**WHO:** Founder sought clarification; assistant owes explanation and documentation; no Founder action needed.
+
+**EVIDENCE:** Exact Founder utterance in current chat and assistant clarification in same chat. Related six earlier Founder post-R29 questions/corrections recorded in R30.
+
+**STATUS:** CLARIFIED IN CHAT; to be carried into the next corrected Word package. No new application or feature PASS implied.
+
+**FAILURES & CORRECTIONS:** Assistant's reference was insufficiently precise; corrected by quoting exact earlier question and explicitly saying no new question was being posed.
+
+**NON-EFFECT:** No change to Production/main, existing Staging app/deployment, staff examples/accounts, Supabase schema/rows, protected docs 11–13 or prior history.
+
+**NEXT:** Complete the Founder-ordered R29→R31 actual Word01–10 corrective update and 11-field/58-dimensional/current-chat source↔document audit; preserve originals and protected docs; render and verify. If full historic lifetime audit is not demonstrably complete, mark certification OPEN rather than invent a PASS; do not ask the Founder to restate the standard.
