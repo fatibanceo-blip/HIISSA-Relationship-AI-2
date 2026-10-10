@@ -2341,3 +2341,35 @@ NEXT: Give Founder a tightly scoped, plain-English proposal with (1) Founder-onl
 **NON-EFFECT:** No change to Production/main, existing Staging app/deployment, staff examples/accounts, Supabase schema/rows, protected docs 11–13 or prior history.
 
 **NEXT:** Complete the Founder-ordered R29→R31 actual Word01–10 corrective update and 11-field/58-dimensional/current-chat source↔document audit; preserve originals and protected docs; render and verify. If full historic lifetime audit is not demonstrably complete, mark certification OPEN rather than invent a PASS; do not ask the Founder to restate the standard.
+
+
+---
+
+## 10 October 2026 — R32 — Founder requires actual repeat-error prevention and the final 13-document corrected delivery
+
+**FOUNDER EXACT WORDING (all new utterances after existing R31 checkpoint, chronological):**
+F08: “I mean what coercion are you talking about? Just give me a simple answer rather than going through all this.”
+F09: “I'm still waiting for the document, the 13th document, so.”
+F10: “Remember I asked you, how do we make sure this mistake never happens again? So how are you going to fix it?”
+
+**WHAT:** Corrected Founder ambiguity: assistant had meant “correction”, not “coercion”, and must explain in basic English. Founder made explicit that the already-promised corrected 13-WORD-document ZIP has not yet been delivered, and again asked for a concrete preventative mechanism that stops successors delivering only partially compliant records. The corrective R31 working package has 13 actual DOCX and one ZIP but remains UNCERTIFIED due independently unverified historical lifetime semantic event parity and independent manual page-by-page review. The user's current demand is to deliver the actual corrected pack with honest status, not ask her to remind another chat.
+
+**WHY:** The Founder has strengthened protected Document12 repeatedly yet previous assistants still claimed completion after merely reading the standard, inserting headings or conducting structural checks. The remedy cannot be yet another general promise or a misleading “fully compliant” claim. The complete 11-field record, 58-dimension applicable feature audit, literal Founder wording, evidence-linked chronology and full Word-document parity must become a falsifiable pass/fail gate BEFORE any certified handover.
+
+**HOW:** Enforce a source→record→Word→render→ZIP “STOP IF OPEN” delivery gate, with an enumerated unique event identifier for every Founder intervention, implementation/deployment/test/failure and document correction, source evidence/commit, actual Word paragraph destination, status and known gaps. The successor must reject “all done” when even one material event remains unmatched; MUST separately verify 11 fields and applicable 58 dimensions/ten strengthening rules, protected Docs11–13 hash equality, preservation of old paragraphs and every OOXML/media part, current Staging deployment/commit and NO PRODUCTION changes. Automated presence/ZIP checks never substitute for complete practical explanatory content or real human visual inspection. Preserve the exact unresolved historical semantic and full-zoom 3,497-page review as NOT VERIFIED; no unsupported 100% guarantee. Do not reword protected Document12; explain and operationalise its existing fail-closed delivery standard in living Docs01–10 and the durable project ledger.
+
+**PROCESS:** Founder correction and request→ reread R31 actual documents/audit/ZIP → identify F08–F10 missing from R31 older sealed draft → record R32 live durable checkpoint now → append a full dated correction and F08–F10 exact verbatim to the appropriate living Word01–10, with a source-event mapped hard-gate/next-chat instruction, preserve unchanged Docs11–13 → compare R31→R32 exact original OOXML/media, inspect APPENDIX pages after render and verify 13-file single archive CRC/hashes → deliver exactly one corrected R32 ZIP labelled pending historical certification (if historical checks remain unverified), never inaccurately call fully certified.
+
+**WHERE:** Existing HIISSA GitHub repository fatibanceo-blip/HIISSA-Relationship-AI-2, branch feature/founder-control-room-staging; ledger docs/HIISSA_ACTIVE_CHAT_CUMULATIVE_ROLLING_RECORD_2026-10-09.md; previous R29 and R31 documentary packages, corrected Word01–10 and protected Word11–13. Existing deployed STAGING ONLY app commit 49cea64f3125121c71d9a5a561f2a9cbc22f0ab9, READY deployment dpl_3WPHPF5JmNJw9VbE7PVAERrMsWZ9, project prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0; all unchanged.
+
+**WHO:** Founder exact directions are authoritative; assistant is accountable for actual proof and full documentation. Founder should not be asked to reconstruct any evidence already in the sources or repeat rules. Successor must obey protected Doc12 and each open gate.
+
+**EVIDENCE:** Literal F08–F10 words in current chat; R31 working folder /mnt/data/HIISSA_R31_CORRECTIVE_WORKING contains 13 separately numbered files, protected 11–13 byte-identical to R29, original OOXML preserved in Docs01–10, existing ZIP with testzip PASS. The included R31 audit explicitly reads: full_lifetime_historical_coverage NOT_VERIFIED, independent_manual_every_page NOT_VERIFIED, full_certification NOT_CLAIMED. An independent verifier in this turn confirmed ZIP has exactly 13 DOCX, no CRC error, and only document.xml changed in living 01–10 compared with R29. Earlier R31 handover F01–F07 and previous R24–R28 material existed; F08–F10 require new additive inclusion.
+
+**STATUS:** Founder instruction RECEIVED and documented; R32 corrected Word append + seal PENDING actual checks. Last verified app remains READY STAGING; no practical Founder security test/Production release is claimed. Certification remains OPEN if historical semantic and full-zoom reviews unavailable. “STOP IF OPEN” applies to FULL CERTIFICATION and final-success claims, not a prohibition on explicitly providing an honestly UNCERTIFIED working handover demanded by Founder.
+
+**FAILURES & CORRECTIONS:** R29 called “ready” despite unverified lifetime Doc12 semantic/visual certification; R31 prior draft was prepared before latest Founder three follow-ups and thus omitted them. Correct by appending those utterances, mapping their cause, fix and outcomes to Word01–10, and delivering an explicitly status-limited archive. Avoid false confidence based solely on headings or testzip.
+
+**NON-EFFECT:** No app code, Staging/Production deployment, staff real/fictional accounts or roles, source-control Registry identity, database write, Founder access restriction, private user data, protected Docs11–13, or existing approved experience changed.
+
+**NEXT:** Complete R32 actual Word changes and exact ZIP verification; provide Founder one link to 13 Word files with honest status. Next chat MUST read the latest actual ZIP, current Git live ledger and protected Doc12, verify every material current chat event F01–F10 against real Word text, preserve original documents, and continue open historical certification gates without falsely marking them PASS. Do not start new app development until compliance remediation is appropriately completed.
