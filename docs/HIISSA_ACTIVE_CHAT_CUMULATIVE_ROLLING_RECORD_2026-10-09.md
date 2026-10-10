@@ -2212,3 +2212,22 @@ NEXT: Give Founder a tightly scoped, plain-English proposal with (1) Founder-onl
 **FAILURES / CORRECTIONS:** R24 external HTTP access lacked valid resolution; never call runtime 401/403 PASS from static code. Existing source may be genuinely unreadable, never manufacture a failure; mock-only test fixtures are allowed without persistent writes. If code requires a protected host change, stop and seek Founder approval.
 
 **NON-EFFECT / NEXT:** No protected screen/layout, working journey, real staff, ten fictitious examples, Admin role, SQL schema, founder membership, Production/main, auth, Save & Sync, incident alert design, legacy history, documents 11–13 are altered by this decision. Next create isolated implementation, static regression and actual Vercel build only on existing Staging. Checkpoint source commits/build/failures immediately, then update living Word records at early controlled close under Document12 preseal source-event matrix.
+
+
+---
+
+## 10 October 2026 — R26 — Isolated staff-session L2 incident producer source committed; build still pending
+
+**WHAT:** Committed new Staging-only real staff-source aggregation helper and explicit Founder POST route. Helper commit aca6f410428fb00c5c0def59864a0b099a0dc07e, POST route commit 25d0d72797810cb5f05a57beb74d60bd80831814.
+
+**WHY:** Fulfil the pre-approved source→canonical incident→existing audit/Founder visibility L2 backlog without modifying approved Founder screens and without treating 10 fictional people as genuine staff.
+
+**HOW / PROCESS:** Under R25 approved plan, created lib/admin/staff-session-operational-incident-producer-staging.js using existing real founder_staff_session_inventory and founder_staff_access_inventory RPCs. A readable empty array on each is a verified zero; RPC error or malformed response means SOURCE_READ_FAILED. Healthy sources produce NO incident. Only actual read failures call existing recordNewIncident with a fixed key and fixed operational-only metadata, L2, HUMAN_REQUIRED, zero retries; database duplicate uniqueness suppresses repeats. Added app/api/admin/control-room/operational-incidents/check-staff-session-source/route.js as POST only, exactly gated to known Staging branch, exact Supabase Staging host and staging target; no request body; existing Founder member verification; output aggregate flags/counts only; missing token 401 and non-Founder 403 by source contract; unavailable source 503; no anonymous GET. Reused existing canonical incident/table/trigger and existing Founder-visible incident feed. No Founder UI redesign, no SQL, no automatic schedule.
+
+**WHERE / WHO / EVIDENCE:** Repo fatibanceo-blip/HIISSA-Relationship-AI-2, branch feature/founder-control-room-staging; GitHub create_file commit hashes above prove SOURCE COMMITTED only. Assistant implemented previously approved isolated code, Founder retains real browser acceptance/role changes and release decisions.
+
+**STATUS:** SOURCE COMMITTED, NOT YET REGRESSION-TESTED, NOT YET BUILT OR DEPLOYED, no practical browser/API PASS. R23 deployed Staging remains the last verified READY app build until next actual deployment evidence.
+
+**FAILURES / CORRECTIONS:** No observed build failure; none claimed. Static visibility and security gate testing still needed. Existing test/document requirement forbids presenting successful source commit as functional PASS. A permanent incident key suppresses duplicate recording, and unresolved incident reactivation/independent recovery remains future separately approved work.
+
+**NON-EFFECT / NEXT:** Production/main untouched; real staff, test people, sessions, role assignments, Founder Approval Inbox, existing Activity Timeline, protected Founder page, Registry, Magic Link/Save & Sync, audit DB rows, protected Doc11–13 unchanged. Next add deterministic mocked contract test, wire it into existing prebuild and foundation suite, run build only on existing Staging and immediately checkpoint actual deployment or failures.
