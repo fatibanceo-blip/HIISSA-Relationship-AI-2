@@ -7,7 +7,20 @@ const blobSha=s=>createHash("sha1").update("blob "+Buffer.byteLength(s)+"\0"+s).
 // Founder permission 2026-10-09: explicitly authorised minimal Staging Alerts addition.
 // Previous protected baseline: d123b707477854d1811f6f7e2534248c5c7ba056 (preserved in Git history).
 const host=readFileSync("app/admin/control-room-preview/page.js","utf8");
-assert.equal(blobSha(host),"f2337383d9c41e5b79edbad8795a12d8661a2f13","Protected original Founder host must remain unchanged");
+// Founder-approved 10 October 2026: allow ONLY the exact local Staff & Workspaces Back control.
+// The protected original host must remain byte-identical after stripping these two additions.
+const approvedNavigatorId='        id="staff-workspaces-areas"\n';
+const approvedLocalBack=[
+  '        <a className={styles.sectionBackLink} href="#staff-workspaces-areas">',
+  "          ← Back to Staff & Workspaces",
+  "        </a>",
+].join("\n")+"\n";
+for(const [label,addition] of [["navigator ID",approvedNavigatorId],["local Back control",approvedLocalBack]]){
+  assert.equal(host.split(addition).length-1,1,`Exactly one approved ${label} must exist`);
+}
+const protectedOriginalHost=host.replace(approvedNavigatorId,"").replace(approvedLocalBack,"");
+assert.equal(blobSha(protectedOriginalHost),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
+  "Founder host must match original protected SHA after removing ONLY the two approved Back additions");
 const migration=readFileSync("supabase/migrations/20261009101553_shared_operational_incidents_staging.sql","utf8");
 const route=readFileSync("app/api/admin/control-room/operational-incidents/route.js","utf8");
 for(const requirement of [
