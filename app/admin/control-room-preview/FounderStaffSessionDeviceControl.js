@@ -7,7 +7,7 @@ const client = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_S
   ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) : null;
 
 export default function FounderStaffSessionDeviceControl({ authenticated }) {
-  const [state,setState]=useState({loading:Boolean(authenticated),staff:[],error:""});
+  const [state,setState]=useState({loading:Boolean(authenticated),staff:[],error:"",verified:false});
   const [reason,setReason]=useState({});
   const [busy,setBusy]=useState("");
   const [notice,setNotice]=useState("");
@@ -18,47 +18,91 @@ export default function FounderStaffSessionDeviceControl({ authenticated }) {
     return session?.access_token||"";
   }
   async function load(){
-    const token=await accessToken();
-    if(!token){setState({loading:false,staff:[],error:"Founder session could not be verified."});return;}
-    const response=await fetch("/api/admin/control-room/staff-session-device-control",{cache:"no-store",credentials:"same-origin",headers:{Authorization:`Bearer ${token}`}});
-    const data=await response.json().catch(()=>null);
-    if(!response.ok||!data){setState({loading:false,staff:[],error:"Staff session evidence could not be loaded."});return;}
-    setState({loading:false,staff:Array.isArray(data.staff)?data.staff:[],error:""});
+    const unavailable = (message) => {
+      setState({loading:false,staff:[],error:message,verified:false});
+      return false;
+    };
+    try {
+      const token=await accessToken();
+      if(!token) return unavailable("Founder session could not be verified.");
+      const response=await fetch("/api/admin/control-room/staff-session-device-control",{
+        cache:"no-store",credentials:"same-origin",headers:{Authorization:`Bearer ${token}`}
+      });
+      const data=await response.json().catch(()=>null);
+      if(!response.ok||data?.status!=="MONITORING"||!Array.isArray(data.staff))
+        return unavailable("Staff session source could not be verified. This is not a confirmed empty roster.");
+      setState({loading:false,staff:data.staff,error:"",verified:true});
+      return true;
+    } catch {
+      return unavailable("Staff session source is unavailable. This is not a confirmed empty roster.");
+    }
   }
-  useEffect(()=>{load().catch(()=>setState({loading:false,staff:[],error:"Staff session evidence could not be loaded."}));},[authenticated]);
+  useEffect(()=>{load();},[authenticated]);
 
   async function changeAccess(person,accessAction){
     const key=`access-${person.targetKey}`; const why=String(reason[key]||"").trim();
     if(why.length<10){setNotice("Enter a clear reason of at least 10 characters.");return;}
     if(accessAction==="permanently_revoke"&&!window.confirm("Permanently revoke this person’s HIISSA staff/admin access? This preserves audit history and cannot be restored through the normal Founder control.")) return;
-    const token=await accessToken(); if(!token){setNotice("Founder session could not be verified.");return;}
     setBusy(key); setNotice("");
-    try{const response=await fetch("/api/admin/control-room/staff-session-device-control",{method:"POST",cache:"no-store",credentials:"same-origin",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:JSON.stringify({targetUserId:person.targetKey,accessAction,reason:why})}); const data=await response.json().catch(()=>null); if(!response.ok||!data){setNotice("HIISSA could not complete this Staging access change.");return;} setNotice(`Access change executed and audited: ${data.accessState}. Historical evidence preserved. Production effect: none.`); setReason(cur=>({...cur,[key]:""})); await load();}finally{setBusy("");}
+    try {
+      const token=await accessToken();
+      if(!token){setNotice("Founder session could not be verified.");return;}
+      const response=await fetch("/api/admin/control-room/staff-session-device-control",{
+        method:"POST",cache:"no-store",credentials:"same-origin",
+        headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},
+        body:JSON.stringify({targetUserId:person.targetKey,accessAction,reason:why})
+      });
+      const data=await response.json().catch(()=>null);
+      if(!response.ok||data?.status!=="ACCESS_CHANGE_RECORDED_AND_EXECUTED"||data.auditRecorded!==true){
+        setNotice("Staging access change not confirmed. Refresh the evidence before considering a retry.");
+        await load(); return;
+      }
+      const verifiedAfterAction=await load();
+      setNotice(`Access change executed and audited: ${data.accessState}. Historical evidence preserved. Production effect: none.`+
+        (verifiedAfterAction?"":" Current roster could not be refreshed; verify before any further action."));
+      setReason(cur=>({...cur,[key]:""}));
+    } catch {
+      setNotice("The Staging request outcome could not be confirmed. Refresh the roster before retrying; the action might have been recorded.");
+      await load();
+    } finally {setBusy("");}
   }
 
   async function forceSignOut(person,sessionKey){
     const key=sessionKey||person.targetKey;
     const why=String(reason[key]||"").trim();
     if(why.length<10){setNotice("Enter a clear reason of at least 10 characters.");return;}
-    const token=await accessToken(); if(!token){setNotice("Founder session could not be verified.");return;}
     setBusy(key); setNotice("");
-    try{
-      const response=await fetch("/api/admin/control-room/staff-session-device-control",{method:"POST",cache:"no-store",credentials:"same-origin",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:JSON.stringify({targetUserId:person.targetKey,targetSessionId:sessionKey||null,reason:why})});
+    try {
+      const token=await accessToken();
+      if(!token){setNotice("Founder session could not be verified.");return;}
+      const response=await fetch("/api/admin/control-room/staff-session-device-control",{
+        method:"POST",cache:"no-store",credentials:"same-origin",
+        headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},
+        body:JSON.stringify({targetUserId:person.targetKey,targetSessionId:sessionKey||null,reason:why})
+      });
       const data=await response.json().catch(()=>null);
-      if(!response.ok||!data){setNotice("HIISSA could not complete this Staging Force Sign Out.");return;}
-      setNotice(`Staging Force Sign Out executed and audited. ${data.revokedSessionCount} session${data.revokedSessionCount===1?"":"s"} revoked. Production effect: none.`);
-      setReason((current)=>({...current,[key]:""})); await load();
-    } finally { setBusy(""); }
+      if(!response.ok||data?.status!=="RECORDED_AND_EXECUTED"||data.auditRecorded!==true){
+        setNotice("Staging Force Sign Out not confirmed. Refresh session evidence before considering a retry.");
+        await load(); return;
+      }
+      const verifiedAfterAction=await load();
+      setNotice(`Staging Force Sign Out executed and audited. ${data.revokedSessionCount} session${data.revokedSessionCount===1?"":"s"} revoked. Production effect: none.`+
+        (verifiedAfterAction?"":" Session state could not be refreshed; verify before any further action."));
+      setReason(current=>({...current,[key]:""}));
+    } catch {
+      setNotice("The Staging sign-out outcome could not be confirmed. Refresh session evidence before retrying; the action might have been recorded.");
+      await load();
+    } finally {setBusy("");}
   }
 
   return <section id="founder-staff-session-device-control" style={section}>
     <div style={heading}><div><div style={kicker}>STAFF SESSION & DEVICE CONTROL · STAGING</div><h3 style={title}>Manage staff access: sign out, suspend, restore or permanently revoke</h3></div><span style={pill}>FOUNDER ONLY</span></div>
     <p style={copy}>This control is limited to active Staging staff identities. It never targets the Founder, never changes Production, and never pretends a browser/app session proves the identity of a physical device.</p>
-    <div style={cards}><Card title="ACTIVE STAGING STAFF" value={state.loading?"Checking…":String(state.staff.length)} text="Only active Staging staff role assignments are eligible."/><Card title="DEVICE EVIDENCE" value="Session-level" text="HIISSA identifies Auth sessions, not the physical phone or computer."/><Card title="PRODUCTION EFFECT" value="None" text="This control is restricted to Staging."/></div>
+    <div style={cards}><Card title="ACTIVE STAGING STAFF" value={state.loading?"Checking…":state.verified?String(state.staff.length):"Unverified"} text="Only active Staging staff role assignments are eligible."/><Card title="DEVICE EVIDENCE" value="Session-level" text="HIISSA identifies Auth sessions, not the physical phone or computer."/><Card title="PRODUCTION EFFECT" value="None" text="This control is restricted to Staging."/></div>
     <FounderStaffAccessPractice />
     <div style={note}><strong>Important boundary.</strong> Force Sign Out revokes the selected refresh session, or all refresh sessions for that staff identity. An already-issued access token may remain valid until its normal expiry.</div>
     {state.error?<div style={note}><strong>Could not verify session state.</strong> {state.error}</div>:null}
-    {!state.loading&&!state.staff.length?<div style={item}><strong>No active Staging staff identity is currently assigned</strong><p>HIISSA will not invent a staff account or session just to test this control. Practical revocation evidence remains conditional until a genuine Staging staff identity exists.</p></div>:null}
+    {!state.loading&&state.verified&&!state.staff.length?<div style={item}><strong>No active Staging staff identity is currently assigned</strong><p>HIISSA will not invent a staff account or session just to test this control. Practical revocation evidence remains conditional until a genuine Staging staff identity exists.</p></div>:null}
     {state.staff.map(person=><div style={item} key={person.targetKey}><strong>{person.label} · {person.sessionCount} active session{person.sessionCount===1?"":"s"}</strong><p>Role: {person.role}. No token, password, IP address or private conversation content is shown.</p><div style={sessionBox}><strong>Access state: {String(person.accessState||"active").replaceAll("_"," ").toUpperCase()}</strong><p>Choose the level that matches the situation. Suspension can be restored. Permanent revocation cannot be restored through this normal control.</p><textarea style={field} rows={2} value={reason[`access-${person.targetKey}`]||""} onChange={e=>setReason(cur=>({...cur,[`access-${person.targetKey}`]:e.target.value}))} placeholder="Why are you changing this person’s access?"/><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{person.accessState==="suspended"?<button style={button} disabled={busy===`access-${person.targetKey}`} onClick={()=>changeAccess(person,"restore")}>Restore Access</button>:person.accessState==="permanently_revoked"?<strong>PERMANENTLY REVOKED · historical evidence preserved</strong>:<><button style={button} disabled={busy===`access-${person.targetKey}`} onClick={()=>changeAccess(person,"suspend")}>Suspend Access</button><button style={dangerButton} disabled={busy===`access-${person.targetKey}`} onClick={()=>changeAccess(person,"permanently_revoke")}>Permanently Revoke Access</button></>}</div></div>{person.sessions.map((session,index)=><div style={sessionBox} key={session.sessionKey}><strong>Session {index+1}</strong><p>Last active: {new Date(session.lastActiveAt).toLocaleString()}</p><textarea style={field} rows={2} value={reason[session.sessionKey]||""} onChange={e=>setReason(cur=>({...cur,[session.sessionKey]:e.target.value}))} placeholder="Why must this staff session be signed out?"/><button style={button} disabled={busy===session.sessionKey||(reason[session.sessionKey]||"").trim().length<10} onClick={()=>forceSignOut(person,session.sessionKey)}>{busy===session.sessionKey?"Signing out…":"Force Sign Out this session"}</button></div>)}</div>)}
     {notice?<div style={success}><strong>{notice}</strong></div>:null}
   </section>;
