@@ -5746,6 +5746,7 @@ function FounderAccessCentre({ authenticated }) {
       </p>
 
       <ControlRoomAreaNavigator
+        id="staff-workspaces-areas"
         title="Staff & Workspaces areas"
         areas={[
           ["Departments & workspaces", "staff-departments"],
@@ -5878,6 +5879,9 @@ function FounderAccessCentre({ authenticated }) {
       <FounderEmployeeRegisterAttendancePreview />
 
       <div id="staff-access-security">
+        <a className={styles.sectionBackLink} href="#staff-workspaces-areas">
+          ← Back to Staff & Workspaces
+        </a>
         <FounderStaffSessionDeviceControl authenticated={authenticated} />
       </div>
     </section>
