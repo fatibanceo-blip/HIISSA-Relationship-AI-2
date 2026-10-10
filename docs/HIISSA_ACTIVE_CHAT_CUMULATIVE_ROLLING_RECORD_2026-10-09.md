@@ -2631,3 +2631,31 @@ Substantive content existence checked for F08–F11, all 11 labels/rubrics and p
 **NON-EFFECT:** Protected Production/main, Magic Link, Save & Sync, Talk/AI, real/staged staff roles and sessions, ten fictional staff, audit/incidents, Registry, Control Room existing navigation state/goBack handler, Founder permissions, current Staging/Supabase settings, Docs11–13 remain unchanged. No automatic feature activation or data effects.
 
 **NEXT:** Implement exact one-file anchor/accessibility addition, verify only expected diff, run existing Staging build/targeted tests, record actual statuses, then Founder practical test at supplied direct Staging link. Maintain immediate full eleven-field checkpointing and no-omission controlled close; do not claim PASS for an unperformed test.
+
+---
+
+## 10 OCTOBER 2026 — R42 — Approved local Back link implemented in one file; exact Git diff verified; build pending
+
+**FOUNDER APPROVAL AND EXACT SCOPE:** R41 preserves the Founder’s exact “Approve” in answer to the requested small local Access & Security link “← Back to Staff & Workspaces”. Approval is for one in-section return link and existing navigator anchor, not wider redesign, account actions, permission changes or Production release. Founder expressly requires approval before any change.
+
+**WHAT:** The existing Staff & Workspaces areas navigator now has an addressable same-page anchor. The existing Access & Security section now includes a local “← Back to Staff & Workspaces” control immediately above the Staff Session & Device Control component. Its intended effect is returning to the existing staff area navigator in the same page rather than jumping to another module or requiring upward scrolling through a long screen. No other features created.
+
+**WHY:** Founder’s R40 mobile practical observation: Access & Security direct entry worked, but there was no nearby Back control; using global Back required scrolling to page top. Small additive in-section link improves navigation while preserving all existing approved interface and functionality.
+
+**HOW:** Modified ONLY app/admin/control-room-preview/page.js on existing feature/founder-control-room-staging branch. Add id="staff-workspaces-areas" to pre-existing ControlRoomAreaNavigator that already supports an id prop and passes it to native details. Insert a standard native anchor inside the existing div id="staff-access-security", before the existing FounderStaffSessionDeviceControl, with the exact text “← Back to Staff & Workspaces”, href="#staff-workspaces-areas" and previously approved class styles.sectionBackLink. No stylesheet edit, no JS history changes, no new route, no data access, no backend calls. Browser fragment navigation will scroll to the existing navigator; its details element may remain closed until Founder chooses to expand it, which is normal existing navigator behaviour.
+
+**PROCESS:** Confirm approved scope and current Git branch fc4dcd096933c7c27379d9bf32f15b9bd0ac027b → durably record R41 Founder approval in Git commit 20b35324da36c0ac51b7cc56f38a3b2fbf1d6a78 → inspect existing source and CSS → assert replacement exactly at two unique insertion sites with byte-exact reversible source check → create one file Git change commit → fetch and review actual Git patch → immediately preserve this R42 implementation checkpoint. No build or Vercel deployment had yet been attempted as of R42.
+
+**WHERE:** Repository fatibanceo-blip/HIISSA-Relationship-AI-2, branch feature/founder-control-room-staging, exact source app/admin/control-room-preview/page.js. Previous source blob f2337383d9c41e5b79edbad8795a12d8661a2f13; new source blob abd69e995e2b21b4f00662bf0c66b7a4173ae357. Implementation commit 5577c1e68e0f73d06c6cfa27e31cec9196a1aacf. Existing Staging alias https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app; existing Vercel Staging deployment dpl_3WPHPF5JmNJw9VbE7PVAERrMsWZ9 still READY at old app SHA 49cea64f3125121c71d9a5a561f2a9cbc22f0ab9 until fresh build proves otherwise.
+
+**WHO:** Founder explicitly approved one local link and retains hands-on acceptance and further change approval; assistant implemented the small approved source change and reviewed its patch. No staff or customer account changed.
+
+**EVIDENCE, EXPECTED AND ACTUAL:** GitHub fetch_commit verified ONLY the named application page was changed, with exactly three inserted lines at the existing Access & Security wrapper and a single navigator id property (no deletions). Static assertions checked the one-to-one target/link and confirmed old source reconstruction after reversing the additions. Intended clicked behaviour: jump to staff areas nav; actual deployed browser click NOT YET TESTED. SOURCE COMMITTED and STATIC EDIT SCOPE PASS are the only verified statuses.
+
+**STATUS:** FOUNDER APPROVED → IMPLEMENTED IN SOURCE → COMMITTED → DIFF SCOPE VERIFIED. Build/prebuild, Vercel READY, authenticated browser usability and Founder practical PASS are PENDING. Do not equate Git commit with deployment or render.
+
+**FAILURES / CORRECTIONS:** No application code edit errors observed. Previous lack of nearby Back control is addressed at source level; runtime result awaits test. No new or historical failures silently deleted; no code fix outside approval scope considered.
+
+**NON-EFFECT:** Existing top-level Back and navigationHistory handlers, Founder Control Room module navigation, staff data, session/device control, ten fictitious examples, real staff accounts, Magic Link, Save & Sync, Talk/AI, Supabase schema/RLS/records, alerts, incidents, canonical Registry, approval/audit systems, Production/main, Docs11–13 and current staging environment configuration unchanged. This entry is documentation-only.
+
+**NEXT:** Deploy exact current Git branch SHA to existing Vercel project prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0 with explicit STAGING target, inspect configured build/prebuild tests, errors, SHA/READY/alias. If successful, provide direct Staging URL and Founder practical test: Staff & Workspaces → Access & Security → new local Back → existing Staff & Workspaces area navigator. Record PASS/FAIL honestly. Then reconcile actual R41 onward source/Git/Founder events into relevant additive Word01–10 before packaging; Git is not a substitute for Doc12 Word entries.
