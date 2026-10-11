@@ -25,7 +25,7 @@ function stagingOnly(){
 // whether a stream/transfer header exists. Fail closed on errors or ambiguity.
 async function hasUnexpectedRequestBody(request){
   const declared=request.headers.get("content-length");
-  if(declared!==null && (!/^\\d+$/.test(declared)||!Number.isSafeInteger(Number(declared))||Number(declared)!==0))
+  if(declared!==null && (!/^\d+$/.test(declared)||!Number.isSafeInteger(Number(declared))||Number(declared)!==0))
     return true;
   if(request.body===null)return false;
   let reader;
