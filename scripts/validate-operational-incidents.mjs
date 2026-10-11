@@ -3,6 +3,7 @@ import {readFileSync} from "node:fs";
 import {createHash} from "node:crypto";
 import {validateNewIncident, validateIncidentTransition} from "../lib/admin/operational-incident-staging.js";
 import {projectFounderCanonicalIncidentAlerts} from "../lib/admin/founder-canonical-incident-alert-projection.js";
+import {isFounderStaffSecuritySourceIncident} from "../lib/admin/founder-canonical-incident-alert-projection.js";
 const blobSha=s=>createHash("sha1").update("blob "+Buffer.byteLength(s)+"\0"+s).digest("hex");
 // Founder permission 2026-10-09: explicitly authorised minimal Staging Alerts addition.
 // Previous protected baseline: d123b707477854d1811f6f7e2534248c5c7ba056 (preserved in Git history).
@@ -29,8 +30,29 @@ for(const [label,fragment] of [
   ["manual-check Overview placement",allowedOverviewCheck],
   ["manual-check Staff placement",allowedStaffCheck]
 ])assert.equal(host.split(fragment).length-1,1,"Exactly one Founder-approved "+label+" required");
+// Founder-approved 11 Oct later R74: only the specific Staff-source alert
+// destination/action may differ. Subtract exact documented fragments,
+// keeping the original immutable Founder host SHA unchanged.
+const directStaffAlertFragment1="import {isFounderStaffSecuritySourceIncident} from \"../../../lib/admin/founder-canonical-incident-alert-projection.js\";\n";
+const directStaffAlertFragment2="              onOpenStaffAccessSecurity={() => {\n                choosePrimary(\"staff\");\n                window.requestAnimationFrame(() => {\n                  const destination=document.getElementById(\"staff-access-security\");\n                  if(!destination)return;\n                  destination.focus({preventScroll:true});\n                  destination.scrollIntoView({behavior:\"smooth\",block:\"start\"});\n                });\n              }}\n";
+const directStaffAlertFragment3="  onOpenStaffAccessSecurity,\n";
+const directStaffAlertFragment4="  const staffSourceIncidentVisible=canonicalIncidents.verified &&\n    canonicalIncidents.items.some(isFounderStaffSecuritySourceIncident);\n";
+const directStaffAlertFragment5="            {staffSourceIncidentVisible ? (\n              <button type=\"button\" className={styles.alertAction} onClick={onOpenStaffAccessSecurity}>\n                Open Staff Access & Security →\n              </button>\n            ) : null}\n";
+const directStaffAlertFragment6="      <div id=\"staff-access-security\" tabIndex={-1} role=\"region\" aria-label=\"Staff Access & Security\">";
+assert.equal(host.split(directStaffAlertFragment1).length-1,1,"Exactly one Founder-approved alert eligibility import");
+assert.equal(host.split(directStaffAlertFragment2).length-1,1,"Exactly one Founder-approved alert direct staff callback");
+assert.equal(host.split(directStaffAlertFragment3).length-1,1,"Exactly one Founder-approved alert callback prop");
+assert.equal(host.split(directStaffAlertFragment4).length-1,1,"Exactly one Founder-approved alert validated condition");
+assert.equal(host.split(directStaffAlertFragment5).length-1,1,"Exactly one Founder-approved alert contextual button");
+assert.equal(host.split(directStaffAlertFragment6).length-1,1,"Exactly one Founder-approved accessible Staff destination");
 const protectedOriginalHost=host.replace(approvedNavigatorId,"").replace(approvedLocalBack,"")
-  .replace(allowedFounderCheckImport,"").replace(allowedOverviewCheck,"").replace(allowedStaffCheck,"");
+  .replace(allowedFounderCheckImport,"").replace(allowedOverviewCheck,"").replace(allowedStaffCheck,"")
+  .replace(directStaffAlertFragment1,"")
+  .replace(directStaffAlertFragment2,"")
+  .replace(directStaffAlertFragment3,"")
+  .replace(directStaffAlertFragment4,"")
+  .replace(directStaffAlertFragment5,"")
+  .replace(directStaffAlertFragment6,"      <div id=\"staff-access-security\">");
 assert.equal(blobSha(protectedOriginalHost),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
   "Founder host must match immutable original SHA after removing ONLY explicitly approved Back and Staff source-check additions");
 const migration=readFileSync("supabase/migrations/20261009101553_shared_operational_incidents_staging.sql","utf8");
@@ -88,6 +110,34 @@ assert.ok(host.includes('onOpenRecordedIncidents={()'),"Real incident navigation
 assert.ok(host.includes('fetch("/api/admin/control-room/operational-incidents"'),"Read existing canonical Founder-gated endpoint");
 assert.ok(host.includes('method:"GET",cache:"no-store",credentials:"same-origin"'),"No stale anonymous GET");
 console.log("Staging Founder canonical alert integration projection, empty/error/verified/critical tests: PASS");
+
+
+/* R74: Actual Founder alert route is visible ONLY for a verified, unresolved
+   canonical Staff Session source incident; this test never inserts live rows. */
+const staffPayload={
+  status:"MONITORING",sourceState:"RECORDED_INCIDENTS",openIncidentCount:1,
+  incidents:[{incidentId:"fixture-staff-source-001",featureId:"staff-session-device-control",
+    ownerModuleId:"admin-security-audit",title:"Staff access operational source unreadable",
+    state:"needs_attention",severity:"unavailable",oversightLevel:2}]
+};
+const staffProjected=projectFounderCanonicalIncidentAlerts(staffPayload);
+assert.equal(staffProjected.verified,true);
+assert.equal(staffProjected.attentionCount,1);
+assert.equal(isFounderStaffSecuritySourceIncident(staffProjected.items[0]),true);
+assert.equal(isFounderStaffSecuritySourceIncident({...staffProjected.items[0],featureId:"other-feature"}),false);
+assert.equal(isFounderStaffSecuritySourceIncident({...staffProjected.items[0],ownerModuleId:"other-module"}),false);
+assert.equal(isFounderStaffSecuritySourceIncident({...staffProjected.items[0],title:"Other failure"}),false);
+assert.equal(isFounderStaffSecuritySourceIncident({...staffProjected.items[0],state:"verified_resolved"}),false);
+assert.equal(projectFounderCanonicalIncidentAlerts(null).verified,false);
+assert.equal(projectFounderCanonicalIncidentAlerts(fixture([])).items.some(isFounderStaffSecuritySourceIncident),false);
+assert.ok(host.includes('const staffSourceIncidentVisible=canonicalIncidents.verified &&'));
+assert.ok(host.includes('canonicalIncidents.items.some(isFounderStaffSecuritySourceIncident)'));
+assert.ok(host.includes('onOpenStaffAccessSecurity={() => {'));
+assert.ok(host.includes('destination.focus({preventScroll:true})'));
+assert.ok(host.includes('Open Staff Access & Security →'));
+assert.ok(host.includes('id="staff-access-security" tabIndex={-1} role="region" aria-label="Staff Access & Security"'));
+assert.ok(host.includes('Open recorded incidents →'),"Keep original generic incident entrance");
+console.log("R74 Founder Staff-source alert direct access: mock verified/empty/invalid/resolved, context navigation and unchanged original host PASS");
 
 /* The combined-source critical count is the ONLY critical toast reset authority. */
 assert.ok(host.includes("const combinedPanelCriticalCount=criticalCount+canonicalIncidents.criticalCount"),"Panel critical header incorporates canonical critical incidents");
