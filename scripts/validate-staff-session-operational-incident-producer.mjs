@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import vm from "node:vm";
 import {readFileSync} from "node:fs";
 import {
   checkStaffSessionOperationalSources,
@@ -37,6 +38,45 @@ assert.ok(!checkUi.includes("targetUserId")&&!checkUi.includes("targetSessionId"
 assert.ok(host.includes('<FounderOnDemandStaffSourceCheck authenticated={authenticated} location="overview" />'),"Approved Overview doorway missing");
 assert.ok(host.includes('<FounderOnDemandStaffSourceCheck authenticated={authenticated} location="staff" />'),"Approved Staff doorway missing");
 assert.ok(host.includes('import FounderOnDemandStaffSourceCheck from "./FounderOnDemandStaffSourceCheck.js";'),"Shared component import missing");
+
+
+// Pure display-contract tests: evaluate ONLY the isolated JSX-free result interpreter.
+// All inputs are artificial fixed fixtures; never invoke the real Staging endpoint.
+const pureStart=checkUi.indexOf("function interpret(response,data){");
+const pureEnd=checkUi.indexOf("\nexport default function FounderOnDemandStaffSourceCheck",pureStart);
+assert.ok(pureStart>0&&pureEnd>pureStart,"Expected safe isolated interpretation function");
+const interpret=vm.runInNewContext(checkUi.slice(pureStart,pureEnd)+"\ninterpret;");
+function expectExplanation(label,http,data,expectedTitle,expectedKind){
+  const result=interpret({status:http,ok:http>=200&&http<300},data);
+  assert.equal(result.title,expectedTitle,label+" must explain the real category");
+  assert.equal(result.kind,expectedKind,label+" must preserve safe status");
+  assert.ok(result.did&&result.next,label+" must explain what HIISSA did and next action");
+  assert.ok(!JSON.stringify(result).includes("Bearer ")&&!JSON.stringify(result).includes("service_role"),
+    label+" must not display credentials");
+}
+const healthyData={status:"MONITORING",productionEffectEnabled:false,
+  sourceState:"READABLE_EMPTY",sourceFlags:{staffSessions:true,staffAccess:true},
+  sourceCounts:{staffSessions:0,staffAccess:0},incidentAction:"NONE"};
+expectExplanation("healthy verified empty",200,healthyData,"Monitoring — sources are readable","checked");
+expectExplanation("never accept incomplete healthy",200,{...healthyData,sourceFlags:{staffSessions:false,staffAccess:true}},
+  "Check answer was incomplete","unknown");
+expectExplanation("missing Founder sign-in",401,{status:"UNAUTHENTICATED"},"Founder sign-in needs checking","unknown");
+expectExplanation("Founder permission denied",403,{status:"FOUNDER_GATE_REQUIRED"},"Founder permission could not be confirmed","unknown");
+expectExplanation("Staging environment unavailable",404,null,"Staging check is not available here","unknown");
+expectExplanation("secure configuration missing",503,{status:"STAGING_ADMIN_DATA_NOT_CONFIGURED"},
+  "Staging check connection needs attention","unknown");
+expectExplanation("server exception",503,{status:"STAFF_SOURCE_MONITOR_UNAVAILABLE",productionEffectEnabled:false},
+  "HIISSA's secure checker is unavailable","unknown");
+expectExplanation("bad request",400,{status:"REQUEST_BODY_NOT_ALLOWED"},"Check request was rejected safely","unknown");
+expectExplanation("unverified source error",503,{status:"INCIDENT_PERSISTENCE_FAILED",productionEffectEnabled:false},
+  "Problem detected — recording not confirmed","unknown");
+expectExplanation("real incident recorded",503,{status:"SOURCE_FAILURE_INCIDENT_RECORDED",productionEffectEnabled:false,
+  incidentPersistence:"INSERT_ACCEPTED"},"Needs attention — source not readable","attention");
+expectExplanation("duplicate incident suppressed",503,{status:"SOURCE_FAILURE_ALREADY_RECORDED",productionEffectEnabled:false,
+  incidentPersistence:"DUPLICATE_SUPPRESSED"},"Needs attention — previously recorded problem","attention");
+expectExplanation("unknown technical error",502,null,"Check service returned an error","unknown");
+console.log("PASS: Founder plain-English failed-check reasons, healthy/incomplete/permission/staging/config/incident responses (mock only).");
+
 
 for(const gate of [
   "export async function POST","FOUNDER_GATE_REQUIRED","UNAUTHENTICATED",
