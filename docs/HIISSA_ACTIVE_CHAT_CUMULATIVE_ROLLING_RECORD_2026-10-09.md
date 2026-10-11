@@ -3905,3 +3905,24 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** Only read-only investigation and this additive Git evidence checkpoint. No Production release/config/source change; no code changes in protected Founder shell; no new Supabase migration/revocation; no new message or staff action. No application redeployment.
 
 **NEXT:** Inspect Founder five additional screenshots if accessible, reconcile actual source error via safe diagnostic/original route, locate precise failure (currently not yet known), obtain explicit Founder approval for exact correction before protected host/behaviour changes, implement Staging-only fix without bypassing gate, run all legacy and new tests, redeploy target staging, then give Founder ONE direct link + steps to verify actual source and persisted Staging write/audit result. Record new FAIL/FIX/VERIFIED/PASS only with evidence and do not repeat previously accepted Alerts.
+
+
+---
+
+## 2026-10-11T20:42:28.589Z — R97A FOLLOW-UP SOURCE DIAGNOSTIC READ-ONLY / NO CORRECTION YET
+
+**WHAT:** Extended read-only investigation after Founder supplied five more screenshots during the previous diagnostics. Did not change application or database. Confirmed all explicitly selected table/column names in the new Staff Trust GET route exist in original verified Staging Supabase public schema.
+
+**WHY:** Avoid a speculative fix or declaration that the Staging table is missing, while preserving the true Founder practical FAIL.
+
+**HOW / PROCESS:** Ran information_schema.columns anti-join checking the exact selected fields and environment filters across hiissa_employee_register, hiissa_staff_onboarding_applications, admin_role_assignments, admin_access_restrictions, hiissa_operational_incidents and hiissa_staff_review_staging. Returned [] missing fields (schema presence, not verified authorised PostgREST access). Prior read-only founder row count = 1; DB RLS for new tables true and service_role INSERT true (anon/auth false). Compared new Staff GET with original operational-incidents and existing founder approval inbox auth guards. Original API uses admin_users.eq(user_id).maybeSingle, whereas newly built helper selects up to two admin_users then asserts exactly one and matches authenticated Founder. Source failure UI does not disclose HTTP response and maps all error statuses to the same warning, so exact cause remains NOT VERIFIED. Vercel custom Staging env metadata confirms staging alias uses custom branch match; encrypted variable values in the Vercel connection could not be verified as plaintext. No credible evidence for wrong Supabase project mapping, expired Founder token, current source error, or missing schema cache independently.
+
+**WHERE / WHO / EVIDENCE:** Existing Staging project upcssfmilewwshyxyvdf; existing branch feature/founder-control-room-staging; new source paths and screenshot as R97; Founder submitted 5 more images whose contents were not accessible in current tool file listing. Assistant carried out SQL read-only anti-join and source review. No code changed.
+
+**STATUS:** Founder practical FAIL persists. Not recovered or passed. Verified schema presence only, exact API response/failed dependency not independently captured. No claim of root cause. All initial two full features continue incomplete, protected legacy work and Production preserved.
+
+**FAILURES/CORRECTIONS:** Do not weaken Founder role, original Staging branch/source host checks or RLS to force the screen to load; diagnose with narrow, privacy-safe per-source API diagnostics and, if an actual broken connection is identified, fix only the specific new feature path with explicit Founder authority.
+
+**NON-EFFECT:** No app code, Staging migration, session, audit row, customer data, real Staff profile, Production route or Docs11–13 changed. Documentation-only additive ledger entry.
+
+**NEXT:** Obtain explicit Founder approval for targeted Staging Staff source diagnostic/error-classification patch and any consequential correction; do not request retest of same broken build. After patch, test actual authenticated GET, no secret exposure, deploy existing Staging only, then one guided Founder practical rerun with normal working actions; add original Control Room menu navigation only after separate Founder approval and protected impact audit.
