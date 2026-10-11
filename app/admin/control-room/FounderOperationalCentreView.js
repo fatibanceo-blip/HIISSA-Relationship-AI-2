@@ -92,7 +92,7 @@ export default function FounderOperationalCentreView({kind}){
     {customer?<CustomerContent data={data} loading={state.loading} onAction={performAction} busy={actionBusy}/>:<StaffContent data={data} loading={state.loading} onAction={performAction} busy={actionBusy}/>}
     <section style={notice}>
       <strong>Original approved features are preserved</strong>
-      <p>Founder-only Staging practice actions now save genuine internal records and Admin audit events. Real customer messages, automatic acknowledgement, real staff access changes and all Production effects remain disabled. The original Experience Registry identities remain unchanged.</p>
+      <p>Founder-only Staging practice actions now save genuine internal records and Admin audit events. Real customer messages, automatic acknowledgement, real staff access changes and all Production effects remain disabled. The original Experience Registry identities remain unchanged; actions return to the existing Founder Control Room.</p>
     </section>
   </main>;
 }
