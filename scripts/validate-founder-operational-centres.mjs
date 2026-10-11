@@ -32,7 +32,7 @@ for(const [name,source] of [["customer",customer],["staff",staff]]){
   assert.ok(source.includes("productionEffectEnabled:false"),name+" must refuse Production effects");
 }
 for(const s of ["staff_work_items",'eq("workspace_id","customer_support")',"is_fictional","externalCustomerMessages:\"NOT_CONNECTED\"","automaticAcknowledgement:\"NOT_ACTIVE\"","originalAcknowledgementWording:\"RECOVERY_REQUIRED\"","humanResponseDeadline:\"RECONCILIATION_REQUIRED\"",'\"RECEIVED\"','\"WAITING_FOR_CUSTOMER\"'])assert.ok(customer.includes(s),"Customer design/data boundary missing: "+s);
-for(const s of ["hiissa_employee_register","hiissa_staff_onboarding_applications","admin_role_assignments","admin_access_restrictions","NOT_CERTIFIED","NOT_CONNECTED","noOpaqueTrustScore:true","staffAccountChangesEnabled:false"])assert.ok(staff.includes(s),"Staff evidence/no-score boundary missing: "+s);
+for(const s of ["hiissa_employee_register","hiissa_staff_onboarding_applications","admin_role_assignments","founder_staff_access_inventory","NOT_CERTIFIED","NOT_CONNECTED","noOpaqueTrustScore:true","staffAccountChangesEnabled:false"])assert.ok(staff.includes(s),"Staff evidence/no-score boundary missing: "+s);
 for(const s of ['id: "customer-communication-service-level-centre"','id: "staff-trust-training-access-review"',"approximately one minute after successful receipt","noOpaqueTrustScore: true"])assert.ok(registry.includes(s),"Historic approved Registry contract lost: "+s);
 for(const s of ["Customer Communication & Service-Level Centre","Staff Trust, Training & Access Review","Back to Founder Control Room","Refresh verified evidence","NOT CONNECTED","No opaque trust score","Founder-only Staging practice actions","No action has been taken","existing Founder Control Room","Source verification failed"])assert.ok(ui.includes(s),"Approved display/return/safety text missing: "+s);
 assert.ok(customerPage.includes('if(process.env.VERCEL_ENV==="production")notFound();'));
@@ -69,6 +69,13 @@ for(const token of [
   "productionEffectEnabled:false"
 ])assert.ok(staff.includes(token),"Staff secure fail-closed source diagnostic missing "+token);
 assert.ok(!ui.includes("data.error.message")&&!staff.includes("error.message}"),"Raw backend error details must never be rendered");
+assert.ok(staff.includes('founder.admin.rpc("founder_staff_access_inventory")'),"Reuse exact existing authorised Founder access inventory");
+assert.ok(!staff.includes('from("admin_access_restrictions")'),"Do not query the existing protected access restriction table directly");
+assert.ok(staff.includes('accessRestrictionsSource:"EXISTING_FOUNDER_ACCESS_INVENTORY"'),"Original access inventory provenance must be explicit");
+assert.ok(staff.includes('recordedAccessRestrictions:null'),"Do not misrepresent current inventory count as historical restrictions");
+assert.ok(staff.includes("currentRestrictedStaffCount:"), "Provide current restricted staff aggregate only");
+assert.ok(staff.includes('r.access_state!=="active"'),"Current restricted staff count must use existing authorised access state");
+console.log("PASS: Staff restrictions now use original authorised Founder access inventory; protected table grants unchanged; source-truth aggregate preserved.");
 console.log("PASS: Staff source failure classified in secure Founder UI; original Staging-only and permissions controls retained. Real Founder fix verification remains pending.");
 
 console.log("PASS: two Founder active Staging practice workflows source-constrained, audit+RLS, original Registry identities, canonical incidents, visible saved outcomes, protected Control Room and no Production effect.");
