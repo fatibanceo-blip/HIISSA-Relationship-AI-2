@@ -69,7 +69,9 @@ export async function GET(request){
       privacyBoundary:"Founder-only aggregate and minimum-necessary employee identity; no email, policy evidence contents, tokens or passwords."
     });
   }catch{
-    return json({status:"SOURCE_UNAVAILABLE",productionEffectEnabled:false},503);
+    // Fail closed. Return a fixed diagnosis without exposing provider errors,
+    // customer/staff content, tokens, SQL, or an internal stack trace.
+    return json({status:"SOURCE_READ_FAILED",productionEffectEnabled:false},503);
   }
 }
 
