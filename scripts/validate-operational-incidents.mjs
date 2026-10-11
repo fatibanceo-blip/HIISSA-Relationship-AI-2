@@ -77,7 +77,8 @@ assert.equal(blobSha(protectedOriginalHost),"f2337383d9c41e5b79edbad8795a12d8661
     window:{requestAnimationFrame:(fn)=>fn()},
     document:{getElementById:(id)=>id==="founder-alerts-panel"?panel:null}
   };
-  const expression=approvedFounderAlertsHeaderClick.trim().replace(/^onClick=\\{/, "").slice(0,-1);
+  assert.ok(approvedFounderAlertsHeaderClick.trim().startsWith("onClick={"));
+  const expression=approvedFounderAlertsHeaderClick.trim().slice("onClick={".length,-1);
   const click=vm.runInNewContext("("+expression+")",context);
   click();click();
   assert.deepEqual(states,["alerts","alerts"],"Both Alerts taps must open, never toggle-close");
