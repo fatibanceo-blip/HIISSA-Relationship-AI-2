@@ -3345,3 +3345,24 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** Original approved alert summaries/buttons, Staging server endpoints, Supabase RPCs, permissions, staff sessions, canonical incident records, monitoring scheduler, autonomous repair, Production, Registry, other screens and protected Word11–13 unchanged.
 
 **NEXT:** Compare exact code diff against approved scope, explicitly deploy pinned HEAD to SAME existing Vercel target staging, inspect real build and validator logs. Distinguish mock PASS from Founder practical PASS. If READY, give Founder direct testing URL and no fake test data. After real result, update role-mapped 13 Word documents additively under Document12; retain R73 baseline and provide one final ZIP, with honest verification limitations.
+
+
+---
+
+## 2026-10-11 — R75 STAGING BUILD FAIL SECOND INDEPENDENT IMMUTABLE FOUNDER HOST GUARD
+
+**WHAT:** First pinned Staging deployment of approved genuine Staff-source alert direct-navigation feature FAILED during Next prebuild. Vercel deployment dpl_DxuxHhqyHEySMr7DHhY3RKJEpPYs exact source SHA 5fd92a158e1f81a86c00d85be512a70a2bf8eec1, target staging, state ERROR. Prebuild logged all previously noted Staff operational incident tests and new R74 direct-alert projection guard PASS; later independent employee-register readonly validator failed its unchanged protected Founder host SHA check.
+
+**WHY:** Preserve actual FAIL, identify source of failure rather than blame the feature or relax governance. Two independent tests enforce the same immutable original Founder host SHA. Only scripts/validate-operational-incidents.mjs was updated to subtract the new exact approved fragments; scripts/validate-employee-register-readonly.mjs must independently acknowledge precisely the same Founder-approved navigation fragments without accepting any unrelated edits.
+
+**HOW / PROCESS:** Read Vercel error logs and failing script source. Concrete failure: Node AssertionError “STOP: Founder-approved onboarding host differs beyond the specifically approved Back link” at scripts/validate-employee-register-readonly.mjs:37. Actual protected SHA after insufficient subtraction 5a12b02303ee5d5b8d224eeb6b5688437974afae, expected original f2337383d9c41e5b79edbad8795a12d8661a2f13. This is NOT a real Founder browser defect or application runtime fault; it is a deliberate build safety FAIL. Plan is narrow exact-fragment allowlist update to second validator, keeping original immutable expected SHA and protected onboarding logic unchanged.
+
+**WHERE / WHO:** Original Staging project prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0; branch feature/founder-control-room-staging; original repository. Assistant diagnosed build; Founder not asked to perform any fault injection or settings change.
+
+**EVIDENCE / STATUS:** Deployment dpl_DxuxHhqyHEySMr7DHhY3RKJEpPYs = ERROR, not READY. Build stdout “Shared incident foundation static and transition validator: PASS”, “Founder approved host SHA preserved” from first validator, “PASS: fixture-only Staff source failure -> canonical L2 incident -> existing Founder Alerts projection” from unrelated prior source fixture, then fatal second validator as above. New feature CODE COMMITTED, BUILD FAIL, practical NOT VERIFIED.
+
+**FAILURES & CORRECTIONS:** Real failure recorded; correction pending. Do not bypass, delete, weaken or replace f233... baseline. Precisely subtract the six approved fragments in second validator, then run another pinned Staging build and log FAIL/FIX/PASS separately.
+
+**NON-EFFECT:** First failed build did not produce a READY replacement; Production untouched, no staff account/data changes, no malicious incident simulation, no changes to original validated protected Founder UI beyond approved code, Docs11–13 unchanged.
+
+**NEXT:** Update only second independent guard to identical documented allowed-fragments and keep same SHA original, then compare committed diff, rerun build; if pass inspect READY and provide Founder Staging link/practical instructions.
