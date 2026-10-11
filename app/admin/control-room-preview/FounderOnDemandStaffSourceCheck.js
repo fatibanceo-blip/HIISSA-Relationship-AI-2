@@ -35,17 +35,50 @@ function interpret(response,data){
       detail:"HIISSA still cannot verify one or more real staff-session sources.",
       did:"HIISSA recognised an existing incident instead of recording a duplicate. No staff access was changed.",
       next:"Technical review is still needed. Automatic repair and direct notification are not connected."};
-  if(data?.status==="UNAUTHENTICATED"||data?.status==="FOUNDER_GATE_REQUIRED")
-    return {kind:"unknown",title:"Founder verification required",
-      detail:"This protected check is for the signed-in HIISSA Founder only.",
-      did:"HIISSA did not run the check or change staff access.",
-      next:"Sign in through the existing Founder login and return here."};
-  return {kind:"unknown",title:"Could not verify — not a healthy result",
-    detail:data?.status==="INCIDENT_PERSISTENCE_FAILED"
-      ?"HIISSA found a source problem but could not confirm that the incident was recorded."
-      :"HIISSA could not safely confirm the result. This is not proof of a healthy or empty roster.",
-    did:"No verified source result is available. HIISSA has not assumed success.",
-    next:"Review the existing incident history before trying again. Automatic repair is not connected."};
+  if(data?.status==="INCIDENT_PERSISTENCE_FAILED")
+    return {kind:"unknown",title:"Problem detected — recording not confirmed",
+      detail:"The Staging checker found an unreadable staff-session source, but could not confirm that the problem was saved in the incident history.",
+      did:"HIISSA tried to record the genuine source failure. Recording is unverified; no repair or staff access change was performed.",
+      next:"Do not repeat the check blindly. Technical review is required before another test."};
+  if(response.status===401||data?.status==="UNAUTHENTICATED")
+    return {kind:"unknown",title:"Founder sign-in needs checking",
+      detail:"HIISSA could not confirm the signed-in session for this protected check.",
+      did:"The protected source check was not authorised. No staff access change was requested.",
+      next:"Use your existing Founder sign-in; do not share any password or access code."};
+  if(response.status===403||data?.status==="FOUNDER_GATE_REQUIRED")
+    return {kind:"unknown",title:"Founder permission could not be confirmed",
+      detail:"The checking service did not verify the required Founder-only permission for this request.",
+      did:"HIISSA's existing permission protection stopped the check. No access was granted or changed.",
+      next:"This needs a secure permissions review. Do not create another account or change your staff permissions."};
+  if(response.status===404)
+    return {kind:"unknown",title:"Staging check is not available here",
+      detail:"HIISSA's protected checking service could not be reached at the approved Staging location. The exact configuration cause is not yet established.",
+      did:"The check was not verified. HIISSA has not assumed the staff sources are healthy.",
+      next:"The technical setup of this Staging check needs review. Do not use another environment or attempt staff changes."};
+  if(data?.status==="STAGING_ADMIN_DATA_NOT_CONFIGURED")
+    return {kind:"unknown",title:"Staging check connection needs attention",
+      detail:"The protected checking service reports that a required Staging connection is not configured.",
+      did:"HIISSA stopped safely before checking staff-session data. It did not assume success.",
+      next:"The technical connection needs review. Do not enter credentials or change settings yourself."};
+  if(data?.status==="STAFF_SOURCE_MONITOR_UNAVAILABLE"||data?.status==="MONITOR_CLIENT_UNAVAILABLE")
+    return {kind:"unknown",title:"HIISSA's secure checker is unavailable",
+      detail:"The Staging checking service could not complete its work. This does not by itself show that the database is broken.",
+      did:"HIISSA stopped without claiming a verified result.",
+      next:"The checking service needs a technical review before another test."};
+  if(response.status===400||data?.status==="REQUEST_BODY_NOT_ALLOWED")
+    return {kind:"unknown",title:"Check request was rejected safely",
+      detail:"The Staging checking service rejected an unexpected request. No valid check result was returned.",
+      did:"HIISSA did not accept the request or assume the staff sources are healthy.",
+      next:"The testing control needs a technical review; do not send information or codes to the service."};
+  if(!response.ok)
+    return {kind:"unknown",title:"Check service returned an error",
+      detail:"HIISSA's secure Staging check did not return a confirmed result. The underlying cause is still being investigated.",
+      did:"No verified source result is available. HIISSA has not assumed success.",
+      next:"Technical review is needed before you try again."};
+  return {kind:"unknown",title:"Check answer was incomplete",
+    detail:"The Staging checking service responded, but its answer did not contain enough verified information to confirm that the staff sources are readable.",
+    did:"HIISSA rejected an incomplete result rather than showing a false healthy message.",
+    next:"The check's response needs a technical review before another attempt."};
 }
 
 export default function FounderOnDemandStaffSourceCheck({authenticated,location="staff"}){
