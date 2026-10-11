@@ -3951,3 +3951,26 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** No code, UI, database or Production change from this approval record itself, no staff/real customer action, no Docs11–13 amendment, no deployment, no change to protected features.
 
 **NEXT:** Implement narrow diagnostic, run protected gates, build and deploy existing Staging only, then use safe status to target correction. Avoid retest until new version READY. Preserve detailed rolling checkpoint for each material implementation/test and mark any actual uncertainty NOT VERIFIED.
+
+
+---
+
+## 2026-10-11T20:47:20.075Z — R99 FOUNDER-AUTHORISED NARROW STAFF SOURCE DIAGNOSTIC PATCH — COMMITTED, BUILD PENDING
+
+**WHAT:** Added a privacy-safe and security-preserving Staff Trust, Training & Access Review diagnostic to the new Founder operational page. It now maps confirmed API outcomes to safe, specific labels: STAFF-SOURCE AUTH-401 (Founder session), ACCESS-403 (existing Founder authorisation), STAGING-404 (protected Staging route unavailable), CONFIG-503 (protected connection absent), READ-503 (names of affected public architectural data sources only, supplied via allowlist), REQUEST-503 (read exception before source-specific classification), SERVER-/RESPONSE- with status. All status names are static approved descriptions; no raw provider message, SQL, email, access tokens or sensitive content shown.
+
+**WHY:** Founder mobile practical screenshot previously showed only generic SOURCE UNAVAILABLE; exact cause could not be recovered from source/build and empty runtime logs. Showing useful safe failure phase is needed to identify the actual cause without speculative security changes, false PASS or repeated founder tests of identical broken build.
+
+**HOW / PROCESS:** After explicit Founder “Approve” (R98), fetched live current Staging code and original validator. Source-only scoped edit to app/admin/control-room/FounderOperationalCentreView.js adds explain-Staff-failure helper and changes only the Staff branch of the existing read error handler, leaving working Customer Communication branch logic unchanged. Commit 5cc99437941476b35af9e0ae0bbeebe882b57242. Exact new Staff GET route catch changed from generic SOURCE_UNAVAILABLE to SOURCE_READ_FAILED, preserving existing unverifiedSources on named read errors, original branch/Supabase host/Founder gate and no Production effects; commit 6579db930c0e092e3b3f793d058f42373ced65e2. Added new positive tests to existing new feature test scripts/validate-founder-operational-centres.mjs with checks for all safe classification strings, allowlist, unchanged source gates, and no raw provider errors; commit 82c6305185ba8b6e0074b24d19c21ed68093e233. Original existing regression validators, Control Room host and all approved UI/Registry remain untouched. No runtime source error category observed yet because this diagnostic must first be deployed.
+
+**WHERE:** Repo fatibanceo-blip/HIISSA-Relationship-AI-2, branch feature/founder-control-room-staging. Three new-feature-only existing paths above; Git HEAD at end of code batch 82c6305185ba8b6e0074b24d19c21ed68093e233, prior app deployment dpl_5tmw5ZAXVafqxUNVJSerCs4NAjpw still old READY until next deployment.
+
+**WHO:** Founder approved narrow diagnostic and subsequent evidenced repair; assistant authored new feature-only code/validator; no customer or staff acted.
+
+**EVIDENCE / STATUS:** Git commits identified above. COMMITTED / VERCEL BUILD NOT YET RUN / FOUNDER PRACTICAL FAIL FROM R97 PERSISTS until independently fixed. Root cause NOT VERIFIED; error labels represent future evidence classification, not a root-cause claim.
+
+**FAILURES AND CORRECTIONS:** Local container HTTP GET to existing Staging API failed name resolution (could not retrieve server status), so no live API conclusion can be drawn. Earlier Vercel no logs and no error clusters did not prove success. Diagnostics keep fail closed; never weaken RLS/Founder gate to make response MONITORING.
+
+**NON-EFFECT:** Production/main, existing Founder Control Room/Alerts and all other working features, original Registry, Staging database records/RLS, staff access, customer communications, Docs11–13 unaffected. Only new staff feature diagnostic and new independent test changed; no new environment.
+
+**NEXT:** Run entire unchanged historical prebuild plus enhanced test on pinned Staging code SHA, verify READY and alias points there. Then ask Founder only for exact displayed STAFF-SOURCE code or evidence of successful verified loaded screen, not repeated old feature tests. If error provides failing category, carry out exact narrow fix with protected impact/regression. No actual working PASS claimed until Founder practical source reading and save/refresh/audit evidence.
