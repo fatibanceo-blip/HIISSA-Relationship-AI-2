@@ -134,6 +134,6 @@ revoke all on function public.hiissa_support_staging_founder_command(
 grant execute on function public.hiissa_support_staging_founder_command(
   uuid,text,uuid,text,text,text,integer) to service_role;
 revoke all on function public.hiissa_staff_review_staging_founder_command(
-  uuid,text,uuid,text,text,text,text,text,date,text,integer) from public,anon,authenticated;
+  uuid,text,uuid,text,text,text,text,date,text,integer) from public,anon,authenticated;
 grant execute on function public.hiissa_staff_review_staging_founder_command(
-  uuid,text,uuid,text,text,text,text,text,date,text,integer) to service_role;
+  uuid,text,uuid,text,text,text,text,date,text,integer) to service_role;
