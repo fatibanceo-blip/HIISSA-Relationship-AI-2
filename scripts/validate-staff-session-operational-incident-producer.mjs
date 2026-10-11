@@ -5,6 +5,7 @@ import {
   checkStaffSessionOperationalSources,
   monitorStaffSessionOperationalSources
 } from "../lib/admin/staff-session-operational-incident-producer-staging.js";
+import {projectFounderCanonicalIncidentAlerts} from "../lib/admin/founder-canonical-incident-alert-projection.js";
 
 // Source-contract gate protects the existing Founder screen/GET/ten examples.
 const route=readFileSync("app/api/admin/control-room/operational-incidents/check-staff-session-source/route.js","utf8");
@@ -216,6 +217,68 @@ for(const scenario of [
   const m=await monitorStaffSessionOperationalSources(null);
   assert.equal(m.incidentPersistence,"NOT_ATTEMPTED");
 }
+
+// Explicit approved Staff-to-Founder-Alerts canonical projection regression.
+// All cases use in-memory fixtures and original pure projection; NEVER write to
+// Staging DB or fake an outage in the real protected monitoring endpoint.
+{
+  const {db,records}=mock({failure:"founder_staff_session_inventory"});
+  const failure=await monitorStaffSessionOperationalSources(db);
+  assert.equal(failure.status,"SOURCE_FAILURE_INCIDENT_RECORDED");
+  assert.equal(failure.incidentPersistence,"INSERT_ACCEPTED");
+  assert.equal(records.writes.length,1);
+  const saved=records.writes[0];
+  assert.equal(saved.incident_key,"hiissa.admin.staff-session-source.unreadable");
+  assert.equal(saved.environment,"staging");
+  assert.equal(saved.oversight_level,2);
+  assert.equal(saved.recovery_classification,"HUMAN_REQUIRED");
+  assert.equal(saved.max_safe_retries,0);
+  // Model only the existing Founder GET route's public metadata projection
+  // of one already-recorded incident; this is NOT an actual live GET response.
+  const founderGetFixture={
+    status:"MONITORING",sourceState:"RECORDED_INCIDENTS",openIncidentCount:1,
+    incidents:[{
+      incidentId:"fixture-only-staff-source-incident-001",
+      state:"needs_attention",severity:saved.severity,
+      title:saved.title,oversightLevel:saved.oversight_level
+    }]
+  };
+  const visible=projectFounderCanonicalIncidentAlerts(founderGetFixture);
+  assert.equal(visible.verified,true,"Canonical Staging row must project into existing Founder Alerts");
+  assert.equal(visible.attentionCount,1,"One real-source failure fixture must need attention");
+  assert.equal(visible.criticalCount,0,"L2 source failure must not masquerade as critical/L3");
+  assert.equal(visible.items[0].title,"Staff access operational source unreadable");
+  assert.equal(visible.items[0].oversightLevel,2);
+  assert.equal(visible.items[0].severity,"unavailable");
+  assert.equal(visible.items[0].state,"needs_attention");
+  const healthy=projectFounderCanonicalIncidentAlerts({
+    status:"MONITORING",sourceState:"READABLE_EMPTY",openIncidentCount:0,incidents:[]
+  });
+  assert.equal(healthy.verified,true);assert.equal(healthy.attentionCount,0);
+  const unknown=projectFounderCanonicalIncidentAlerts(null);
+  assert.equal(unknown.verified,false,"Unavailable incident GET must not be treated as healthy");
+  assert.equal(projectFounderCanonicalIncidentAlerts({...founderGetFixture,openIncidentCount:0}).verified,false,
+    "Contradictory count must not present a false reliable alert source");
+  assert.ok(host.includes('const incidentAlerts=useFounderCanonicalIncidentAlerts(authenticated,60000);'),
+    "Preserve existing Founder header polling of canonical incidents");
+  assert.ok(host.includes('const canonicalIncidents=useFounderCanonicalIncidentAlerts(authenticated)'),
+    "Preserve existing Founder Alerts panel use of canonical incidents");
+  assert.ok(host.includes("Recorded operational incidents — Staging"),
+    "Preserve original Founder Alerts verified-incident presentation");
+  const founderGetRoute=readFileSync("app/api/admin/control-room/operational-incidents/route.js","utf8");
+  assert.ok(founderGetRoute.includes('from("hiissa_operational_incidents")'),
+    "Founder GET must read same canonical table as staff source incident producer");
+  assert.ok(founderGetRoute.includes('return reply({status:"FOUNDER_GATE_REQUIRED"},403)'),
+    "Preserve protected Founder authorisation gate");
+  assert.ok(founderGetRoute.includes('return reply({status:"UNAUTHENTICATED"},401)'),
+    "Preserve authenticated access gate");
+  assert.ok(founderGetRoute.includes('notificationDelivery:"NOT_YET_WIRED"') &&
+    founderGetRoute.includes('automaticRecovery:"NOT_YET_WIRED"'),
+    "No direct notification delivery, scheduler or automated recovery approval");
+}
+console.log("PASS: fixture-only Staff source failure -> canonical L2 incident -> existing Founder Alerts projection; healthy vs unavailable and immutable permissions.");
+console.log("NOT VERIFIED: real Staff source outage, real incident persistence, live Founder Alerts fault-path journey, external delivery or autonomous recovery.");
+
 const pkg=JSON.parse(readFileSync("package.json","utf8"));
 for(const field of ["prebuild","verify:foundation"]){
   assert.ok(pkg.scripts[field].includes("npm run test:staff-session-incident-producer"),"New monitor must block build if test fails");
