@@ -16,6 +16,7 @@ import FounderStaffSessionDeviceControl from "./FounderStaffSessionDeviceControl
 import FounderOnDemandStaffSourceCheck from "./FounderOnDemandStaffSourceCheck.js";
 import FounderEmployeeRegisterAttendancePreview from "./FounderEmployeeRegisterAttendancePreview.js";
 import {projectFounderCanonicalIncidentAlerts} from "../../../lib/admin/founder-canonical-incident-alert-projection.js";
+import {isFounderStaffSecuritySourceIncident} from "../../../lib/admin/founder-canonical-incident-alert-projection.js";
 import styles from "./page.module.css";
 import {
   CONTROL_ROOM_MODULES,
@@ -797,6 +798,15 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
                 choosePrimary("staff");
                 window.requestAnimationFrame(() => {
                   document.getElementById("staff-employee-register-attendance")?.scrollIntoView({behavior:"smooth",block:"start"});
+                });
+              }}
+              onOpenStaffAccessSecurity={() => {
+                choosePrimary("staff");
+                window.requestAnimationFrame(() => {
+                  const destination=document.getElementById("staff-access-security");
+                  if(!destination)return;
+                  destination.focus({preventScroll:true});
+                  destination.scrollIntoView({behavior:"smooth",block:"start"});
                 });
               }}
             />
@@ -2226,6 +2236,7 @@ function FounderAlertsPanel({
   onOpenSystemOperations,
   onOpenSecurityAudit,
   onOpenRecordedIncidents,
+  onOpenStaffAccessSecurity,
 }) {
   const [loading, setLoading] = useState(Boolean(authenticated));
   const [pending, setPending] = useState(null);
@@ -2239,6 +2250,8 @@ function FounderAlertsPanel({
   const [aiProductHealth, setAiProductHealth] = useState(null);
   const [systemOperationsHealth, setSystemOperationsHealth] = useState(null);
   const canonicalIncidents=useFounderCanonicalIncidentAlerts(authenticated);
+  const staffSourceIncidentVisible=canonicalIncidents.verified &&
+    canonicalIncidents.items.some(isFounderStaffSecuritySourceIncident);
 
   useEffect(() => {
     if (!authenticated || !adminDataClient) {
@@ -2525,6 +2538,11 @@ function FounderAlertsPanel({
                 <li key={item.incidentId}>{item.title} — {item.state.replaceAll("_"," ")}</li>
               ))}</ul>
             ):null}
+            {staffSourceIncidentVisible ? (
+              <button type="button" className={styles.alertAction} onClick={onOpenStaffAccessSecurity}>
+                Open Staff Access & Security →
+              </button>
+            ) : null}
             <small>Read-only genuine incident evidence. Notification delivery, scheduled checks and automatic recovery are not yet certified.</small>
           </div>
           <button type="button" className={styles.alertAction} onClick={onOpenRecordedIncidents}>
@@ -5881,7 +5899,7 @@ function FounderAccessCentre({ authenticated }) {
 
       <FounderEmployeeRegisterAttendancePreview />
 
-      <div id="staff-access-security">
+      <div id="staff-access-security" tabIndex={-1} role="region" aria-label="Staff Access & Security">
         <a className={styles.sectionBackLink} href="#staff-workspaces-areas">
           ← Back to Staff & Workspaces
         </a>
