@@ -23,9 +23,10 @@ export async function GET(request){
       founder.admin.from("admin_role_assignments")
         .select("id,revoked_at")
         .eq("environment","staging").limit(100),
-      founder.admin.from("admin_access_restrictions")
-        .select("user_id,state")
-        .eq("environment","staging").limit(100),
+      // Reuse the existing authorised Founder-only staff access inventory RPC.
+      // Existing protected admin_access_restrictions intentionally denies
+      // direct SELECT to service_role; NEVER change its grants or RLS.
+      founder.admin.rpc("founder_staff_access_inventory"),
       founder.admin.from("hiissa_operational_incidents")
         .select("incident_id,state")
         .eq("environment","staging")
@@ -58,7 +59,11 @@ export async function GET(request){
       onboardingVerified:true,applicationCount:(onboarding.data||[]).length,
       submittedApplicationCount:(onboarding.data||[]).filter(a=>!!a.submitted_at).length,
       activeAdminRoleAssignments:roleRows.filter(r=>!r.revoked_at).length,
-      recordedAccessRestrictions:(restrictions.data||[]).length,
+      // This pre-existing inventory contains CURRENT non-Founder access states,
+      // not every historical restriction row. Do not conflate those metrics.
+      recordedAccessRestrictions:null,
+      currentRestrictedStaffCount:(restrictions.data||[]).filter(r=>r.access_state!=="active").length,
+      accessRestrictionsSource:"EXISTING_FOUNDER_ACCESS_INVENTORY",
       canonicalIncidentFeedVerified:true,
       openIncidentCount:(incidents.data||[]).filter(i=>i.state!=="verified_resolved").length,
       policiesAndVersions:"NOT_CERTIFIED",requiredTraining:"NOT_CONNECTED",
