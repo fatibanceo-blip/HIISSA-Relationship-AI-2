@@ -3974,3 +3974,26 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** Production/main, existing Founder Control Room/Alerts and all other working features, original Registry, Staging database records/RLS, staff access, customer communications, Docs11–13 unaffected. Only new staff feature diagnostic and new independent test changed; no new environment.
 
 **NEXT:** Run entire unchanged historical prebuild plus enhanced test on pinned Staging code SHA, verify READY and alias points there. Then ask Founder only for exact displayed STAFF-SOURCE code or evidence of successful verified loaded screen, not repeated old feature tests. If error provides failing category, carry out exact narrow fix with protected impact/regression. No actual working PASS claimed until Founder practical source reading and save/refresh/audit evidence.
+
+
+---
+
+## 2026-10-11T20:48:25.476Z — R100 NEW DIAGNOSTIC STAGING BUILD FAIL AT INDEPENDENT VALIDATOR; NOT DEPLOYED
+
+**WHAT:** Pinned existing Staging Vercel deployment of approved new Staff source diagnostic source commit 82c6305185ba8b6e0074b24d19c21ed68093e233 stopped with ERROR while running npm prebuild test:operational-centres. Deployment ID dpl_GDcNqDxkuNvwodaCz6ZEWMdW69xV; target staging, original Staging Vercel project prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0; deployment not READY and alias must NOT be asserted updated.
+
+**WHY:** Independent R99 test wrongly asserts string "FOUNDER" must be literally contained in the Staff API route, while actual existing correct role enforcement is invoked from shared existing verifyOperationalCentreFounder(request) helper, with the FOUNDER_GATE_REQUIRED status defined in that helper. This is a TEST AUTHORING ERROR, not evidence of an actual missing Founder gate or that the original protected journey failed.
+
+**HOW / PROCESS:** Ran pinned Staging Vercel create_deployment; npm original prebuild gates showed earlier working gates PASS; new script scripts/validate-founder-operational-centres.mjs line 70 threw AssertionError [ERR_ASSERTION]: "Staff secure fail-closed source diagnostic missing FOUNDER". Final Vercel "Error: Command npm run build exited with 1". The current Staff API source still calls verifyOperationalCentreFounder(request) and checks !founder.ok for all GET/POST; shared helper contains actual strict Founder membership check and FOUNDER_GATE_REQUIRED. Correct expected test by requiring specific actual call and forbidden gateway checks, without touching protected code or disabling/deleting any genuine original safety verification.
+
+**WHERE:** Existing original Staging branch feature/founder-control-room-staging, Vercel deployment dpl_GDcNqDxkuNvwodaCz6ZEWMdW69xV, new independent validator scripts/validate-founder-operational-centres.mjs; original authorised Staging alias still expected last READY dpl_5tmw5ZAXVafqxUNVJSerCs4NAjpw until independently rechecked.
+
+**WHO:** Assistant introduced false test string and must correct safely; Vercel automated build detected failure. Founder approved only bounded Staff source diagnosis, no Production changes.
+
+**EVIDENCE / STATUS:** Vercel deployment ERROR and exact stack assertion; STAFF FEATURE FOUNDER PRACTICAL FAIL PERSISTS from R97, diagnostic code COMMITTED BUT FAILED BUILD/NOT DEPLOYED. All previous protected accepted results unaffected by this new build attempt.
+
+**FAILURES & CORRECTIONS:** Correct bogus "FOUNDER" raw substring test by adding a truthful assertion for verifyOperationalCentreFounder(request) in Staff API, and FOUNDER_GATE_REQUIRED in existing gateway helper. Keep original entire regression suite and Staging guards, do not claim test pass before rerun.
+
+**NON-EFFECT:** Production/main untouched; Vercel READY alias not repointed by failed build; no existing working feature changed; no Supabase/employee/customer mutation; no Docs11–13 amendment. This is documentation-only checkpoint.
+
+**NEXT:** Minimal fix to new validator; commit; rerun pinned existing Staging full build and check READY, alias resolution; before Founder test, fully disclose non-authenticated runtime and outstanding exact Staff root cause.
