@@ -14,6 +14,30 @@ assert.ok(existing.includes("export async function GET"),"Protected existing sou
 assert.ok(existing.includes("founder_staff_session_inventory") && existing.includes("founder_staff_access_inventory"),"Reuse existing real RPCs");
 assert.ok(sample.includes("demo-sarah") && sample.includes("demo-john"),"Preserve fictional samples");
 assert.ok(host.includes("FounderStaffSessionDeviceControl"),"Founder host connection retained");
+
+const checkUi=readFileSync("app/admin/control-room-preview/FounderOnDemandStaffSourceCheck.js","utf8");
+for(const text of [
+  "FOUNDER ONLY · STAGING TEST",
+  "Ask HIISSA to check staff sessions",
+  "Check now",
+  "Check again",
+  'method:"POST",credentials:"same-origin",cache:"no-store"',
+  'headers:{Authorization:"Bearer "+session.access_token}',
+  "aria-live=\"polite\"",
+  "productionEffectEnabled===false",
+  "SOURCE_FAILURE_INCIDENT_RECORDED",
+  "SOURCE_FAILURE_ALREADY_RECORDED",
+  "INCIDENT_PERSISTENCE_FAILED",
+  "Automatic scheduling, repair and direct notifications are not yet active",
+  "Number.isInteger(data?.sourceCounts?.staffSessions)",
+  "if(running.current)return;"
+]) assert.ok(checkUi.includes(text),"Missing on-demand safety/UX contract: "+text);
+assert.ok(!checkUi.includes("body:")&&!checkUi.includes('"Content-Type"'),"On-demand POST must carry no body");
+assert.ok(!checkUi.includes("targetUserId")&&!checkUi.includes("targetSessionId"),"Check must not target people/sessions");
+assert.ok(host.includes('<FounderOnDemandStaffSourceCheck authenticated={authenticated} location="overview" />'),"Approved Overview doorway missing");
+assert.ok(host.includes('<FounderOnDemandStaffSourceCheck authenticated={authenticated} location="staff" />'),"Approved Staff doorway missing");
+assert.ok(host.includes('import FounderOnDemandStaffSourceCheck from "./FounderOnDemandStaffSourceCheck.js";'),"Shared component import missing");
+
 for(const gate of [
   "export async function POST","FOUNDER_GATE_REQUIRED","UNAUTHENTICATED",
   "REQUEST_BODY_NOT_ALLOWED","target===\"staging\"",
