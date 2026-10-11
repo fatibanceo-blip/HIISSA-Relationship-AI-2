@@ -3926,3 +3926,28 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** No app code, Staging migration, session, audit row, customer data, real Staff profile, Production route or Docs11–13 changed. Documentation-only additive ledger entry.
 
 **NEXT:** Obtain explicit Founder approval for targeted Staging Staff source diagnostic/error-classification patch and any consequential correction; do not request retest of same broken build. After patch, test actual authenticated GET, no secret exposure, deploy existing Staging only, then one guided Founder practical rerun with normal working actions; add original Control Room menu navigation only after separate Founder approval and protected impact audit.
+
+
+---
+
+## 2026-10-11T20:44:36.299Z — R98 FOUNDER APPROVAL OF NARROW STAGING-ONLY STAFF REVIEW SOURCE DIAGNOSTIC AND REPAIR
+
+**FOUNDER EXACT WORDING:** “Approve”. This follows the explicit proposal: “The next safe step is to make the new Staff Review page report the specific connection failure, rather than the general ‘Source unavailable’ message. Then I can correct the identified problem without weakening security. Do you approve that narrow Staging-only investigation and repair? I will not ask you to repeat this failed test until there is a corrected deployment to check.”
+
+**WHAT:** Founder authorises a narrowly scoped safe source-classification improvement and evidence-based repair to the new Staff Trust, Training & Access Review Staging feature. Do not confuse this with approval to alter existing protected Control Room navigation, founder access, RLS, real staff permissions, production, external communications, original feature design, or Docs11–13.
+
+**WHY:** Five screenshots and earlier screenshot demonstrate that the Staging Staff Review page displays SOURCE UNAVAILABLE, “Source verification failed”, no verified staff counts, and Founder verification required. Existing static build PASS and READY do not establish working accessible feature. Distinguishing session-expired, source-unavailable, status-code and source names is necessary before an appropriate repair.
+
+**HOW / PROCESS:** Preserve existing Staging-only branch / project / Founder security, original approved Registry identity, shared incident source and all existing protected tests. Obtain actual current code paths and safe Vercel Staging metadata. Add only minimal privacy-safe non-sensitive failure classification to new staff route and/or newly created component, keeping failure closed with NO personal information, key values or raw stack. In particular never echo authentication credentials or raw Supabase provider messages. Ensure old passed features remain untouched. Test new diagnosis build and practice route, capture exact evidence, fix only proven cause. If no authenticated live call is accessible, label root cause NOT VERIFIED; user gets precise test instructions only after corrected deployment, no fabricated PASS. Keep Production untouched.
+
+**WHERE:** Original branch feature/founder-control-room-staging, repo fatibanceo-blip/HIISSA-Relationship-AI-2, existing Staging Vercel project prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0, existing staging Supabase project upcssfmilewwshyxyvdf, new route app/api/admin/control-room/staff-trust-review/route.js and Founder operational view app/admin/control-room/FounderOperationalCentreView.js, existing safe source validator scripts/validate-founder-operational-centres.mjs. Durable Git ledger this file.
+
+**WHO:** Founder explicitly approves narrow diagnostic/repair. Assistant responsible for protecting existing application and reporting exact FAIL/FIX/PASS evidence without overstating.
+
+**EVIDENCE / STATUS:** Founder “Approve”, previous screenshot evidence and R97/R97A; before code, practical source test FAIL and root cause NOT VERIFIED. Last confirmed app Staging READY dpl_5tmw5ZAXVafqxUNVJSerCs4NAjpw at SHA 829d31673a7303ac8612f7affbede3d4e42063ce. This is a FOUNDER APPROVAL checkpoint only, not a fix or implementation PASS.
+
+**FAILURES AND CORRECTIONS:** Previously generic frontend error swallowed precise API statuses (401, 403, 404, 503) and safe source names; improve error classification but do not weaken/skip authentication, role, environment or source truth. No guessing the failing source.
+
+**NON-EFFECT:** No code, UI, database or Production change from this approval record itself, no staff/real customer action, no Docs11–13 amendment, no deployment, no change to protected features.
+
+**NEXT:** Implement narrow diagnostic, run protected gates, build and deploy existing Staging only, then use safe status to target correction. Avoid retest until new version READY. Preserve detailed rolling checkpoint for each material implementation/test and mark any actual uncertainty NOT VERIFIED.
