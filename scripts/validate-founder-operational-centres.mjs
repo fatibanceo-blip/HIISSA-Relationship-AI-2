@@ -65,7 +65,7 @@ for(const token of [
 for(const token of [
   "SOURCE_UNAVAILABLE", "unverifiedSources:missing",
   "SOURCE_READ_FAILED", "verifyOperationalCentreFounder(request)",
-  "operationalCentreStagingAllowed()", "FOUNDER",
+  "operationalCentreStagingAllowed()", "founder.ok",
   "productionEffectEnabled:false"
 ])assert.ok(staff.includes(token),"Staff secure fail-closed source diagnostic missing "+token);
 assert.ok(!ui.includes("data.error.message")&&!staff.includes("error.message}"),"Raw backend error details must never be rendered");
