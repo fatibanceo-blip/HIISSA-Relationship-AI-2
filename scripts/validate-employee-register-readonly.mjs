@@ -32,8 +32,29 @@ for(const [label,fragment] of [
 ]){
   assert.equal(onboarding.split(fragment).length-1,1,"Exactly one approved "+label+" is required");
 }
+// R74 Founder approval: independently preserve the identical original host
+// SHA. Only six explicit, exact Staff-alert navigation fragments are allowed.
+const directStaffAlertFragment1="import {isFounderStaffSecuritySourceIncident} from \"../../../lib/admin/founder-canonical-incident-alert-projection.js\";\n";
+const directStaffAlertFragment2="              onOpenStaffAccessSecurity={() => {\n                choosePrimary(\"staff\");\n                window.requestAnimationFrame(() => {\n                  const destination=document.getElementById(\"staff-access-security\");\n                  if(!destination)return;\n                  destination.focus({preventScroll:true});\n                  destination.scrollIntoView({behavior:\"smooth\",block:\"start\"});\n                });\n              }}\n";
+const directStaffAlertFragment3="  onOpenStaffAccessSecurity,\n";
+const directStaffAlertFragment4="  const staffSourceIncidentVisible=canonicalIncidents.verified &&\n    canonicalIncidents.items.some(isFounderStaffSecuritySourceIncident);\n";
+const directStaffAlertFragment5="            {staffSourceIncidentVisible ? (\n              <button type=\"button\" className={styles.alertAction} onClick={onOpenStaffAccessSecurity}>\n                Open Staff Access & Security →\n              </button>\n            ) : null}\n";
+const directStaffAlertFragment6="      <div id=\"staff-access-security\" tabIndex={-1} role=\"region\" aria-label=\"Staff Access & Security\">";
+assert.equal(onboarding.split(directStaffAlertFragment1).length-1,1,"Exactly one Founder-approved alert eligibility import");
+assert.equal(onboarding.split(directStaffAlertFragment2).length-1,1,"Exactly one Founder-approved alert direct staff callback");
+assert.equal(onboarding.split(directStaffAlertFragment3).length-1,1,"Exactly one Founder-approved alert callback prop");
+assert.equal(onboarding.split(directStaffAlertFragment4).length-1,1,"Exactly one Founder-approved alert validated condition");
+assert.equal(onboarding.split(directStaffAlertFragment5).length-1,1,"Exactly one Founder-approved alert contextual button");
+assert.equal(onboarding.split(directStaffAlertFragment6).length-1,1,"Exactly one Founder-approved accessible Staff destination");
+
 const protectedOnboarding=onboarding.replace(approvedNavigatorId,"").replace(approvedLocalBack,"")
-  .replace(approvedQuickCheckImport,"").replace(approvedOverviewQuickCheck,"").replace(approvedStaffQuickCheck,"");
+  .replace(approvedQuickCheckImport,"").replace(approvedOverviewQuickCheck,"").replace(approvedStaffQuickCheck,"")
+  .replace(directStaffAlertFragment1,"")
+  .replace(directStaffAlertFragment2,"")
+  .replace(directStaffAlertFragment3,"")
+  .replace(directStaffAlertFragment4,"")
+  .replace(directStaffAlertFragment5,"")
+  .replace(directStaffAlertFragment6,'      <div id="staff-access-security">');
 assert.equal(blobSha(protectedOnboarding),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
   "STOP: Founder-approved onboarding host differs beyond the specifically approved Back link");
 const applicant=read("lib/experience-registry.js");
