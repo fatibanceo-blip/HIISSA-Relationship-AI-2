@@ -3467,3 +3467,17 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** No screen redesign, no change to dedicated Close action, badge-count logic, incident source, Staff & Workspaces, staff accounts/sessions, monitoring schedule, Supabase schema or data, new Staging project, automatic repairs/external notifications, Production changes or protected Word Docs11–13.
 
 **NEXT:** Deploy pinned current branch after this checkpoint to SAME original Vercel target staging; inspect exact server prebuild and compiled deployment state. If READY, give Founder a copyable Chrome link and practical verification instruction: from Overview tap Alerts once and confirm automatic scroll to Founder Alerts heading; scroll up, tap Alerts again and confirm same panel re-focuses without closing; tap dedicated Close and confirm closed. Record Founder screenshots/pass/fail, and add this chronologically to next controlled-close Word01–10 without altering protected Docs11–13.
+
+
+## 2026-10-11 19:39 UK — R81 — FOUNDER ALERTS FIRST-TAP PRACTICAL CHECK
+
+**WHAT:** Founder supplied Chrome screenshot 1000376652.jpg after the approved Alerts header scroll-navigation change and test instructions.
+**WHY:** Record the practical evidence separately from automated build and from the still-untested second-tap/Close journeys.
+**HOW / PROCESS:** Examined the genuine screenshot: Founder Alerts heading and Close are directly visible at the top of the browser content, with Staff submissions, Staging recorded incidents and Admin Security sections.
+**WHERE:** Existing Founder Control Room Staging, branch feature/founder-control-room-staging, deployment dpl_EW444k9nCPWf4PhfwGP39VUSjWf9, pinned SHA 015e5141a7162310e60b6a724b94dd47d6c33bee.
+**WHO:** Founder performed the phone Chrome check; assistant inspected evidence.
+**EVIDENCE:** Screenshot 1000376652.jpg in current chat at 19:39 UK; Vercel READY with isolated first/repeat Alerts click test PASS. Screenshot is not yet verified as stored inside the project Git/media archive.
+**STATUS:** Founder practical first-tap/direct-panel visibility PASS based on screenshot. Second-tap refocus NOT VERIFIED. Dedicated Close behaviour NOT VERIFIED. Real Staff-specific incident shortcut NOT VERIFIED because the screenshot truthfully reports no unresolved recorded Staging incidents.
+**FAILURES AND CORRECTIONS:** Earlier first-tap navigation FAIL remains historically recorded; screenshot supports the corrected visible destination, not full browser acceptance.
+**NON-EFFECT:** No data, Production, staff access, Word Docs11–13, alert count, monitoring, or code changes in this evidence-only checkpoint.
+**NEXT:** Ask Founder to scroll up and tap Alerts again (should return to same open panel), then tap Close (should close it). Preserve actual results and screenshots for additive Word01–10 handover.
