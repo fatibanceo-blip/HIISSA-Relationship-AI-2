@@ -88,6 +88,50 @@ assert.ok(!route.includes("export async function GET"),"Do not introduce GET sid
 assert.ok(!route.includes("VERCEL_CRON") && !route.includes("CRON_SECRET"),"No automatic schedule");
 assert.ok(!route.includes("targetUserId")&&!route.includes("targetSessionId"),"Monitor must not change staff access");
 
+
+// Founder-approved Staging body guard regression: execute the real extracted
+// pure route helper with actual Node WHATWG Request streams (not the live API).
+// Source contains only this helper, not secrets, authentication or database writes.
+const bodyFunctionStart=route.indexOf("async function hasUnexpectedRequestBody(request){");
+const bodyFunctionEnd=route.indexOf("\nexport async function POST(request){",bodyFunctionStart);
+assert.ok(bodyFunctionStart>0&&bodyFunctionEnd>bodyFunctionStart,"Verified bounded byte checker missing");
+const bodySource=route.slice(bodyFunctionStart,bodyFunctionEnd);
+const hasUnexpectedRequestBody=vm.runInNewContext(bodySource+"\nhasUnexpectedRequestBody;",{Uint8Array});
+const request=(body,headers)=>new Request("https://staging.invalid/check",{
+  method:"POST",headers,...(body===undefined?{}:{body,duplex:"half"})
+});
+const emptyByteStream=()=>new ReadableStream({start(controller){controller.enqueue(new Uint8Array(0));controller.close();}});
+const emptyChunked=()=>new ReadableStream({start(controller){controller.close();}});
+async function checkBody(label,source,expected){
+  assert.equal(await hasUnexpectedRequestBody(source),expected,label);
+}
+await checkBody("no request body",request(undefined),false);
+await checkBody("empty string body",request(""),false);
+await checkBody("empty body with content length zero",request("",{"content-length":"0"}),false);
+await checkBody("zero-byte stream",request(emptyByteStream()),false);
+await checkBody("chunked zero-byte stream",request(emptyChunked(),{"transfer-encoding":"chunked"}),false);
+await checkBody("nonempty JSON fault-injection body",request('{"simulate":"failure"}'),true);
+await checkBody("nonempty byte stream",request(new ReadableStream({start(c){c.enqueue(new Uint8Array([1]));c.close();}})),true);
+await checkBody("claimed nonzero content length",request("",{"content-length":"5"}),true);
+await checkBody("malformed content length",request("",{"content-length":"garbage"}),true);
+await checkBody("negative content length",request("",{"content-length":"-1"}),true);
+await checkBody("stream read throws",{
+  headers:new Headers(),body:{getReader(){throw new Error("TEST_ONLY stream unavailable");}}
+},true);
+await checkBody("bounded empty chunks",request(new ReadableStream({start(c){
+  for(let i=0;i<9;i++)c.enqueue(new Uint8Array(0));
+  c.close();
+}})),true);
+for(const guard of [
+  'request.headers.get("content-length")','request.body===null',
+  'request.body.getReader()','reader.read()','part.value.byteLength>0',
+  'return true; // suspicious stream never completed'
+]) assert.ok(bodySource.includes(guard),"Empty-request validation regression missing: "+guard);
+assert.ok(route.includes('if(await hasUnexpectedRequestBody(request))return reply({status:"REQUEST_BODY_NOT_ALLOWED"},400);'));
+assert.ok(!route.includes('if(request.body!==null ||'),"Do not regress to stream-presence rejection");
+console.log("PASS: exact empty POST/no-body/chunked-zero accepted; nonempty/false length/malformed/failed-stream rejected (local Request fixtures).");
+
+
 const expectedRPCs=["founder_staff_session_inventory","founder_staff_access_inventory"];
 function mock({failure,malformed,throws,nonempty=false,duplicate=false,writeError=false}={}){
   const records={reads:[],writes:[]};
