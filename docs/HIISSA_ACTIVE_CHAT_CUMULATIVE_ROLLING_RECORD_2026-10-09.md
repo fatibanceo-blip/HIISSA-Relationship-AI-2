@@ -3506,3 +3506,26 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** No code, deploy, Word documents, permission, operational incident, staff/customer data, Production or protected Documents 11–13 changed by this discussion checkpoint.
 
 **NEXT:** Seek Founder's decision whether to ADOPT “normally target two safely completable independently useful approved features, with safety exceptions” as an additive operating preference; do not edit protected Docs12–13 absent formal amendment authority. Complete current Alerts repeat tap and Close practical checks. Before next chat close, update exactly thirteen Word files additively to include chronology and practical evidence, then one ZIP with honest parity/visual certification status.
+
+
+---
+
+## 2026-10-11 — FOUNDER REAFFIRMS EVERY FEATURE MUST CONNECT TO FOUNDER CONTROL ROOM
+
+**WHAT / ORIGINAL FOUNDER WORDING:** “Don't forget, every feature must also be connected to the control room dashboard. You have to remember that as well.” Founder restates an EXISTING mandatory architecture/governance condition while discussing the proposed target of two features per development chat. This is a reaffirmation, not approval of a protected-document amendment or adoption of an unconditional two-feature quota.
+
+**WHY:** More rapid delivery must never create isolated features outside the Founder Control Room oversight model. Each feature needs truthful operational visibility and accountable monitoring, not just a user-facing screen. Reinforces previously authorised HIISSA Founder Control Room, Development Constitution, Experience Registry and Document 12 rules.
+
+**HOW / PROCESS:** For every proposed feature, before code review verify the canonical Experience Registry entry and its Control Room destination/owner. During implementation ensure the appropriate existing Founder Control Room module can present the feature's truthful lifecycle and operational status, failure/incident evidence, alerts, accountable Founder actions, audit/history, recovery boundaries and next step as applicable. Reuse existing shared telemetry/incident and approval gates; do not create a second dashboard or fabricate connected live monitoring. Document precisely which feeds are implemented and connected, which are only designed, and which remain NOT VERIFIED/NOT ACTIVE. Test both the feature itself and its Control Room connection before considering Staging completion, with practical Founder acceptance recorded separately. This applies to both possible features per chat, not just the first.
+
+**WHERE:** Existing HIISSA-Relationship-AI-2 repository and original Staging branch feature/founder-control-room-staging; canonical Experience Registry and existing Founder Control Room; approved cumulative Git evidence ledger, and additive living Word Documents01–10 at next Controlled Close.
+
+**WHO:** Founder supplied the reminder; assistant documents and follows existing authority. No new feature approval or application action issued by this reminder.
+
+**EVIDENCE / STATUS:** Founder original message in active chat. Mandatory per-feature Founder dashboard connection already appears in project custom governance and earlier Founder approvals. STATUS: EXISTING RULE REAFFIRMED / NO NEW FEATURE IMPLEMENTED / NO PROTECTED DOCUMENT AMENDMENT. Two-feature cadence remains a recommendation awaiting Founder confirmation.
+
+**FAILURES AND CORRECTIONS:** Do not count a feature as fully connected or complete merely because a Control Room menu/card exists; status screens are not proof of operational monitoring. If alerting, automatic recovery, notifications or Registry links have not been implemented/certified, record explicit gaps instead of claiming PASS. Do not bypass the Control Room connection to meet feature-count targets.
+
+**NON-EFFECT:** No existing control, functionality, incidents, credentials, sessions, databases, deployments, Production or protected Documents11–13 modified by this documentation-only checkpoint.
+
+**NEXT:** Apply this checklist to the current Alerts journey and each future feature; preserve per-feature source-of-truth, owner, Control Room module, evidence, relevant alerts, responsible human actions, recovery limitations and testing in Document12-compliant rolling checkpoints and additive Word handover. Seek separate Founder approval for any new architecture/UI changes; keep two-feature normal target as PROPOSED unless expressly approved.
