@@ -3790,3 +3790,26 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** This status/reconciliation checkpoint does not modify the seven new feature code files, existing Control Room shell, Supabase schema or data, existing users/staff, the successful old features including Alerts, Production/main deployment, any protected original Design/Docs11–13. Existing READY Staging deployment still has only partial new screens and must be represented truthfully as such.
 
 **NEXT:** Continue original approved, fully operational Staging implementation for Feature1 (real permitted inbound customer enquiry receipt, authenticated minimum-necessary storage, genuine one-minute warm acknowledgement only with verified approved copy/delivery, assignment, due monitoring, staff/Founder approve/return/reject, reply, waiting/resolved, audit, canonical L1-L3 alerts). Feature2 (actual policy/version acknowledgement, training evidence record and verification, temporary role access/review/reminder workflow with strict Founder gate and audit, no invented score); no Production actions. Before any consequential irreversible changes, clearly describe precise scoped code/DB/provider effects and confirm governing Founder authority. Test active practical end-to-end real Staging interactions for both, protect other features via executable regression, and only then claim working/accepted. If absent original exact acknowledgement wording/human SLA blocks full completion, explicitly preserve TWO-FEATURE REQUIREMENT NOT COMPLETED IN THIS CHAT instead of inventing completion. Initiate early Controlled Close at required reliability threshold, preserving full Document12 and Doc13 additive handover detail.
+
+
+---
+
+## 2026-10-11T20:13:37.366Z — R93 STAGING OPERATIONAL TABLE MIGRATION ATTEMPT FAILED, STOPPED AND ROOT CAUSE IDENTIFIED
+
+**WHAT:** Founder approved carrying on with fully working Staging features (not placeholder screens). In response, created Staging-only additive SQL migration source at supabase/migrations/20261011203000_founder_operational_centres_staging_actions.sql, commit 3c64afbbec6ca07bd09642835dedbd1b3010047e. The migration defines two new isolated Founder practice/action stores, service-role-only access, Founder security and atomic evidence/audit RPCs. Attempted Supabase apply_migration ONLY in project upcssfmilewwshyxyvdf, independently identified as HIISSA Relationship AI Staging ACTIVE_HEALTHY. APPLY MIGRATION FAILED.
+
+**WHY:** Need persistent, real Staging actions and audit records for two original approved features, while customer outbound messaging and real staff permission actions remain inactive because original acknowledgement wording and staff proof are unverified.
+
+**HOW/PROCESS:** Prior read-only actual Staging schema/constraint checks identified existing staff work and incident stores and zero live customer messaging/staff evidence stores. Initial local safety string check STOPPED because it misread a COMMENT containing the word “truncate”; reclassified false positive without altering SQL. Second guarded attempt checked exact project identity, absence of destructive SQL STATEMENTS (after stripping comment lines), RLS and grants. Supabase apply_migration returned PostgreSQL ERROR 42883: function public.hiissa_staff_review_staging_founder_command(uuid, text, uuid, text, text, text, text, text, date, text, integer) does not exist. ROOT CAUSE: migration's final function REVOKE/GRANT signature includes one extra 'text' argument compared to the defined 10-argument function. The provider rejected application. No migration PASS claimed. PostgreSQL transactional rollback is expected but database must be checked before retry.
+
+**WHERE:** Original Staging Git branch feature/founder-control-room-staging, approved Staging Supabase project upcssfmilewwshyxyvdf, SQL migration path above. No Production API or project invoked.
+
+**WHO:** Founder approved scope and required real working actions; assistant authored code, ran safety checks, attempted migration; Supabase database rejected malformed function-signature GRANT.
+
+**EVIDENCE/STATUS:** Git commit 3c64afbbec6ca07bd09642835dedbd1b3010047e source verified; Staging project ACTIVE_HEALTHY; error 42883 returned explicitly. MIGRATION FAIL / NO ACTIVE ACTIONS YET. No claim Production effect or full feature delivery.
+
+**FAILURES/CORRECTIONS:** Need correct EXACT one extra text token in REVOKE/GRANT staff function signatures, leave function behaviour/permissions unchanged. Confirm tables were not partially left behind before retry. Do not disable RLS or weaken restricted execution to make migration pass.
+
+**NON-EFFECT:** Existing Stage app deployment READY unaffected; no Production changes, no existing protected functionality or source modified; no customer communications or staff real actions performed. DB state after attempted migration needs read verification, not assumed.
+
+**NEXT:** Inspect information_schema for new tables and pg_proc for new funcs; apply minimal SQL-signature repair in Staging Git migration, commit; re-validate; retry Staging migration with unambiguous new name; run read-only schema/permission checks and synthetic transactional rollback tests before new application code or claims.
