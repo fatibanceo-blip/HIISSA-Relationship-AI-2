@@ -40,6 +40,16 @@ const directStaffAlertFragment3="  onOpenStaffAccessSecurity,\n";
 const directStaffAlertFragment4="  const staffSourceIncidentVisible=canonicalIncidents.verified &&\n    canonicalIncidents.items.some(isFounderStaffSecuritySourceIncident);\n";
 const directStaffAlertFragment5="            {staffSourceIncidentVisible ? (\n              <button type=\"button\" className={styles.alertAction} onClick={onOpenStaffAccessSecurity}>\n                Open Staff Access & Security →\n              </button>\n            ) : null}\n";
 const directStaffAlertFragment6="      <div id=\"staff-access-security\" tabIndex={-1} role=\"region\" aria-label=\"Staff Access & Security\">";
+// Founder R79 approved ONLY this exact Alerts header click behavior. Keep the
+// two original host SHA validators independently active, not rebased.
+const originalFounderAlertsHeaderClick="              onClick={() => setToolPanel((value) => value === \"alerts\" ? \"\" : \"alerts\")}";
+const approvedFounderAlertsHeaderClick="              onClick={() => {\n                setToolPanel(\"alerts\");\n                window.requestAnimationFrame(() => {\n                  window.requestAnimationFrame(() => {\n                    const panel = document.getElementById(\"founder-alerts-panel\");\n                    if (!panel) return;\n                    panel.focus({ preventScroll: true });\n                    panel.scrollIntoView({ behavior: \"smooth\", block: \"start\" });\n                  });\n                });\n              }}";
+assert.equal(onboarding.split(approvedFounderAlertsHeaderClick).length-1,1,
+  "The single authorised header Alerts open-and-focus click handler must exist");
+assert.equal(onboarding.split(originalFounderAlertsHeaderClick).length-1,0,
+  "Original toggle must be fully replaced in the Staging host");
+assert.ok(onboarding.includes('onClose={() => setToolPanel("")}'),
+  "Existing dedicated Founder Alerts Close button must remain");
 assert.equal(onboarding.split(directStaffAlertFragment1).length-1,1,"Exactly one Founder-approved alert eligibility import");
 assert.equal(onboarding.split(directStaffAlertFragment2).length-1,1,"Exactly one Founder-approved alert direct staff callback");
 assert.equal(onboarding.split(directStaffAlertFragment3).length-1,1,"Exactly one Founder-approved alert callback prop");
@@ -54,7 +64,8 @@ const protectedOnboarding=onboarding.replace(approvedNavigatorId,"").replace(app
   .replace(directStaffAlertFragment3,"")
   .replace(directStaffAlertFragment4,"")
   .replace(directStaffAlertFragment5,"")
-  .replace(directStaffAlertFragment6,'      <div id="staff-access-security">');
+  .replace(directStaffAlertFragment6,'      <div id="staff-access-security">')
+  .replace(approvedFounderAlertsHeaderClick,originalFounderAlertsHeaderClick);
 assert.equal(blobSha(protectedOnboarding),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
   "STOP: Founder-approved onboarding host differs beyond the specifically approved Back link");
 const applicant=read("lib/experience-registry.js");
