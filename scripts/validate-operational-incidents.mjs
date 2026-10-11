@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {createHash} from "node:crypto";
+import vm from "node:vm";
 import {validateNewIncident, validateIncidentTransition} from "../lib/admin/operational-incident-staging.js";
 import {projectFounderCanonicalIncidentAlerts} from "../lib/admin/founder-canonical-incident-alert-projection.js";
 import {isFounderStaffSecuritySourceIncident} from "../lib/admin/founder-canonical-incident-alert-projection.js";
@@ -39,6 +40,16 @@ const directStaffAlertFragment3="  onOpenStaffAccessSecurity,\n";
 const directStaffAlertFragment4="  const staffSourceIncidentVisible=canonicalIncidents.verified &&\n    canonicalIncidents.items.some(isFounderStaffSecuritySourceIncident);\n";
 const directStaffAlertFragment5="            {staffSourceIncidentVisible ? (\n              <button type=\"button\" className={styles.alertAction} onClick={onOpenStaffAccessSecurity}>\n                Open Staff Access & Security →\n              </button>\n            ) : null}\n";
 const directStaffAlertFragment6="      <div id=\"staff-access-security\" tabIndex={-1} role=\"region\" aria-label=\"Staff Access & Security\">";
+// Founder R79 approved ONLY this exact Alerts header click behavior. Keep the
+// two original host SHA validators independently active, not rebased.
+const originalFounderAlertsHeaderClick="              onClick={() => setToolPanel((value) => value === \"alerts\" ? \"\" : \"alerts\")}";
+const approvedFounderAlertsHeaderClick="              onClick={() => {\n                setToolPanel(\"alerts\");\n                window.requestAnimationFrame(() => {\n                  window.requestAnimationFrame(() => {\n                    const panel = document.getElementById(\"founder-alerts-panel\");\n                    if (!panel) return;\n                    panel.focus({ preventScroll: true });\n                    panel.scrollIntoView({ behavior: \"smooth\", block: \"start\" });\n                  });\n                });\n              }}";
+assert.equal(host.split(approvedFounderAlertsHeaderClick).length-1,1,
+  "The single authorised header Alerts open-and-focus click handler must exist");
+assert.equal(host.split(originalFounderAlertsHeaderClick).length-1,0,
+  "Original toggle must be fully replaced in the Staging host");
+assert.ok(host.includes('onClose={() => setToolPanel("")}'),
+  "Existing dedicated Founder Alerts Close button must remain");
 assert.equal(host.split(directStaffAlertFragment1).length-1,1,"Exactly one Founder-approved alert eligibility import");
 assert.equal(host.split(directStaffAlertFragment2).length-1,1,"Exactly one Founder-approved alert direct staff callback");
 assert.equal(host.split(directStaffAlertFragment3).length-1,1,"Exactly one Founder-approved alert callback prop");
@@ -52,9 +63,31 @@ const protectedOriginalHost=host.replace(approvedNavigatorId,"").replace(approve
   .replace(directStaffAlertFragment3,"")
   .replace(directStaffAlertFragment4,"")
   .replace(directStaffAlertFragment5,"")
-  .replace(directStaffAlertFragment6,"      <div id=\"staff-access-security\">");
+  .replace(directStaffAlertFragment6,"      <div id=\"staff-access-security\">")
+  .replace(approvedFounderAlertsHeaderClick,originalFounderAlertsHeaderClick);
 assert.equal(blobSha(protectedOriginalHost),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
   "Founder host must match immutable original SHA after removing ONLY explicitly approved Back and Staff source-check additions");
+// Isolated, deterministic test of the EXACT Staging handler with no browser,
+// database, session, staff or external calls. Test the first AND repeat taps.
+{
+  const states=[],focus=[],scroll=[];
+  const panel={focus:(options)=>focus.push(options),scrollIntoView:(options)=>scroll.push(options)};
+  const context={
+    setToolPanel:(next)=>states.push(next),
+    window:{requestAnimationFrame:(fn)=>fn()},
+    document:{getElementById:(id)=>id==="founder-alerts-panel"?panel:null}
+  };
+  const expression=approvedFounderAlertsHeaderClick.trim().replace(/^onClick=\\{/, "").slice(0,-1);
+  const click=vm.runInNewContext("("+expression+")",context);
+  click();click();
+  assert.deepEqual(states,["alerts","alerts"],"Both Alerts taps must open, never toggle-close");
+  assert.equal(focus.length,2,"Both taps must focus the existing Alerts panel");
+  assert.equal(scroll.length,2,"Both taps must scroll the existing Alerts panel into view");
+  assert.ok(focus.every(x=>x.preventScroll===true));
+  assert.ok(scroll.every(x=>x.behavior==="smooth"&&x.block==="start"));
+}
+console.log("Founder R79 Alerts header first/repeat click scroll-focus isolated behavior and unchanged immutable Founder original SHA: PASS");
+
 const migration=readFileSync("supabase/migrations/20261009101553_shared_operational_incidents_staging.sql","utf8");
 const route=readFileSync("app/api/admin/control-room/operational-incidents/route.js","utf8");
 for(const requirement of [
