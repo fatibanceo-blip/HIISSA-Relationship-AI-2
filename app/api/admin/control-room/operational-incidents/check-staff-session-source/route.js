@@ -20,15 +20,37 @@ function stagingOnly(){
       url.hostname==="upcssfmilewwshyxyvdf.supabase.co";
   }catch{return false;}
 }
+// An empty request is mandatory. HTTP runtimes may represent zero bytes as a
+// ReadableStream or include chunked framing. Examine actual bytes, not merely
+// whether a stream/transfer header exists. Fail closed on errors or ambiguity.
+async function hasUnexpectedRequestBody(request){
+  const declared=request.headers.get("content-length");
+  if(declared!==null && (!/^\\d+$/.test(declared)||!Number.isSafeInteger(Number(declared))||Number(declared)!==0))
+    return true;
+  if(request.body===null)return false;
+  let reader;
+  try{
+    reader=request.body.getReader();
+    // A bounded read prevents potentially endless empty chunks; no body content
+    // is decoded, retained, logged or passed to monitoring functions.
+    for(let attempt=0;attempt<8;attempt++){
+      const part=await reader.read();
+      if(part.done)return false;
+      if(!(part.value instanceof Uint8Array)||part.value.byteLength>0)return true;
+    }
+    return true; // suspicious stream never completed: do not run the check
+  }catch{return true;}
+  finally{if(reader){try{await reader.cancel();}catch{}}}
+}
+
 export async function POST(request){
   if(!stagingOnly())return new NextResponse(null,{status:404});
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishable=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   const secret=process.env.SUPABASE_SECRET_KEY;
   if(!url||!publishable||!secret)return reply({status:"STAGING_ADMIN_DATA_NOT_CONFIGURED"},503);
-  // An empty request is mandatory. Reject fake-source symptoms and metadata.
-  if(request.body!==null || Number(request.headers.get("content-length")||0)>0 ||
-     request.headers.get("transfer-encoding"))return reply({status:"REQUEST_BODY_NOT_ALLOWED"},400);
+  // Reject all nonempty/malformed requests before any Founder authentication or RPC.
+  if(await hasUnexpectedRequestBody(request))return reply({status:"REQUEST_BODY_NOT_ALLOWED"},400);
   const auth=request.headers.get("authorization")||"";
   const match=/^Bearer (\S+)$/.exec(auth);
   if(!match)return reply({status:"UNAUTHENTICATED"},401);
