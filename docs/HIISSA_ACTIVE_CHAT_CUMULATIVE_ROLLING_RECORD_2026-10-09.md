@@ -3681,3 +3681,32 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** No application code/UI/API/DB/Registry mutation, no real message received/sent, no staff/customer access or email/SMS delivery, no Production release, no alteration of any protected running feature or Documents11–13, no new deployment as result of source reconciliation.
 
 **NEXT:** Explain full authenticated Customer Support support lifecycle and approvals in simple English to Founder. Continue searching older records if available for exact historic acknowledgement text and human SLA; if genuinely missing, raise precise unresolved decision for Founder separately BEFORE customer-facing send activation. Build approved two features in Staging only, preserving all working Golden Journeys, with true operational controls and honest unconnected / inactive labels. No external message delivery without separately approved source, content and delivery gates.
+
+
+---
+
+## 2026-10-11T19:40:27.656Z — R89 FOUNDER ORIGINAL CUSTOMER COMMUNICATION DESIGN NON-DEVIATION REAFFIRMED
+
+**FOUNDER ORIGINAL WORDING (verbatim):** “So you need to follow that approved plan and nothing change the original approved design. Do not influence it. So.”
+
+**WHAT:** Founder explicitly reaffirms that implementation of Customer Communication & Service-Level Centre MUST follow the previously approved HIISSA design as written, without substituting assistant-designed changes, wording, scope, timings, workflow steps, journeys or personal preferences. This instruction complements, and does not supersede, earlier original Founder approvals or the Document12 two-feature delivery requirement.
+
+**WHY:** Protect the original approved customer-service experience, prevent new chats from redesigning or diluting Founder choices, and avoid confusing recovered approved details with uncertain historical wording.
+
+**HOW:** Treat authoritative Master Blueprint, full original Customer Support approved design/continuity records, complete Document12, protected Document13, Experience Registry and Founder approvals as source of truth. Keep documented lifecycle intact: RECEIVED → AUTOMATIC ACKNOWLEDGEMENT SENT → ASSIGNED → HUMAN RESPONSE DUE → RESPONDED → WAITING FOR CUSTOMER → RESOLVED. Preserve the specifically documented warm automatic acknowledgement targeting approximately one minute after successful message receipt. Preserve separate Founder submission / approval stage for completed human staff work and existing urgent notification concept. Do not rewrite original document history, silently alter locked user-facing words, invent missing historic acknowledgement text, presume a one-minute human response as certified when records flag it for reconciliation, or change Production/main.
+
+**PROCESS:** Founder clarified her intent after the assistant examined R85 source passages and recorded R88. Assistant accepted the correction without new feature proposals. This R89 checkpoint is appended to the existing authorised Git ledger only; protected 11–13 Word documents and R85 source package remain unchanged. Customer-facing implementation dependent on missing exact approved wording or timing MUST await recovery or express Founder decision. Safe implementation of already-specified and approved non-dependent parts may proceed on existing Staging with required tests and non-effect controls, without introducing new design choices.
+
+**WHERE:** Existing HIISSA repo fatibanceo-blip/HIISSA-Relationship-AI-2, same Staging branch feature/founder-control-room-staging, approved rolling ledger docs/HIISSA_ACTIVE_CHAT_CUMULATIVE_ROLLING_RECORD_2026-10-09.md. Original R85 Documents01–10; especially Document05 §8, detailed Customer Support design, and canonical lib/experience-registry.js entry customer-communication-service-level-centre.
+
+**WHO:** Founder retains design and consequential action authority; assistant is responsible for faithful evidence reconciliation, implementation under previously approved scope and protection of all working features.
+
+**EVIDENCE:** Direct Founder verbatim instruction above; R88 evidence recovery; R85 docs section citing automatic acknowledgement ~one minute, full message lifecycle, missing exact acknowledged wording and unverified human one-minute SLA. Source inspection previously confirmed already built internal Customer Support Staging preview and not-yet-live external delivery.
+
+**STATUS:** FOUNDER MANDATORY NO-DEVIATION INSTRUCTION REAFFIRMED AND RECORDED; previously approved two-feature Staging target selection still operative; NOT a new approval to change original design, launch real external customer communications, activate staff, or promote to Production. No implementation PASS claimed by this record.
+
+**FAILURES AND CORRECTIONS:** Any assistant generalisations, invented substitutes or proposals inconsistent with original approvals MUST yield to recovered original sources. If a historic element cannot be recovered, label RECOVERY REQUIRED and consult Founder rather than treating generated replacement as approved. Preserve discrepancies transparently.
+
+**NON-EFFECT:** No application code, client UI, Registry, Supabase schema/data, customer messages, staff actions, Production/main, Staging deployment, built working features, existing tests or protected Documents11–13 changed by this documentation-only checkpoint.
+
+**NEXT:** Proceed only with the precise previously approved Customer Communication & Service-Level Centre design on existing Staging, preserving every completed feature and Golden Journey. Explicitly resolve historical missing text/human SLA via original source or fresh Founder decision before implementing affected user-facing delivery. Separately develop approved Staff Trust, Training & Access Review without changing its original design, and maintain Document12 detailed checkpoints and independent Control Room/Registry/incident coverage.
