@@ -19,7 +19,21 @@ const approvedLocalBack=[
 for(const [label,fragment] of [["navigator ID",approvedNavigatorId],["local Back link",approvedLocalBack]]){
   assert.equal(onboarding.split(fragment).length-1,1,`Exactly one approved ${label} must exist`);
 }
-const protectedOnboarding=onboarding.replace(approvedNavigatorId,"").replace(approvedLocalBack,"");
+// 11 October 2026 — Founder explicitly approved two quick-check placements.
+// Exact removals reconstitute the SAME original protected host SHA; unrelated
+// mutations still fail the immutable baseline below.
+const approvedQuickCheckImport='import FounderOnDemandStaffSourceCheck from "./FounderOnDemandStaffSourceCheck.js";\n';
+const approvedOverviewQuickCheck='      <FounderOnDemandStaffSourceCheck authenticated={authenticated} location="overview" />\n\n';
+const approvedStaffQuickCheck='        <FounderOnDemandStaffSourceCheck authenticated={authenticated} location="staff" />\n';
+for(const [label,fragment] of [
+  ["Founder quick-check import",approvedQuickCheckImport],
+  ["Founder Overview quick-check",approvedOverviewQuickCheck],
+  ["Founder Staff quick-check",approvedStaffQuickCheck]
+]){
+  assert.equal(onboarding.split(fragment).length-1,1,"Exactly one approved "+label+" is required");
+}
+const protectedOnboarding=onboarding.replace(approvedNavigatorId,"").replace(approvedLocalBack,"")
+  .replace(approvedQuickCheckImport,"").replace(approvedOverviewQuickCheck,"").replace(approvedStaffQuickCheck,"");
 assert.equal(blobSha(protectedOnboarding),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
   "STOP: Founder-approved onboarding host differs beyond the specifically approved Back link");
 const applicant=read("lib/experience-registry.js");
