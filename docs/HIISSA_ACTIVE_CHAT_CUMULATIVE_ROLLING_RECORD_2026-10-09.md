@@ -3419,3 +3419,26 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** No new code edit, runtime/deployment, additional Staging environment, Supabase schema/data modification, source fault simulation, incident insertion, staff session/access change, Production change or protected Docs11–13 amendment in response to Founder report. Only chronological project evidence checkpoint is appended.
 
 **NEXT:** Explain why the button appears unresponsive and distinguish yellow badge from genuine Staff-specific incident; show one precise minimal proposed repair in plain English and ASK FOUNDER APPROVAL before editing application files. Once approved, update both immutable-host validators with exact allowlist, run build, deploy same Staging, provide link and exact one-tap/close test instructions, capture actual PASS/FAIL, then include event and screenshots in next additive 13 Word Controlled Close records.
+
+
+---
+
+## 2026-10-11T18:34:03.079Z — R79 FOUNDER APPROVES HEADER ALERTS DIRECT-SCROLL NAVIGATION REPAIR
+
+**WHAT / ORIGINAL FOUNDER APPROVAL:** Founder said “Approve” in direct response to the narrow proposal to correct existing Founder Control Room header Alerts navigation: first tap opens Alerts and immediately scrolls/focuses the existing Founder Alerts panel, tapping Alerts again re-focuses/scrolls the already-open panel rather than closing it, and the panel's existing “Close” button remains the way to close. No redesign, unrelated changes or Production approval.
+
+**WHY:** Founder Chrome screenshots 1000376648.jpg and 1000376650.jpg from ~19:28–19:29 UK local showed that clicking Alerts opens the panel below the header without moving the viewport, then a repeated tap closes it and leaves the same Overview position. The yellow numeric alert badge is an aggregate attention indicator, not proof of an unresolved Staff source incident. The approved simple action resolves a genuine usability problem while preserving existing alerts.
+
+**HOW / PROCESS:** Following the previous R78 read-only root-cause check, confirmed current Git branch HEAD 4907114f5876fe8a1da7e032b9eab0d7f755cf8b, latest READY Staging deployment dpl_BkDbJyUBiLXzSbY6bXEnZjYxQh6w (app SHA 1a666cf3726aa1bdbbfa7937ae85349e57e3d3ca), original Founder host line onClick toggling state on second tap, existing accessible Founder Alerts section ID founder-alerts-panel and pre-existing nested Daily Founder Brief two-frame focus/scroll approach. Agreed implementation: replace precisely the one header alert click handler with an open-and-scroll/focus handler borrowing the existing approved UI pattern; preserve the existing Close action, badge and sources. Both independent immutable Founder host SHA tests must restore the exact original handler during baseline comparison rather than changing the original SHA. Add narrow regression checks. Code edits, tests and deploy are NOT YET COMPLETE in this approval checkpoint.
+
+**WHERE:** Repository fatibanceo-blip/HIISSA-Relationship-AI-2, original feature/founder-control-room-staging branch; approved source file app/admin/control-room-preview/page.js; original two independent protection scripts scripts/validate-operational-incidents.mjs and scripts/validate-employee-register-readonly.mjs. Existing project Vercel prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0, target staging and existing alias https://hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app/admin/control-room?view=overview.
+
+**WHO:** Founder performed actual screenshot-based practical test and explicitly approved only this correction; assistant will implement/test in original Staging. No staff or customers involved.
+
+**EVIDENCE / STATUS:** Founder utterance “Approve” after exact proposed UX behaviour in active chat. Prior R78 screenshots and original app handler state confirm practical FAIL. Current approval is **FOUNDER APPROVED / IMPLEMENTATION PENDING**, not fixed, committed, deployed or practically accepted.
+
+**FAILURES AND CORRECTIONS:** Root cause previous header toggle did not scroll or focus; repeated press closed instead of navigating. Planned correction must not remove the immutable host guards, rebase fingerprints, change non-Alerts handlers, or synthesize Staging incidents. Record any build failure separately.
+
+**NON-EFFECT:** This checkpoint is an append-only Git Markdown evidence record, not an application edit, deployment, Staff source change, data migration, staff session change, Production alteration, scheduled monitoring activation or amendment of protected Word Documents11–13.
+
+**NEXT:** Make the exact approved code adjustment; protect it with both immutable original-host checks and a targeted regression, commit, build/deploy pinned SHA to original Staging only, inspect real results, and provide clear phone Chrome test instructions. Append all outcomes and founder practical results in approved evidence location and later additive Word01–10 R79+ Controlled Close update.
