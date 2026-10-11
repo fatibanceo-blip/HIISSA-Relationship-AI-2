@@ -18,9 +18,21 @@ const approvedLocalBack=[
 for(const [label,addition] of [["navigator ID",approvedNavigatorId],["local Back control",approvedLocalBack]]){
   assert.equal(host.split(addition).length-1,1,`Exactly one approved ${label} must exist`);
 }
-const protectedOriginalHost=host.replace(approvedNavigatorId,"").replace(approvedLocalBack,"");
+// Founder approved 11 October 2026: precisely one common quick-check import
+// and two JSX placements. Removing ONLY these exact fragments restores
+// the same immutable original Founder host SHA; no other host edits permitted.
+const allowedFounderCheckImport='import FounderOnDemandStaffSourceCheck from "./FounderOnDemandStaffSourceCheck.js";\n';
+const allowedOverviewCheck='      <FounderOnDemandStaffSourceCheck authenticated={authenticated} location="overview" />\n\n';
+const allowedStaffCheck='        <FounderOnDemandStaffSourceCheck authenticated={authenticated} location="staff" />\n';
+for(const [label,fragment] of [
+  ["manual-check shared import",allowedFounderCheckImport],
+  ["manual-check Overview placement",allowedOverviewCheck],
+  ["manual-check Staff placement",allowedStaffCheck]
+])assert.equal(host.split(fragment).length-1,1,"Exactly one Founder-approved "+label+" required");
+const protectedOriginalHost=host.replace(approvedNavigatorId,"").replace(approvedLocalBack,"")
+  .replace(allowedFounderCheckImport,"").replace(allowedOverviewCheck,"").replace(allowedStaffCheck,"");
 assert.equal(blobSha(protectedOriginalHost),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
-  "Founder host must match original protected SHA after removing ONLY the two approved Back additions");
+  "Founder host must match immutable original SHA after removing ONLY explicitly approved Back and Staff source-check additions");
 const migration=readFileSync("supabase/migrations/20261009101553_shared_operational_incidents_staging.sql","utf8");
 const route=readFileSync("app/api/admin/control-room/operational-incidents/route.js","utf8");
 for(const requirement of [
