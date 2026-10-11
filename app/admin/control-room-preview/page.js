@@ -13,6 +13,7 @@ import CalmerStartMode from "../../../components/people-experience/CalmerStartMo
 import WorkdayClose from "../../../components/people-experience/WorkdayClose.js";
 import PrivateAppreciation from "../../../components/people-experience/PrivateAppreciation.js";
 import FounderStaffSessionDeviceControl from "./FounderStaffSessionDeviceControl.js";
+import FounderOnDemandStaffSourceCheck from "./FounderOnDemandStaffSourceCheck.js";
 import FounderEmployeeRegisterAttendancePreview from "./FounderEmployeeRegisterAttendancePreview.js";
 import {projectFounderCanonicalIncidentAlerts} from "../../../lib/admin/founder-canonical-incident-alert-projection.js";
 import styles from "./page.module.css";
@@ -5459,6 +5460,8 @@ function Overview({
         onOpenApprovals={onOpenApprovals}
       />
 
+      <FounderOnDemandStaffSourceCheck authenticated={authenticated} location="overview" />
+
       <FounderEmergencyPauseCentre authenticated={authenticated} />
 
       <FounderActivityTimeline authenticated={authenticated} />
@@ -5882,6 +5885,7 @@ function FounderAccessCentre({ authenticated }) {
         <a className={styles.sectionBackLink} href="#staff-workspaces-areas">
           ← Back to Staff & Workspaces
         </a>
+        <FounderOnDemandStaffSourceCheck authenticated={authenticated} location="staff" />
         <FounderStaffSessionDeviceControl authenticated={authenticated} />
       </div>
     </section>
