@@ -3,6 +3,7 @@ import {useCallback,useEffect,useState} from "react";
 import Link from "next/link";
 import {createClient} from "@supabase/supabase-js";
 import {formatHiissaRecordTime} from "../../../lib/hiissa-record-time.js";
+import {CustomerPracticeActions,StaffPracticeActions} from "./FounderPracticeActions.js";
 import {FOUNDER_CONTROL_ROOM_STRENGTHENING_PACKAGE} from "../../../lib/experience-registry.js";
 
 const client=process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
@@ -14,6 +15,8 @@ export default function FounderOperationalCentreView({kind}){
   const customer=kind==="customer";
   const [state,setState]=useState({loading:true,verified:false,result:null,error:""});
   const [revision,setRevision]=useState(0);
+  const [actionBusy,setActionBusy]=useState(false);
+  const [actionFeedback,setActionFeedback]=useState("");
   const reload=useCallback(()=>setRevision(n=>n+1),[]);
   useEffect(()=>{
     let active=true;
@@ -34,6 +37,33 @@ export default function FounderOperationalCentreView({kind}){
     load();
     return ()=>{active=false};
   },[customer,revision]);
+  async function performAction(payload){
+    if(actionBusy||!state.verified)return false;
+    setActionBusy(true);
+    setActionFeedback("");
+    try{
+      if(!client)throw new Error("Founder sign-in is required.");
+      const {data:{session},error:authError}=await client.auth.getSession();
+      if(authError||!session?.access_token)throw new Error("Founder sign-in expired. Please sign in again.");
+      const response=await fetch(customer?customerUrl:staffUrl,{
+        method:"POST",cache:"no-store",
+        headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok||result?.status!=="RECORDED_AND_AUDITED"||result.productionEffectEnabled!==false){
+        throw new Error(result?.status==="STALE_RECORD_REFRESH"?
+          "The record was changed elsewhere. Refresh before another action.":
+          "Action not saved: "+(result?.status||"Please check the connection."));
+      }
+      setActionFeedback("Saved in Staging with a matching Admin audit event. No external customer or staff access action occurred.");
+      setRevision(n=>n+1);
+      return true;
+    }catch(error){
+      setActionFeedback("Not saved: "+(error?.message||"Please try again."));
+      return false;
+    }finally{setActionBusy(false);}
+  }
   const data=state.result;
   const mode=state.loading?"CHECKING":state.verified?"MONITORING":"SOURCE UNAVAILABLE";
   return <main style={page}>
@@ -58,15 +88,16 @@ export default function FounderOperationalCentreView({kind}){
       <Link href="/admin/control-room?view=overview" style={link}>Open existing Founder Alerts and Activity Timeline →</Link>
     </div>
     {state.error?<div role="alert" style={warning}>{state.error} No action has been taken.</div>:null}
-    {customer?<CustomerContent data={data} loading={state.loading}/>:<StaffContent data={data} loading={state.loading}/>}
+    {actionFeedback?<div role="status" aria-live="polite" style={notice}>{actionFeedback}</div>:null}
+    {customer?<CustomerContent data={data} loading={state.loading} onAction={performAction} busy={actionBusy}/>:<StaffContent data={data} loading={state.loading} onAction={performAction} busy={actionBusy}/>}
     <section style={notice}>
       <strong>Original approved features are preserved</strong>
-      <p>No new customer message, automatic acknowledgement, staff access change or Production operation occurs here. This is a read-only Staging capability connected to the existing Founder Control Room and original Experience Registry identities.</p>
+      <p>Founder-only Staging practice actions now save genuine internal records and Admin audit events. Real customer messages, automatic acknowledgement, real staff access changes and all Production effects remain disabled. The original Experience Registry identities remain unchanged.</p>
     </section>
   </main>;
 }
 
-function CustomerContent({data,loading}){
+function CustomerContent({data,loading,onAction,busy}){
   return <>
     <section aria-label="Approved customer communication lifecycle" style={section}>
       <h2 style={subtitle}>Original approved customer message journey</h2>
@@ -77,6 +108,7 @@ function CustomerContent({data,loading}){
       <p><strong>Automatic acknowledgement:</strong> Target approximately one minute after successful receipt. The precise earlier approved sentence is still being recovered; no outgoing acknowledgement is active.</p>
       <p><strong>Human-response deadline:</strong> Historical approval requires reconciliation. No unverified deadline is enforced or advertised.</p>
     </section>
+    <CustomerPracticeActions data={data} onAction={onAction} busy={busy}/>
     <section style={section}>
       <h2 style={subtitle}>Genuine Staging operational evidence</h2>
       <div style={cards}>
@@ -95,7 +127,7 @@ function CustomerContent({data,loading}){
     </section>
   </>;
 }
-function StaffContent({data,loading}){
+function StaffContent({data,loading,onAction,busy}){
   return <>
     <section style={section}>
       <h2 style={subtitle}>Current Staging staff evidence</h2>
@@ -111,6 +143,7 @@ function StaffContent({data,loading}){
         <small>Registered: {stamp(person.registeredAt)}</small>
       </article>)}</div>:<p>{data?"No genuine employee is currently recorded in the verified Staging register. Fictional prototype staff are not real employees.":"Employee records are hidden until verified."}</p>}
     </section>
+    <StaffPracticeActions data={data} onAction={onAction} busy={busy}/>
     <section style={section}>
       <h2 style={subtitle}>Original approved review responsibilities</h2>
       <div style={list}>{[
