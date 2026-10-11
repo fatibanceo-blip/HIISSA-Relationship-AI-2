@@ -20,3 +20,39 @@
 **NON-EFFECT:** No new application code, Staging schema/data, customer/staff real effects, alerts/approvals/roles, Production/main, protected Docs11–13 amended by this checkpoint. Previous accepted journeys remain protected.
 
 **NEXT:** HARD STOP new feature development, read entire R85 Document12 AND Document13; reconcile exactly 13 current Word documents, prior package and current R87–R106 rolling ledger; prepare full chronological per-document additive updates to living Docs01–10, preserve protected Doc11/Doc12 as authorised (no new amendment), clarify separate Document13 protection/amendment authority; embed original Founder screenshots, run image/media/OOXML preservation and all final Word render/inspection/ZIP integrity gates, with honest audit status. Do not produce duplicate competing final ZIPs. Handover must state last source SHA, Staging READY deployment, Founder approvals and exact next approved conditional action: assess 2 Staging practice save→audit→refresh journeys and protected Control Room menu integration, then recover authentic incoming customer support channel and exact human SLA message authorisation; continue full two-feature work in successor under original design and separate Founder approval where required.
+
+
+---
+
+## 2026-10-11T21:11:12.044Z — R107 FOUNDER CORRECTS HANDOVER DOCUMENT ROUTING: DOC04/DOC10, NOT PROTECTED DOC13 — FULL 13-DOCUMENT ROLE AUDIT
+
+**FOUNDER ORIGINAL WORDING (VERBATIM):** “Read all the documents. It will tell you where exactly to put it. It is definitely not document 13. Go back to all the documents. It will tell you exactly where all this information has to be.”
+
+**WHAT:** Founder rejected assistant's suggestion to append current feature-development/successor handover into protected Document13. Assistant inspected actual thirteen mounted R85 Word documents (document titles, headings, structural roles) and read the explicit Document12 Section14 role-by-role update matrix (its 13-row 3-column table) and Document13 Sections 1,3–8, especially Stage 4 of Controlled Close: “Update each living document according to its purpose. Do not paste one generic summary into every file.” Correctly identified that exact current successor handover principally belongs in living Doc04 Next Chat Handover and Doc10 Single Updated Continuity Handover; implementation/progress/history/visual evidence must be spread additively and role-specifically among applicable Docs01–10.
+
+**WHY:** Previous assistant falsely requested Founder permission to amend Document13 simply to carry current ordinary feature handover, contrary to Document12's explicit role routing and the protected nature of Docs11–13. The Founder should never need to correct that mistake. Strict governance fidelity prevents repeated inapplicable requests for protected document amendments, accidental cumulative rewrites or generic duplicate histories.
+
+**HOW / PROCESS:** Read /home/oai/skills/docx/SKILL.md. Confirmed all thirteen source Word files exist at /mnt/data/{01..13}_HIISSA_CONTROLLED_CLOSE_2026-10-11_R85_ADDITIVE_CURRENT.docx. Parsed titles/sections/headings and relevant explanatory paragraphs across all 13 originals with python-docx. Inspected Document12 Section14 full document-role update matrix (Table 9 in current source) and Sections15–16 preseal QA requirements. Independently compared Document05 initial authority summary: Doc01 Master Blueprint=overall architecture/governance; Doc02 Phase Master Record=status/evidence; Doc03 CI Blueprint=specialist technical; Doc04 Next Chat Handover=exact continuation; Doc05 Master Design Specification=full feature details. Inspected Document08 visual register requirement to preserve actual Founder screenshots, and Document10 consolidated handover title and successor field. Inspected Document13 Early Controlled Close Stage1–8 including Stage4 role-specific updates and no generic summary duplications. Applied current latest Doc12 13-document extension and protected-document gates. Determined content routing:
+01 architecture/Registry/Control Room/source-of-truth/environment;
+02 detailed approvals/status/evidence chronology;
+03 technical certification/validators/implementation/relevant impact while keeping original CI authority;
+04 clear exact next-chat continuation and “THE NEXT CHAT STARTS HERE”;
+05 comprehensive original approved two feature designs and all new technical behaviour/non-effects/gaps;
+06 the mandatory continuation/compliance/protocol applicability (not dumping current work);
+07 full chronological steps/commits/failed tests/repairs/status;
+08 all actual original screenshots with descriptions and historical before/after;
+09 later post-package work history/evidence;
+10 comprehensive current latest Founder-friendly successor handover and exact start.
+Doc11 Ten-Rule historic strengthening, Doc12 Mandatory Documentation Standard, Doc13 Early Controlled Close governance = PROTECTED UNCHANGED because Founder did not approve any change to governing standards. A routine current handover does not require amendment of Doc13. This correction supersedes prior erroneous suggestion but does not delete its chronological original.
+
+**WHERE:** Source package 13 exact R85 DOCX files in /mnt/data; Document12 Section14 Table 9 as current role matrix; Document13 Stage4; durable original staging Git ledger this file. No app/source/Production project touched.
+
+**WHO:** Founder corrected placement; assistant performed source-grounded role review, admitted mistake, and recorded compliance correction.
+
+**EVIDENCE / STATUS:** Exact Founder wording above; physically verified 13 R85 DOCX originals and Document12 explicit role mapping. ROUTING ERROR IDENTIFIED / CORRECTED IN PROJECT EVIDENCE. Actual updated successor Word docs and single ZIP still NOT CREATED, NOT CERTIFIED, NOT DELIVERED as of this checkpoint. R106 Founder screenshot SOURCE-LOAD narrow PASS remains, full original two features incomplete. Last known READY app Staging deployment dpl_BREKwQi7P6yohCNWvCVq2QLC6VSb SHA bb56fd6f10ad710910e199ee637219030b2f96ca; Production untouched.
+
+**FAILURES AND CORRECTIONS:** Assistant incorrectly claimed need Founder authorisation to add a feature handover appendix to protected Document13. Correction: no new Doc13 amendment proposed or needed; use Document12 mandatory roles in Docs01–10, protect Docs11–13 byte-identically. Do not claim all previous historic document compliance certified without actual render and additive comparison.
+
+**NON-EFFECT:** No Word artifact changed by this analytical checkpoint; no user-visible HIISSA interface changed; no Git application code/feature paths changed; no new deployment; protected Docs11–13 unchanged; no Production access, staff permissions, customer messages or approvals.
+
+**NEXT:** Continue mandatory early Controlled Close: write dated full, role-specific R87–R107 append-only records into Docs01–10; embed actual Founder mobile images in Doc08 with source names and observations; exact next chat handovers in Doc04/Doc10; preserve protected Doc11–13 hashes; verify all prior text/tables/media, render and inspect final Word pages, compare with R85 originals, run ZIP integrity/count exactly thirteen, deliver only one verified final ZIP. Do not modify Doc13 merely for ordinary feature handover. If full QA cannot be completed, disclose exact incomplete checks and continuation path rather than claim certified.
