@@ -11,6 +11,40 @@ const client=process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPAB
 const customerUrl="/api/admin/control-room/customer-communications";
 const staffUrl="/api/admin/control-room/staff-trust-review";
 
+// R99: Founder-only, privacy-safe status diagnosis of the new Staff Review page.
+// Disclose only fixed source names and status codes, never raw provider errors or secrets.
+const STAFF_DIAGNOSTIC_SOURCES=Object.freeze({
+  "employee-register":"Employee register",
+  "onboarding":"Staff onboarding",
+  "role-assignments":"Role assignments",
+  "access-restrictions":"Access restrictions",
+  "canonical-incidents":"Existing operational incidents",
+  "practice-actions":"Staging staff practice review"
+});
+function describeStaffSourceFailure(httpStatus,data){
+  if(httpStatus===401||data?.status==="UNAUTHENTICATED")
+    return "STAFF-SOURCE AUTH-401: No valid Founder session was accepted. Return to the existing Founder sign-in, then reopen this Staging page.";
+  if(httpStatus===403||data?.status==="FOUNDER_GATE_REQUIRED")
+    return "STAFF-SOURCE ACCESS-403: Founder identity verification did not pass. No data was disclosed or changed.";
+  if(httpStatus===404)
+    return "STAFF-SOURCE STAGING-404: The Staging-only API is unavailable or its protected environment check did not pass. No action occurred.";
+  if(data?.status==="STAGING_ADMIN_DATA_NOT_CONFIGURED")
+    return "STAFF-SOURCE CONFIG-503: A required protected Staging connection is not configured. No data was disclosed or changed.";
+  if(data?.status==="SOURCE_UNAVAILABLE"){
+    const sourceNames=Array.isArray(data.unverifiedSources)?
+      data.unverifiedSources.filter(value=>typeof value==="string"&&Object.prototype.hasOwnProperty.call(STAFF_DIAGNOSTIC_SOURCES,value))
+        .map(value=>STAFF_DIAGNOSTIC_SOURCES[value]):[];
+    if(sourceNames.length)
+      return "STAFF-SOURCE READ-503: Unable to verify "+sourceNames.join(", ")+". No action occurred.";
+    return "STAFF-SOURCE READ-503: A protected Staging read failed. No action occurred.";
+  }
+  if(data?.status==="SOURCE_READ_FAILED")
+    return "STAFF-SOURCE REQUEST-503: The protected data request failed before it could be classified. No action occurred.";
+  if(httpStatus>=500)
+    return "STAFF-SOURCE SERVER-"+httpStatus+": The secure Staging API failed. No action occurred.";
+  return "STAFF-SOURCE RESPONSE-"+httpStatus+": The secure Staging API did not return verified evidence. No action occurred.";
+}
+
 export default function FounderOperationalCentreView({kind}){
   const customer=kind==="customer";
   const [state,setState]=useState({loading:true,verified:false,result:null,error:""});
@@ -29,8 +63,10 @@ export default function FounderOperationalCentreView({kind}){
         const response=await fetch(customer?customerUrl:staffUrl,{cache:"no-store",
           headers:{Authorization:"Bearer "+session.access_token}});
         const data=await response.json().catch(()=>null);
-        if(!response.ok||data?.status!=="MONITORING"||data?.productionEffectEnabled!==false)
+        if(!response.ok||data?.status!=="MONITORING"||data?.productionEffectEnabled!==false){
+          if(!customer)throw new Error(describeStaffSourceFailure(response.status,data));
           throw new Error("Source verification failed. This is not a healthy or confirmed empty result.");
+        }
         if(active)setState({loading:false,verified:true,result:data,error:""});
       }catch(e){if(active)setState({loading:false,verified:false,result:null,error:e?.message||"Unavailable"});}
     }
