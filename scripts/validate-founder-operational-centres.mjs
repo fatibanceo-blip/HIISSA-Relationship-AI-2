@@ -45,5 +45,31 @@ for(const s of ["CustomerPracticeActions","StaffPracticeActions",'method:"POST"'
 for(const s of ["Create and save practice request","Assign to Customer Support","Save internal note","Record and save practice evidence","Verify fictional practice record","Request correction","onAction","disabled={busy"])assert.ok(forms.includes(s),"Interactive form action missing: "+s);
 for(const s of ["create table if not exists public.hiissa_support_request_staging","create table if not exists public.hiissa_staff_review_staging","enable row level security","revoke all","to service_role","insert into public.admin_audit_events","p_version is distinct from v_row.version","APPROVED_COPY_NOT_RECOVERED"])assert.ok(migration.includes(s),"Staging DB access/audit/version/acknowledgement contract missing: "+s);
 assert.ok(!/\bdrop\s+table\b|\btruncate\s+table\b|\bdelete\s+from\b/i.test(migration.split("\n").filter(line=>!line.trim().startsWith("--")).join("\n")),"Staging migration must be additive");
+
+// R99 Founder-authorised diagnosis: protect exact original security, both legacy routes,
+// and only the new Staff page's safe fixed source/error classification.
+for(const token of [
+  "STAFF_DIAGNOSTIC_SOURCES",
+  "STAFF-SOURCE AUTH-401",
+  "STAFF-SOURCE ACCESS-403",
+  "STAFF-SOURCE STAGING-404",
+  "STAFF-SOURCE CONFIG-503",
+  "STAFF-SOURCE READ-503",
+  "STAFF-SOURCE REQUEST-503",
+  "STAFF-SOURCE SERVER-",
+  "STAFF-SOURCE RESPONSE-",
+  "describeStaffSourceFailure(response.status,data)",
+  "Object.prototype.hasOwnProperty.call(STAFF_DIAGNOSTIC_SOURCES,value)",
+  "if(!customer)throw"
+])assert.ok(ui.includes(token),"Staff exact-safe diagnostic is missing "+token);
+for(const token of [
+  "SOURCE_UNAVAILABLE", "unverifiedSources:missing",
+  "SOURCE_READ_FAILED", "verifyOperationalCentreFounder(request)",
+  "operationalCentreStagingAllowed()", "FOUNDER",
+  "productionEffectEnabled:false"
+])assert.ok(staff.includes(token),"Staff secure fail-closed source diagnostic missing "+token);
+assert.ok(!ui.includes("data.error.message")&&!staff.includes("error.message}"),"Raw backend error details must never be rendered");
+console.log("PASS: Staff source failure classified in secure Founder UI; original Staging-only and permissions controls retained. Real Founder fix verification remains pending.");
+
 console.log("PASS: two Founder active Staging practice workflows source-constrained, audit+RLS, original Registry identities, canonical incidents, visible saved outcomes, protected Control Room and no Production effect.");
 console.log("NOT VERIFIED: Founder practical POST+GET flow, real authenticated persistence test, customer receipt/outbound acknowledgement, actual human-response SLA, real employee policy/training certifications, full original feature completion.");
