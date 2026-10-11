@@ -726,7 +726,17 @@ export default function FounderControlRoomPreview({ authenticated = false, onSig
             <FounderAlertButton
               authenticated={authenticated}
               active={toolPanel === "alerts"}
-              onClick={() => setToolPanel((value) => value === "alerts" ? "" : "alerts")}
+              onClick={() => {
+                setToolPanel("alerts");
+                window.requestAnimationFrame(() => {
+                  window.requestAnimationFrame(() => {
+                    const panel = document.getElementById("founder-alerts-panel");
+                    if (!panel) return;
+                    panel.focus({ preventScroll: true });
+                    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+                  });
+                });
+              }}
             />
             <Link href="/" className={styles.backLink}>← Back to HIISSA</Link>
             <button
