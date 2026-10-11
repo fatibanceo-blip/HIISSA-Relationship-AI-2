@@ -3997,3 +3997,26 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** Production/main untouched; Vercel READY alias not repointed by failed build; no existing working feature changed; no Supabase/employee/customer mutation; no Docs11–13 amendment. This is documentation-only checkpoint.
 
 **NEXT:** Minimal fix to new validator; commit; rerun pinned existing Staging full build and check READY, alias resolution; before Founder test, fully disclose non-authenticated runtime and outstanding exact Staff root cause.
+
+
+---
+
+## 2026-10-11T20:49:13.681Z — R101 FALSE STAFF VALIDATOR ASSERTION CORRECTED; REBUILD PENDING
+
+**WHAT:** Corrected one new Staff diagnostic validator assertion, from requiring literal FOUNDER in the Staff API file to requiring its real founder.ok security response check, which invokes verified shared Founder gate. Exact source commit 4cf01208c5ce3b7badfdac57eb19639d24b26f66; only scripts/validate-founder-operational-centres.mjs changed.
+
+**WHY:** Pinned Staging diagnostic deployment dpl_GDcNqDxkuNvwodaCz6ZEWMdW69xV failed due to false test expectation; real security helper remains intact and must not be bypassed to obtain PASS.
+
+**HOW / PROCESS:** Checked actual Staff API verifyOperationalCentreFounder(request) invocation and unchanged gateway FOUNDER_GATE_REQUIRED, admin_users membership, Bearer auth and Staging checks. Removed no actual original safety test. Changed exactly one expected token in the newly extended independent test file. Must rerun actual Vercel original historical regression suite to determine build status; no PASS inferred from edit.
+
+**WHERE:** Existing staging repo fatibanceo-blip/HIISSA-Relationship-AI-2, branch feature/founder-control-room-staging, new validator path above.
+
+**WHO:** Assistant made correction under Founder approval R98; Vercel generated earlier FAIL evidence.
+
+**EVIDENCE / STATUS:** Commit 4cf01208c5ce3b7badfdac57eb19639d24b26f66. BUILD RETRY PENDING; USER PRACTICAL FAIL persists; actual Staff runtime fault NOT VERIFIED.
+
+**FAILURES / CORRECTIONS:** Mis-specified new assertion corrected; no weakening of existing protections.
+
+**NON-EFFECT:** Production, working features, original Founder shell and Alerts, customer/staff data, Supabase migration, protected Documents11–13 and previous READY Staging deployment not modified.
+
+**NEXT:** Redeploy exact code to existing Staging only and inspect full original gate tests. If READY, use new safe Founder-visible error category to learn actual issue before specific repair.
