@@ -3320,3 +3320,28 @@ NEXT: Founder can use one dated ZIP from conversation, aware of verification pen
 **NON-EFFECT:** No change to ordinary Alerts summary/badge or eight existing source feeds, current incident write logic, auth gates, staff sessions, protected control displays, registry identity, old Founder approvals, Production, staging project or protected Word11–13.
 
 **NEXT:** Implement bounded conditionally visible navigation CTA, update exact immutable-host regression to allow solely approved insertions, add fixture-based positive/negative tests, pin source SHA and verify Staging build. Give Founder a real URL and practical instructions, distinguishing conditional path from a simulated fault; if no genuine unresolved Staff incident, absence of CTA is expected and actual click is NOT VERIFIED.
+
+
+---
+
+## 2026-10-11 — R75 NEW FOUNDER STAFF-SOURCE ALERT NAVIGATION CODE BATCH COMMITTED
+
+**WHAT / FOUNDER:** Following explicit Founder “Approve” for direct navigation from genuine Staff source alerts to Staff & Workspaces → Access & Security, implemented an actual user-facing contextual action in existing Founder Alerts, and a verified-source-only read-only projection predicate. Changes are APPROVED and CODE-COMMITTED, not yet build-PASS/Founder-tested at this checkpoint.
+
+**WHY:** The pre-existing generic Open recorded incidents button sends the Founder to Employee Register & Attendance; when a specific actual unresolved Staff Session/Access source failure is present, the Founder should have one exact one-tap path to its relevant monitoring/control location. Avoid showing misleading links for zero, unavailable or unrelated incidents. Preserve all other Founder alert sources and working user journeys.
+
+**HOW:** Pure canonical projection file now carries existing incident metadata fields featureId and ownerModuleId with each already validated top-five unresolved item, without returning staff PII or making new API calls, and exports isFounderStaffSecuritySourceIncident: exact featureId staff-session-device-control, ownerModuleId admin-security-audit, title Staff access operational source unreadable, not verified_resolved. Existing Founder host renders “Open Staff Access & Security →” only if canonical source is verified AND projected items contain exact matching Staff incident; callback reuses choosePrimary("staff"), then requestAnimationFrame to focus/scroll existing staff-access-security section. Existing section gets tabIndex=-1, role region, explicit accessible label; original back arrow remains. Generic recorded incident button remains intact. No new alerts endpoint, second staff access engine or synthetic rows.
+
+**PROCESS:** Founder approval checkpoint 37dbc9c91fb8c7c1e5cd5804e3cb8cc83c8d5e06 → projection code commit 738903294be5038c6b6fc856b61b4a993d29d763 → Founder host code commit bf9c2c6161f0dd38e89245b51e74571819c932b2 → strict protected host validator commit 02104b66d6198297d9dcf36c7b4ab88d2c2d6c52. Validator lists EXACT six new approved host fragments, requires one occurrence each, subtracts them with previously approved Back and manual-check fragments, and compares untouched original immutable Founder host SHA f2337383d9c41e5b79edbad8795a12d8661a2f13. Added mock eligible-ineligible incident tests, legacy generic-button retention and destination focus assertions. Code deliberately excludes live incident writes.
+
+**WHERE:** fatibanceo-blip/HIISSA-Relationship-AI-2, original feature/founder-control-room-staging branch; files lib/admin/founder-canonical-incident-alert-projection.js, app/admin/control-room-preview/page.js, scripts/validate-operational-incidents.mjs. Existing Founder Control Room route /admin/control-room?view=overview and Staff & Workspaces existing in-page #staff-access-security; original Vercel Staging project prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0.
+
+**WHO:** Founder gave approval. Assistant added code and regression; Founder practical acceptance to come if a genuine incident can be viewed safely. Only verified Founder-gated canonical operational incident records can make contextual CTA appear.
+
+**EVIDENCE / STATUS:** Three exact Git commits above verified by connector successful commit responses; code implemented/committed, TESTS NOT YET RUN and DEPLOYMENT NOT YET BUILT at this timestamp. New direct navigation Founder practical PASS NOT VERIFIED. Previous Staging deployment dpl_7JZvQcjQ8ntv6FvK2YDrSdTUYRZP READY belongs to previous regression batch, not the new feature.
+
+**FAILURES & CORRECTIONS:** No new build or browser test result yet. Protected host immutable guard initially would have failed if left unchanged; updated only six exact approved fragment removals rather than weakening the original fingerprint. Real failure fixture never written to Staging. If guard or build fails, correct narrowly, keep FAIL and FIX evidence, do not claim implementation verified.
+
+**NON-EFFECT:** Original approved alert summaries/buttons, Staging server endpoints, Supabase RPCs, permissions, staff sessions, canonical incident records, monitoring scheduler, autonomous repair, Production, Registry, other screens and protected Word11–13 unchanged.
+
+**NEXT:** Compare exact code diff against approved scope, explicitly deploy pinned HEAD to SAME existing Vercel target staging, inspect real build and validator logs. Distinguish mock PASS from Founder practical PASS. If READY, give Founder direct testing URL and no fake test data. After real result, update role-mapped 13 Word documents additively under Document12; retain R73 baseline and provide one final ZIP, with honest verification limitations.
