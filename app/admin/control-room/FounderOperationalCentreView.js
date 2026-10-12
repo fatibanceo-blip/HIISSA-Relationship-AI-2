@@ -113,10 +113,20 @@ export default function FounderOperationalCentreView({kind}){
     const result=await response.json().catch(()=>null);
     if(!response.ok||result?.status!=="AI_ASSIST_REVIEW_PREPARED"||
       result?.productionEffectEnabled!==false||result?.founderDecisionRequired!==true){
-      if(result?.status==="STALE_RECORD_REFRESH")throw new Error("Record changed. Refresh before asking HIISSA.");
+      if(result?.status==="STALE_RECORD_REFRESH")
+        throw new Error("This record has been updated. Please refresh it, and I can help you review the latest version.");
+      if(result?.status==="AUDIT_NOT_RECORDED")
+        throw new Error("I couldn't safely record the review suggestion, so I've paused here. Your decision is unchanged. (AUDIT-503)");
+      if(result?.status==="EVIDENCE_SOURCE_UNAVAILABLE"||result?.status==="AI_ASSIST_SOURCE_FAILED")
+        throw new Error("I can't reliably read the saved evidence at the moment. Your review is unchanged. (SOURCE-503)");
       if(result?.status==="AI_ASSIST_NOT_CONFIGURED"||result?.status==="AI_ASSIST_TEMPORARILY_UNAVAILABLE")
-        throw new Error("HIISSA is temporarily unavailable. You can still review manually.");
-      throw new Error("An auditable suggestion could not be prepared. No Founder decision was changed.");
+        throw new Error("I can't prepare a suggestion right now. You can still review the evidence yourself. (ASSIST-503)");
+      if(result?.status==="AI_ASSIST_UNVERIFIED_RESPONSE")
+        throw new Error("I couldn't prepare a sufficiently reliable suggestion, so I won't guess. Your decision is unchanged. (REVIEW-503)");
+      if(result?.status==="UNAUTHENTICATED"||result?.status==="FOUNDER_GATE_REQUIRED")
+        throw new Error("Please sign in with your Founder access before asking HIISSA to review this evidence. (ACCESS)");
+      throw new Error("I couldn't safely prepare this review. Nothing has been approved or changed. ("+
+        (response.status===403?"ACCESS-403":response.status===404?"REVIEW-404":"REVIEW-503")+")");
     }
     return result;
   }
