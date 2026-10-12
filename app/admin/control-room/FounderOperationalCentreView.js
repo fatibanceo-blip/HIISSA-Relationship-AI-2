@@ -100,6 +100,26 @@ export default function FounderOperationalCentreView({kind}){
       return false;
     }finally{setActionBusy(false);}
   }
+  // HIISSA assists with saved fictional training evidence; Founder decides.
+  async function assistEvidence(id,version){
+    if(!state.verified||!client)throw new Error("Founder verification is needed.");
+    const {data:{session},error:authError}=await client.auth.getSession();
+    if(authError||!session?.access_token)throw new Error("Founder sign-in expired. Please sign in again.");
+    const response=await fetch("/api/admin/control-room/staff-trust-review/assist",{
+      method:"POST",cache:"no-store",
+      headers:{"Authorization":"Bearer "+session.access_token,"Content-Type":"application/json"},
+      body:JSON.stringify({id,version})
+    });
+    const result=await response.json().catch(()=>null);
+    if(!response.ok||result?.status!=="AI_ASSIST_REVIEW_PREPARED"||
+      result?.productionEffectEnabled!==false||result?.founderDecisionRequired!==true){
+      if(result?.status==="STALE_RECORD_REFRESH")throw new Error("Record changed. Refresh before asking HIISSA.");
+      if(result?.status==="AI_ASSIST_NOT_CONFIGURED"||result?.status==="AI_ASSIST_TEMPORARILY_UNAVAILABLE")
+        throw new Error("HIISSA is temporarily unavailable. You can still review manually.");
+      throw new Error("An auditable suggestion could not be prepared. No Founder decision was changed.");
+    }
+    return result;
+  }
   const data=state.result;
   const mode=state.loading?"CHECKING":state.verified?"MONITORING":"SOURCE UNAVAILABLE";
   return <main style={page}>
@@ -125,7 +145,7 @@ export default function FounderOperationalCentreView({kind}){
     </div>
     {state.error?<div role="alert" style={warning}>{state.error} No action has been taken.</div>:null}
     {actionFeedback?<div role="status" aria-live="polite" style={notice}>{actionFeedback}</div>:null}
-    {customer?<CustomerContent data={data} loading={state.loading} onAction={performAction} busy={actionBusy}/>:<StaffContent data={data} loading={state.loading} onAction={performAction} busy={actionBusy}/>}
+    {customer?<CustomerContent data={data} loading={state.loading} onAction={performAction} busy={actionBusy}/>:<StaffContent data={data} loading={state.loading} onAction={performAction} onAssist={assistEvidence} busy={actionBusy}/>}
     <section style={notice}>
       <strong>Original approved features are preserved</strong>
       <p>Founder-only Staging practice actions now save genuine internal records and Admin audit events. Real customer messages, automatic acknowledgement, real staff access changes and all Production effects remain disabled. The original Experience Registry identities remain unchanged; actions return to the existing Founder Control Room.</p>
@@ -163,7 +183,7 @@ function CustomerContent({data,loading,onAction,busy}){
     </section>
   </>;
 }
-function StaffContent({data,loading,onAction,busy}){
+function StaffContent({data,loading,onAction,onAssist,busy}){
   return <>
     <section style={section}>
       <h2 style={subtitle}>Current Staging staff evidence</h2>
@@ -179,7 +199,7 @@ function StaffContent({data,loading,onAction,busy}){
         <small>Registered: {stamp(person.registeredAt)}</small>
       </article>)}</div>:<p>{data?"No genuine employee is currently recorded in the verified Staging register. Fictional prototype staff are not real employees.":"Employee records are hidden until verified."}</p>}
     </section>
-    <StaffPracticeActions data={data} onAction={onAction} busy={busy}/>
+    <StaffPracticeActions data={data} onAction={onAction} onAssist={onAssist} busy={busy}/>
     <section style={section}>
       <h2 style={subtitle}>Original approved review responsibilities</h2>
       <div style={list}>{[
