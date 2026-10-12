@@ -12,7 +12,7 @@ export async function GET(request){
   try{
     const founder=await verifyOperationalCentreFounder(request);
     if(!founder.ok)return json({status:founder.reason},founder.http);
-    const [work,incident,practice]=await Promise.all([
+    const [work,incident,practice,inbox]=await Promise.all([
       founder.admin.from("staff_work_items")
         .select("case_code,status,is_fictional,external_effect_enabled,received_at,response_due_at,submitted_at,verified_completed_at,created_at")
         .eq("environment","staging").eq("workspace_id","customer_support")
@@ -23,12 +23,16 @@ export async function GET(request){
         .eq("feature_id","customer-communication-service-level-centre").limit(50),
       founder.admin.from("hiissa_support_request_staging")
         .select("id,title,request_summary,lifecycle_state,acknowledgement_state,assigned_department,internal_note,created_at,updated_at,version")
+        .eq("environment","staging").order("created_at",{ascending:false}).limit(35),
+      founder.admin.from("hiissa_customer_support_inbox_staging")
+        .select("id,lifecycle_state,created_at")
         .eq("environment","staging").order("created_at",{ascending:false}).limit(35)
     ]);
-    if(work.error||incident.error||practice.error)return json({
+    if(work.error||incident.error||practice.error||inbox.error)return json({
       status:"SOURCE_UNAVAILABLE",
       internalWorkVerified:!work.error,
       practiceSourceVerified:!practice.error,
+      authenticatedStagingInboxVerified:!inbox.error,
       canonicalIncidentFeedVerified:!incident.error,
       externalCustomerMessages:"NOT_CONNECTED",productionEffectEnabled:false
     },503);
@@ -46,6 +50,11 @@ export async function GET(request){
       ownerModules:["overview","users-identity","feedback-recommendations","failures-reliability"],
       internalWorkVerified:true,internalWorkSource:"existing-staging-staff_work_items",
       internalWorkCount:items.length,
+      authenticatedStagingInboxVerified:true,
+      stagingAuthenticatedCustomerRequests:(inbox.data||[]).length,
+      stagingAuthenticatedCustomerIntake:"CONNECTED_STAGING_ONLY",
+      // No inbox subject/body/customer identity in dashboard or audit payload.
+      authenticatedIntakePrivacy:"AGGREGATE_ONLY",
       actionSourceVerified:true,stagingPracticeCases:practice.data||[],fictionalWorkCount:items.filter(i=>i.fictional).length,items,
       canonicalIncidentFeedVerified:true,openIncidentCount:incidents.filter(i=>i.state!=="verified_resolved").length,
       externalCustomerMessages:"NOT_CONNECTED",externalDeliveryEnabled:false,

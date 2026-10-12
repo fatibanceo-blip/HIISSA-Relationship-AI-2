@@ -86,3 +86,5 @@ await import("./validate-hiissa-assisted-review.mjs");
 await import("./validate-operational-centres-dashboard-entrypoints.mjs");
 // Founder all-caps brand regression: run inside the existing mandatory prebuild.
 await import("./validate-hiissa-visible-brand.mjs");
+// R153 genuine signed-in customer support intake: mandatory protection gate.
+await import("./validate-hiissa-authenticated-support-intake.mjs");

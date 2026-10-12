@@ -168,6 +168,12 @@ export default function MyHiissaAccountPage() {
           <p style={{margin:"10px 0 0",color:"#687a71",lineHeight:1.55}}>HIISSA will show one authoritative current access level here after the Account Access Resolver is implemented. This Preview does not guess FREE, HIISSA+ or HIISSA TOGETHER.</p>
         </section>
 
+        <section style={{padding:24,borderRadius:22,background:"#fffefa",border:"1px solid #d3dfd6",boxShadow:"0 12px 28px rgba(31,72,54,.06)",marginBottom:16}}>
+          <h2 style={{margin:"0 0 8px",fontFamily:"Georgia, 'Times New Roman', serif",fontWeight:500}}>My Support Requests</h2>
+          <p style={{margin:"8px 0 16px",color:"#687a71",lineHeight:1.55}}>Open the approved HIISSA customer-support journey in isolated Staging. Messages are saved privately; automatic replies and Production are not active.</p>
+          <Link href="/my-hiissa/support" style={{display:"inline-block",padding:"13px 17px",borderRadius:14,background:green,color:"white",fontWeight:800,textDecoration:"none"}}>Open My Support Requests →</Link>
+        </section>
+
         <section style={{padding:24,borderRadius:22,background:"#fffefa",border:"1px solid #d3dfd6",boxShadow:"0 12px 28px rgba(31,72,54,.06)"}}>
           <h2 style={{margin:"0 0 8px",fontFamily:"Georgia, 'Times New Roman', serif",fontWeight:500}}>This device</h2>
           <p style={{margin:"0 0 18px",color:"#687a71",lineHeight:1.55}}>Signing out here ends the HIISSA session only in this browser/device. It does not delete the account or the account's saved conversations.</p>

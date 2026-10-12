@@ -181,6 +181,7 @@ function CustomerContent({data,loading,onAction,busy}){
         <Metric name="Internal Customer Support work" value={data?String(data.internalWorkCount):loading?"Checking…":"Unverified"}/>
         <Metric name="Fictional practice items" value={data?String(data.fictionalWorkCount):loading?"Checking…":"Unverified"}/>
         <Metric name="Recorded feature incidents" value={data?String(data.openIncidentCount):loading?"Checking…":"Unverified"}/>
+        <Metric name="Authenticated Staging customer requests" value={data?.authenticatedStagingInboxVerified?String(data.stagingAuthenticatedCustomerRequests):"NOT VERIFIED"}/>
         <Metric name="Real incoming customer messages" value="NOT CONNECTED"/>
       </div>
       {data?.items?.length?<div style={list}>
