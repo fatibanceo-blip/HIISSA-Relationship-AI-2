@@ -103,7 +103,9 @@ function humanise(value) {
   return String(value || "")
     .replaceAll("_", " ")
     .replaceAll("-", " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    // Founder-approved branding: technical audit IDs stay lowercase; visible name stays HIISSA.
+    .replace(/\bhiissa\b/gi, "HIISSA");
 }
 
 function eventTitle(event) {
