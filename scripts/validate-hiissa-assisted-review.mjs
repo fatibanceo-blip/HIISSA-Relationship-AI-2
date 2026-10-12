@@ -18,10 +18,23 @@ for(const required of [
   "approvedCourseRequirements:\"NOT_CONNECTED\"",
   'from("admin_audit_events").insert(', 'action_id:"assisted_evidence_review"',
   'training_certified:false','final_decision_performed:false',
+  'outcome:"recorded"',
   'recommendation:"FOUNDER_REVIEW_REQUIRED"',
   'founderDecisionRequired:true','productionEffectEnabled:false',
   'officialCourseCriteriaConnected:false',
 ]) assert.ok(route.includes(required),"Protected assistant contract missing: "+required);
+assert.ok(!route.includes('outcome:"draft_prepared"'),
+  "Assistant audit must not use a value forbidden by the existing audit outcome constraint");
+for(const words of [
+  "calm, warm, kind, composed, respectful",
+  "non-judgmental language",
+  "Preserve the Founder's agency",
+  "Do not invent achievements"
+]) assert.ok(route.includes(words),"HIISSA Founder-approved identity missing "+words);
+for(const marker of [
+  "AUDIT_NOT_RECORDED", "AUDIT-503", "SOURCE-503", "ASSIST-503",
+  "I couldn't safely prepare this review."
+]) assert.ok(view.includes(marker),"Warm actionable diagnostic missing "+marker);
 assert.ok(!route.includes('from("admin_access_restrictions")'),
   "Never read the original protected restriction table directly");
 assert.ok(!route.includes('from("admin_role_assignments").update'),
