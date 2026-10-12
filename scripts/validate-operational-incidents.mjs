@@ -56,6 +56,17 @@ assert.equal(host.split(directStaffAlertFragment3).length-1,1,"Exactly one Found
 assert.equal(host.split(directStaffAlertFragment4).length-1,1,"Exactly one Founder-approved alert validated condition");
 assert.equal(host.split(directStaffAlertFragment5).length-1,1,"Exactly one Founder-approved alert contextual button");
 assert.equal(host.split(directStaffAlertFragment6).length-1,1,"Exactly one Founder-approved accessible Staff destination");
+// R145: only these three additional Founder-authorised dashboard connection fragments
+// may differ from the historical immutable original host SHA. Assert them all
+// before subtracting; do not rewrite the frozen baseline.
+const approvedOperationalImport="import FounderOperationalCentresDashboard from \"./FounderOperationalCentresDashboard.js\";\n";
+const approvedOperationalOverview="      <FounderOperationalCentresDashboard authenticated={authenticated} kind=\"customer\" />\n\n";
+const approvedOperationalStaff="        <FounderOperationalCentresDashboard authenticated={authenticated} kind=\"staff\" />\n";
+for(const [label,fragment] of [
+  ["operational source import",approvedOperationalImport],
+  ["Customer Overview entry",approvedOperationalOverview],
+  ["Staff Access entry",approvedOperationalStaff]
+])assert.equal(host.split(fragment).length-1,1,"Exactly one approved operational fragment required: "+label);
 const protectedOriginalHost=host.replace(approvedNavigatorId,"").replace(approvedLocalBack,"")
   .replace(allowedFounderCheckImport,"").replace(allowedOverviewCheck,"").replace(allowedStaffCheck,"")
   .replace(directStaffAlertFragment1,"")
@@ -64,7 +75,10 @@ const protectedOriginalHost=host.replace(approvedNavigatorId,"").replace(approve
   .replace(directStaffAlertFragment4,"")
   .replace(directStaffAlertFragment5,"")
   .replace(directStaffAlertFragment6,"      <div id=\"staff-access-security\">")
-  .replace(approvedFounderAlertsHeaderClick,originalFounderAlertsHeaderClick);
+  .replace(approvedFounderAlertsHeaderClick,originalFounderAlertsHeaderClick)
+  .replace(approvedOperationalImport,"")
+  .replace(approvedOperationalOverview,"")
+  .replace(approvedOperationalStaff,"");
 assert.equal(blobSha(protectedOriginalHost),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
   "Founder host must match immutable original SHA after removing ONLY explicitly approved Back and Staff source-check additions");
 // Isolated, deterministic test of the EXACT Staging handler with no browser,
