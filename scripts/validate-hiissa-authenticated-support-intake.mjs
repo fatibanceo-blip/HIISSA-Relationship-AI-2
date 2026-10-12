@@ -68,5 +68,17 @@ for(const text of [
 ])assert.ok(founder.includes(text),"Single Founder source and truthful external state required: "+text);
 assert.ok(!founder.includes('message_body')&&!founder.includes('customer_user_id'),"No customer content or identity shown to Founder Overview");
 assert.ok(ui.includes('Authenticated Staging customer requests'),"Approved existing Customer centre must show genuine receipt count");
+// R166: Founder-approved visual response for the formerly silent refresh control.
+for(const text of [
+ 'const [refreshing,setRefreshing]=useState(false)',
+ 'setRefreshMessage("Checking…")',
+ 'setRefreshMessage("Your requests are up to date.")',
+ 'setRefreshMessage("Could not refresh your requests.',
+ 'if(!response.ok||data?.status!=="MONITORING")',
+ 'disabled={busy||refreshing}',
+ 'role="status" aria-live="polite"'
+])assert.ok(customer.includes(text),"Missing approved visible refresh feedback: "+text);
+assert.ok(!customer.includes('onClick={()=>setRefresh(n=>n+1)}'),"Silent refresh control must not return");
+console.log("PASS: Staging support Refresh Checking / confirmed up-to-date / fail-state visible feedback and in-flight tap guard.");
 console.log("PASS: signed-in Staging customer intake, exact single canonical audit, RLS/service-role isolation, idempotence, no outward sends, real Founder source integration.");
 console.log("NOT VERIFIED: actual signed-in customer submission/readback, Founder mobile acceptance, real staff full customer lifecycle, approved auto-acknowledgement copy and human-response deadline.");
