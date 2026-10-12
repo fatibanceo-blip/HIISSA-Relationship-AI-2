@@ -30,6 +30,8 @@ export default function MyHiissaCustomerSupportPage(){
  const [busy,setBusy]=useState(false);
  const nonce=useRef(null);
  const [refresh,setRefresh]=useState(0);
+ const [refreshing,setRefreshing]=useState(false);
+ const [refreshMessage,setRefreshMessage]=useState("");
  useEffect(()=>{
   const client=getClient();
   if(!client){setStatus("UNAVAILABLE");return undefined;}
@@ -53,8 +55,20 @@ export default function MyHiissaCustomerSupportPage(){
   }).then(async response=>{
    const data=await response.json().catch(()=>null);
    if(!response.ok||data?.status!=="MONITORING")throw Error("Source unavailable");
-   if(live)setItems(Array.isArray(data.requests)?data.requests:[]);
-  }).catch(()=>{if(live)setFeedback("Your saved support requests cannot be checked right now. Nothing was changed.");});
+   if(live){
+    setItems(Array.isArray(data.requests)?data.requests:[]);
+    if(refresh>0){
+     setRefreshing(false);
+     setRefreshMessage("Your requests are up to date.");
+    }
+   }
+  }).catch(()=>{
+   if(!live)return;
+   if(refresh>0){
+    setRefreshing(false);
+    setRefreshMessage("Could not refresh your requests. Please try again. Your saved requests were not changed.");
+   }else setFeedback("Your saved support requests cannot be checked right now. Nothing was changed.");
+  });
   return ()=>{live=false;};
  },[status,session?.access_token,refresh]);
  async function submit(event){
@@ -119,9 +133,16 @@ export default function MyHiissaCustomerSupportPage(){
        <small>Received: {new Date(item.created_at).toLocaleString()}</small>
       </li>)}
       </ul>}
-     <button type="button" disabled={busy} onClick={()=>setRefresh(n=>n+1)}
+     <button type="button" disabled={busy||refreshing}
+      onClick={()=>{
+       if(refreshing)return;
+       setRefreshMessage("Checking…");
+       setRefreshing(true);
+       setRefresh(n=>n+1);
+      }}
       style={{padding:12,border:"1px solid #bacfc0",background:"white",
-       borderRadius:12,color:GREEN,fontWeight:800}}>Refresh saved requests</button>
+       borderRadius:12,color:GREEN,fontWeight:800}}>{refreshing?"Checking…":"Refresh saved requests"}</button>
+     {refreshMessage?<p role="status" aria-live="polite" style={{lineHeight:1.6}}>{refreshMessage}</p>:null}
     </section>
    </>:null}
   </div>
