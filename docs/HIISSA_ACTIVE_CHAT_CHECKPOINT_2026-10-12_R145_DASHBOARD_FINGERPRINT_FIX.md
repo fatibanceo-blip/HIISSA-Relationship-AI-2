@@ -1,0 +1,17 @@
+# HIISSA R145 — 12 October 2026 — first Staging build root cause and narrowly scoped FIX committed
+
+WHAT: The first newly committed protected dashboard operational-centres entrypoints at code commit d5bbbd3b72a88d2b2130d2d01593d59a6086218d failed the Staging prebuild. Exact Vercel failed deployment dpl_7dbD5qNgJJgGrYXGztzMvETTeLbM with BUILD_UTILS_SPAWN_1. On detailed log inspection, scripts/validate-operational-incidents.mjs line 68 correctly rejected the new dashboard host after its own approved old fragments were subtracted. Actual SHA e57ce197d346b6e1bcb3b604a4af7f4346a4df03 versus unchanged expected historic SHA f2337383d9c41e5b79edbad8795a12d8661a2f13. This is the second strict independent immutable-host fingerprint guard; the separate employee-readonly guard already had the new exact exceptions.
+
+WHY: The original Founder dashboard, security boundaries, visual journey and prior tests must not regress. The fix must not simply replace the frozen SHA or remove a guard.
+
+HOW/PROCESS: Inspected exact Vercel build events and read original scripts/validate-operational-incidents.mjs. Added three explicitly string-exact assertions that a single operational component import, Customer Overview insertion and Staff Access & Security insertion each occur exactly once. The validator strips only those three allowed additions before performing the SAME original SHA assertion; all older employee, Alerts, navigation and immutable checks remain. Updated only scripts/validate-operational-incidents.mjs on established Staging branch using connected GitHub; real returned FIX code commit 61cea0fe84803b05301b3a66f2ae8577bea90380. Branch remains feature/founder-control-room-staging, repo fatibanceo-blip/HIISSA-Relationship-AI-2, original Staging project prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0 and staging Supabase upcssfmilewwshyxyvdf.
+
+WHO: Founder authorised the Staging continuation and demanded direct same-dashboard integration and protection. Assistant reviewed failed logs and applied scope-limited test reconciliation. No real customer or staff.
+
+EVIDENCE: Original actual build FAIL and specific SHA mismatch above. Updated GitHub source blob a61ef4d869d356e916a705acee8811531aff53f4. No second build run yet at moment of this checkpoint: status FIX COMMITTED / REBUILD PENDING, not PASS. Original last READY Staging deployment still dpl_FDJPPoDj6ypZAvBjMNNxyP7TkSL9 from app commit b9e1e2320aa6c7c0c9edcbc035399214d5fb8578. Old fictional customer test PASS retained.
+
+FAILURES/CORRECTIONS: First deployment failed, not accepted; second immutable host guard was omitted during initial coordinated code batch; now corrected without weakening frozen baseline. If more guards fail, inspect exact source and preserve original hash; do not rewrite previously approved screens.
+
+NON-EFFECT: No Production, real external messages, staff permissions, Supabase DDL/DML, duplicate dashboard/module/Registry/audit, existing auth/Save & Sync/Talk, protected Word Documents 11–13 changed. No claim of Production release or full Customer feature.
+
+NEXT: Trigger fresh Vercel deployment in SAME original Staging only on FIX commit, inspect complete prebuild, Next build, status READY and errors, then request Founder practical navigation and source status check only if safe. Continue full authentic customer journey and previous exact wording/SLA evidence recovery, with Founder outbound gates; later finished Training Library. At Controlled Close one comprehensive additive Word supplement after last 13 Word ZIP as Founder instructed.
