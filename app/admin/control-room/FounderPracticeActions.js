@@ -60,7 +60,7 @@ const areas=[
  ["SECURITY_CONCERN","Security / access concern"],
  ["ROLE_CHANGE","Role change"]
 ];
-export function StaffPracticeActions({data,onAction,busy}){
+export function StaffPracticeActions({data,onAction,onAssist,busy}){
   const [who,setWho]=useState("");
   const [area,setArea]=useState("TRAINING_EVIDENCE");
   const [reference,setReference]=useState("");
@@ -68,6 +68,25 @@ export function StaffPracticeActions({data,onAction,busy}){
   const [due,setDue]=useState("");
   const [reasons,setReasons]=useState({});
   const [feedback,setFeedback]=useState("");
+  const [assistBusy,setAssistBusy]=useState(null);
+  const [assistDrafts,setAssistDrafts]=useState({});
+  const [assistErrors,setAssistErrors]=useState({});
+  async function askHiissa(item){
+    if(assistBusy)return;
+    setAssistBusy(item.id);
+    setAssistErrors(prev=>({...prev,[item.id]:""}));
+    try{
+      const draft=await onAssist(item.id,item.version);
+      if(draft?.recordId!==item.id||draft?.version!==item.version)
+        throw new Error("The source record changed. Refresh before using this suggestion.");
+      setAssistDrafts(prev=>({...prev,[item.id]:draft}));
+    }catch(error){
+      setAssistErrors(prev=>({...prev,[item.id]:error?.message||"No review was prepared."}));
+    }finally{
+      setAssistBusy(null);
+    }
+  }
+
   async function create(event){
     event.preventDefault();
     setFeedback("");
@@ -109,6 +128,27 @@ export function StaffPracticeActions({data,onAction,busy}){
         <div>Evidence: {item.evidence_reference} — {item.evidence_note}</div>
         <small>Recorded: {dateText(item.created_at)} · Due: {item.due_on||"Not specified"} · Reviewed: {dateText(item.reviewed_at)}</small>
         {item.founder_review_note?<div>Founder review: {item.founder_review_note}</div>:null}
+        {item.review_area==="TRAINING_EVIDENCE"?<div style={{padding:14,border:"1px solid #c9dccb",borderRadius:12,display:"grid",gap:9}}>
+          <strong>Optional HIISSA evidence assistant</strong>
+          <small>HIISSA examines this saved fictional evidence and suggests a review. It cannot confirm real training, access external certificates, or approve for you.</small>
+          <div style={actions}>
+            <button type="button" style={button} disabled={busy||!!assistBusy||!onAssist}
+              onClick={()=>askHiissa(item)}>
+              {assistBusy===item.id?"Preparing suggestion…":"Review with HIISSA"}
+            </button>
+          </div>
+          {assistErrors[item.id]?<p role="alert">{assistErrors[item.id]}</p>:null}
+          {assistDrafts[item.id]?.version===item.version?<div style={{background:"#edf3ed",borderRadius:10,padding:13,display:"grid",gap:8}} role="status">
+            <strong>HIISSA suggestion — not a decision</strong>
+            <div>{assistDrafts[item.id].summary}</div>
+            <strong>What still needs checking</strong>
+            <ul>{(assistDrafts[item.id].missingEvidence||[]).map((x,i)=><li key={i}>{x}</li>)}</ul>
+            <strong>Suggested Founder review wording</strong>
+            <p>{assistDrafts[item.id].draftFounderReason}</p>
+            <button type="button" style={button} onClick={()=>setReasons(prev=>({...prev,[item.id]:assistDrafts[item.id].draftFounderReason}))}>Use suggested wording — I will check it</button>
+            <small>The Founder must check the original evidence and deliberately select a decision below. Using the draft never approves training.</small>
+          </div>:null}
+        </div>:null}
         <label htmlFor={"practice-review-reason-"+item.id}>Founder review reason (required)</label>
         <textarea id={"practice-review-reason-"+item.id} style={field} rows={2} maxLength={1000}
           value={reasons[item.id]||""} onChange={e=>setReasons(n=>({...n,[item.id]:e.target.value}))}/>
