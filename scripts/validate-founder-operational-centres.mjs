@@ -83,3 +83,4 @@ console.log("NOT VERIFIED: Founder practical POST+GET flow, real authenticated p
 
 // New Founder-approved HIISSA evidence review safety checks, added after all historic original checks.
 await import("./validate-hiissa-assisted-review.mjs");
+await import("./validate-operational-centres-dashboard-entrypoints.mjs");

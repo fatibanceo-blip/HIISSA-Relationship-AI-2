@@ -14,6 +14,7 @@ import WorkdayClose from "../../../components/people-experience/WorkdayClose.js"
 import PrivateAppreciation from "../../../components/people-experience/PrivateAppreciation.js";
 import FounderStaffSessionDeviceControl from "./FounderStaffSessionDeviceControl.js";
 import FounderOnDemandStaffSourceCheck from "./FounderOnDemandStaffSourceCheck.js";
+import FounderOperationalCentresDashboard from "./FounderOperationalCentresDashboard.js";
 import FounderEmployeeRegisterAttendancePreview from "./FounderEmployeeRegisterAttendancePreview.js";
 import {projectFounderCanonicalIncidentAlerts} from "../../../lib/admin/founder-canonical-incident-alert-projection.js";
 import {isFounderStaffSecuritySourceIncident} from "../../../lib/admin/founder-canonical-incident-alert-projection.js";
@@ -5490,6 +5491,8 @@ function Overview({
 
       <FounderOnDemandStaffSourceCheck authenticated={authenticated} location="overview" />
 
+      <FounderOperationalCentresDashboard authenticated={authenticated} kind="customer" />
+
       <FounderEmergencyPauseCentre authenticated={authenticated} />
 
       <FounderActivityTimeline authenticated={authenticated} />
@@ -5915,6 +5918,7 @@ function FounderAccessCentre({ authenticated }) {
         </a>
         <FounderOnDemandStaffSourceCheck authenticated={authenticated} location="staff" />
         <FounderStaffSessionDeviceControl authenticated={authenticated} />
+        <FounderOperationalCentresDashboard authenticated={authenticated} kind="staff" />
       </div>
     </section>
   );

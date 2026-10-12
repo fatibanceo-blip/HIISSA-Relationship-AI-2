@@ -57,6 +57,18 @@ assert.equal(onboarding.split(directStaffAlertFragment4).length-1,1,"Exactly one
 assert.equal(onboarding.split(directStaffAlertFragment5).length-1,1,"Exactly one Founder-approved alert contextual button");
 assert.equal(onboarding.split(directStaffAlertFragment6).length-1,1,"Exactly one Founder-approved accessible Staff destination");
 
+// R143 narrowly approved additive customer/staff operational-centre entries.
+// The original Founder host fingerprint below remains IDENTICAL after removing
+// exactly these three independently asserted additions.
+const approvedOperationalImport="import FounderOperationalCentresDashboard from \"./FounderOperationalCentresDashboard.js\";\n";
+const approvedOperationalOverview="      <FounderOperationalCentresDashboard authenticated={authenticated} kind=\"customer\" />\n\n";
+const approvedOperationalStaff="        <FounderOperationalCentresDashboard authenticated={authenticated} kind=\"staff\" />\n";
+for(const [label,fragment] of [
+  ["operational import",approvedOperationalImport],
+  ["customer Overview",approvedOperationalOverview],
+  ["staff Access & Security",approvedOperationalStaff]
+])assert.equal(onboarding.split(fragment).length-1,1,"Exact approved operational addition required: "+label);
+
 const protectedOnboarding=onboarding.replace(approvedNavigatorId,"").replace(approvedLocalBack,"")
   .replace(approvedQuickCheckImport,"").replace(approvedOverviewQuickCheck,"").replace(approvedStaffQuickCheck,"")
   .replace(directStaffAlertFragment1,"")
@@ -65,7 +77,10 @@ const protectedOnboarding=onboarding.replace(approvedNavigatorId,"").replace(app
   .replace(directStaffAlertFragment4,"")
   .replace(directStaffAlertFragment5,"")
   .replace(directStaffAlertFragment6,'      <div id="staff-access-security">')
-  .replace(approvedFounderAlertsHeaderClick,originalFounderAlertsHeaderClick);
+  .replace(approvedFounderAlertsHeaderClick,originalFounderAlertsHeaderClick)
+  .replace(approvedOperationalImport,"")
+  .replace(approvedOperationalOverview,"")
+  .replace(approvedOperationalStaff,"");
 assert.equal(blobSha(protectedOnboarding),"f2337383d9c41e5b79edbad8795a12d8661a2f13",
   "STOP: Founder-approved onboarding host differs beyond the specifically approved Back link");
 const applicant=read("lib/experience-registry.js");
