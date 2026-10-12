@@ -80,3 +80,6 @@ console.log("PASS: Staff source failure classified in secure Founder UI; origina
 
 console.log("PASS: two Founder active Staging practice workflows source-constrained, audit+RLS, original Registry identities, canonical incidents, visible saved outcomes, protected Control Room and no Production effect.");
 console.log("NOT VERIFIED: Founder practical POST+GET flow, real authenticated persistence test, customer receipt/outbound acknowledgement, actual human-response SLA, real employee policy/training certifications, full original feature completion.");
+
+// New Founder-approved HIISSA evidence review safety checks, added after all historic original checks.
+await import("./validate-hiissa-assisted-review.mjs");
