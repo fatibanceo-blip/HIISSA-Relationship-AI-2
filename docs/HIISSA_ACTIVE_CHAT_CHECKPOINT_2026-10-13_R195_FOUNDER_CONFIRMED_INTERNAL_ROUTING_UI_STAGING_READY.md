@@ -1,4 +1,8 @@
-# HIISSA R195 — 13 October 2026 — Existing Founder case view gains explicit two-step internal routing; Staging READY; canonical regression evidence
+# HIISSA R195 — 13 October 2026 —
+
+**Durable checkpoint originally committed at (UTC): 2026-10-13T12:02:03Z** — original GitHub Commit `efa469b209f4192e37d3f766222a219c2b140a86`.
+
+## Full feature-in-progress record — Existing Founder case view gains explicit two-step internal routing; Staging READY; canonical regression evidence
 
 ## WHO / Founder instructions and evidence hierarchy
 Founder said “Carry on” immediately after the R194 private case metadata screen practical display PASS. Existing express Founder rules: STRICT STAGING ONLY, protect ALL already-working features even in Staging when building on them, one original Founder Control Room/Experience Registry and canonical audit/Alerts/incident/approval infrastructure, finish entire original Customer Communication & Service-Level Centre FIRST, Staff Training Library SECOND. Record every material action under protected Document 12 and avoid premature 13-Word package. Prior R188 handover approves future narrow **fictional existing-case internal route action TEST** but requires deliberate Founder control and independently verified single route + original atomic audit. THIS IMPLEMENTATION alone is not permission for an assistant to execute an existing case mutation without a human click or claim a full human-service lifecycle.
