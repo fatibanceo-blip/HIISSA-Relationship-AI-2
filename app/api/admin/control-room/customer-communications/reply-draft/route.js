@@ -28,6 +28,23 @@ export async function GET(request){
     .select("draft_body,draft_version,saved_at,status")
     .eq("environment","staging").eq("case_id",id).maybeSingle();
   if(error)return json({status:"PRIVATE_DRAFT_SOURCE_UNAVAILABLE"},503);
+  // Canonical EXISTING approval queue, not a second approval state table.
+  let approvedAt=null;
+  if(draft?.draft_version){
+    const {data:approvals,error:approvalError}=await founder.admin
+      .from("admin_approval_requests")
+      .select("id,status,request_context,created_at")
+      .eq("environment","staging").eq("module_id","customer_support")
+      .eq("action_id","founder_approve_customer_reply_draft")
+      .eq("resource_id",id)
+      .order("created_at",{ascending:false}).limit(20);
+    if(approvalError)return json({status:"PRIVATE_APPROVAL_SOURCE_UNAVAILABLE"},503);
+    const match=(approvals||[]).find(a=>
+      a.status==="approved_pending_execution"&&
+      Number(a.request_context?.draftVersion)===draft.draft_version&&
+      Number(a.request_context?.caseVersion)===caseRow.version);
+    approvedAt=match?.created_at||null;
+  }
   return json({
     status:"FOUNDER_PRIVATE_DRAFT_READ",
     registryId:"customer-communication-service-level-centre",
@@ -37,6 +54,8 @@ export async function GET(request){
     draftText:draft?.draft_body||"",
     draftSavedAt:draft?.saved_at||null,
     draftState:draft?"PRIVATE_DRAFT":"NOT_CREATED",
+    approvalStatus:approvedAt?"FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT":"NOT_APPROVED",
+    approvedAt,
     audience:"ORIGINAL_FOUNDER_ONLY",
     humanReplySent:false,customerContentDelivered:false,
     productionEffectEnabled:false
