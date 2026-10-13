@@ -36,7 +36,7 @@ assert.ok(!screen.includes("createBrowserClient")&&!screen.includes('from "@supa
   "New private page must reuse ORIGINAL Founder login session, not a different SSR cookie store.");
 for(const bad of [
  'subject','message_body','customer_user_id','client_nonce',
- '.insert(','.update(','.delete(','.rpc(', 'method:"POST"','sendEmail',
+ '.insert(','.update(','.delete(','.rpc(', 'sendEmail',
  'approveStaff','createUser', 'localStorage'
 ]) assert.ok(!executable.includes(bad),"Private screen must not access message/identity, mutate, grant role or persist token: "+bad);
 has("Old-to-new Founder navigation",originalHost,[
@@ -101,6 +101,82 @@ assert.ok(!screen.includes('.from("hiissa_operational_incidents")') &&
   !screen.includes('.from("admin_audit_events")') &&
   !screen.includes('.from("admin_approval_requests")'),
   "No duplicate incident/audit/approval direct reads in private page");
+// R195: The existing protected Founder case subview now offers a deliberate
+// TWO-STEP, Founder-confirmed Staging-only route via pre-existing R185 API;
+// original read-only selector and aggregate monitoring remain unchanged.
+const route=read("app/api/admin/control-room/customer-communications/route-department/route.js");
+const sql=read("supabase/migrations/20261013094500_customer_support_founder_department_route_staging.sql");
+has("Existing restricted audit-atomic route API",route,[
+ 'operationalCentreStagingAllowed()',
+ 'verifyOperationalCentreFounder(request)',
+ 'request.headers.get("origin")',
+ 'body?.action!=="route_to_customer_support"',
+ 'hiissa_customer_support_staging_route_department',
+ 'p_founder:founder.founderUserId',
+ 'p_expected_version:body.version',
+ 'status:"RECORDED_AND_AUDITED"',
+ 'externalDeliveryPerformed:false',
+ 'productionEffectEnabled:false'
+]);
+has("Existing fixed action audited database transaction",sql,[
+ "if auth.role() is distinct from 'service_role'",
+ "for update",
+ "STAGING_SUPPORT_STALE_VERSION",
+ "STAGING_SUPPORT_ALREADY_ROUTED",
+ "STAGING_SUPPORT_STATE_NOT_ELIGIBLE",
+ "v_item.lifecycle_state is distinct from 'RECEIVED'",
+ "v_item.acknowledgement_state is distinct from 'NOT_SENT'",
+ "assigned_department='customer_support'",
+ "version=version+1",
+ "insert into public.admin_audit_events",
+ "'hiissa_customer_support_routed_staging'",
+ "'lifecycleState','RECEIVED'",
+ "'acknowledgementSent',false",
+ "'outwardDelivered',false",
+ "to service_role"
+]);
+has("Founder-confirmed two-step routing on SAME private subview",screen,[
+ 'ROUTE_ACTION="/api/admin/control-room/customer-communications/route-department"',
+ 'const [routeReviewId,setRouteReviewId]=useState(null)',
+ 'const [routeBusy,setRouteBusy]=useState(false)',
+ 'const routeVerification=useRef(null)',
+ 'function routingAllowed(item)',
+ 'state.verified&&!state.loading',
+ 'item?.lifecycleState==="RECEIVED"',
+ 'item?.acknowledgementState==="NOT_SENT"',
+ '!item?.assignedDepartment',
+ 'routeReviewId!==item.requestId)return',
+ 'client.auth.getSession()',
+ 'method:"POST",cache:"no-store",credentials:"same-origin"',
+ '"Authorization":"Bearer "+data.session.access_token',
+ 'action:"route_to_customer_support"',
+ 'requestId:item.requestId',
+ 'version:item.version',
+ 'result?.status!=="RECORDED_AND_AUDITED"',
+ 'result?.externalDeliveryPerformed!==false',
+ 'result?.productionEffectEnabled!==false',
+ 'result?.version!==item.version+1',
+ 'routeVerification.current={id:item.requestId,version:result.version}',
+ 'match.assignedDepartment==="customer_support"',
+ 'match.version===expected.version',
+ 'Cancel — leave case unchanged',
+ 'Confirm internal routing in Staging',
+ 'Review internal route to Customer Support',
+ 'do not repeat the action until its status is clear',
+ 'not assign an employee'
+]);
+const allFetchUrls=[...screen.matchAll(/(?:const (?:API|ORIGINAL_OVERSIGHT|ROUTE_ACTION))="([^"]+)"/g)].map(m=>m[1]);
+assert.deepEqual(allFetchUrls,[
+ "/api/admin/control-room/customer-communications/private-intake-selector",
+ "/api/admin/control-room/customer-communications",
+ "/api/admin/control-room/customer-communications/route-department"
+],"Only canonical private GET, original aggregate GET, and pre-existing audited Staging POST");
+assert.ok(!screen.includes('window.confirm')&&!screen.includes('setInterval'),
+ "New Founder confirmation stays within current page; no hidden poller or browser confirm");
+assert.ok(!route.includes('sendMessage')&&!route.includes('sendAcknowledgement')&&!route.includes('.update('),
+ "Internal route API cannot send external messages or bypass existing RPC");
+console.log("PASS SOURCE: R195 two deliberate Founder clicks, original session, approved audit-atomic internal-only route, independent saved-version recheck, prior hosts protected.");
+console.log("NOT VERIFIED: Founder practical route POST/GET and exact-one audit after action; no case has been routed by building this UI.");
 console.log("PASS SOURCE: R193 private subview shares ORIGINAL aggregate Control Room, Registry and canonical incidents/Alerts; refuses fabricated monitoring.");
 console.log("PASS SOURCE: R190 separate Founder-only private case page, existing read-only GET only.");
 console.log("PASS SOURCE: original aggregate Founder dashboard and owned customer Support Save/Refresh retained.");
