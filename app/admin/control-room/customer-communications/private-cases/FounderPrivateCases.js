@@ -54,6 +54,115 @@ export default function FounderPrivateCases(){
     if(!draftWriteBusy.current&&!aiWriteBusy.current&&!approvalWriteBusy.current)
       setDraft(emptyDraft());
   };
+  async function prepareWithHIISSA(item,expectedDraftVersion){
+    if(aiWriteBusy.current||draftWriteBusy.current||approvalWriteBusy.current||
+      !state.verified||item?.assignedDepartment!=="customer_support")return;
+    aiWriteBusy.current=true;
+    setDraft(prev=>({...prev,assisting:true,error:"",feedback:"HIISSA is preparing a response for your review…"}));
+    try{
+      const client=existingSessionClient();
+      const {data,error}=client?await client.auth.getSession():{error:true};
+      if(error||!data?.session?.access_token)
+        throw Error("Your original Founder sign-in is required. No AI response was prepared.");
+      const response=await fetch(AI_ASSIST_ACTION,{
+        method:"POST",cache:"no-store",credentials:"same-origin",
+        headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},
+        body:JSON.stringify({action:"prepare_customer_reply_with_hiissa",
+          requestId:item.requestId,caseVersion:item.version,draftVersion:expectedDraftVersion})
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok||result?.status!=="HIISSA_REPLY_DRAFT_SAVED_AND_AUDITED"||
+        result?.registryId!==REGISTRY_ID||
+        result?.caseVersion!==item.version||
+        result?.draftVersion!==expectedDraftVersion+1||
+        result?.founderReviewRequired!==true||
+        result?.founderApprovalPerformed!==false||
+        result?.humanReplySent!==false||
+        result?.externalDeliveryPerformed!==false||
+        result?.productionEffectEnabled!==false||
+        typeof result?.draftReply!=="string"||
+        result.draftReply.length<8||result.draftReply.length>1400)
+        throw Error(response.status===409?
+          "The case or draft has changed. Close and reopen it to load the current saved version.":
+          "HIISSA could not safely prepare and save a response. No customer reply was sent.");
+      // Never show success solely on an OpenAI text or POST response: original
+      // Founder-private GET must independently match stored words and version.
+      const read=await fetch(DRAFT_ACTION+"?requestId="+encodeURIComponent(item.requestId),{
+        method:"GET",cache:"no-store",headers:{Authorization:"Bearer "+data.session.access_token}
+      });
+      const check=await read.json().catch(()=>null);
+      if(!read.ok||check?.status!=="FOUNDER_PRIVATE_DRAFT_READ"||
+        check?.caseVersion!==item.version||
+        check?.draftVersion!==result.draftVersion||
+        check?.draftText!==result.draftReply||
+        check?.approvalStatus!=="NOT_APPROVED"||
+        check?.humanReplySent!==false||check?.customerContentDelivered!==false)
+        throw Error("HIISSA's proposed reply needs a saved-record recheck. Reopen this case; do not generate again blindly.");
+      setDraft(prev=>({...prev,
+        draftVersion:check.draftVersion,
+        text:check.draftText,savedText:check.draftText,
+        savedAt:check.draftSavedAt,
+        approvedAt:null,approvalStatus:"NOT_APPROVED",approvalReview:false,
+        founderCheck:typeof result.founderCheck==="string"?result.founderCheck:"",
+        customerIssueTopic:typeof result.customerIssueTopic==="string"?result.customerIssueTopic:"",
+        customerQuestionPreview:typeof result.customerQuestionPreview==="string"?result.customerQuestionPreview:"",
+        assisting:false,loading:false,error:"",
+        feedback:"HIISSA prepared and saved a suggested response. Read, edit if necessary and approve. Nothing has been sent."}));
+    }catch(e){
+      setDraft(prev=>({...prev,assisting:false,loading:false,
+        error:e?.message||"HIISSA is temporarily unavailable. You may write your own draft; no reply was sent.",
+        feedback:""}));
+    }finally{aiWriteBusy.current=false;}
+  }
+  async function approveDraft(item){
+    if(draftWriteBusy.current||aiWriteBusy.current||approvalWriteBusy.current||
+      !state.verified||draft.caseId!==item.requestId||
+      draft.caseVersion!==item.version||draft.draftVersion<1||
+      !draft.approvalReview||draft.text!==draft.savedText||
+      draft.approvalStatus!=="NOT_APPROVED"||draft.saving||draft.assisting)return;
+    approvalWriteBusy.current=true;
+    setDraft(prev=>({...prev,approving:true,error:"",feedback:"Recording your decision in the original Founder approval system…"}));
+    try{
+      const client=existingSessionClient();
+      const {data,error}=client?await client.auth.getSession():{error:true};
+      if(error||!data?.session?.access_token)
+        throw Error("Founder sign-in is required. Approval not confirmed.");
+      const response=await fetch(APPROVE_ACTION,{
+        method:"POST",cache:"no-store",credentials:"same-origin",
+        headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},
+        body:JSON.stringify({action:"approve_customer_reply_draft",
+          requestId:item.requestId,caseVersion:item.version,draftVersion:draft.draftVersion})
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok||result?.status!=="FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT"||
+        result?.approvalRecorded!==true||result?.caseVersion!==item.version||
+        result?.draftVersion!==draft.draftVersion||
+        result?.humanReplySent!==false||
+        result?.externalDeliveryPerformed!==false||
+        result?.productionEffectEnabled!==false)
+        throw Error("The Founder approval could not be confirmed. Reopen the case to check before trying again.");
+      // Independent canonical approval source readback, not just optimistic UI.
+      const read=await fetch(DRAFT_ACTION+"?requestId="+encodeURIComponent(item.requestId),{
+        method:"GET",cache:"no-store",
+        headers:{Authorization:"Bearer "+data.session.access_token}
+      });
+      const check=await read.json().catch(()=>null);
+      if(!read.ok||check?.status!=="FOUNDER_PRIVATE_DRAFT_READ"||
+        check?.approvalStatus!=="FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT"||
+        check?.draftVersion!==draft.draftVersion||
+        check?.caseVersion!==item.version||
+        check?.draftText!==draft.savedText||
+        check?.humanReplySent!==false||check?.customerContentDelivered!==false)
+        throw Error("Approval was submitted but needs independent verification. Reopen the case and do not approve twice.");
+      setDraft(prev=>({...prev,approving:false,approvalReview:false,
+        approvalStatus:check.approvalStatus,approvedAt:check.approvedAt,
+        feedback:"Your response is APPROVED and recorded in the original Founder approval system. It has NOT been sent to the customer.",
+        error:""}));
+    }catch(e){
+      setDraft(prev=>({...prev,approving:false,approvalReview:false,feedback:"",
+        error:e?.message||"Founder approval is not verified. Nothing has been sent."}));
+    }finally{approvalWriteBusy.current=false;}
+  }
   async function openDraft(item){
     if(draftWriteBusy.current||!state.verified||!item?.assignedDepartment||
       item.assignedDepartment!=="customer_support")return;
