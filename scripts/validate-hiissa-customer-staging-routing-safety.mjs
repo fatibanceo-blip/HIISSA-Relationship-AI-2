@@ -138,3 +138,6 @@ await import("./validate-hiissa-founder-private-cases.mjs");
 
 // R201: ORIGINAL Founder target and protective OLD+NEW executable UTC/time-zone regression.
 await import("./validate-hiissa-human-response-target-staging.mjs");
+
+// R203: source protection for original-case Founder-only reply drafts with NO send.
+await import("./validate-hiissa-customer-reply-draft-staging.mjs");
