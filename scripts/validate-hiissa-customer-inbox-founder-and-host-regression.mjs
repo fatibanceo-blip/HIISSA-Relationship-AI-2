@@ -46,9 +46,7 @@ requireTokens("Customer protected Founder API",route,[
   "stagingAuthenticatedCustomerRequests:inboxTotal.count",
   "stagingAuthenticatedReceivedCount:inboxReceived.count",
   "stagingAuthenticatedAcknowledgementNotSent:inboxNotSent.count",
-  "stagingAuthenticatedRecentRequests:(inbox.data||[]).map",
-  "stagingAuthenticatedRecentLimit:35",
-  'authenticatedIntakePrivacy:"AGGREGATE_AND_STATUS_ONLY"',
+  'authenticatedIntakePrivacy:"AGGREGATE_ONLY"',
   'status:"SOURCE_UNAVAILABLE"',
   'automaticAcknowledgement:"NOT_ACTIVE"',
   'externalDeliveryEnabled:false',
@@ -59,8 +57,8 @@ requireTokens("Customer protected Founder API",route,[
   'status:"RECORDED_AND_AUDITED"'
 ]);
 const sourceRead=route.split('      founder.admin.from("hiissa_customer_support_inbox_staging")')[1]?.split("    ]);")[0]||"";
-assert.ok(sourceRead.includes('.select("id,lifecycle_state,acknowledgement_state,assigned_department,response_due_at,created_at")'),
-  "Existing authenticated inbox read may return ONLY status-safe selected columns");
+assert.ok(sourceRead.includes('.select("id,lifecycle_state,created_at")'),
+  "Existing authenticated inbox read must preserve ORIGINAL aggregate-only privacy contract");
 for(const forbidden of ["customer_user_id","message_body","subject","email","access_token","refresh_token"]){
   assert.ok(!sourceRead.includes(forbidden),"Authenticated inbox status read reveals forbidden "+forbidden);
 }
@@ -68,11 +66,6 @@ requireTokens("Founder status view",client,[
   'Authenticated Staging customer requests',
   'Received — awaiting safe processing',
   'Acknowledgements not sent',
-  'Authenticated Staging support inbox · status only',
-  'No customer names, email addresses or private message content appear here.',
-  'No customer details are displayed.',
-  'Not approved or set',
-  "stagingAuthenticatedRecentRequests.map",
   'CustomerPracticeActions',
   'StaffPracticeActions',
   'Open existing Founder Alerts and Activity Timeline',
@@ -82,6 +75,10 @@ requireTokens("Founder status view",client,[
 for(const forbidden of ["request.message_body","request.subject","request.customer_user_id","request.email"]){
   assert.ok(!client.includes(forbidden),"Founder inbox UI privacy breach: "+forbidden);
 }
-console.log("PASS: REAL Staging customer receipt oversight shows exact unbounded counts, privacy-safe 35 recent statuses, and fail-closed source verification.");
-console.log("PASS: PRE-EXISTING Founder dashboard host, staff trust API, Founder practice actions and unchanged staff content baselines protected together with new Customer queue.");
+assert.ok(!route.includes("stagingAuthenticatedRecentRequests")&&!route.includes("AGGREGATE_AND_STATUS_ONLY"),
+  "Original Founder aggregate-only privacy MUST NOT be replaced with individual case statuses");
+assert.ok(!client.includes("stagingAuthenticatedRecentRequests")&&!client.includes("Request {request.caseCode}"),
+  "Original Founder aggregate-only privacy prohibits new per-case list");
+console.log("PASS: REAL Staging customer receipt oversight shows exact source-wide count, RECEIVED and NOT_SENT aggregates, and fail-closed source verification.");
+console.log("PASS: ORIGINAL Founder aggregate-only privacy, dashboard host, staff trust API, Founder practice actions and unchanged staff content protected alongside new aggregate metrics.");
 console.log("NOT VERIFIED: actual Founder browser count=1, incoming external customer channels, real outgoing acknowledgement/human response, full lifecycle, Production activation.");
