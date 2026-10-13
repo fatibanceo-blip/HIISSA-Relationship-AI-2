@@ -434,7 +434,7 @@ export default function FounderPrivateCases(){
                   disabled={draft.saving||draft.text.trim().length<8||draft.text.trim().length>2000}
                   style={{minHeight:48,padding:"12px 16px",
                     border:0,borderRadius:12,color:"#fff",background:"#20583f",fontWeight:750,
-                    opacity:draft.saving||draft.text.trim().length<8?.6:1}}>
+                    opacity:(draft.saving||draft.text.trim().length<8)?0.6:1}}>
                   {draft.saving?"Saving private draft…":"Save private draft — do not send"}
                 </button>
                 <button type="button" onClick={closeDraft} disabled={draft.saving}
