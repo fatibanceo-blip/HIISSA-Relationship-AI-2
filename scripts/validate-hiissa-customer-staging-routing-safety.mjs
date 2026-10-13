@@ -135,3 +135,6 @@ console.log("NOT VERIFIED: practical Founder selector browser login, case routin
 
 // R190: mandatory old+new Founder-only private case UI and original-host regression.
 await import("./validate-hiissa-founder-private-cases.mjs");
+
+// R201: ORIGINAL Founder target and protective OLD+NEW executable UTC/time-zone regression.
+await import("./validate-hiissa-human-response-target-staging.mjs");
