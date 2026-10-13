@@ -28,6 +28,13 @@ export default function MyHiissaCustomerSupportPage(){
  // separately authenticated, read-only source. Submission/refresh stays intact.
  const [replies,setReplies]=useState([]);
  const [repliesState,setRepliesState]=useState("NOT_CHECKED");
+ // R219 follow-ups stay subordinate to THIS original customer Support case.
+ const [followups,setFollowups]=useState([]);
+ const [followupsState,setFollowupsState]=useState("NOT_CHECKED");
+ const [followupInputs,setFollowupInputs]=useState({});
+ const [followupBusyCase,setFollowupBusyCase]=useState(null);
+ const [followupFeedback,setFollowupFeedback]=useState({});
+ const followupNonce=useRef({});
  const [subject,setSubject]=useState("");
  const [message,setMessage]=useState("");
  const [feedback,setFeedback]=useState("");
@@ -51,6 +58,28 @@ export default function MyHiissaCustomerSupportPage(){
   });
   return ()=>{live=false;listener.subscription.unsubscribe();};
  },[]);
+ useEffect(()=>{
+  if(status!=="READY"||!session?.access_token)return undefined;
+  let live=true;
+  setFollowupsState("CHECKING");
+  fetch("/api/support/requests/followups",{
+   method:"GET",cache:"no-store",
+   headers:{Authorization:"Bearer "+session.access_token}
+  }).then(async response=>{
+   const result=await response.json().catch(()=>null);
+   if(!response.ok||result?.status!=="ORIGINAL_CUSTOMER_CASE_FOLLOWUPS"||
+    result?.registryId!=="customer-communication-service-level-centre"||
+    result?.externalMessageSent!==false||result?.productionEffectEnabled!==false||
+    !Array.isArray(result?.followups))
+     throw Error("Unverified");
+   if(live){
+    setFollowups(result.followups.filter(x=>typeof x.requestId==="string"&&
+      typeof x.message==="string"&&x.state==="RECEIVED_PENDING_REVIEW"));
+    setFollowupsState("VERIFIED");
+   }
+  }).catch(()=>{if(live)setFollowupsState("UNAVAILABLE");});
+  return ()=>{live=false;};
+ },[status,session?.access_token,refresh]);
  useEffect(()=>{
   if(status!=="READY"||!session?.access_token)return undefined;
   let live=true;
@@ -98,6 +127,56 @@ export default function MyHiissaCustomerSupportPage(){
   });
   return ()=>{live=false;};
  },[status,session?.access_token,refresh]);
+ async function submitFollowup(event,item){
+  event.preventDefault();
+  const content=String(followupInputs[item.id]||"").trim();
+  if(!session?.access_token||followupBusyCase||
+    content.length<8||content.length>2000)return;
+  setFollowupBusyCase(item.id);
+  setFollowupFeedback(old=>({...old,[item.id]:"Recording your follow-up in Staging…"}));
+  try{
+   if(!followupNonce.current[item.id])
+     followupNonce.current[item.id]=crypto.randomUUID();
+   const response=await fetch("/api/support/requests/followups",{
+    method:"POST",cache:"no-store",credentials:"same-origin",
+    headers:{"Content-Type":"application/json",
+      Authorization:"Bearer "+session.access_token},
+    body:JSON.stringify({action:"reply_to_my_original_support_case",
+      requestId:item.id,nonce:followupNonce.current[item.id],message:content})
+   });
+   const result=await response.json().catch(()=>null);
+   if(!response.ok||
+    !["ORIGINAL_CASE_FOLLOWUP_RECORDED_AND_AUDITED",
+      "ALREADY_RECORDED_NO_DUPLICATE"].includes(result?.status)||
+    result?.followupRecorded!==true||result?.requestId!==item.id||
+    result?.state!=="RECEIVED_PENDING_REVIEW"||
+    result?.externalMessageSent!==false||
+    result?.productionEffectEnabled!==false)
+     throw Error(result?.status||"FOLLOWUP_NOT_VERIFIED");
+   // Reload owner-scoped original persisted source; a response is NEVER
+   // automatically sent to customer merely because a follow-up was saved.
+   const read=await fetch("/api/support/requests/followups",{
+    method:"GET",cache:"no-store",
+    headers:{Authorization:"Bearer "+session.access_token}
+   });
+   const saved=await read.json().catch(()=>null);
+   if(!read.ok||saved?.status!=="ORIGINAL_CUSTOMER_CASE_FOLLOWUPS"||
+    !Array.isArray(saved?.followups)||
+    !saved.followups.some(x=>x.requestId===item.id&&
+      x.id===result.followupId&&x.message===content&&
+      x.state==="RECEIVED_PENDING_REVIEW"))
+      throw Error("Saved follow-up could not be independently rechecked. Do not resubmit blindly.");
+   delete followupNonce.current[item.id];
+   setFollowupInputs(old=>({...old,[item.id]:""}));
+   setFollowupFeedback(old=>({...old,[item.id]:
+     "Your follow-up was recorded and verified for this original case. Customer Support has not replied yet."}));
+   setRefresh(n=>n+1);
+  }catch(error){
+   setFollowupFeedback(old=>({...old,[item.id]:
+     "The follow-up is not verified: "+String(error?.message||"Source unavailable")+
+     ". Your text remains here. Check the saved case before trying again."}));
+  }finally{setFollowupBusyCase(null);}
+ }
  async function submit(event){
   event.preventDefault();
   if(!session?.access_token||busy)return;
@@ -169,6 +248,48 @@ export default function MyHiissaCustomerSupportPage(){
           <small>Delivered: {new Date(reply.deliveredAt).toLocaleString()}</small>
           <p style={{fontSize:13}}>This reply is visible only in your signed-in
             Staging support requests. No email or SMS was sent.</p>
+          <section aria-label="Your follow-up messages in the original support case"
+           style={{borderTop:"1px solid #c7dccd",marginTop:18,paddingTop:14}}>
+           <h3 style={{fontSize:18,marginTop:0}}>Continue this support conversation</h3>
+           <p style={{lineHeight:1.6}}>You can reply to this delivered answer
+             without opening a new request. HIISSA records your follow-up for
+             Customer Support to review. This does not send an automatic human reply.</p>
+           {followupsState==="CHECKING"?<p role="status">Checking your follow-ups…</p>:null}
+           {followupsState==="UNAVAILABLE"?<p role="alert">
+             Follow-up history could not be checked. Your existing request and
+             delivered reply remain available. Please refresh before sending.
+           </p>:null}
+           {followupsState==="VERIFIED"?followups.filter(x=>x.requestId===item.id)
+             .map(x=><div key={x.id} style={{background:"white",padding:12,
+               border:"1px solid #cadacf",borderRadius:10,margin:"10px 0"}}>
+               <strong>Your follow-up · awaiting Customer Support review</strong>
+               <p style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{x.message}</p>
+               <small>Received: {new Date(x.createdAt).toLocaleString()}</small>
+             </div>):null}
+           <form onSubmit={event=>submitFollowup(event,item)}>
+            <label style={{display:"block",fontWeight:700}}>
+              Your follow-up to this reply
+              <textarea style={{...field,minHeight:108}} required minLength={8}
+               maxLength={2000} disabled={followupBusyCase===item.id||
+                followupsState!=="VERIFIED"}
+               value={followupInputs[item.id]||""}
+               onChange={event=>setFollowupInputs(old=>({
+                 ...old,[item.id]:event.target.value
+               }))}
+               placeholder="Please tell us what still needs help. Do not include passwords or payment details."/>
+            </label>
+            <button type="submit" disabled={followupBusyCase!==null||
+              followupsState!=="VERIFIED"||
+              String(followupInputs[item.id]||"").trim().length<8}
+             style={{marginTop:12,padding:"12px 16px",minHeight:48,
+               border:0,borderRadius:12,background:GREEN,color:"white",fontWeight:800}}>
+              {followupBusyCase===item.id?"Recording follow-up…":
+                "Send follow-up to Customer Support in Staging"}
+            </button>
+            {followupFeedback[item.id]?<p role="status" aria-live="polite"
+              style={{lineHeight:1.6}}>{followupFeedback[item.id]}</p>:null}
+           </form>
+          </section>
         </section>)}
       </li>)}
       </ul>}
