@@ -28,9 +28,19 @@ export async function GET(request){
     .select("draft_body,draft_version,saved_at,status")
     .eq("environment","staging").eq("case_id",id).maybeSingle();
   if(error)return json({status:"PRIVATE_DRAFT_SOURCE_UNAVAILABLE"},503);
-  // Canonical EXISTING approval queue, not a second approval state table.
+  // Read the actual delivery receipt FIRST: the original case version
+  // becomes N+1 and canonical approval status becomes verified_complete
+  // atomically with the in-app response. Do not call it unapproved later.
+  const {data:delivered,error:deliveryError}=await founder.admin
+    .from("hiissa_customer_support_in_app_replies_staging")
+    .select("approval_id,draft_version,delivered_at,delivery_channel")
+    .eq("environment","staging").eq("case_id",id).maybeSingle();
+  if(deliveryError)return json({status:"PRIVATE_DELIVERY_SOURCE_UNAVAILABLE"},503);
+  const inAppDelivered=delivered?.delivery_channel==="IN_APP_STAGING"&&
+    delivered?.draft_version===draft?.draft_version;
   let approvedAt=null;
   let approvalId=null;
+  let completedApprovalVerified=false;
   if(draft?.draft_version){
     const {data:approvals,error:approvalError}=await founder.admin
       .from("admin_approval_requests")
@@ -40,20 +50,28 @@ export async function GET(request){
       .eq("resource_id",id)
       .order("created_at",{ascending:false}).limit(20);
     if(approvalError)return json({status:"PRIVATE_APPROVAL_SOURCE_UNAVAILABLE"},503);
-    const match=(approvals||[]).find(a=>
-      a.status==="approved_pending_execution"&&
-      Number(a.request_context?.draftVersion)===draft.draft_version&&
-      Number(a.request_context?.caseVersion)===caseRow.version);
+    const match=inAppDelivered
+      ?(approvals||[]).find(a=>
+        a.status==="verified_complete"&&a.id===delivered.approval_id&&
+        Number(a.request_context?.draftVersion)===draft.draft_version&&
+        Number(a.request_context?.caseVersion)===caseRow.version-1)
+      :(approvals||[]).find(a=>
+        a.status==="approved_pending_execution"&&
+        Number(a.request_context?.draftVersion)===draft.draft_version&&
+        Number(a.request_context?.caseVersion)===caseRow.version);
     approvedAt=match?.created_at||null;
     approvalId=match?.id||null;
+    completedApprovalVerified=Boolean(inAppDelivered&&match);
   }
-  const {data:delivered,error:deliveryError}=await founder.admin
-    .from("hiissa_customer_support_in_app_replies_staging")
-    .select("approval_id,draft_version,delivered_at,delivery_channel")
-    .eq("environment","staging").eq("case_id",id).maybeSingle();
-  if(deliveryError)return json({status:"PRIVATE_DELIVERY_SOURCE_UNAVAILABLE"},503);
-  const inAppDelivered=delivered?.delivery_channel==="IN_APP_STAGING"&&
-    delivered?.draft_version===draft?.draft_version;
+  // Only case-scoped, PRIVILEGED metadata reaches the original Founder.
+  // No follow-up text, customer names/email, messages or emotional chat
+  // enter original aggregate Founder Overview or the Admin audit.
+  const {count:pendingFollowupCount,error:followupError}=await founder.admin
+    .from("hiissa_customer_support_followups_staging")
+    .select("id",{head:true,count:"exact"})
+    .eq("environment","staging").eq("case_id",id)
+    .eq("state","RECEIVED_PENDING_REVIEW");
+  const followupStatus=followupError?"UNAVAILABLE":"VERIFIED";
   return json({
     status:"FOUNDER_PRIVATE_DRAFT_READ",
     registryId:"customer-communication-service-level-centre",
@@ -63,12 +81,15 @@ export async function GET(request){
     draftText:draft?.draft_body||"",
     draftSavedAt:draft?.saved_at||null,
     draftState:draft?"PRIVATE_DRAFT":"NOT_CREATED",
-    approvalStatus:approvedAt?"FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT":"NOT_APPROVED",
+    approvalStatus:inAppDelivered?
+      (completedApprovalVerified?"FOUNDER_APPROVED_DELIVERED_IN_APP":"DELIVERY_APPROVAL_UNVERIFIED"):
+      (approvedAt?"FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT":"NOT_APPROVED"),
     approvedAt,approvalId,
     inAppDeliveryStatus:inAppDelivered?"DELIVERED_IN_APP":"NOT_DELIVERED",
     inAppDeliveredAt:inAppDelivered?delivered.delivered_at:null,
+    followupStatus,pendingFollowupCount:followupError?null:pendingFollowupCount,
     audience:"ORIGINAL_FOUNDER_ONLY",
-    humanReplySent:false,customerContentDelivered:false,
+    humanReplySent:false,customerContentDelivered:inAppDelivered,
     productionEffectEnabled:false
   });
  }catch{return json({status:"PRIVATE_DRAFT_SOURCE_UNAVAILABLE"},503)}
