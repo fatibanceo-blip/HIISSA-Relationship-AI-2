@@ -144,3 +144,6 @@ await import("./validate-hiissa-customer-reply-draft-staging.mjs");
 
 // R205: existing HIISSA AI reuses original Founder/Support case and canonical approval.
 await import("./validate-hiissa-customer-existing-ai-founder-approval-staging.mjs");
+
+// R208: original Founder canonical approval to owner-only in-app reply; OFF by default.
+await import("./validate-hiissa-customer-in-app-delivery-staging.mjs");
