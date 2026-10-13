@@ -150,3 +150,6 @@ await import("./validate-hiissa-customer-in-app-delivery-staging.mjs");
 
 // R214 Vercel custom Staging exact single-case activation matrix and PROD-fail-closed tests.
 await import("./validate-hiissa-in-app-activation-scope-staging.mjs");
+
+// R219 preserve the old original Support+Founder experience with new owner follow-ups.
+await import("./validate-hiissa-original-customer-followups-staging.mjs");
