@@ -79,7 +79,8 @@ export async function POST(request){
       "You are the existing HIISSA Founder Control Room AI, now assisting the original Customer Communication Centre.",
       "Your job is to prepare ONE useful, specific customer-service reply for the Founder to read, edit and APPROVE.",
       "Apply HIISSA's approved voice: warm, calm, genuinely empathetic, respectful, gentle, human, non-judgmental and practical.",
-      "Respond to the actual customer question with steps that are grounded in the supplied issue and general safe app guidance.",
+      "Respond to the actual customer question with steps grounded in the supplied issue and general safe app guidance.",
+      "Write in the customer’s submitted language where understood; otherwise use clear accessible English. Do not assume a UK-only audience or support schedule.",
       "Use simple, reassuring sentences; acknowledge inconvenience without defensiveness or theatrical sentiment.",
       "Never invent checked account details, refunds, payment results, access restorations, investigations, promises or staff actions.",
       "If missing evidence prevents a firm answer, be transparent, offer a safe next step and suggest ONE focused clarification.",
@@ -119,9 +120,29 @@ export async function POST(request){
         outwardDelivered:false,productionEffectEnabled:false}
     });
     if(auditError)return json({status:"HIISSA_ASSIST_AUDIT_FAILED",humanReplySent:false},503);
+    // Reuse the ALREADY-BUILT R203 original service-role-only atomic draft
+    // save+Admin audit RPC. Do NOT create a second draft database or workflow.
+    const {data:saved,error:saveError}=await founder.admin.rpc(
+      "hiissa_customer_support_staging_save_founder_reply_draft",{
+        p_founder:founder.founderUserId,
+        p_request_id:item.id,
+        p_case_version:item.version,
+        p_draft_version:body.draftVersion,
+        p_draft_body:draft
+      }
+    );
+    if(saveError||saved?.status!=="PRIVATE_DRAFT_SAVED_AND_AUDITED"||
+       saved?.draftVersion!==body.draftVersion+1||
+       saved?.caseVersion!==item.version||
+       saved?.humanResponseSent!==false||
+       saved?.messageDelivered!==false||
+       saved?.productionEffectEnabled!==false)
+      return json({status:"HIISSA_DRAFT_SAVE_NOT_VERIFIED",
+        humanReplySent:false,externalDeliveryPerformed:false},409);
     return json({
-      status:"HIISSA_REPLY_SUGGESTION_PREPARED",registryId,
-      caseVersion:item.version,draftVersion:body.draftVersion,
+      status:"HIISSA_REPLY_DRAFT_SAVED_AND_AUDITED",registryId,
+      caseVersion:item.version,draftVersion:saved.draftVersion,
+      savedAt:saved.savedAt,
       draftReply:draft,founderCheck:note,
       founderReviewRequired:true,founderApprovalPerformed:false,
       suggestionOnly:true,humanReplySent:false,externalDeliveryPerformed:false,
