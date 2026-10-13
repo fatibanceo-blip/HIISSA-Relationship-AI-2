@@ -9,6 +9,7 @@ import {formatHiissaGlobalRecordTime} from "../../../../../lib/hiissa-record-tim
 const API="/api/admin/control-room/customer-communications/private-intake-selector";
 const ORIGINAL_OVERSIGHT="/api/admin/control-room/customer-communications";
 const ROUTE_ACTION="/api/admin/control-room/customer-communications/route-department";
+const DRAFT_ACTION="/api/admin/control-room/customer-communications/reply-draft";
 const REGISTRY_ID="customer-communication-service-level-centre";
 const RETURN="/admin/control-room/customer-communications";
 let browserClient=null;
@@ -36,8 +37,103 @@ export default function FounderPrivateCases(){
   const [routeFeedback,setRouteFeedback]=useState("");
   const [routeFeedbackError,setRouteFeedbackError]=useState(false);
   const routeVerification=useRef(null);
+  const draftWriteBusy=useRef(false);
+  const [draft,setDraft]=useState({
+    caseId:null,caseVersion:null,draftVersion:0,text:"",
+    loading:false,saving:false,savedAt:null,error:"",feedback:""
+  });
+  const closeDraft=()=>{if(!draftWriteBusy.current)setDraft(prev=>({
+    caseId:null,caseVersion:null,draftVersion:0,text:"",
+    loading:false,saving:false,savedAt:null,error:"",feedback:""
+  }));};
+  async function openDraft(item){
+    if(draftWriteBusy.current||!state.verified||!item?.assignedDepartment||
+      item.assignedDepartment!=="customer_support")return;
+    setDraft({caseId:item.requestId,caseVersion:item.version,draftVersion:0,text:"",
+      loading:true,saving:false,savedAt:null,error:"",feedback:""});
+    try{
+      const client=existingSessionClient();
+      const {data,error}=client?await client.auth.getSession():{error:true};
+      if(error||!data?.session?.access_token)throw Error("Founder session required; no reply draft was accessed.");
+      const response=await fetch(DRAFT_ACTION+"?requestId="+encodeURIComponent(item.requestId),{
+        method:"GET",cache:"no-store",headers:{Authorization:"Bearer "+data.session.access_token}
+      });
+      const body=await response.json().catch(()=>null);
+      if(!response.ok||body?.status!=="FOUNDER_PRIVATE_DRAFT_READ"||
+        body?.registryId!==REGISTRY_ID||body?.audience!=="ORIGINAL_FOUNDER_ONLY"||
+        body?.productionEffectEnabled!==false||body?.humanReplySent!==false||
+        body?.customerContentDelivered!==false||
+        body?.caseVersion!==item.version||body?.department!=="customer_support"||
+        !Number.isSafeInteger(body?.draftVersion)||body.draftVersion<0||
+        typeof body?.draftText!=="string"||
+        body.draftText.length>2000)
+        throw Error("The existing Founder draft could not be verified. Nothing has been sent.");
+      setDraft({caseId:item.requestId,caseVersion:item.version,
+        draftVersion:body.draftVersion,text:body.draftText,
+        loading:false,saving:false,savedAt:body.draftSavedAt||null,
+        error:"",feedback:body.draftVersion>0?"Saved private draft loaded. No customer reply sent.":"No private reply draft exists yet."});
+    }catch(e){
+      setDraft(prev=>({...prev,loading:false,saving:false,
+        error:e?.message||"Private draft unavailable; no customer response has been sent."}));
+    }
+  }
+  async function saveDraft(item){
+    if(draftWriteBusy.current||draft.loading||draft.saving||
+      draft.caseId!==item.requestId||draft.caseVersion!==item.version||
+      !state.verified||item.assignedDepartment!=="customer_support"||
+      draft.text.trim().length<8||draft.text.trim().length>2000)return;
+    draftWriteBusy.current=true;
+    setDraft(prev=>({...prev,saving:true,error:"",feedback:""}));
+    try{
+      const client=existingSessionClient();
+      const {data,error}=client?await client.auth.getSession():{error:true};
+      if(error||!data?.session?.access_token)throw Error("Founder session expired. No draft save was confirmed.");
+      const message=draft.text.trim();
+      const response=await fetch(DRAFT_ACTION,{
+        method:"POST",cache:"no-store",credentials:"same-origin",
+        headers:{"Content-Type":"application/json",
+          Authorization:"Bearer "+data.session.access_token},
+        body:JSON.stringify({
+          action:"save_founder_private_reply_draft",
+          requestId:item.requestId,caseVersion:item.version,
+          draftVersion:draft.draftVersion,draftText:message
+        })
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok||result?.status!=="PRIVATE_DRAFT_SAVED_AND_AUDITED"||
+        result?.registryId!==REGISTRY_ID||
+        result?.draftVersion!==draft.draftVersion+1||
+        result?.caseVersion!==item.version||
+        result?.humanReplySent!==false||
+        result?.customerContentDelivered!==false||
+        result?.productionEffectEnabled!==false){
+        if(response.status===409)
+          throw Error("The saved draft changed. Reopen it to review the latest version before trying again.");
+        throw Error("Draft save was not independently confirmed. Reopen and check before retrying.");
+      }
+      // Independently re-read the saved original Founder-private draft; no false PASS.
+      const read=await fetch(DRAFT_ACTION+"?requestId="+encodeURIComponent(item.requestId),{
+        method:"GET",cache:"no-store",
+        headers:{Authorization:"Bearer "+data.session.access_token}
+      });
+      const check=await read.json().catch(()=>null);
+      if(!read.ok||check?.status!=="FOUNDER_PRIVATE_DRAFT_READ"||
+        check?.draftVersion!==result.draftVersion||
+        check?.caseVersion!==item.version||check?.draftText!==message||
+        check?.humanReplySent!==false||check?.customerContentDelivered!==false)
+        throw Error("The draft action returned success but saved content could not be independently rechecked. Reopen the draft; do not repeat blindly.");
+      setDraft(prev=>({...prev,text:check.draftText,
+        draftVersion:check.draftVersion,savedAt:check.draftSavedAt,
+        saving:false,loading:false,error:"",
+        feedback:"PRIVATE reply draft saved and verified. No customer response or external message sent."}));
+    }catch(e){
+      setDraft(prev=>({...prev,saving:false,loading:false,
+        error:e?.message||"Private draft save not confirmed. Check before retrying."}));
+    }finally{draftWriteBusy.current=false;}
+  }
   const refresh=useCallback(()=>{
     setRouteReviewId(null);
+    closeDraft();
     setRevision(n=>n+1);
   },[]);
   function routingAllowed(item){
@@ -301,6 +397,55 @@ export default function FounderPrivateCases(){
             Founder Control Room. Founder email and dedicated-phone notices are
             approved for implementation but have not yet been delivered or activated.</p>
         </section>
+        {item.assignedDepartment==="customer_support"?<section
+          aria-label="Private Founder customer reply drafting"
+          style={{marginTop:15}}>
+          {draft.caseId!==item.requestId?<button type="button"
+            onClick={()=>openDraft(item)}
+            style={{minHeight:48,padding:"12px 16px",borderRadius:12,
+              border:"1px solid #286a4f",background:"#fff",color:"#20583f",fontWeight:750}}>
+            Prepare private customer reply draft
+          </button>:<div style={{...field,background:"#f4f8f2"}}>
+            <strong>Private Founder reply draft · not sent</strong>
+            <p style={note}>This is an internal preparation step within the
+              existing Customer Communication Centre. Only the authorised
+              Founder can read or save this draft. It is not a sent reply,
+              automatic acknowledgement, staff assignment or permission change.</p>
+            {draft.loading?<p role="status">Checking protected saved draft…</p>:null}
+            {draft.error?<p role="alert">{draft.error}</p>:null}
+            {draft.feedback?<p role="status">{draft.feedback}</p>:null}
+            {!draft.loading?<div>
+              <label htmlFor="founder-customer-reply-draft" style={{display:"block",marginBottom:8,fontWeight:700}}>
+                Compose an internal draft for this case
+              </label>
+              <textarea id="founder-customer-reply-draft"
+                value={draft.text} maxLength={2000} rows={5} disabled={draft.saving}
+                onChange={e=>setDraft(prev=>({...prev,text:e.target.value,
+                  feedback:"",error:""}))}
+                style={{width:"100%",maxWidth:"100%",borderRadius:12,
+                  border:"1px solid #a5c1ad",background:"white",
+                  padding:12,fontSize:16,boxSizing:"border-box"}}
+              />
+              <p style={note}>Characters: {draft.text.length}/2000 · Draft version:
+                {draft.draftVersion} · Saved: {draft.savedAt?
+                  formatHiissaGlobalRecordTime(draft.savedAt):"Not saved"}.</p>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                <button type="button" onClick={()=>saveDraft(item)}
+                  disabled={draft.saving||draft.text.trim().length<8||draft.text.trim().length>2000}
+                  style={{minHeight:48,padding:"12px 16px",
+                    border:0,borderRadius:12,color:"#fff",background:"#20583f",fontWeight:750,
+                    opacity:draft.saving||draft.text.trim().length<8?.6:1}}>
+                  {draft.saving?"Saving private draft…":"Save private draft — do not send"}
+                </button>
+                <button type="button" onClick={closeDraft} disabled={draft.saving}
+                  style={{minHeight:48,padding:"12px 16px",borderRadius:12,
+                    border:"1px solid #96b8a0",color:"#20583f",background:"white"}}>
+                  Close draft
+                </button>
+              </div>
+            </div>:null}
+          </div>}
+        </section>:null}
         {item.assignedDepartment==="customer_support"?<p role="status" style={note}>
           Internally routed to Customer Support. This is not a staff member assignment,
           customer reply or acknowledgement.
@@ -338,7 +483,7 @@ export default function FounderPrivateCases(){
     </section>:null}
     <aside style={{...field,marginTop:24}}>
       <strong>Safety and next service steps</strong>
-      <p style={note}>Case references and canonical Founder monitoring are read-only. A separate two-step Founder confirmation can route an eligible Staging case internally to the Customer Support department, using the original audited service. Assigning an individual staff member, preparing human replies and sending acknowledgements remain separate controlled stages. Opening or refreshing this page never routes a case, sends a customer message or changes staff access.</p>
+      <p style={note}>Case references and canonical Founder monitoring are read-only. A separate two-step Founder confirmation can route an eligible Staging case internally to the Customer Support department, using the original audited service. Preparing a private Founder reply draft is available within the same Centre; staff submission/approval, delivering replies and sending acknowledgements remain separate controlled stages. Opening or refreshing this page never routes a case, sends a customer message or changes staff access.</p>
       <Link href="/admin/control-room?view=overview" style={{color:"#174a36",fontWeight:750}}>
         Open existing Founder Alerts and Activity Timeline →
       </Link>
