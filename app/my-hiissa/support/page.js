@@ -24,6 +24,10 @@ export default function MyHiissaCustomerSupportPage(){
  const [status,setStatus]=useState("CHECKING");
  const [session,setSession]=useState(null);
  const [items,setItems]=useState([]);
+ // Same original My Support Requests; delivered in-app reply is a subordinate,
+ // separately authenticated, read-only source. Submission/refresh stays intact.
+ const [replies,setReplies]=useState([]);
+ const [repliesState,setRepliesState]=useState("NOT_CHECKED");
  const [subject,setSubject]=useState("");
  const [message,setMessage]=useState("");
  const [feedback,setFeedback]=useState("");
@@ -47,6 +51,29 @@ export default function MyHiissaCustomerSupportPage(){
   });
   return ()=>{live=false;listener.subscription.unsubscribe();};
  },[]);
+ useEffect(()=>{
+  if(status!=="READY"||!session?.access_token)return undefined;
+  let live=true;
+  setRepliesState("CHECKING");
+  fetch("/api/support/requests/replies",{
+   method:"GET",cache:"no-store",
+   headers:{Authorization:"Bearer "+session.access_token}
+  }).then(async response=>{
+   const body=await response.json().catch(()=>null);
+   if(!response.ok||body?.status!=="ORIGINAL_CUSTOMER_IN_APP_REPLIES"||
+      body?.registryId!=="customer-communication-service-level-centre"||
+      body?.externalEmailSent!==false||body?.externalSmsSent!==false||
+      body?.productionEffectEnabled!==false||
+      !Array.isArray(body?.replies))
+      throw Error("Not verified");
+   if(live){
+    setReplies(body.replies.filter(item=>typeof item.requestId==="string"&&
+      typeof item.reply==="string"&&typeof item.deliveredAt==="string"));
+    setRepliesState("VERIFIED");
+   }
+  }).catch(()=>{if(live)setRepliesState("UNAVAILABLE");});
+  return ()=>{live=false;};
+ },[status,session?.access_token,refresh]);
  useEffect(()=>{
   if(status!=="READY"||!session?.access_token)return undefined;
   let live=true;
@@ -131,6 +158,18 @@ export default function MyHiissaCustomerSupportPage(){
        <strong>{item.subject}</strong>
        <p>State: {item.lifecycle_state} · Acknowledgement: NOT SENT</p>
        <small>Received: {new Date(item.created_at).toLocaleString()}</small>
+       {repliesState==="VERIFIED"&&replies.filter(reply=>reply.requestId===item.id)
+        .map(reply=><section key={reply.requestId} aria-label="HIISSA customer service reply"
+          style={{background:"#edf5ee",border:"1px solid #c7dccd",
+           borderRadius:12,padding:14,marginTop:12}}>
+          <strong>Reply from HIISSA Customer Support · delivered in-app</strong>
+          <p style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere",lineHeight:1.65}}>
+            {reply.reply}
+          </p>
+          <small>Delivered: {new Date(reply.deliveredAt).toLocaleString()}</small>
+          <p style={{fontSize:13}}>This reply is visible only in your signed-in
+            Staging support requests. No email or SMS was sent.</p>
+        </section>)}
       </li>)}
       </ul>}
      <button type="button" disabled={busy||refreshing}
@@ -143,6 +182,15 @@ export default function MyHiissaCustomerSupportPage(){
       style={{padding:12,border:"1px solid #bacfc0",background:"white",
        borderRadius:12,color:GREEN,fontWeight:800}}>{refreshing?"Checking…":"Refresh saved requests"}</button>
      {refreshMessage?<p role="status" aria-live="polite" style={{lineHeight:1.6}}>{refreshMessage}</p>:null}
+     {repliesState==="CHECKING"?<p role="status">Checking replies for your account…</p>:null}
+     {repliesState==="UNAVAILABLE"?<p role="alert">
+       Your saved requests remain available, but customer replies could not be checked.
+       No new response or delivery is confirmed.
+     </p>:null}
+     {repliesState==="VERIFIED"&&replies.length===0?<p role="status">
+       No in-app customer-service replies have been delivered to your account yet.
+       This does not mean email or SMS delivery is enabled.
+     </p>:null}
     </section>
    </>:null}
   </div>
