@@ -27,11 +27,19 @@ for(const [label,env] of [
  ["local dev",enable({VERCEL_ENV:"development",VERCEL_TARGET_ENV:"staging"})],
  ["no Vercel target",enable({VERCEL_TARGET_ENV:undefined})],
  ["no Vercel environment",enable({VERCEL_ENV:undefined})],
- ["other case allowlisted",enable({HIISSA_STAGING_IN_APP_SUPPORT_REPLY_TEST_CASE_ID:"b10d93af-0db2-45a7-9a0a-54b2b8f10000"})]
+
 ]){
  assert.equal(isInAppSupportStagingActivationConfigured(env),false,label);
  assert.equal(isSingleInAppSupportTestCaseActive(env,caseId),false,label);
 }
+// Another valid UUID is valid staging configuration but MUST NOT enable
+// the separately approved original test case: distinguish stage vs case scope.
+const otherCaseEnv=enable({
+ HIISSA_STAGING_IN_APP_SUPPORT_REPLY_TEST_CASE_ID:"b10d93af-0db2-45a7-9a0a-54b2b8f10000"
+});
+assert.equal(isInAppSupportStagingActivationConfigured(otherCaseEnv),true);
+assert.equal(isSingleInAppSupportTestCaseActive(otherCaseEnv,caseId),false);
+assert.equal(isSingleInAppSupportTestCaseActive(otherCaseEnv,"b10d93af-0db2-45a7-9a0a-54b2b8f10000"),true);
 for(const wrong of [
  "", "undefined","f8362377-35b5-4db9-ac4a-eef7717120c0",
  "B10D93AF-0DB2-45A7-9A0A-54B2B8F10000","other-test"
