@@ -41,7 +41,7 @@ BEGIN
  IF p_request_id IS NULL OR p_case_version IS NULL OR p_case_version<1
    OR p_draft_version IS NULL OR p_draft_version<0
    OR length(btrim(coalesce(p_draft_body,''))) NOT BETWEEN 8 AND 2000
-   OR position(chr(0) IN coalesce(p_draft_body,''))>0 THEN
+   THEN
    RAISE EXCEPTION 'STAGING_SUPPORT_INVALID_DRAFT';
  END IF;
  SELECT * INTO v_item
