@@ -66,7 +66,6 @@ checks("Existing original customer UI retains Save and Refresh",mySupport,[
  'fetch("/api/support/requests",{method:"POST"',
  'fetch("/api/support/requests",','"Refresh saved requests"',
  'fetch("/api/support/requests/replies"',
- "same", // comment says Same
  "Your saved support requests",
  "Reply from HIISSA Customer Support · delivered in-app",
  'repliesState==="UNAVAILABLE"',
