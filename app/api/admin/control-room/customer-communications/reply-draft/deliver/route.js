@@ -4,20 +4,21 @@
 import {NextResponse} from "next/server";
 import {operationalCentreStagingAllowed,verifyOperationalCentreFounder}
  from "../../../../../../../lib/admin/founder-staging-operational-centres.js";
+import {isInAppSupportStagingActivationConfigured,isSingleInAppSupportTestCaseActive}
+ from "../../../../../../../lib/admin/staging-in-app-support-reply-activation.mjs";
 export const dynamic="force-dynamic";
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const noStore=(data,status=200)=>NextResponse.json(data,{status,headers:{"Cache-Control":"private, no-store"}});
 // Separate activation needs BOTH existing Staging and an exact Founder-tested
 // fictional case allowlist. Never unlock all customer cases by one env toggle.
 const allowedStagingTestCase=()=>process.env.HIISSA_STAGING_IN_APP_SUPPORT_REPLY_TEST_CASE_ID||"";
-const stagingDeliveryEnabled=()=>process.env.HIISSA_STAGING_IN_APP_SUPPORT_REPLY_DELIVERY_ENABLED==="true"&&
- process.env.VERCEL_ENV==="staging"&&UUID.test(allowedStagingTestCase());
+const stagingDeliveryEnabled=()=>isInAppSupportStagingActivationConfigured(process.env);
 export async function GET(request){
  if(!operationalCentreStagingAllowed())return new NextResponse(null,{status:404});
  const founder=await verifyOperationalCentreFounder(request);
  if(!founder.ok)return noStore({status:founder.reason},founder.http);
  const requestId=new URL(request.url).searchParams.get("requestId")||"";
- const caseEnabled=stagingDeliveryEnabled()&&requestId===allowedStagingTestCase();
+ const caseEnabled=isSingleInAppSupportTestCaseActive(process.env,requestId);
  return noStore({
   status:"ORIGINAL_FOUNDER_IN_APP_REPLY_DELIVERY_READINESS",
   registryId:"customer-communication-service-level-centre",
@@ -43,7 +44,7 @@ export async function POST(request){
   if(raw.length>480)return noStore({status:"INVALID_DELIVERY_REQUEST",replyDelivered:false},413);
   let body;
   try{body=JSON.parse(raw)}catch{return noStore({status:"INVALID_DELIVERY_REQUEST",replyDelivered:false},400)}
-  if(body?.requestId!==allowedStagingTestCase())
+  if(!isSingleInAppSupportTestCaseActive(process.env,body?.requestId))
     return noStore({status:"CASE_NOT_ACTIVATED_FOR_IN_APP_DELIVERY",
       replyDelivered:false,emailSent:false,smsSent:false,productionEffectEnabled:false},403);
   if(body?.action!=="deliver_approved_in_app_reply"||
