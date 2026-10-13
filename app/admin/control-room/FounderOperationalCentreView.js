@@ -171,7 +171,7 @@ function CustomerContent({data,loading,onAction,busy}){
         {["RECEIVED","AUTOMATIC ACKNOWLEDGEMENT SENT","ASSIGNED","HUMAN RESPONSE DUE","RESPONDED","WAITING FOR CUSTOMER","RESOLVED"]
         .map(stage=><li key={stage}>{stage}</li>)}
       </ol>
-      {data?<p><Link href="/admin/control-room/customer-communications/private-cases" style={link}>Open private Founder case references (read-only Staging) →</Link></p>:null}
+      {data?<p><Link href="/admin/control-room/customer-communications/private-cases" style={link}>Open private Founder case handling (Staging) →</Link></p>:null}
       <p><strong>Automatic acknowledgement:</strong> Target approximately one minute after successful receipt. The precise earlier approved sentence is still being recovered; no outgoing acknowledgement is active.</p>
       <p><strong>Human-response deadline:</strong> Historical approval requires reconciliation. No unverified deadline is enforced or advertised.</p>
     </section>
