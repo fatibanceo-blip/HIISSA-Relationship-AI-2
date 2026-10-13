@@ -10,6 +10,8 @@ const API="/api/admin/control-room/customer-communications/private-intake-select
 const ORIGINAL_OVERSIGHT="/api/admin/control-room/customer-communications";
 const ROUTE_ACTION="/api/admin/control-room/customer-communications/route-department";
 const DRAFT_ACTION="/api/admin/control-room/customer-communications/reply-draft";
+const AI_ASSIST_ACTION=DRAFT_ACTION+"/assist";
+const APPROVE_ACTION=DRAFT_ACTION+"/approve";
 const REGISTRY_ID="customer-communication-service-level-centre";
 const RETURN="/admin/control-room/customer-communications";
 let browserClient=null;
@@ -38,19 +40,24 @@ export default function FounderPrivateCases(){
   const [routeFeedbackError,setRouteFeedbackError]=useState(false);
   const routeVerification=useRef(null);
   const draftWriteBusy=useRef(false);
-  const [draft,setDraft]=useState({
-    caseId:null,caseVersion:null,draftVersion:0,text:"",
-    loading:false,saving:false,savedAt:null,error:"",feedback:""
+  const aiWriteBusy=useRef(false);
+  const approvalWriteBusy=useRef(false);
+  const emptyDraft=()=>({
+    caseId:null,caseVersion:null,draftVersion:0,text:"",savedText:"",
+    loading:false,saving:false,assisting:false,approving:false,
+    savedAt:null,approvedAt:null,approvalStatus:"NOT_APPROVED",
+    approvalReview:false,founderCheck:"",customerIssueTopic:"",
+    customerQuestionPreview:"",error:"",feedback:""
   });
-  const closeDraft=()=>{if(!draftWriteBusy.current)setDraft(prev=>({
-    caseId:null,caseVersion:null,draftVersion:0,text:"",
-    loading:false,saving:false,savedAt:null,error:"",feedback:""
-  }));};
+  const [draft,setDraft]=useState(emptyDraft);
+  const closeDraft=()=>{
+    if(!draftWriteBusy.current&&!aiWriteBusy.current&&!approvalWriteBusy.current)
+      setDraft(emptyDraft());
+  };
   async function openDraft(item){
     if(draftWriteBusy.current||!state.verified||!item?.assignedDepartment||
       item.assignedDepartment!=="customer_support")return;
-    setDraft({caseId:item.requestId,caseVersion:item.version,draftVersion:0,text:"",
-      loading:true,saving:false,savedAt:null,error:"",feedback:""});
+    setDraft({...emptyDraft(),caseId:item.requestId,caseVersion:item.version,loading:true});
     try{
       const client=existingSessionClient();
       const {data,error}=client?await client.auth.getSession():{error:true};
@@ -66,19 +73,25 @@ export default function FounderPrivateCases(){
         body?.caseVersion!==item.version||body?.department!=="customer_support"||
         !Number.isSafeInteger(body?.draftVersion)||body.draftVersion<0||
         typeof body?.draftText!=="string"||
-        body.draftText.length>2000)
+        body.draftText.length>2000||
+        !["FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT","NOT_APPROVED"].includes(body?.approvalStatus))
         throw Error("The existing Founder draft could not be verified. Nothing has been sent.");
-      setDraft({caseId:item.requestId,caseVersion:item.version,
-        draftVersion:body.draftVersion,text:body.draftText,
-        loading:false,saving:false,savedAt:body.draftSavedAt||null,
-        error:"",feedback:body.draftVersion>0?"Saved private draft loaded. No customer reply sent.":"No private reply draft exists yet."});
+      setDraft({...emptyDraft(),caseId:item.requestId,caseVersion:item.version,
+        draftVersion:body.draftVersion,text:body.draftText,savedText:body.draftText,
+        savedAt:body.draftSavedAt||null,approvedAt:body.approvedAt||null,
+        approvalStatus:body.approvalStatus,
+        feedback:body.draftVersion>0?"Saved reply draft loaded. Read and approve if suitable. Nothing was sent.":"HIISSA is preparing a response to the original customer question for your review."});
+      // Founder-requested default: reuse EXISTING HIISSA AI to prepare the
+      // FIRST reply automatically on opening this case. No send/auto approval.
+      if(body.draftVersion===0)await prepareWithHIISSA(item,0);
     }catch(e){
       setDraft(prev=>({...prev,loading:false,saving:false,
         error:e?.message||"Private draft unavailable; no customer response has been sent."}));
     }
   }
   async function saveDraft(item){
-    if(draftWriteBusy.current||draft.loading||draft.saving||
+    if(draftWriteBusy.current||aiWriteBusy.current||approvalWriteBusy.current||
+      draft.loading||draft.saving||draft.assisting||draft.approving||
       draft.caseId!==item.requestId||draft.caseVersion!==item.version||
       !state.verified||item.assignedDepartment!=="customer_support"||
       draft.text.trim().length<8||draft.text.trim().length>2000)return;
@@ -122,10 +135,11 @@ export default function FounderPrivateCases(){
         check?.caseVersion!==item.version||check?.draftText!==message||
         check?.humanReplySent!==false||check?.customerContentDelivered!==false)
         throw Error("The draft action returned success but saved content could not be independently rechecked. Reopen the draft; do not repeat blindly.");
-      setDraft(prev=>({...prev,text:check.draftText,
+      setDraft(prev=>({...prev,text:check.draftText,savedText:check.draftText,
         draftVersion:check.draftVersion,savedAt:check.draftSavedAt,
-        saving:false,loading:false,error:"",
-        feedback:"PRIVATE reply draft saved and verified. No customer response or external message sent."}));
+        approvalStatus:check.approvalStatus,approvedAt:check.approvedAt||null,
+        approvalReview:false,saving:false,loading:false,error:"",
+        feedback:"PRIVATE reply draft saved and verified. Review it and approve when ready. Nothing sent."}));
     }catch(e){
       setDraft(prev=>({...prev,saving:false,loading:false,
         error:e?.message||"Private draft save not confirmed. Check before retrying."}));
