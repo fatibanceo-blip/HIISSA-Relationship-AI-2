@@ -88,3 +88,5 @@ await import("./validate-operational-centres-dashboard-entrypoints.mjs");
 await import("./validate-hiissa-visible-brand.mjs");
 // R153 genuine signed-in customer support intake: mandatory protection gate.
 await import("./validate-hiissa-authenticated-support-intake.mjs");
+// R180: jointly guard new genuine customer statuses AND unchanged working Founder/Staff host.
+await import("./validate-hiissa-customer-inbox-founder-and-host-regression.mjs");
