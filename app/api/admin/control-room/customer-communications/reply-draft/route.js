@@ -30,6 +30,7 @@ export async function GET(request){
   if(error)return json({status:"PRIVATE_DRAFT_SOURCE_UNAVAILABLE"},503);
   // Canonical EXISTING approval queue, not a second approval state table.
   let approvedAt=null;
+  let approvalId=null;
   if(draft?.draft_version){
     const {data:approvals,error:approvalError}=await founder.admin
       .from("admin_approval_requests")
@@ -44,7 +45,15 @@ export async function GET(request){
       Number(a.request_context?.draftVersion)===draft.draft_version&&
       Number(a.request_context?.caseVersion)===caseRow.version);
     approvedAt=match?.created_at||null;
+    approvalId=match?.id||null;
   }
+  const {data:delivered,error:deliveryError}=await founder.admin
+    .from("hiissa_customer_support_in_app_replies_staging")
+    .select("approval_id,draft_version,delivered_at,delivery_channel")
+    .eq("environment","staging").eq("case_id",id).maybeSingle();
+  if(deliveryError)return json({status:"PRIVATE_DELIVERY_SOURCE_UNAVAILABLE"},503);
+  const inAppDelivered=delivered?.delivery_channel==="IN_APP_STAGING"&&
+    delivered?.draft_version===draft?.draft_version;
   return json({
     status:"FOUNDER_PRIVATE_DRAFT_READ",
     registryId:"customer-communication-service-level-centre",
@@ -55,7 +64,9 @@ export async function GET(request){
     draftSavedAt:draft?.saved_at||null,
     draftState:draft?"PRIVATE_DRAFT":"NOT_CREATED",
     approvalStatus:approvedAt?"FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT":"NOT_APPROVED",
-    approvedAt,
+    approvedAt,approvalId,
+    inAppDeliveryStatus:inAppDelivered?"DELIVERED_IN_APP":"NOT_DELIVERED",
+    inAppDeliveredAt:inAppDelivered?delivered.delivered_at:null,
     audience:"ORIGINAL_FOUNDER_ONLY",
     humanReplySent:false,customerContentDelivered:false,
     productionEffectEnabled:false
