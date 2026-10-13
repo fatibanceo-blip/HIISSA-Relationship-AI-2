@@ -92,3 +92,43 @@ requireText("PREEXISTING original customer receipt audit",oldIntakeSql,[
 console.log("PASS: New Staging Founder-only department-routing RPC/API are audit-atomic, locked to customer_support and no delivery.");
 console.log("PASS: Original Support receipt, aggregate-only Founder dashboard, staff host and protected case privacy remain guarded.");
 console.log("NOT VERIFIED: actual Founder request routing, real staff assignment, acknowledgement delivery, SLA, full service lifecycle or Production.");
+
+
+// R188: defend new standalone PRIVATE selector and the existing aggregate-only
+// Founder host TOGETHER on every future staging prebuild. Source checks do not
+// certify signed-in browser access or human/staff workflow.
+const privateSelector=read("app/api/admin/control-room/customer-communications/private-intake-selector/route.js");
+requireText("Private Founder selector boundary",privateSelector,[
+  "operationalCentreStagingAllowed()",
+  "verifyOperationalCentreFounder(request)",
+  '.from("hiissa_customer_support_inbox_staging")',
+  '.select("id,version,lifecycle_state,acknowledgement_state,assigned_department,created_at")',
+  '.eq("environment","staging")',
+  '.limit(20)',
+  "PRIVATE_STAGING_SELECTOR_READ_ONLY",
+  'audience:"ORIGINAL_FOUNDER_ONLY"',
+  "caseMetadataOnly:true",
+  "acknowledgementEnabled:false",
+  "responseDeadlineApproved:false",
+  "staffAccessGranted:false",
+  "externalDeliveryPerformed:false",
+  "productionEffectEnabled:false",
+  '"Cache-Control":"private, no-store"'
+]);
+for(const forbidden of [
+  ".insert(", ".update(", ".delete(", ".rpc(", "message_body",
+  'select("*")', "customer_user_id", "client_nonce", "sendEmail",
+  "sendMessage", "createClient(", "SUPABASE_SECRET_KEY"
+]){
+  // These three field names appear exclusively in the comments explaining
+  // why they must not even be fetched. Inspect executable lines only.
+  const executable=privateSelector.split("\n").filter(line=>!line.trim().startsWith("//")).join("\n");
+  assert.ok(!executable.includes(forbidden),"Private selector must remain metadata-only: "+forbidden);
+}
+assert.ok(!privateSelector.includes("export async function POST"),
+  "Private selector cannot mutate or route cases");
+assert.ok(!oldFounderApi.includes("stagingAuthenticatedRecentRequests"),
+  "New private selector must never weaken the original Founder AGGREGATE_ONLY response");
+console.log("PASS: R188 separate Founder-only STAGING metadata selector is read-only and excludes customer contents/identity.");
+console.log("PASS: R188 selector remains separate from original Founder aggregate-only oversight; new + original host guarded together.");
+console.log("NOT VERIFIED: practical Founder selector browser login, case routing, staff lifecycle, acknowledgement or Production.");
