@@ -39,8 +39,21 @@ check("old Founder gate and private-only response",api,[
  'humanReplySent:false','customerContentDelivered:false',
  'productionEffectEnabled:false'
 ]);
-for(const bad of ["sendEmail(", "sendSMS(",".update(",'from("admin_approval_requests")'])
- assert.ok(!api.includes(bad),"No external delivery or new approval process: "+bad);
+// The original canonical approval inbox is now intentionally read by
+// the Founder-only PRIVATE GET to verify the exact version of an R205 approval.
+// Keep all strict scope filters; never allow direct approval mutation in this API.
+check("original canonical Founder-only approval read",api,[
+ 'from("admin_approval_requests")',
+ '.eq("environment","staging").eq("module_id","customer_support")',
+ '.eq("action_id","founder_approve_customer_reply_draft")',
+ '.eq("resource_id",id)',
+ '.order("created_at",{ascending:false}).limit(20)',
+ 'Number(a.request_context?.draftVersion)===draft.draft_version',
+ 'Number(a.request_context?.caseVersion)===caseRow.version',
+ 'approvalStatus:approvedAt?"FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT":"NOT_APPROVED"'
+]);
+for(const bad of ["sendEmail(", "sendSMS(",".update(",".delete(",".insert(",'.rpc("hiissa_customer_support_staging_approve_founder_reply_draft"'])
+ assert.ok(!api.includes(bad),"No external delivery, or approval mutation in read/save route: "+bad);
 check("same original Founder page draft",ui,[
  'DRAFT_ACTION="/api/admin/control-room/customer-communications/reply-draft"',
  'Prepare private customer reply draft',
