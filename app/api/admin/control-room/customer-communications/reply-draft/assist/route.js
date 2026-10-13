@@ -144,6 +144,8 @@ export async function POST(request){
       caseVersion:item.version,draftVersion:saved.draftVersion,
       savedAt:saved.savedAt,
       draftReply:draft,founderCheck:note,
+      customerIssueTopic:issue.topic,
+      customerQuestionPreview:issue.customerQuestion.slice(0,400),
       founderReviewRequired:true,founderApprovalPerformed:false,
       suggestionOnly:true,humanReplySent:false,externalDeliveryPerformed:false,
       productionEffectEnabled:false
