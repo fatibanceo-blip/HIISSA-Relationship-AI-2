@@ -646,7 +646,7 @@ export default function FounderPrivateCases(){
                 {draft.draftVersion>0?"Review and edit the suggested reply":"Write a private reply yourself"}
               </label>
               <textarea id="founder-customer-reply-draft"
-                value={draft.text} maxLength={2000} rows={5} disabled={draft.saving||draft.assisting||draft.approving}
+                value={draft.text} maxLength={2000} rows={5} disabled={draft.saving||draft.assisting||draft.approving||draft.delivering||draft.deliveryStatus==="DELIVERED_IN_APP"}
                 onChange={e=>setDraft(prev=>({...prev,text:e.target.value,
                   approvalReview:false,feedback:"",error:""}))}
                 style={{width:"100%",maxWidth:"100%",borderRadius:12,
@@ -658,7 +658,8 @@ export default function FounderPrivateCases(){
                   formatHiissaGlobalRecordTime(draft.savedAt):"Not saved"}.</p>
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <button type="button" onClick={()=>saveDraft(item)}
-                  disabled={draft.saving||draft.assisting||draft.approving||
+                  disabled={draft.saving||draft.assisting||draft.approving||draft.delivering||
+                    draft.deliveryStatus==="DELIVERED_IN_APP"||
                     draft.text===draft.savedText||
                     draft.text.trim().length<8||draft.text.trim().length>2000}
                   style={{minHeight:48,padding:"12px 16px",
@@ -667,7 +668,7 @@ export default function FounderPrivateCases(){
                       draft.text===draft.savedText||draft.text.trim().length<8)?0.6:1}}>
                   {draft.saving?"Saving private draft…":"Save private draft — do not send"}
                 </button>
-                <button type="button" onClick={closeDraft} disabled={draft.saving||draft.assisting||draft.approving}
+                <button type="button" onClick={closeDraft} disabled={draft.saving||draft.assisting||draft.approving||draft.delivering}
                   style={{minHeight:48,padding:"12px 16px",borderRadius:12,
                     border:"1px solid #96b8a0",color:"#20583f",background:"white"}}>
                   Close draft
@@ -679,11 +680,68 @@ export default function FounderPrivateCases(){
                   <strong>Founder approved · not sent</strong>
                   <p style={note}>The exact saved draft version {draft.draftVersion}
                     has been recorded in the original Founder approval queue.
-                    Customer delivery and human-response confirmation are still inactive.</p>
+                    In-app delivery is separately gated and not automatically activated.
+                    Email and SMS delivery are inactive.</p>
                   <p style={note}>Approved: {draft.approvedAt?
                     formatHiissaGlobalRecordTime(draft.approvedAt):"Timestamp not available"}</p>
                 </section>:null}
-              {draft.draftVersion>0&&draft.approvalStatus==="NOT_APPROVED"&&
+              {draft.approvalStatus==="FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT"&&
+                draft.text===draft.savedText?<section
+                  aria-label="Staging in-app customer response delivery controls"
+                  style={{...field,marginTop:16,background:"#f8faf7"}}>
+                  <strong>Customer reply delivery · separate Staging activation gate</strong>
+                  {draft.deliveryGate!=="READY_FOR_EXPLICIT_FOUNDER_ACTION"?
+                    <p role="status" style={note}>IN-APP DELIVERY NOT ACTIVE.
+                      Your Founder approval is safely recorded. Sending the reply
+                      through the customer's original My Support Requests requires
+                      separate Staging-only activation and further practical testing.
+                      No email, SMS or Production message is enabled.</p>:
+                    !draft.originalApprovalId?<p role="alert" style={note}>
+                      Exact original Founder approval could not be verified.
+                      Delivery is unavailable; reopen and check the case.</p>:
+                    !draft.deliveryReview?<button type="button"
+                      onClick={()=>setDraft(prev=>({...prev,deliveryReview:true,error:""}))}
+                      style={{minHeight:48,padding:"12px 16px",borderRadius:12,
+                        border:"1px solid #286a4f",background:"white",
+                        color:"#20583f",fontWeight:750}}>
+                      Review in-app-only delivery in Staging
+                    </button>:
+                    <div style={{...field,background:"#edf4e9"}}>
+                      <strong>Confirm delivery to this customer's in-app Support Requests?</strong>
+                      <p style={note}>This will make the EXACT approved draft visible
+                        only in this customer's signed-in Staging My Support Requests,
+                        record one original Admin audit and update this case status.
+                        It does NOT send email, SMS, phone notifications or any
+                        Production message. This action cannot be unsent.</p>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
+                        <button type="button" disabled={draft.delivering}
+                          onClick={()=>confirmInAppDelivery(item)}
+                          style={{minHeight:48,padding:"12px 16px",
+                            border:0,borderRadius:12,color:"white",
+                            background:"#20583f",fontWeight:750}}>
+                          {draft.delivering?"Checking in-app delivery…":
+                            "Confirm Staging-only in-app delivery"}
+                        </button>
+                        <button type="button" disabled={draft.delivering}
+                          onClick={()=>setDraft(prev=>({...prev,deliveryReview:false}))}
+                          style={{minHeight:48,padding:"12px 16px",borderRadius:12,
+                            background:"white",color:"#20583f",
+                            border:"1px solid #96b8a0"}}>
+                          Cancel — do not deliver
+                        </button>
+                      </div>
+                    </div>}
+                </section>:null}
+              {draft.deliveryStatus==="DELIVERED_IN_APP"?<section role="status"
+                style={{...field,background:"#eaf3e9",marginTop:16}}>
+                <strong>Verified in-app customer reply · Staging only</strong>
+                <p style={note}>The original customer-owned support reply source
+                  records a delivered message. No email/SMS or Production message
+                  was sent. Delivered: {draft.deliveryAt?
+                    formatHiissaGlobalRecordTime(draft.deliveryAt):
+                    "Timestamp unavailable"}.</p>
+              </section>:null}
+              {draft.draftVersion>0&&draft.deliveryStatus!=="DELIVERED_IN_APP"&&draft.approvalStatus==="NOT_APPROVED"&&
                 draft.text===draft.savedText&&!draft.saving&&!draft.assisting?
                 <section aria-label="Founder reply approval" style={{marginTop:16}}>
                   {!draft.approvalReview?<button type="button"
