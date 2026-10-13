@@ -147,3 +147,6 @@ await import("./validate-hiissa-customer-existing-ai-founder-approval-staging.mj
 
 // R208: original Founder canonical approval to owner-only in-app reply; OFF by default.
 await import("./validate-hiissa-customer-in-app-delivery-staging.mjs");
+
+// R214 Vercel custom Staging exact single-case activation matrix and PROD-fail-closed tests.
+await import("./validate-hiissa-in-app-activation-scope-staging.mjs");
