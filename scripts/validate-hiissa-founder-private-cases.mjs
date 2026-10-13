@@ -40,7 +40,7 @@ for(const bad of [
  'approveStaff','createUser', 'localStorage'
 ]) assert.ok(!executable.includes(bad),"Private screen must not access message/identity, mutate, grant role or persist token: "+bad);
 has("Old-to-new Founder navigation",originalHost,[
- 'Open private Founder case references (read-only Staging)',
+ 'Open private Founder case handling (Staging)',
  'href="/admin/control-room/customer-communications/private-cases"',
  'CustomerPracticeActions','StaffPracticeActions',
  'Authenticated Staging customer requests',
