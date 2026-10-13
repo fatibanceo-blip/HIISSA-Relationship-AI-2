@@ -141,3 +141,6 @@ await import("./validate-hiissa-human-response-target-staging.mjs");
 
 // R203: source protection for original-case Founder-only reply drafts with NO send.
 await import("./validate-hiissa-customer-reply-draft-staging.mjs");
+
+// R205: existing HIISSA AI reuses original Founder/Support case and canonical approval.
+await import("./validate-hiissa-customer-existing-ai-founder-approval-staging.mjs");
