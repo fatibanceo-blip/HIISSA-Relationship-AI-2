@@ -4,6 +4,7 @@
 // the already-authorised Founder, never customer message, identity or email.
 // It is READ ONLY: no routing, acknowledgement, outbound delivery, SLA or staff grant.
 import {NextResponse} from "next/server";
+import {projectOneMinuteHumanTarget} from "../../../../../../lib/admin/customer-service-one-minute-target-staging.mjs";
 import {
   operationalCentreStagingAllowed,
   verifyOperationalCentreFounder
@@ -38,7 +39,8 @@ export async function GET(request){
       lifecycleState:item.lifecycle_state,
       acknowledgementState:item.acknowledgement_state,
       assignedDepartment:item.assigned_department||null,
-      receivedAt:item.created_at
+      receivedAt:item.created_at,
+      humanReplyTarget:projectOneMinuteHumanTarget(item.created_at,item.lifecycle_state)
     }));
     return result({
       status:"PRIVATE_STAGING_SELECTOR_READ_ONLY",
@@ -48,6 +50,10 @@ export async function GET(request){
       items,
       additionalResultsNotShown:items.length===20,
       acknowledgementEnabled:false,
+      humanReplyTargetPolicy:"FOUNDER_APPROVED_ONE_MINUTE_DESIGN_NOT_LIVE",
+      humanReplyEvidenceSource:"NOT_CONNECTED",
+      founderEmailNotification:"NOT_CONFIGURED",
+      founderPhoneNotification:"NOT_CONFIGURED",
       responseDeadlineApproved:false,
       staffAccessGranted:false,
       externalDeliveryPerformed:false,
