@@ -36,7 +36,7 @@ check("old Founder gate and private-only response",api,[
  "export async function POST","p_founder:founder.founderUserId",
  '"hiissa_customer_support_staging_save_founder_reply_draft"',
  'data?.status!=="PRIVATE_DRAFT_SAVED_AND_AUDITED"',
- 'humanReplySent:false','customerContentDelivered:false',
+ 'humanReplySent:false','customerContentDelivered:inAppDelivered',
  'productionEffectEnabled:false'
 ]);
 // The original canonical approval inbox is now intentionally read by
@@ -50,7 +50,9 @@ check("original canonical Founder-only approval read",api,[
  '.order("created_at",{ascending:false}).limit(20)',
  'Number(a.request_context?.draftVersion)===draft.draft_version',
  'Number(a.request_context?.caseVersion)===caseRow.version',
- 'approvalStatus:approvedAt?"FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT":"NOT_APPROVED"'
+ 'approvalStatus:inAppDelivered?',
+ '"FOUNDER_APPROVED_DELIVERED_IN_APP":"DELIVERY_APPROVAL_UNVERIFIED"',
+ '"FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT":"NOT_APPROVED"'
 ]);
 for(const bad of ["sendEmail(", "sendSMS(",".update(",".delete(",".insert(",'.rpc("hiissa_customer_support_staging_approve_founder_reply_draft"'])
  assert.ok(!api.includes(bad),"No external delivery, or approval mutation in read/save route: "+bad);
