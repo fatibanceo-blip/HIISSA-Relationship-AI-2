@@ -3,7 +3,7 @@
 // Original aggregate-only Founder Overview, customer messages and staff permissions stay untouched.
 import Link from "next/link";
 import {useCallback,useEffect,useState} from "react";
-import {createBrowserClient} from "@supabase/ssr";
+import {createClient} from "@supabase/supabase-js";
 import {formatHiissaGlobalRecordTime} from "../../../../../lib/hiissa-record-time.js";
 
 const API="/api/admin/control-room/customer-communications/private-intake-selector";
@@ -13,7 +13,7 @@ function existingSessionClient(){
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if(!url||!key)return null;
-  if(!browserClient)browserClient=createBrowserClient(url,key);
+  if(!browserClient)browserClient=createClient(url,key);
   return browserClient;
 }
 function classifyUnavailable(http,body){
@@ -26,20 +26,23 @@ function classifyUnavailable(http,body){
 const field={background:"#fffefa",border:"1px solid #d7e5d9",borderRadius:16,padding:18};
 const note={color:"#4b6155",fontSize:14,lineHeight:1.6};
 export default function FounderPrivateCases(){
-  const [state,setState]=useState({loading:true,verified:false,items:[],more:false,error:""});
+  const [state,setState]=useState({loading:true,verified:false,needsSignIn:false,items:[],more:false,error:""});
   const [revision,setRevision]=useState(0);
   const refresh=useCallback(()=>setRevision(n=>n+1),[]);
   useEffect(()=>{
     let active=true;
     const controller=new AbortController();
     async function read(){
-      setState({loading:true,verified:false,items:[],more:false,error:""});
+      setState({loading:true,verified:false,needsSignIn:false,items:[],more:false,error:""});
       try{
         const client=existingSessionClient();
         if(!client)throw Error("Secure Staging sign-in is unavailable. No case was displayed.");
         const {data,error}=await client.auth.getSession();
-        if(error||!data?.session?.access_token)
-          throw Error("Sign in with your existing Founder account to view private case references.");
+        if(error||!data?.session?.access_token){
+          const reason=Error("This browser is not signed in to your existing Founder account. Sign in through the original Founder Control Room, then return to these case references.");
+          reason.name="FounderSignInRequired";
+          throw reason;
+        }
         const res=await fetch(API,{
           method:"GET",cache:"no-store",signal:controller.signal,
           headers:{Authorization:"Bearer "+data.session.access_token}
@@ -66,12 +69,12 @@ export default function FounderPrivateCases(){
           !item.lifecycleState||!item.acknowledgementState||!item.receivedAt))
           throw Error("Protected case details could not be verified.");
         if(active)setState({
-          loading:false,verified:true,items:safeItems,
+          loading:false,verified:true,needsSignIn:false,items:safeItems,
           more:body.additionalResultsNotShown===true,error:""
         });
       }catch(error){
         if(active&&error?.name!=="AbortError")setState({
-          loading:false,verified:false,items:[],more:false,
+          loading:false,verified:false,needsSignIn:error?.name==="FounderSignInRequired",items:[],more:false,
           error:String(error?.message||"The source is unavailable.")
         });
       }
@@ -97,12 +100,13 @@ export default function FounderPrivateCases(){
         {state.loading?"Checking secure source…":"Refresh case references"}
       </button>
       <span role="status" aria-live="polite" style={{fontWeight:700}}>
-        {state.loading?"Checking…":state.verified?"VERIFIED SOURCE · STAGING ONLY":"SOURCE UNAVAILABLE"}
+        {state.loading?"Checking…":state.needsSignIn?"SIGN IN REQUIRED":state.verified?"VERIFIED SOURCE · STAGING ONLY":"SOURCE UNAVAILABLE"}
       </span>
     </div>
     {state.error?<section role="alert" style={{...field,borderColor:"#bd8557",background:"#fff5ea"}}>
       <strong>Private case references are not available</strong>
       <p>{state.error}</p>
+      {state.needsSignIn?<p><Link href="/admin/login" style={{color:"#174a36",fontWeight:800}}>Open existing Founder sign-in →</Link></p>:null}
       <p style={note}>No case was edited, assigned, acknowledged or sent.</p>
     </section>:null}
     {state.verified&&state.items.length===0?<section style={field} role="status">
