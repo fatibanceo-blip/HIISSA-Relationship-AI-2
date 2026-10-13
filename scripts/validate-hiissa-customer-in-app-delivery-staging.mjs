@@ -44,13 +44,12 @@ checks("subordinate original Staging receipt",sql,[
 ]);
 checks("Founder single Staging-only delivery action hard off without Founder gate",founder,[
  "operationalCentreStagingAllowed()",
- "HIISSA_STAGING_IN_APP_SUPPORT_REPLY_DELIVERY_ENABLED",
- "HIISSA_STAGING_IN_APP_SUPPORT_REPLY_TEST_CASE_ID",
- "UUID.test(allowedStagingTestCase())",
- "requestId===allowedStagingTestCase()",
- 'body?.requestId!==allowedStagingTestCase()',
+ "isInAppSupportStagingActivationConfigured",
+ "isSingleInAppSupportTestCaseActive",
+ "isInAppSupportStagingActivationConfigured(process.env)",
+ "isSingleInAppSupportTestCaseActive(process.env,requestId)",
+ "isSingleInAppSupportTestCaseActive(process.env,body?.requestId)",
  "CASE_NOT_ACTIVATED_FOR_IN_APP_DELIVERY",
- 'process.env.VERCEL_ENV==="staging"',
  "if(!stagingDeliveryEnabled())return noStore",
  "IN_APP_DELIVERY_NOT_ACTIVATED",
  "verifyOperationalCentreFounder(request)",
