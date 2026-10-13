@@ -450,7 +450,7 @@ export default function FounderPrivateCases(){
     </nav>
     <p style={{fontSize:12,fontWeight:800,letterSpacing:1.2,marginTop:30}}>FOUNDER CONTROL ROOM · PRIVATE STAGING REFERENCE VIEW</p>
     <h1 style={{fontSize:"clamp(25px,5vw,38px)",marginBottom:12}}>Customer support case references</h1>
-    <p style={note}>This is a private part of the existing Customer Communication Centre for verified case references, workflow status and expressly confirmed internal department routing. It does not display customer messages, names, email addresses, emotional conversations or private account details. The existing aggregate Founder Overview remains unchanged.</p>
+    <p style={note}>This is the protected Founder area of the existing Customer Communication Centre. The case list shows references and status; a reply review can privately show a limited masked issue preview to help the Founder check HIISSA's proposed response. No customer messages or private conversations appear in the original aggregate Founder Overview.</p>
     <div style={{display:"flex",alignItems:"center",gap:12,margin:"22px 0",flexWrap:"wrap"}}>
       <button type="button" onClick={refresh} disabled={state.loading}
         style={{background:"#225f44",color:"white",border:0,borderRadius:12,padding:"13px 19px",
@@ -527,24 +527,41 @@ export default function FounderPrivateCases(){
             onClick={()=>openDraft(item)}
             style={{minHeight:48,padding:"12px 16px",borderRadius:12,
               border:"1px solid #286a4f",background:"#fff",color:"#20583f",fontWeight:750}}>
-            Prepare private customer reply draft
+            Open HIISSA-prepared customer reply
           </button>:<div style={{...field,background:"#f4f8f2"}}>
-            <strong>Private Founder reply draft · not sent</strong>
-            <p style={note}>This is an internal preparation step within the
-              existing Customer Communication Centre. Only the authorised
-              Founder can read or save this draft. It is not a sent reply,
-              automatic acknowledgement, staff assignment or permission change.</p>
+            <strong>HIISSA helps you respond · Founder review and approval</strong>
+            <p style={note}>HIISSA reuses the existing Founder Control Room AI to
+              prepare a response based on this customer's actual saved question.
+              You read it, change any wording you wish, and approve it.
+              The reply stays private in Staging; approval is NOT delivery.</p>
+            {draft.assisting?<p role="status">HIISSA is preparing and saving a helpful response…</p>:null}
+            {draft.customerIssueTopic?<section aria-label="Limited masked customer issue context"
+              style={{...field,margin:"12px 0",background:"#fff"}}>
+              <strong>Customer issue for your review (limited, masked preview)</strong>
+              <p style={note}><strong>Topic:</strong> {draft.customerIssueTopic}</p>
+              <p style={note}>{draft.customerQuestionPreview}</p>
+              <p style={note}>Personal contact details are masked where recognised.
+                Check the original issue before making commitments.</p>
+            </section>:null}
+            {draft.founderCheck?<p style={note}><strong>HIISSA review note:</strong> {draft.founderCheck}</p>:null}
             {draft.loading?<p role="status">Checking protected saved draft…</p>:null}
             {draft.error?<p role="alert">{draft.error}</p>:null}
             {draft.feedback?<p role="status">{draft.feedback}</p>:null}
             {!draft.loading?<div>
+              {draft.draftVersion===0&&!draft.assisting?<button type="button"
+                onClick={()=>prepareWithHIISSA(item,0)}
+                style={{marginBottom:16,minHeight:48,padding:"12px 16px",
+                  border:"1px solid #286a4f",borderRadius:12,color:"#20583f",background:"#fff",
+                  fontWeight:750}}>
+                Try HIISSA's response assistance
+              </button>:null}
               <label htmlFor="founder-customer-reply-draft" style={{display:"block",marginBottom:8,fontWeight:700}}>
-                Compose an internal draft for this case
+                {draft.draftVersion>0?"Review and edit the suggested reply":"Write a private reply yourself"}
               </label>
               <textarea id="founder-customer-reply-draft"
-                value={draft.text} maxLength={2000} rows={5} disabled={draft.saving}
+                value={draft.text} maxLength={2000} rows={5} disabled={draft.saving||draft.assisting||draft.approving}
                 onChange={e=>setDraft(prev=>({...prev,text:e.target.value,
-                  feedback:"",error:""}))}
+                  approvalReview:false,feedback:"",error:""}))}
                 style={{width:"100%",maxWidth:"100%",borderRadius:12,
                   border:"1px solid #a5c1ad",background:"white",
                   padding:12,fontSize:16,boxSizing:"border-box"}}
@@ -554,18 +571,66 @@ export default function FounderPrivateCases(){
                   formatHiissaGlobalRecordTime(draft.savedAt):"Not saved"}.</p>
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <button type="button" onClick={()=>saveDraft(item)}
-                  disabled={draft.saving||draft.text.trim().length<8||draft.text.trim().length>2000}
+                  disabled={draft.saving||draft.assisting||draft.approving||
+                    draft.text===draft.savedText||
+                    draft.text.trim().length<8||draft.text.trim().length>2000}
                   style={{minHeight:48,padding:"12px 16px",
                     border:0,borderRadius:12,color:"#fff",background:"#20583f",fontWeight:750,
-                    opacity:(draft.saving||draft.text.trim().length<8)?0.6:1}}>
+                    opacity:(draft.saving||draft.assisting||draft.approving||
+                      draft.text===draft.savedText||draft.text.trim().length<8)?0.6:1}}>
                   {draft.saving?"Saving private draft…":"Save private draft — do not send"}
                 </button>
-                <button type="button" onClick={closeDraft} disabled={draft.saving}
+                <button type="button" onClick={closeDraft} disabled={draft.saving||draft.assisting||draft.approving}
                   style={{minHeight:48,padding:"12px 16px",borderRadius:12,
                     border:"1px solid #96b8a0",color:"#20583f",background:"white"}}>
                   Close draft
                 </button>
               </div>
+              {draft.approvalStatus==="FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT"&&
+                draft.text===draft.savedText?<section role="status"
+                  style={{...field,background:"#edf4e9",marginTop:16}}>
+                  <strong>Founder approved · not sent</strong>
+                  <p style={note}>The exact saved draft version {draft.draftVersion}
+                    has been recorded in the original Founder approval queue.
+                    Customer delivery and human-response confirmation are still inactive.</p>
+                  <p style={note}>Approved: {draft.approvedAt?
+                    formatHiissaGlobalRecordTime(draft.approvedAt):"Timestamp not available"}</p>
+                </section>:null}
+              {draft.draftVersion>0&&draft.approvalStatus==="NOT_APPROVED"&&
+                draft.text===draft.savedText&&!draft.saving&&!draft.assisting?
+                <section aria-label="Founder reply approval" style={{marginTop:16}}>
+                  {!draft.approvalReview?<button type="button"
+                    onClick={()=>setDraft(prev=>({...prev,approvalReview:true,error:""}))}
+                    style={{minHeight:48,padding:"12px 16px",background:"#20583f",
+                      border:0,borderRadius:12,color:"white",fontWeight:750}}>
+                    Review and approve this reply
+                  </button>:<div style={{...field,background:"#f0f6ef"}}>
+                    <strong>Approve this exact saved response?</strong>
+                    <p style={note}>You have read the response and are approving its
+                      wording for later controlled customer delivery.
+                      This records an L3 Founder approval in the ORIGINAL queue.
+                      It does not send any message, confirm a one-minute human
+                      response or change staff permissions.</p>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
+                      <button type="button" disabled={draft.approving}
+                        onClick={()=>approveDraft(item)}
+                        style={{minHeight:48,padding:"12px 16px",background:"#20583f",
+                          border:0,borderRadius:12,color:"white",fontWeight:750}}>
+                        {draft.approving?"Recording approval…":"Approve this reply — do not send"}
+                      </button>
+                      <button type="button" disabled={draft.approving}
+                        onClick={()=>setDraft(prev=>({...prev,approvalReview:false}))}
+                        style={{minHeight:48,padding:"12px 16px",borderRadius:12,
+                          border:"1px solid #96b8a0",background:"white",color:"#20583f"}}>
+                        Cancel approval
+                      </button>
+                    </div>
+                  </div>}
+                </section>:null}
+              {draft.approvalStatus==="FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT"&&
+                draft.text!==draft.savedText?<p role="alert" style={note}>
+                This edited text is NOT the approved saved version. Save changes
+                before seeking a new Founder approval.</p>:null}
             </div>:null}
           </div>}
         </section>:null}
@@ -606,7 +671,7 @@ export default function FounderPrivateCases(){
     </section>:null}
     <aside style={{...field,marginTop:24}}>
       <strong>Safety and next service steps</strong>
-      <p style={note}>Case references and canonical Founder monitoring are read-only. A separate two-step Founder confirmation can route an eligible Staging case internally to the Customer Support department, using the original audited service. Preparing a private Founder reply draft is available within the same Centre; staff submission/approval, delivering replies and sending acknowledgements remain separate controlled stages. Opening or refreshing this page never routes a case, sends a customer message or changes staff access.</p>
+      <p style={note}>Case references and canonical Founder monitoring are read-only. A separate two-step Founder confirmation can route an eligible Staging case internally to the Customer Support department, using the original audited service. HIISSA can now prepare a private case-specific reply for Founder review and canonical approval in the same Centre. Customer delivery, sending acknowledgements and individual staff handling remain separately controlled and are not active. Opening or refreshing this page never routes a case, sends a customer message or changes staff access.</p>
       <Link href="/admin/control-room?view=overview" style={{color:"#174a36",fontWeight:750}}>
         Open existing Founder Alerts and Activity Timeline →
       </Link>
