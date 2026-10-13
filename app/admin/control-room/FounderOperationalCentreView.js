@@ -182,8 +182,27 @@ function CustomerContent({data,loading,onAction,busy}){
         <Metric name="Fictional practice items" value={data?String(data.fictionalWorkCount):loading?"Checking…":"Unverified"}/>
         <Metric name="Recorded feature incidents" value={data?String(data.openIncidentCount):loading?"Checking…":"Unverified"}/>
         <Metric name="Authenticated Staging customer requests" value={data?.authenticatedStagingInboxVerified?String(data.stagingAuthenticatedCustomerRequests):"NOT VERIFIED"}/>
+        <Metric name="Received — awaiting safe processing" value={data?.authenticatedStagingInboxVerified?String(data.stagingAuthenticatedReceivedCount):"NOT VERIFIED"}/>
+        <Metric name="Acknowledgements not sent" value={data?.authenticatedStagingInboxVerified?String(data.stagingAuthenticatedAcknowledgementNotSent):"NOT VERIFIED"}/>
         <Metric name="Real incoming customer messages" value="NOT CONNECTED"/>
       </div>
+      <section aria-label="Authenticated Staging support inbox status" style={itemStyle}>
+        <h3 style={{marginTop:0}}>Authenticated Staging support inbox · status only</h3>
+        <p>No customer names, email addresses or private message content appear here. Automatic acknowledgement and outbound responses are not active.</p>
+        {data?.authenticatedStagingInboxVerified&&Array.isArray(data.stagingAuthenticatedRecentRequests)?
+          data.stagingAuthenticatedRecentRequests.length?
+            <div style={list}>{data.stagingAuthenticatedRecentRequests.map((request,i)=>
+              <article key={request.caseCode+"-"+i} style={itemStyle}>
+                <strong>Request {request.caseCode} · {request.lifecycleState.replaceAll("_"," ")}</strong>
+                <p>Acknowledgement: {request.acknowledgementState.replaceAll("_"," ")} · Department: {request.assignedDepartment||"Not assigned"}</p>
+                <small>Received: {stamp(request.receivedAt)} · Human-response due: {request.responseDueAt?stamp(request.responseDueAt):"Not approved or set"}</small>
+              </article>
+            )}</div>:
+            <p>No authenticated Staging requests have been saved yet.</p>:
+          <p>Authenticated Staging inbox status is not verified. No customer details are displayed.</p>}
+        {data?.authenticatedStagingInboxVerified&&data.stagingAuthenticatedCustomerRequests>data.stagingAuthenticatedRecentRequests?.length?
+          <p>The most recent {data.stagingAuthenticatedRecentLimit} statuses are shown. The total above is the exact verified Staging count, not the truncated list size.</p>:null}
+      </section>
       {data?.items?.length?<div style={list}>
         {data.items.map((item,i)=><article key={item.caseCode+"-"+i} style={itemStyle}>
           <strong>{item.fictional?"FICTIONAL STAGING PRACTICE":"INTERNAL STAFF WORK"} · {item.caseCode}</strong>
