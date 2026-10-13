@@ -12,6 +12,7 @@ const ROUTE_ACTION="/api/admin/control-room/customer-communications/route-depart
 const DRAFT_ACTION="/api/admin/control-room/customer-communications/reply-draft";
 const AI_ASSIST_ACTION=DRAFT_ACTION+"/assist";
 const APPROVE_ACTION=DRAFT_ACTION+"/approve";
+const IN_APP_DELIVERY_ACTION=DRAFT_ACTION+"/deliver";
 const REGISTRY_ID="customer-communication-service-level-centre";
 const RETURN="/admin/control-room/customer-communications";
 let browserClient=null;
@@ -42,16 +43,20 @@ export default function FounderPrivateCases(){
   const draftWriteBusy=useRef(false);
   const aiWriteBusy=useRef(false);
   const approvalWriteBusy=useRef(false);
+  const deliveryWriteBusy=useRef(false);
   const emptyDraft=()=>({
     caseId:null,caseVersion:null,draftVersion:0,text:"",savedText:"",
     loading:false,saving:false,assisting:false,approving:false,
     savedAt:null,approvedAt:null,approvalStatus:"NOT_APPROVED",
     approvalReview:false,founderCheck:"",customerIssueTopic:"",
-    customerQuestionPreview:"",error:"",feedback:""
+    customerQuestionPreview:"",error:"",feedback:"",
+    originalApprovalId:null,deliveryGate:"NOT_CHECKED",deliveryReview:false,
+    delivering:false,deliveryStatus:"NOT_DELIVERED",deliveryAt:null
   });
   const [draft,setDraft]=useState(emptyDraft);
   const closeDraft=()=>{
-    if(!draftWriteBusy.current&&!aiWriteBusy.current&&!approvalWriteBusy.current)
+    if(!draftWriteBusy.current&&!aiWriteBusy.current&&
+      !approvalWriteBusy.current&&!deliveryWriteBusy.current)
       setDraft(emptyDraft());
   };
   async function prepareWithHIISSA(item,expectedDraftVersion){
@@ -116,6 +121,7 @@ export default function FounderPrivateCases(){
   }
   async function approveDraft(item){
     if(draftWriteBusy.current||aiWriteBusy.current||approvalWriteBusy.current||
+      deliveryWriteBusy.current||
       !state.verified||draft.caseId!==item.requestId||
       draft.caseVersion!==item.version||draft.draftVersion<1||
       !draft.approvalReview||draft.text!==draft.savedText||
@@ -156,6 +162,7 @@ export default function FounderPrivateCases(){
         throw Error("Approval was submitted but needs independent verification. Reopen the case and do not approve twice.");
       setDraft(prev=>({...prev,approving:false,approvalReview:false,
         approvalStatus:check.approvalStatus,approvedAt:check.approvedAt,
+        originalApprovalId:check.approvalId||null,
         feedback:"Your response is APPROVED and recorded in the original Founder approval system. It has NOT been sent to the customer.",
         error:""}));
     }catch(e){
@@ -185,10 +192,28 @@ export default function FounderPrivateCases(){
         body.draftText.length>2000||
         !["FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT","NOT_APPROVED"].includes(body?.approvalStatus))
         throw Error("The existing Founder draft could not be verified. Nothing has been sent.");
+      // Exact original Staging-only Founder delivery readiness, no send on read.
+      let deliveryGate="NOT_VERIFIED";
+      try{
+        const responseGate=await fetch(IN_APP_DELIVERY_ACTION,{
+          method:"GET",cache:"no-store",
+          headers:{Authorization:"Bearer "+data.session.access_token}
+        });
+        const gate=await responseGate.json().catch(()=>null);
+        if(responseGate.ok&&gate?.status==="ORIGINAL_FOUNDER_IN_APP_REPLY_DELIVERY_READINESS"&&
+          gate?.registryId===REGISTRY_ID&&gate?.environment==="staging"&&
+          gate?.channel==="IN_APP_STAGING"&&
+          gate?.emailDeliveryEnabled===false&&gate?.smsDeliveryEnabled===false&&
+          gate?.productionEffectEnabled===false&&
+          ["NOT_ACTIVATED","READY_FOR_EXPLICIT_FOUNDER_ACTION"].includes(gate?.activationStatus))
+          deliveryGate=gate.activationStatus;
+      }catch{}
       setDraft({...emptyDraft(),caseId:item.requestId,caseVersion:item.version,
         draftVersion:body.draftVersion,text:body.draftText,savedText:body.draftText,
         savedAt:body.draftSavedAt||null,approvedAt:body.approvedAt||null,
-        approvalStatus:body.approvalStatus,
+        approvalStatus:body.approvalStatus,originalApprovalId:body.approvalId||null,
+        deliveryGate,deliveryStatus:body.inAppDeliveryStatus||"NOT_DELIVERED",
+        deliveryAt:body.inAppDeliveredAt||null,
         feedback:body.draftVersion>0?"Saved reply draft loaded. Read and approve if suitable. Nothing was sent.":"HIISSA is preparing a response to the original customer question for your review."});
       // Founder-requested default: reuse EXISTING HIISSA AI to prepare the
       // FIRST reply automatically on opening this case. No send/auto approval.
@@ -200,6 +225,7 @@ export default function FounderPrivateCases(){
   }
   async function saveDraft(item){
     if(draftWriteBusy.current||aiWriteBusy.current||approvalWriteBusy.current||
+      deliveryWriteBusy.current||
       draft.loading||draft.saving||draft.assisting||draft.approving||
       draft.caseId!==item.requestId||draft.caseVersion!==item.version||
       !state.verified||item.assignedDepartment!=="customer_support"||
