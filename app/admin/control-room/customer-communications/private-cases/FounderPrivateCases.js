@@ -2,12 +2,13 @@
 // HIISSA R190: independent Founder-only, metadata-only STAGING case list.
 // Original aggregate-only Founder Overview, customer messages and staff permissions stay untouched.
 import Link from "next/link";
-import {useCallback,useEffect,useState} from "react";
+import {useCallback,useEffect,useRef,useState} from "react";
 import {createClient} from "@supabase/supabase-js";
 import {formatHiissaGlobalRecordTime} from "../../../../../lib/hiissa-record-time.js";
 
 const API="/api/admin/control-room/customer-communications/private-intake-selector";
 const ORIGINAL_OVERSIGHT="/api/admin/control-room/customer-communications";
+const ROUTE_ACTION="/api/admin/control-room/customer-communications/route-department";
 const REGISTRY_ID="customer-communication-service-level-centre";
 const RETURN="/admin/control-room/customer-communications";
 let browserClient=null;
@@ -30,7 +31,76 @@ const note={color:"#4b6155",fontSize:14,lineHeight:1.6};
 export default function FounderPrivateCases(){
   const [state,setState]=useState({loading:true,verified:false,needsSignIn:false,items:[],more:false,error:"",oversight:null,oversightError:""});
   const [revision,setRevision]=useState(0);
-  const refresh=useCallback(()=>setRevision(n=>n+1),[]);
+  const [routeReviewId,setRouteReviewId]=useState(null);
+  const [routeBusy,setRouteBusy]=useState(false);
+  const [routeFeedback,setRouteFeedback]=useState("");
+  const [routeFeedbackError,setRouteFeedbackError]=useState(false);
+  const routeVerification=useRef(null);
+  const refresh=useCallback(()=>{
+    setRouteReviewId(null);
+    setRevision(n=>n+1);
+  },[]);
+  function routingAllowed(item){
+    return state.verified&&!state.loading&&item?.lifecycleState==="RECEIVED"&&
+      item?.acknowledgementState==="NOT_SENT"&&!item?.assignedDepartment&&
+      Number.isSafeInteger(item?.version)&&item.version>=1&&
+      !routeBusy&&!routeVerification.current;
+  }
+  async function confirmRoute(item){
+    if(!routingAllowed(item)||routeReviewId!==item.requestId)return;
+    setRouteBusy(true);
+    setRouteFeedback("");
+    setRouteFeedbackError(false);
+    try{
+      const client=existingSessionClient();
+      if(!client)throw Error("Existing Founder sign-in is unavailable; no routing attempted.");
+      const {data,error}=await client.auth.getSession();
+      if(error||!data?.session?.access_token)
+        throw Error("The Founder session is missing. Return to the existing Founder sign-in; nothing was routed.");
+      // Exactly one previously approved STAGING-only Founder-gated, audit-atomic
+      // command. No direct database write, new role, message or acknowledgement.
+      const response=await fetch(ROUTE_ACTION,{
+        method:"POST",cache:"no-store",credentials:"same-origin",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer "+data.session.access_token
+        },
+        body:JSON.stringify({
+          action:"route_to_customer_support",
+          requestId:item.requestId,
+          version:item.version
+        })
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok||result?.status!=="RECORDED_AND_AUDITED"||
+        result?.department!=="customer_support"||
+        result?.lifecycleState!=="RECEIVED"||
+        result?.acknowledgementState!=="NOT_SENT"||
+        result?.externalDeliveryPerformed!==false||
+        result?.productionEffectEnabled!==false||
+        result?.version!==item.version+1){
+        if(response.status===401)
+          throw Error("Founder sign-in expired. Please sign in again. Routing is not confirmed.");
+        if(response.status===403)
+          throw Error("Founder access or request origin was rejected. Routing is not confirmed.");
+        if(response.status===404)
+          throw Error("This action is unavailable outside approved Staging. Nothing was routed.");
+        if(response.status===409)
+          throw Error("This case may have changed since you opened it. Refresh the references before deciding again; no route was confirmed.");
+        throw Error("The routing result was not confirmed. Refresh and check the current record before attempting another action.");
+      }
+      routeVerification.current={id:item.requestId,version:result.version};
+      setRouteReviewId(null);
+      setRouteFeedback("The original audited Staging route accepted the action. Checking the saved case state…");
+      setRevision(n=>n+1);
+    }catch(e){
+      setRouteFeedbackError(true);
+      setRouteFeedback(e?.message||"The route could not be verified. Nothing has been confirmed.");
+      setRouteReviewId(null);
+    }finally{
+      setRouteBusy(false);
+    }
+  }
   useEffect(()=>{
     let active=true;
     const controller=new AbortController();
@@ -101,15 +171,39 @@ export default function FounderPrivateCases(){
           if(error?.name==="AbortError")throw error;
           oversightError="Original Founder monitoring could not be verified. Incident counts are unknown; use the existing Founder Alerts for investigation.";
         }
-        if(active)setState({
-          loading:false,verified:true,needsSignIn:false,items:safeItems,
-          more:body.additionalResultsNotShown===true,error:"",oversight,oversightError
-        });
+        if(active){
+          if(routeVerification.current){
+            const expected=routeVerification.current;
+            const match=safeItems.find(i=>i.requestId===expected.id);
+            if(match&&match.assignedDepartment==="customer_support"&&
+               match.version===expected.version&&
+               match.lifecycleState==="RECEIVED"&&
+               match.acknowledgementState==="NOT_SENT"){
+              setRouteFeedback("Verified after refresh: internally routed to Customer Support. No employee assigned, acknowledgement sent or external message delivered.");
+              setRouteFeedbackError(false);
+            }else{
+              setRouteFeedback("The previous route needs independent verification. Refresh the case references; do not repeat the action until its status is clear.");
+              setRouteFeedbackError(true);
+            }
+            routeVerification.current=null;
+          }
+          setState({
+            loading:false,verified:true,needsSignIn:false,items:safeItems,
+            more:body.additionalResultsNotShown===true,error:"",oversight,oversightError
+          });
+        }
       }catch(error){
-        if(active&&error?.name!=="AbortError")setState({
-          loading:false,verified:false,needsSignIn:error?.name==="FounderSignInRequired",items:[],more:false,oversight:null,oversightError:"",
-          error:String(error?.message||"The source is unavailable.")
-        });
+        if(active&&error?.name!=="AbortError"){
+          if(routeVerification.current){
+            routeVerification.current=null;
+            setRouteFeedbackError(true);
+            setRouteFeedback("The routing command returned success, but the saved record could not be independently rechecked. Do not repeat routing until verification succeeds.");
+          }
+          setState({
+            loading:false,verified:false,needsSignIn:error?.name==="FounderSignInRequired",items:[],more:false,oversight:null,oversightError:"",
+            error:String(error?.message||"The source is unavailable.")
+          });
+        }
       }
     }
     read();
@@ -125,7 +219,7 @@ export default function FounderPrivateCases(){
     </nav>
     <p style={{fontSize:12,fontWeight:800,letterSpacing:1.2,marginTop:30}}>FOUNDER CONTROL ROOM · PRIVATE STAGING REFERENCE VIEW</p>
     <h1 style={{fontSize:"clamp(25px,5vw,38px)",marginBottom:12}}>Customer support case references</h1>
-    <p style={note}>This is a separate private Founder view for verified support case references and workflow status. It does not display customer messages, names, email addresses, emotional conversations or private account details. The existing aggregate Founder Overview remains unchanged.</p>
+    <p style={note}>This is a private part of the existing Customer Communication Centre for verified case references, workflow status and expressly confirmed internal department routing. It does not display customer messages, names, email addresses, emotional conversations or private account details. The existing aggregate Founder Overview remains unchanged.</p>
     <div style={{display:"flex",alignItems:"center",gap:12,margin:"22px 0",flexWrap:"wrap"}}>
       <button type="button" onClick={refresh} disabled={state.loading}
         style={{background:"#225f44",color:"white",border:0,borderRadius:12,padding:"13px 19px",
@@ -155,6 +249,11 @@ export default function FounderPrivateCases(){
         Original Founder Alerts and Activity Timeline →
       </Link>
     </section>:null}
+    {routeFeedback?<section role={routeFeedbackError?"alert":"status"} aria-live="polite"
+      style={{...field,marginBottom:16,borderColor:routeFeedbackError?"#bd8557":"#9cbca5"}}>
+      <strong>{routeFeedbackError?"Routing not verified":"Internal routing verification"}</strong>
+      <p style={note}>{routeFeedback}</p>
+    </section>:null}
     {state.verified&&state.items.length===0?<section style={field} role="status">
       No customer support case references were returned by the verified Staging source.
     </section>:null}
@@ -175,13 +274,44 @@ export default function FounderPrivateCases(){
             <dd style={{margin:0,fontWeight:650,overflowWrap:"anywhere"}}>{value}</dd>
           </div>)}
         </dl>
+        {item.assignedDepartment==="customer_support"?<p role="status" style={note}>
+          Internally routed to Customer Support. This is not a staff member assignment,
+          customer reply or acknowledgement.
+        </p>:null}
+        {routingAllowed(item)&&routeReviewId!==item.requestId?<button type="button"
+          onClick={()=>setRouteReviewId(item.requestId)}
+          style={{marginTop:15,minHeight:48,padding:"12px 16px",borderRadius:12,
+            border:"1px solid #286a4f",background:"#fff",color:"#20583f",fontWeight:750}}>
+          Review internal route to Customer Support
+        </button>:null}
+        {routeReviewId===item.requestId&&routingAllowed(item)?<section
+          aria-label="Founder confirmation of internal case routing"
+          style={{...field,background:"#f0f6ef",marginTop:16}}>
+          <strong>Confirm internal department routing?</strong>
+          <p style={note}>Only this Staging case reference will be routed to the Customer Support
+            department. This will create a matching original Admin audit entry.
+            It will not assign an employee, acknowledge or reply to the customer,
+            set a response deadline, send an email, or change staff permissions.</p>
+          <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
+            <button type="button" onClick={()=>confirmRoute(item)} disabled={routeBusy}
+              style={{minHeight:48,padding:"12px 16px",background:"#20583f",
+                border:0,borderRadius:12,color:"#fff",fontWeight:750}}>
+              Confirm internal routing in Staging
+            </button>
+            <button type="button" onClick={()=>setRouteReviewId(null)}
+              style={{minHeight:48,padding:"12px 16px",background:"#fff",
+                border:"1px solid #96b8a0",borderRadius:12,color:"#20583f",fontWeight:750}}>
+              Cancel — leave case unchanged
+            </button>
+          </div>
+        </section>:null}
       </article>)}
       </div>
       {state.more?<p role="status">Showing the latest 20 references. Older records may exist; this is not a complete total.</p>:null}
     </section>:null}
     <aside style={{...field,marginTop:24}}>
       <strong>Safety and next service steps</strong>
-      <p style={note}>This screen is read-only. Assigning a case, preparing human replies and sending acknowledgements belong to the separately controlled customer service workflow. No outgoing customer message or staff access change is triggered here.</p>
+      <p style={note}>Case references and canonical Founder monitoring are read-only. A separate two-step Founder confirmation can route an eligible Staging case internally to the Customer Support department, using the original audited service. Assigning an individual staff member, preparing human replies and sending acknowledgements remain separate controlled stages. Opening or refreshing this page never routes a case, sends a customer message or changes staff access.</p>
       <Link href="/admin/control-room?view=overview" style={{color:"#174a36",fontWeight:750}}>
         Open existing Founder Alerts and Activity Timeline →
       </Link>
