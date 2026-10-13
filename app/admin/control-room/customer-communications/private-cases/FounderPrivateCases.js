@@ -51,7 +51,8 @@ export default function FounderPrivateCases(){
     approvalReview:false,founderCheck:"",customerIssueTopic:"",
     customerQuestionPreview:"",error:"",feedback:"",
     originalApprovalId:null,deliveryGate:"NOT_CHECKED",deliveryReview:false,
-    delivering:false,deliveryStatus:"NOT_DELIVERED",deliveryAt:null
+    delivering:false,deliveryStatus:"NOT_DELIVERED",deliveryAt:null,
+    followupStatus:"NOT_CHECKED",pendingFollowupCount:null
   });
   const [draft,setDraft]=useState(emptyDraft);
   const closeDraft=()=>{
@@ -215,6 +216,8 @@ export default function FounderPrivateCases(){
       const stored=await after.json().catch(()=>null);
       if(!after.ok||stored?.status!=="FOUNDER_PRIVATE_DRAFT_READ"||
         stored?.inAppDeliveryStatus!=="DELIVERED_IN_APP"||
+        stored?.customerContentDelivered!==true||
+        stored?.approvalStatus!=="FOUNDER_APPROVED_DELIVERED_IN_APP"||
         stored?.draftVersion!==draft.draftVersion||
         stored?.draftText!==draft.savedText||
         stored?.caseVersion!==item.version+1)
@@ -223,7 +226,9 @@ export default function FounderPrivateCases(){
         deliveryStatus:"DELIVERED_IN_APP",
         deliveryAt:stored.inAppDeliveredAt||result.deliveredAt||null,
         approvalStatus:"FOUNDER_APPROVED_DELIVERED_IN_APP",
-        feedback:"Original audited Staging IN-APP customer reply verified. No email, SMS or Production delivery.",
+        followupStatus:stored.followupStatus,
+        pendingFollowupCount:stored.pendingFollowupCount,
+        feedback:"Original audited Staging IN-APP customer reply verified. The original Founder approval remains recorded. No email, SMS or Production delivery.",
         error:""}));
       setRevision(n=>n+1);
     }catch(e){
@@ -246,12 +251,17 @@ export default function FounderPrivateCases(){
       if(!response.ok||body?.status!=="FOUNDER_PRIVATE_DRAFT_READ"||
         body?.registryId!==REGISTRY_ID||body?.audience!=="ORIGINAL_FOUNDER_ONLY"||
         body?.productionEffectEnabled!==false||body?.humanReplySent!==false||
-        body?.customerContentDelivered!==false||
+        body?.customerContentDelivered!==(body?.inAppDeliveryStatus==="DELIVERED_IN_APP")||
         body?.caseVersion!==item.version||body?.department!=="customer_support"||
         !Number.isSafeInteger(body?.draftVersion)||body.draftVersion<0||
         typeof body?.draftText!=="string"||
         body.draftText.length>2000||
-        !["FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT","NOT_APPROVED"].includes(body?.approvalStatus))
+        !["FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT","NOT_APPROVED",
+          "FOUNDER_APPROVED_DELIVERED_IN_APP",
+          "DELIVERY_APPROVAL_UNVERIFIED"].includes(body?.approvalStatus)||
+        !["VERIFIED","UNAVAILABLE"].includes(body?.followupStatus)||
+        (body?.followupStatus==="VERIFIED"&&
+         (!Number.isSafeInteger(body?.pendingFollowupCount)||body.pendingFollowupCount<0)))
         throw Error("The existing Founder draft could not be verified. Nothing has been sent.");
       // Exact original Staging-only Founder delivery readiness, no send on read.
       let deliveryGate="NOT_VERIFIED";
@@ -275,7 +285,13 @@ export default function FounderPrivateCases(){
         approvalStatus:body.approvalStatus,originalApprovalId:body.approvalId||null,
         deliveryGate,deliveryStatus:body.inAppDeliveryStatus||"NOT_DELIVERED",
         deliveryAt:body.inAppDeliveredAt||null,
-        feedback:body.draftVersion>0?"Saved reply draft loaded. Read and approve if suitable. Nothing was sent.":"HIISSA is preparing a response to the original customer question for your review."});
+        followupStatus:body.followupStatus,
+        pendingFollowupCount:body.pendingFollowupCount,
+        feedback:body.inAppDeliveryStatus==="DELIVERED_IN_APP"?
+          "The first reply was delivered in-app to the original Staging customer. Its original Founder approval is preserved; review any new customer follow-ups here.":
+          body.draftVersion>0?
+          "Saved reply draft loaded. Read and approve if suitable. Nothing was sent.":
+          "HIISSA is preparing a response to the original customer question for your review."});
       // Founder-requested default: reuse EXISTING HIISSA AI to prepare the
       // FIRST reply automatically on opening this case. No send/auto approval.
       if(body.draftVersion===0)await prepareWithHIISSA(item,0);
@@ -740,6 +756,24 @@ export default function FounderPrivateCases(){
                   was sent. Delivered: {draft.deliveryAt?
                     formatHiissaGlobalRecordTime(draft.deliveryAt):
                     "Timestamp unavailable"}.</p>
+              </section>:null}
+              {draft.deliveryStatus==="DELIVERED_IN_APP"?<section
+                aria-label="Private Founder support follow-up oversight"
+                style={{...field,background:"#f8faf7",marginTop:16}}>
+                <strong>Customer follow-ups · original Founder Control Room</strong>
+                {draft.followupStatus==="VERIFIED"?<p role="status" style={note}>
+                  {draft.pendingFollowupCount===0?
+                    "No customer follow-up has been received for this case.":
+                    draft.pendingFollowupCount+" customer follow-up(s) awaiting Customer Support review."}
+                  {" "}This is metadata only; the original Founder Overview stays
+                  aggregate-only and customer message contents remain private.</p>:
+                  <p role="alert" style={note}>Customer follow-up status could not be
+                    verified. Do not assume the customer has no pending messages.
+                    Check the original Founder Alerts and Activity Timeline.</p>}
+                {draft.approvalStatus==="DELIVERY_APPROVAL_UNVERIFIED"?
+                  <p role="alert" style={note}>A delivery record exists but the
+                    matching original Founder L3 approval could not be rechecked.
+                    Do not approve or send again without investigation.</p>:null}
               </section>:null}
               {draft.draftVersion>0&&draft.deliveryStatus!=="DELIVERED_IN_APP"&&draft.approvalStatus==="NOT_APPROVED"&&
                 draft.text===draft.savedText&&!draft.saving&&!draft.assisting?
