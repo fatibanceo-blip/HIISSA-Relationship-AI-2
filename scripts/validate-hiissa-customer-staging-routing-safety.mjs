@@ -132,3 +132,6 @@ assert.ok(!oldFounderApi.includes("stagingAuthenticatedRecentRequests"),
 console.log("PASS: R188 separate Founder-only STAGING metadata selector is read-only and excludes customer contents/identity.");
 console.log("PASS: R188 selector remains separate from original Founder aggregate-only oversight; new + original host guarded together.");
 console.log("NOT VERIFIED: practical Founder selector browser login, case routing, staff lifecycle, acknowledgement or Production.");
+
+// R190: mandatory old+new Founder-only private case UI and original-host regression.
+await import("./validate-hiissa-founder-private-cases.mjs");
