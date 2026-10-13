@@ -25,7 +25,7 @@ export async function GET(request){
         .select("id,title,request_summary,lifecycle_state,acknowledgement_state,assigned_department,internal_note,created_at,updated_at,version")
         .eq("environment","staging").order("created_at",{ascending:false}).limit(35),
       founder.admin.from("hiissa_customer_support_inbox_staging")
-        .select("id,lifecycle_state,acknowledgement_state,assigned_department,response_due_at,created_at")
+        .select("id,lifecycle_state,created_at")
         .eq("environment","staging").order("created_at",{ascending:false}).limit(35),
       // Exact source-wide counts: old .limit(35) length under-counted a busy inbox.
       // All four reads remain behind the EXISTING Staging-only Founder gate.
@@ -64,20 +64,10 @@ export async function GET(request){
       stagingAuthenticatedCustomerRequests:inboxTotal.count,
       stagingAuthenticatedReceivedCount:inboxReceived.count,
       stagingAuthenticatedAcknowledgementNotSent:inboxNotSent.count,
-      // The individual items are status-only and bounded. No subject, body, email,
-      // account identity, full ID or tokens leave the Founder-gated service route.
-      stagingAuthenticatedRecentRequests:(inbox.data||[]).map(item=>({
-        caseCode:"STG-"+item.id.slice(0,8).toUpperCase(),
-        lifecycleState:item.lifecycle_state,
-        acknowledgementState:item.acknowledgement_state,
-        assignedDepartment:item.assigned_department||null,
-        responseDueAt:item.response_due_at||null,
-        receivedAt:item.created_at
-      })),
-      stagingAuthenticatedRecentLimit:35,
+      // Original Founder privacy contract is preserved: aggregate-only.
+      // Do not return even pseudonymous individual Staging customer cases.
       stagingAuthenticatedCustomerIntake:"CONNECTED_STAGING_ONLY",
-      // Authenticated Staging inbox: privacy-safe statuses only; no message content.
-      authenticatedIntakePrivacy:"AGGREGATE_AND_STATUS_ONLY",
+      authenticatedIntakePrivacy:"AGGREGATE_ONLY",
       actionSourceVerified:true,stagingPracticeCases:practice.data||[],fictionalWorkCount:items.filter(i=>i.fictional).length,items,
       canonicalIncidentFeedVerified:true,openIncidentCount:incidents.filter(i=>i.state!=="verified_resolved").length,
       externalCustomerMessages:"NOT_CONNECTED",externalDeliveryEnabled:false,
