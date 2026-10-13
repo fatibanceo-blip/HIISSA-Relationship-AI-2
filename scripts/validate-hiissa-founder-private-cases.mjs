@@ -70,6 +70,38 @@ has("Secure existing metadata selector",selector,[
  'eq("environment","staging")','limit(20)',
  'caseMetadataOnly:true', 'staffAccessGranted:false','externalDeliveryPerformed:false'
 ]);
+// R193 canonical shared source: add-on must use the ORIGINAL protected
+// aggregate oversight and Registry, not its own operational duplicate.
+has("Original Founder control integration",screen,[
+ 'REGISTRY_ID="customer-communication-service-level-centre"',
+ 'ORIGINAL_OVERSIGHT="/api/admin/control-room/customer-communications"',
+ 'body?.registryId!==REGISTRY_ID',
+ 'oldBody?.registryId!==REGISTRY_ID',
+ 'oldBody?.authenticatedIntakePrivacy!=="AGGREGATE_ONLY"',
+ 'oldBody?.canonicalIncidentFeedVerified!==true',
+ 'oldBody?.existingFounderApprovalInbox!=="REUSED_NOT_DUPLICATED"',
+ 'oldBody?.existingAlerts!=="REUSED_NOT_DUPLICATED"',
+ 'oldBody?.productionEffectEnabled!==false',
+ '!Number.isSafeInteger(oldBody?.openIncidentCount)',
+ 'oversightError="Original Founder monitoring could not be verified.',
+ 'Incident counts are unknown',
+ 'Original Founder Alerts and Activity Timeline',
+ 'state.oversight?',
+ 'One Customer Communication Centre',
+ 'formatHiissaGlobalRecordTime(state.oversight.checkedAt)'
+]);
+has("Old Founder aggregate actually owns canonical monitoring",originalAggregate,[
+ 'registryId:"customer-communication-service-level-centre"',
+ 'canonicalIncidentFeedVerified:true',
+ 'openIncidentCount:',
+ 'existingFounderApprovalInbox:"REUSED_NOT_DUPLICATED"',
+ 'existingAlerts:"REUSED_NOT_DUPLICATED"'
+]);
+assert.ok(!screen.includes('.from("hiissa_operational_incidents")') &&
+  !screen.includes('.from("admin_audit_events")') &&
+  !screen.includes('.from("admin_approval_requests")'),
+  "No duplicate incident/audit/approval direct reads in private page");
+console.log("PASS SOURCE: R193 private subview shares ORIGINAL aggregate Control Room, Registry and canonical incidents/Alerts; refuses fabricated monitoring.");
 console.log("PASS SOURCE: R190 separate Founder-only private case page, existing read-only GET only.");
 console.log("PASS SOURCE: original aggregate Founder dashboard and owned customer Support Save/Refresh retained.");
 console.log("NOT VERIFIED: practical original Founder authenticated browser, 401/403/404/503, human support lifecycle or Production.");
