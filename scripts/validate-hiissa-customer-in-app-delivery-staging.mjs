@@ -45,6 +45,11 @@ checks("subordinate original Staging receipt",sql,[
 checks("Founder single Staging-only delivery action hard off without Founder gate",founder,[
  "operationalCentreStagingAllowed()",
  "HIISSA_STAGING_IN_APP_SUPPORT_REPLY_DELIVERY_ENABLED",
+ "HIISSA_STAGING_IN_APP_SUPPORT_REPLY_TEST_CASE_ID",
+ "UUID.test(allowedStagingTestCase())",
+ "requestId===allowedStagingTestCase()",
+ 'body?.requestId!==allowedStagingTestCase()',
+ "CASE_NOT_ACTIVATED_FOR_IN_APP_DELIVERY",
  'process.env.VERCEL_ENV==="staging"',
  "if(!stagingDeliveryEnabled())return noStore",
  "IN_APP_DELIVERY_NOT_ACTIVATED",
@@ -75,6 +80,7 @@ checks("Existing original customer UI retains Save and Refresh",mySupport,[
 ]);
 checks("Original Founder gated two-step in-app UI",privateFounder,[
  'IN_APP_DELIVERY_ACTION=DRAFT_ACTION+"/deliver"',
+ 'IN_APP_DELIVERY_ACTION+"?requestId="+encodeURIComponent(item.requestId)',
  'deliveryGate:"NOT_CHECKED"',
  'if(!stagingDeliveryEnabled())',
  // the protection against inadvertent delivery is on the SERVER, not client:
