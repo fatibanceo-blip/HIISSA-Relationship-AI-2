@@ -126,6 +126,10 @@ export default function FounderPrivateCases(){
           body?.caseMetadataOnly!==true||
           body?.productionEffectEnabled!==false||
           body?.externalDeliveryPerformed!==false||
+          body?.humanReplyTargetPolicy!=="FOUNDER_APPROVED_ONE_MINUTE_DESIGN_NOT_LIVE"||
+          body?.humanReplyEvidenceSource!=="NOT_CONNECTED"||
+          body?.founderEmailNotification!=="NOT_CONFIGURED"||
+          body?.founderPhoneNotification!=="NOT_CONFIGURED"||
           !Array.isArray(body?.items)||
           body.items.length>20){
           throw Error(classifyUnavailable(res.status,body));
@@ -136,10 +140,18 @@ export default function FounderPrivateCases(){
           lifecycleState:typeof item?.lifecycleState==="string"?item.lifecycleState:null,
           acknowledgementState:typeof item?.acknowledgementState==="string"?item.acknowledgementState:null,
           assignedDepartment:typeof item?.assignedDepartment==="string"?item.assignedDepartment:null,
-          receivedAt:typeof item?.receivedAt==="string"?item.receivedAt:null
+          receivedAt:typeof item?.receivedAt==="string"?item.receivedAt:null,
+          humanReplyTargetAt:item?.humanReplyTarget?.verified===true&&
+            item?.humanReplyTarget?.designTargetSeconds===60&&
+            item?.humanReplyTarget?.replyEvidence==="NOT_CONNECTED"&&
+            item?.humanReplyTarget?.liveHumanSla==="NOT_ACTIVE"&&
+            typeof item?.humanReplyTarget?.targetAt==="string"
+              ?item.humanReplyTarget.targetAt:null,
+          humanReplyEvidence:item?.humanReplyTarget?.replyEvidence||null
         }));
         if(safeItems.some(item=>!item.requestId||item.version===null||
-          !item.lifecycleState||!item.acknowledgementState||!item.receivedAt))
+          !item.lifecycleState||!item.acknowledgementState||!item.receivedAt||
+          !item.humanReplyTargetAt||item.humanReplyEvidence!=="NOT_CONNECTED"))
           throw Error("Protected case details could not be verified.");
         // Reuse the ORIGINAL Founder Control Room's aggregate-only health/incident
         // source. Do not query or duplicate its incident, alert or approval tables.
@@ -241,7 +253,8 @@ export default function FounderPrivateCases(){
       <h2 style={{fontSize:19,marginTop:0}}>Connected to the original Founder Control Room</h2>
       <p style={note}>One Customer Communication Centre · existing Experience Registry · original Admin audit, incident monitoring, Alerts and approval queue. No duplicate dashboard or separate data source.</p>
       {state.oversight?<div role="status">
-        <p><strong>Total recorded Staging customer requests:</strong> {state.oversight.total}</p>
+        <p><strong>Incoming customer support requests recorded in Staging:</strong> {state.oversight.total}</p>
+        <p style={note}>These records are available through the original Founder Control Room. The approved Founder email and dedicated-phone customer message alerts still require configuration and delivery testing; no external notification has been sent.</p>
         <p><strong>Open feature incidents in original monitoring:</strong> {state.oversight.incidents} recorded. A zero count does not certify the full service is healthy.</p>
         <p style={note}>Source checked: {state.oversight.checkedAt?formatHiissaGlobalRecordTime(state.oversight.checkedAt):"Timestamp unavailable"}</p>
       </div>:<p role="alert">{state.oversightError||"Shared operational status not verified. Incident counts are unknown."}</p>}
@@ -274,6 +287,20 @@ export default function FounderPrivateCases(){
             <dd style={{margin:0,fontWeight:650,overflowWrap:"anywhere"}}>{value}</dd>
           </div>)}
         </dl>
+        <section aria-label="Founder-approved one-minute human response target" style={{
+          marginTop:16,padding:"12px 14px",borderRadius:12,background:"#f1f5ee",
+          border:"1px solid #d3e2d4"
+        }}>
+          <strong>Human customer-service reply target: within 1 minute</strong>
+          <p style={note}>Founder-approved design target, calculated from the original
+            request receipt: {formatHiissaGlobalRecordTime(item.humanReplyTargetAt)}.
+            The human reply evidence source is not connected yet.
+            This is NOT an active or verified human-response SLA, not proof
+            of a late employee reply, and not an automatic acknowledgement.</p>
+          <p style={note}>Incoming message attention is visible here in the original
+            Founder Control Room. Founder email and dedicated-phone notices are
+            approved for implementation but have not yet been delivered or activated.</p>
+        </section>
         {item.assignedDepartment==="customer_support"?<p role="status" style={note}>
           Internally routed to Customer Support. This is not a staff member assignment,
           customer reply or acknowledgement.
