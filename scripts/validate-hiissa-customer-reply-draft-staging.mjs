@@ -56,7 +56,10 @@ for(const bad of ["sendEmail(", "sendSMS(",".update(",".delete(",".insert(",'.rp
  assert.ok(!api.includes(bad),"No external delivery, or approval mutation in read/save route: "+bad);
 check("same original Founder page draft",ui,[
  'DRAFT_ACTION="/api/admin/control-room/customer-communications/reply-draft"',
- 'Prepare private customer reply draft',
+ 'Open HIISSA-prepared customer reply',
+ 'HIISSA helps you respond · Founder review and approval',
+ 'Approve this reply — do not send',
+ 'Cancel approval',
  'Save private draft — do not send',
  'PRIVATE reply draft saved and verified.',
  'action:"save_founder_private_reply_draft"',
