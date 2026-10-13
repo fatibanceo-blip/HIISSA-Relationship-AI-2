@@ -11,6 +11,8 @@ const originalSupport=read("app/api/support/requests/route.js");
 const originalFounder=read("app/api/admin/control-room/customer-communications/route.js");
 const originalApprove=read("app/api/admin/control-room/customer-communications/reply-draft/approve/route.js");
 const originalRegistry=read("lib/experience-registry.js");
+const privateFounder=read("app/admin/control-room/customer-communications/private-cases/FounderPrivateCases.js");
+const privateReply=read("app/api/admin/control-room/customer-communications/reply-draft/route.js");
 const checks=(tag,src,terms)=>terms.forEach(s=>assert.ok(src.includes(s),tag+" missing "+s));
 checks("subordinate original Staging receipt",sql,[
  "CREATE TABLE IF NOT EXISTS public.hiissa_customer_support_in_app_replies_staging",
@@ -70,6 +72,33 @@ checks("Existing original customer UI retains Save and Refresh",mySupport,[
  "Reply from HIISSA Customer Support · delivered in-app",
  'repliesState==="UNAVAILABLE"',
  "No in-app customer-service replies have been delivered"
+]);
+checks("Original Founder gated two-step in-app UI",privateFounder,[
+ 'IN_APP_DELIVERY_ACTION=DRAFT_ACTION+"/deliver"',
+ 'deliveryGate:"NOT_CHECKED"',
+ 'if(!stagingDeliveryEnabled())',
+ // the protection against inadvertent delivery is on the SERVER, not client:
+ 'draft.deliveryGate!=="READY_FOR_EXPLICIT_FOUNDER_ACTION"',
+ 'draft.deliveryReview!==true',
+ 'draft.originalApprovalId',
+ 'Review in-app-only delivery in Staging',
+ 'Confirm Staging-only in-app delivery',
+ 'Cancel — do not deliver',
+ 'IN-APP DELIVERY NOT ACTIVE',
+ 'DELIVERED_IN_APP',
+ 'draft.deliveryStatus==="DELIVERED_IN_APP"',
+ 'stored?.inAppDeliveryStatus!=="DELIVERED_IN_APP"',
+ 'Confirm internal routing in Staging',
+ 'Approve this reply — do not send'
+].filter(x=>x!=='if(!stagingDeliveryEnabled())'));
+checks("Original private case status/approval receipt read only",privateReply,[
+ '.from("admin_approval_requests")',
+ '.from("hiissa_customer_support_in_app_replies_staging")',
+ 'approvalId',
+ 'inAppDeliveryStatus:inAppDelivered?"DELIVERED_IN_APP":"NOT_DELIVERED"',
+ 'audience:"ORIGINAL_FOUNDER_ONLY"',
+ 'humanReplySent:false,customerContentDelivered:false',
+ 'productionEffectEnabled:false'
 ]);
 checks("Original Support owner-only intake unchanged",originalSupport,[
  "verifySignedInCustomer(request)",'eq("customer_user_id",gate.userId)',
