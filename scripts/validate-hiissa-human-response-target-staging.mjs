@@ -1,6 +1,7 @@
 // HIISSA R201 mandatory human ONE-MINUTE Founder target functional + OLD host regression.
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {formatHiissaGlobalRecordTime} from "../lib/hiissa-record-time.js";
 import {
   projectOneMinuteHumanTarget,
   HUMAN_RESPONSE_DESIGN_TARGET_MS,
@@ -29,8 +30,31 @@ assert.deepEqual(example,{
 });
 const tz=projectOneMinuteHumanTarget("2026-10-13T13:00:00+01:00","ASSIGNED");
 assert.equal(tz.targetAt,example.targetAt,"International clock-offset input must normalize to UTC");
+const zones=[
+ ["Europe/London","en-GB","13"],
+ ["Europe/Paris","fr-FR","14"],
+ ["America/New_York","en-US","08"],
+ ["Asia/Tokyo","ja-JP","21"],
+ ["Africa/Accra","en-GH","12"]
+];
+for(const [timeZone,locale,expectedHour] of zones) {
+ const parts=new Intl.DateTimeFormat(locale,{timeZone,hour:"2-digit",
+   minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(example.targetAt));
+ assert.equal(parts.find(p=>p.type==="hour")?.value,expectedHour,
+   timeZone+" local displayed hour for one UTC instant");
+ assert.equal(parts.find(p=>p.type==="minute")?.value,"01",
+   timeZone+" local displayed minute for one UTC instant");
+ assert.notEqual(formatHiissaGlobalRecordTime(example.targetAt,{locale,timeZone}),"—");
+}
+
 const dst=projectOneMinuteHumanTarget("2026-10-25T00:59:40Z","RECEIVED");
 assert.equal(dst.targetAt,"2026-10-25T01:00:40.000Z","DST must preserve actual 60 seconds, not wallclock guess");
+const ukFall=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",
+ hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date(dst.targetAt));
+const frFall=new Intl.DateTimeFormat("fr-FR",{timeZone:"Europe/Paris",
+ hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date(dst.targetAt));
+assert.equal(ukFall,"01:00");
+assert.equal(frFall,"02:00");
 assert.equal(projectOneMinuteHumanTarget("2026-10-13T12:00:00Z","RESOLVED").attentionStatus,
  "CASE_RESOLVED_HUMAN_REPLY_EVIDENCE_NOT_CONNECTED");
 const bad=projectOneMinuteHumanTarget("not a time","RECEIVED");
