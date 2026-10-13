@@ -170,6 +170,67 @@ export default function FounderPrivateCases(){
         error:e?.message||"Founder approval is not verified. Nothing has been sent."}));
     }finally{approvalWriteBusy.current=false;}
   }
+  async function confirmInAppDelivery(item){
+    // A separate Founder activation gate is required IN ADDITION TO the
+    // existing human L3 wording approval and two deliberate Founder clicks.
+    if(deliveryWriteBusy.current||draftWriteBusy.current||
+       aiWriteBusy.current||approvalWriteBusy.current||
+       draft.deliveryGate!=="READY_FOR_EXPLICIT_FOUNDER_ACTION"||
+       draft.deliveryReview!==true||
+       draft.caseId!==item.requestId||draft.caseVersion!==item.version||
+       draft.approvalStatus!=="FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT"||
+       !draft.originalApprovalId||draft.draftVersion<1||
+       draft.text!==draft.savedText||!state.verified)return;
+    deliveryWriteBusy.current=true;
+    setDraft(prev=>({...prev,delivering:true,error:"",
+      feedback:"Checking the explicitly activated Staging-only in-app delivery…"}));
+    try{
+      const client=existingSessionClient();
+      const {data,error}=client?await client.auth.getSession():{error:true};
+      if(error||!data?.session?.access_token)
+        throw Error("Founder sign-in required; in-app delivery was not confirmed.");
+      const response=await fetch(IN_APP_DELIVERY_ACTION,{
+        method:"POST",cache:"no-store",credentials:"same-origin",
+        headers:{"Content-Type":"application/json",
+          Authorization:"Bearer "+data.session.access_token},
+        body:JSON.stringify({action:"deliver_approved_in_app_reply",
+          requestId:item.requestId,approvalId:draft.originalApprovalId,
+          caseVersion:item.version,draftVersion:draft.draftVersion})
+      });
+      const result=await response.json().catch(()=>null);
+      if(!response.ok||!["DELIVERED_IN_APP_AND_AUDITED",
+          "ALREADY_DELIVERED_IN_APP"].includes(result?.status)||
+        result?.registryId!==REGISTRY_ID||result?.replyDelivered!==true||
+        result?.channel!=="IN_APP_STAGING"||
+        result?.emailSent!==false||result?.smsSent!==false||
+        result?.productionEffectEnabled!==false)
+        throw Error(response.status===403?
+          "In-app delivery is not activated or permitted. No send was confirmed.":
+          "The approved Staging in-app response could not be confirmed. Reopen the case; do not repeat blindly.");
+      // Independently verify original Founder-private persisted in-app receipt.
+      const after=await fetch(DRAFT_ACTION+"?requestId="+encodeURIComponent(item.requestId),{
+        method:"GET",cache:"no-store",
+        headers:{Authorization:"Bearer "+data.session.access_token}
+      });
+      const stored=await after.json().catch(()=>null);
+      if(!after.ok||stored?.status!=="FOUNDER_PRIVATE_DRAFT_READ"||
+        stored?.inAppDeliveryStatus!=="DELIVERED_IN_APP"||
+        stored?.draftVersion!==draft.draftVersion||
+        stored?.draftText!==draft.savedText||
+        stored?.caseVersion!==item.version+1)
+        throw Error("Delivery may have occurred but the saved receipt could not be independently verified. Do not repeat. Contact original Founder Alerts.");
+      setDraft(prev=>({...prev,delivering:false,deliveryReview:false,
+        deliveryStatus:"DELIVERED_IN_APP",
+        deliveryAt:stored.inAppDeliveredAt||result.deliveredAt||null,
+        approvalStatus:"FOUNDER_APPROVED_DELIVERED_IN_APP",
+        feedback:"Original audited Staging IN-APP customer reply verified. No email, SMS or Production delivery.",
+        error:""}));
+      setRevision(n=>n+1);
+    }catch(e){
+      setDraft(prev=>({...prev,delivering:false,deliveryReview:false,feedback:"",
+        error:e?.message||"Staging in-app delivery not verified. Do not retry blindly."}));
+    }finally{deliveryWriteBusy.current=false;}
+  }
   async function openDraft(item){
     if(draftWriteBusy.current||!state.verified||!item?.assignedDepartment||
       item.assignedDepartment!=="customer_support")return;
