@@ -7,6 +7,8 @@ import {createClient} from "@supabase/supabase-js";
 import {formatHiissaGlobalRecordTime} from "../../../../../lib/hiissa-record-time.js";
 
 const API="/api/admin/control-room/customer-communications/private-intake-selector";
+const ORIGINAL_OVERSIGHT="/api/admin/control-room/customer-communications";
+const REGISTRY_ID="customer-communication-service-level-centre";
 const RETURN="/admin/control-room/customer-communications";
 let browserClient=null;
 function existingSessionClient(){
@@ -26,14 +28,14 @@ function classifyUnavailable(http,body){
 const field={background:"#fffefa",border:"1px solid #d7e5d9",borderRadius:16,padding:18};
 const note={color:"#4b6155",fontSize:14,lineHeight:1.6};
 export default function FounderPrivateCases(){
-  const [state,setState]=useState({loading:true,verified:false,needsSignIn:false,items:[],more:false,error:""});
+  const [state,setState]=useState({loading:true,verified:false,needsSignIn:false,items:[],more:false,error:"",oversight:null,oversightError:""});
   const [revision,setRevision]=useState(0);
   const refresh=useCallback(()=>setRevision(n=>n+1),[]);
   useEffect(()=>{
     let active=true;
     const controller=new AbortController();
     async function read(){
-      setState({loading:true,verified:false,needsSignIn:false,items:[],more:false,error:""});
+      setState({loading:true,verified:false,needsSignIn:false,items:[],more:false,error:"",oversight:null,oversightError:""});
       try{
         const client=existingSessionClient();
         if(!client)throw Error("Secure Staging sign-in is unavailable. No case was displayed.");
@@ -50,6 +52,7 @@ export default function FounderPrivateCases(){
         const body=await res.json().catch(()=>null);
         if(!res.ok||body?.status!=="PRIVATE_STAGING_SELECTOR_READ_ONLY"||
           body?.audience!=="ORIGINAL_FOUNDER_ONLY"||
+          body?.registryId!==REGISTRY_ID||
           body?.caseMetadataOnly!==true||
           body?.productionEffectEnabled!==false||
           body?.externalDeliveryPerformed!==false||
@@ -68,13 +71,43 @@ export default function FounderPrivateCases(){
         if(safeItems.some(item=>!item.requestId||item.version===null||
           !item.lifecycleState||!item.acknowledgementState||!item.receivedAt))
           throw Error("Protected case details could not be verified.");
+        // Reuse the ORIGINAL Founder Control Room's aggregate-only health/incident
+        // source. Do not query or duplicate its incident, alert or approval tables.
+        let oversight=null;
+        let oversightError="";
+        try{
+          const old=await fetch(ORIGINAL_OVERSIGHT,{
+            method:"GET",cache:"no-store",signal:controller.signal,
+            headers:{Authorization:"Bearer "+data.session.access_token}
+          });
+          const oldBody=await old.json().catch(()=>null);
+          if(!old.ok||oldBody?.status!=="MONITORING"||
+            oldBody?.registryId!==REGISTRY_ID||
+            oldBody?.authenticatedIntakePrivacy!=="AGGREGATE_ONLY"||
+            oldBody?.canonicalIncidentFeedVerified!==true||
+            oldBody?.existingFounderApprovalInbox!=="REUSED_NOT_DUPLICATED"||
+            oldBody?.existingAlerts!=="REUSED_NOT_DUPLICATED"||
+            oldBody?.productionEffectEnabled!==false||
+            !Number.isSafeInteger(oldBody?.openIncidentCount)||
+            oldBody.openIncidentCount<0||
+            !Number.isSafeInteger(oldBody?.stagingAuthenticatedCustomerRequests))
+            throw Error("Shared Founder monitoring source could not be verified.");
+          oversight={
+            total:oldBody.stagingAuthenticatedCustomerRequests,
+            incidents:oldBody.openIncidentCount,
+            checkedAt:oldBody.checkedAt||null
+          };
+        }catch(error){
+          if(error?.name==="AbortError")throw error;
+          oversightError="Original Founder monitoring could not be verified. Incident counts are unknown; use the existing Founder Alerts for investigation.";
+        }
         if(active)setState({
           loading:false,verified:true,needsSignIn:false,items:safeItems,
-          more:body.additionalResultsNotShown===true,error:""
+          more:body.additionalResultsNotShown===true,error:"",oversight,oversightError
         });
       }catch(error){
         if(active&&error?.name!=="AbortError")setState({
-          loading:false,verified:false,needsSignIn:error?.name==="FounderSignInRequired",items:[],more:false,
+          loading:false,verified:false,needsSignIn:error?.name==="FounderSignInRequired",items:[],more:false,oversight:null,oversightError:"",
           error:String(error?.message||"The source is unavailable.")
         });
       }
@@ -108,6 +141,19 @@ export default function FounderPrivateCases(){
       <p>{state.error}</p>
       {state.needsSignIn?<p><Link href="/admin/login" style={{color:"#174a36",fontWeight:800}}>Open existing Founder sign-in →</Link></p>:null}
       <p style={note}>No case was edited, assigned, acknowledged or sent.</p>
+    </section>:null}
+    {state.verified?<section aria-label="Existing Founder Control Room operational connection"
+      style={{...field,marginBottom:18}}>
+      <h2 style={{fontSize:19,marginTop:0}}>Connected to the original Founder Control Room</h2>
+      <p style={note}>One Customer Communication Centre · existing Experience Registry · original Admin audit, incident monitoring, Alerts and approval queue. No duplicate dashboard or separate data source.</p>
+      {state.oversight?<div role="status">
+        <p><strong>Total recorded Staging customer requests:</strong> {state.oversight.total}</p>
+        <p><strong>Open feature incidents in original monitoring:</strong> {state.oversight.incidents} recorded. A zero count does not certify the full service is healthy.</p>
+        <p style={note}>Source checked: {state.oversight.checkedAt?formatHiissaGlobalRecordTime(state.oversight.checkedAt):"Timestamp unavailable"}</p>
+      </div>:<p role="alert">{state.oversightError||"Shared operational status not verified. Incident counts are unknown."}</p>}
+      <Link href="/admin/control-room?view=overview" style={{color:"#174a36",fontWeight:750}}>
+        Original Founder Alerts and Activity Timeline →
+      </Link>
     </section>:null}
     {state.verified&&state.items.length===0?<section style={field} role="status">
       No customer support case references were returned by the verified Staging source.
