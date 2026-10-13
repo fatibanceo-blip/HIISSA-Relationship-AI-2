@@ -256,7 +256,7 @@ export default function FounderPrivateCases(){
       // Exact original Staging-only Founder delivery readiness, no send on read.
       let deliveryGate="NOT_VERIFIED";
       try{
-        const responseGate=await fetch(IN_APP_DELIVERY_ACTION,{
+        const responseGate=await fetch(IN_APP_DELIVERY_ACTION+"?requestId="+encodeURIComponent(item.requestId),{
           method:"GET",cache:"no-store",
           headers:{Authorization:"Bearer "+data.session.access_token}
         });
