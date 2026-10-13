@@ -102,7 +102,7 @@ checks("Original private case status/approval receipt read only",privateReply,[
  'approvalId',
  'inAppDeliveryStatus:inAppDelivered?"DELIVERED_IN_APP":"NOT_DELIVERED"',
  'audience:"ORIGINAL_FOUNDER_ONLY"',
- 'humanReplySent:false,customerContentDelivered:false',
+ 'humanReplySent:false,customerContentDelivered:inAppDelivered',
  'productionEffectEnabled:false'
 ]);
 checks("Original Support owner-only intake unchanged",originalSupport,[
