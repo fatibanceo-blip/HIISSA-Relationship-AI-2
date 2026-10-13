@@ -12,7 +12,7 @@ export async function GET(request){
   try{
     const founder=await verifyOperationalCentreFounder(request);
     if(!founder.ok)return json({status:founder.reason},founder.http);
-    const [work,incident,practice,inbox]=await Promise.all([
+    const [work,incident,practice,inbox,inboxTotal,inboxReceived,inboxNotSent]=await Promise.all([
       founder.admin.from("staff_work_items")
         .select("case_code,status,is_fictional,external_effect_enabled,received_at,response_due_at,submitted_at,verified_completed_at,created_at")
         .eq("environment","staging").eq("workspace_id","customer_support")
@@ -25,10 +25,20 @@ export async function GET(request){
         .select("id,title,request_summary,lifecycle_state,acknowledgement_state,assigned_department,internal_note,created_at,updated_at,version")
         .eq("environment","staging").order("created_at",{ascending:false}).limit(35),
       founder.admin.from("hiissa_customer_support_inbox_staging")
-        .select("id,lifecycle_state,created_at")
-        .eq("environment","staging").order("created_at",{ascending:false}).limit(35)
+        .select("id,lifecycle_state,acknowledgement_state,assigned_department,response_due_at,created_at")
+        .eq("environment","staging").order("created_at",{ascending:false}).limit(35),
+      // Exact source-wide counts: old .limit(35) length under-counted a busy inbox.
+      // All four reads remain behind the EXISTING Staging-only Founder gate.
+      founder.admin.from("hiissa_customer_support_inbox_staging")
+        .select("id",{count:"exact",head:true}).eq("environment","staging"),
+      founder.admin.from("hiissa_customer_support_inbox_staging")
+        .select("id",{count:"exact",head:true}).eq("environment","staging").eq("lifecycle_state","RECEIVED"),
+      founder.admin.from("hiissa_customer_support_inbox_staging")
+        .select("id",{count:"exact",head:true}).eq("environment","staging").eq("acknowledgement_state","NOT_SENT")
     ]);
-    if(work.error||incident.error||practice.error||inbox.error)return json({
+    if(work.error||incident.error||practice.error||inbox.error||inboxTotal.error||inboxReceived.error||inboxNotSent.error||
+      !Number.isSafeInteger(inboxTotal.count)||!Number.isSafeInteger(inboxReceived.count)||
+      !Number.isSafeInteger(inboxNotSent.count))return json({
       status:"SOURCE_UNAVAILABLE",
       internalWorkVerified:!work.error,
       practiceSourceVerified:!practice.error,
@@ -51,10 +61,23 @@ export async function GET(request){
       internalWorkVerified:true,internalWorkSource:"existing-staging-staff_work_items",
       internalWorkCount:items.length,
       authenticatedStagingInboxVerified:true,
-      stagingAuthenticatedCustomerRequests:(inbox.data||[]).length,
+      stagingAuthenticatedCustomerRequests:inboxTotal.count,
+      stagingAuthenticatedReceivedCount:inboxReceived.count,
+      stagingAuthenticatedAcknowledgementNotSent:inboxNotSent.count,
+      // The individual items are status-only and bounded. No subject, body, email,
+      // account identity, full ID or tokens leave the Founder-gated service route.
+      stagingAuthenticatedRecentRequests:(inbox.data||[]).map(item=>({
+        caseCode:"STG-"+item.id.slice(0,8).toUpperCase(),
+        lifecycleState:item.lifecycle_state,
+        acknowledgementState:item.acknowledgement_state,
+        assignedDepartment:item.assigned_department||null,
+        responseDueAt:item.response_due_at||null,
+        receivedAt:item.created_at
+      })),
+      stagingAuthenticatedRecentLimit:35,
       stagingAuthenticatedCustomerIntake:"CONNECTED_STAGING_ONLY",
-      // No inbox subject/body/customer identity in dashboard or audit payload.
-      authenticatedIntakePrivacy:"AGGREGATE_ONLY",
+      // Authenticated Staging inbox: privacy-safe statuses only; no message content.
+      authenticatedIntakePrivacy:"AGGREGATE_AND_STATUS_ONLY",
       actionSourceVerified:true,stagingPracticeCases:practice.data||[],fictionalWorkCount:items.filter(i=>i.fictional).length,items,
       canonicalIncidentFeedVerified:true,openIncidentCount:incidents.filter(i=>i.state!=="verified_resolved").length,
       externalCustomerMessages:"NOT_CONNECTED",externalDeliveryEnabled:false,
