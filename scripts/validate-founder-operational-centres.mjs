@@ -90,3 +90,5 @@ await import("./validate-hiissa-visible-brand.mjs");
 await import("./validate-hiissa-authenticated-support-intake.mjs");
 // R180: jointly guard new genuine customer statuses AND unchanged working Founder/Staff host.
 await import("./validate-hiissa-customer-inbox-founder-and-host-regression.mjs");
+// R185: protect original support/Founder privacy while adding secure internal routing.
+await import("./validate-hiissa-customer-staging-routing-safety.mjs");
