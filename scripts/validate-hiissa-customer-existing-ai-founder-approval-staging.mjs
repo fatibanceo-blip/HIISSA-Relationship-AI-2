@@ -75,7 +75,7 @@ has("Current original Founder-private GET reads only canonical approvals",origin
  'founder_approve_customer_reply_draft',
  'FOUNDER_APPROVED_PENDING_EXECUTION_NOT_SENT',
  'caseVersion:caseRow.version',
- 'humanReplySent:false,customerContentDelivered:false',
+ 'humanReplySent:false,customerContentDelivered:inAppDelivered',
  'productionEffectEnabled:false'
 ]);
 has("Same original Founder case card AI + explicit review",ui,[
