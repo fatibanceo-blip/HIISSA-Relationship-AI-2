@@ -165,12 +165,13 @@ has("Founder-confirmed two-step routing on SAME private subview",screen,[
  'do not repeat the action until its status is clear',
  'not assign an employee'
 ]);
-const allFetchUrls=[...screen.matchAll(/(?:const (?:API|ORIGINAL_OVERSIGHT|ROUTE_ACTION))="([^"]+)"/g)].map(m=>m[1]);
+const allFetchUrls=[...screen.matchAll(/(?:const (?:API|ORIGINAL_OVERSIGHT|ROUTE_ACTION|DRAFT_ACTION))="([^"]+)"/g)].map(m=>m[1]);
 assert.deepEqual(allFetchUrls,[
  "/api/admin/control-room/customer-communications/private-intake-selector",
  "/api/admin/control-room/customer-communications",
- "/api/admin/control-room/customer-communications/route-department"
-],"Only canonical private GET, original aggregate GET, and pre-existing audited Staging POST");
+ "/api/admin/control-room/customer-communications/route-department",
+ "/api/admin/control-room/customer-communications/reply-draft"
+],"Only canonical private GET, aggregate GET, audited internal route and protected reply draft within SAME original Centre");
 assert.ok(!screen.includes('window.confirm')&&!screen.includes('setInterval'),
  "New Founder confirmation stays within current page; no hidden poller or browser confirm");
 assert.ok(!route.includes('sendMessage')&&!route.includes('sendAcknowledgement')&&!route.includes('.update('),
