@@ -16,6 +16,9 @@ has("New staging route",page,[
  'FounderPrivateCases','dynamic="force-dynamic"'
 ]);
 has("Private Founder metadata-only screen",screen,[
+ 'import {createClient} from "@supabase/supabase-js";', 'browserClient=createClient(url,key)',
+ 'reason.name="FounderSignInRequired"', 'state.needsSignIn?"SIGN IN REQUIRED"',
+ 'href="/admin/login"',
  'existingSessionClient()', 'client.auth.getSession()', 'Authorization:"Bearer "+data.session.access_token',
  'API="/api/admin/control-room/customer-communications/private-intake-selector"',
  'body?.status!=="PRIVATE_STAGING_SELECTOR_READ_ONLY"',
@@ -29,6 +32,8 @@ has("Private Founder metadata-only screen",screen,[
  'case references','read-only','← Back to Customer Communication Centre'
 ]);
 const executable=screen.split("\n").filter(l=>!l.trim().startsWith("//")).join("\n");
+assert.ok(!screen.includes("createBrowserClient")&&!screen.includes('from "@supabase/ssr"'),
+  "New private page must reuse ORIGINAL Founder login session, not a different SSR cookie store.");
 for(const bad of [
  'subject','message_body','customer_user_id','client_nonce',
  '.insert(','.update(','.delete(','.rpc(', 'method:"POST"','sendEmail',
