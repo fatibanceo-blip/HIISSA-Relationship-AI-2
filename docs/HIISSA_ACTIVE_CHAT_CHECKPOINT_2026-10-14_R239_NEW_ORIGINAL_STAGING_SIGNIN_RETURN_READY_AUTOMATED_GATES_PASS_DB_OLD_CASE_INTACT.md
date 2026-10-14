@@ -1,0 +1,35 @@
+# HIISSA R239 — 2026-10-14T18:34:56.157Z — EXACT original Staging sign-in task-return deployment READY, automated new+old checks PASS; browser customer acceptance pending
+
+## WHO / WHAT / previous Founder APPROVAL and latest technical evidence
+Founder approved **Staging ONLY** protected sign-in task return twice with direct warning not to break earlier working features (R236). R237 atomic feature commit **9075c6326e9ea02f3028a78154ed4ef7e7dc98b7** modified exactly 5 specific paths only (two existing customer-facing page source, one small pure helper, one rigorous test, package prebuild wiring) and NONE of original protected Talk, Magic Link Continue, Confirm, middleware, Account, FREE/Guest, Admin core paths. R238 began one controlled existing Staging Vercel deployment **dpl_E5xg4LxmKDGi8GaB4zZokrsSY4xM** targeted to original Vercel `prj_akN8AFEg0rlyCFmyn5LUSdjyWIF0` and exact Git SHA above. This R239 independent Vercel verification: deployment state **READY**, metadata SHA **9075c6326e9ea02f3028a78154ed4ef7e7dc98b7**, and original custom Staging ALIAS **`hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app` points to THIS new deployment** (exact alias deploymentId `dpl_E5xg4LxmKDGi8GaB4zZokrsSY4xM`, aliasError null). Environment target STAGING; no Production.
+
+## WHY / HOW / actual old/new regression tests evidence
+Live Vercel build logs collected for deployment ID above: prebuild chain contains BOTH `npm run test:protected-auth-baseline` and added `npm run test:support-signin-return` followed by existing `test:my-hiissa-routing`, `test:account-journey`, existing other broad source guards; precise log:
+`PASS: HIISSA protected auth source baseline (five historically governed files) and sign-in dependency contracts remain unchanged.`
+`PASS: original Support task return one-use, 15-min expiry, browser-storage failure, no open redirect, existing auth and dependent old/new source guards`
+`HIISSA My HIISSA routing contract: PASS`
+Other existing previous source tests visibly output PASS in logs and build completed; Vercel deployment READY independent confirmation. Structural PASS includes actual helper unit assertions on one-time, allowed fixed path, expiration, future timestamp, malformed/external Javascript input, storage failures; original Talk `shouldCreateUser:false`, protected FREE destination, Account local signout, old child support reply/followup source references. Cannot upgrade source tests into actual Magic Link inbox OTP/browser E2E PASS. No external email was sent in the check.
+
+## Existing original data protection rechecked (READ-ONLY canonical Staging database)
+Immediately after READY, assistant queried exact original Supabase STAGING `upcssfmilewwshyxyvdf`, fictional case `f8362377-35b5-4db9-ac4a-eef7717120c1`, read-only SELECT:
+`protected_case_still_responded=1` (version3, lifecycle RESPONDED),
+`original_reply_count=1`,
+`founder_approval_complete=1` (canonical `verified_complete`),
+`original_followups=0`.
+Thus approved reply, original canonical L3 approval and case not deleted/duplicated by deployment; **this is DB INTEGRITY PASS only** not confirmed actual customer reads UI. No original customer write, separate automatic one-minute acknowledgement, actual human 1-minute SLA or phone/email notification activated, no outward production effect.
+
+## STATUS / FAILURES & CORRECTIONS
+**APPROVED** Founder explicit R236; **IMPLEMENTED and COMMITTED** source R237 exact SHA; **BUILD PASS** actual Vercel prebuild and Next build; **DEPLOY READY / ALIAS READY** original custom STAGING one existing project; **OLD/NEW AUTOMATED SOURCE & HELPER TEST PASS**, original one-case response original Supabase integrity PASS. **NOT VERIFIED:** genuine same-browser Magic Link click→cookie session→MyHIISSA→original Support return→Account persistence, actual customer reading existing approved reply, explicit Founder practical acceptance, original Guest/FREE/SaveSync/Founder full E2E and other unrelated feature regression in live browser, cross-browser behavior and session loss root cause. Unrelated original protected Auth source untouched; if the previously reported cross-browser session separation remains, this code **does not perform forbidden cookie transfer**, and user must not be sent into repeated login without evidence. No new build failure: earlier aborted draft attempt from R237 pre-commit did not write source. Production NOT changed.
+One risk remains: a local marker cannot be shared with a separate browser, so signed-in post-Magic Link will go original neutral My HIISSA fallback there. TTL 15min, no open redirect. In actual same-browser after sign-in the marker is one-time consumed and original Support route shown if validated session state READY. Never claim fix to unknown root cause.
+
+## WHERE / original architecture / monitoring and next proposed founder practical action
+Original repo `fatibanceo-blip/HIISSA-Relationship-AI-2`; Staging branch `feature/founder-control-room-staging`; app SHA `9075c6326e9ea02f3028a78154ed4ef7e7dc98b7`; deployment `dpl_E5xg4LxmKDGi8GaB4zZokrsSY4xM`; original alias above; Supabase STAGING source `upcssfmilewwshyxyvdf`; original Experience Registry `customer-communication-service-level-centre`, original Admin-only canonical audit/Founder Control Room no new system; no Production. One narrow Founder browser smoke PASS still required, not an entire repeated founder reply delivery:
+1. In one browser on original custom staging, open `/my-hiissa/support` signed out.
+2. Tap original `Go to Sign in` once; request Magic Link only if actually needed.
+3. Open secure one-time email link into SAME target browser, tap Continue securely in that browser (do not share code/link).
+4. Expect original signed-in **My Support Requests** automatically (within 15 min), not repeated home/account signin; original saved fictional ticket and one approved reply shown, owner only.
+5. Then Account→Support in same browser should stay signed in. Any failure screenshot and classify FAIL; do not restart ticket. Existing known separate-browser webview cannot migrate cookies and must show clear unsupported session rather than pretend fixed.
+R235 detailed alternatives and R236 explicit Founder approval preserved. Outstanding Feature One actual 1min acknowledgement + human reply SLA, Founder phone/email alerts, staff lifecycle/two-way resolution, negative RLS/permissions and practical other-feature tests; Feature Two Staff Training Library pending. Prepare one comprehensive Word post-R216 R217–R239 continuation now before chat becomes unreliable, preserving ALL original screenshot evidence/media appropriately redacted and original R216 13 Word ZIP untouched.
+
+## Document12 WHO WHAT WHY HOW PROCESS WHERE EVIDENCE STATUS FAILURES/CORRECTIONS NON-EFFECT NEXT
+All sections above cover fields with actual provider IDs/SHA, unit/build log texts, canonical DB counts, exact Founder/production boundaries, remaining items and specific next step. Non-effect: no Production, original data write, duplicate env or original protected source edits.
