@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 import { useEffect, useMemo, useState } from "react";
+import {consumeOriginalSupportReturn} from "../../lib/hiissa-original-support-return.mjs";
 
 const green = "#194f3d";
 const softGreen = "#eaf4ed";
@@ -110,6 +111,15 @@ export default function MyHiissaPage() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // The canonical Magic Link still returns to My HIISSA. Only the customer
+  // who explicitly clicked original Support sign-in returns to that task.
+  // No cross-browser credentials, tokens or dynamic destination are stored.
+  useEffect(() => {
+    if (authState !== "ready" || !session?.access_token) return;
+    const destination = consumeOriginalSupportReturn(window.localStorage);
+    if (destination) window.location.replace(destination);
+  }, [authState, session?.access_token]);
 
   useEffect(() => {
     if (authState !== "signedout") {

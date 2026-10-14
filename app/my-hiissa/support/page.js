@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {createBrowserClient} from "@supabase/ssr";
 import {useEffect,useRef,useState} from "react";
+import {markOriginalSupportReturn} from "../../../lib/hiissa-original-support-return.mjs";
 
 // Only the existing HIISSA authenticated browser session is reused.
 // All requests are Staging-only and refuse external acknowledgement or Production effects.
@@ -209,7 +210,8 @@ export default function MyHiissaCustomerSupportPage(){
     Do not include passwords, payment information or private HIISSA conversations.</p>
    {status==="CHECKING"?<p role="status">Checking your HIISSA sign-in…</p>:null}
    {status==="SIGNED_OUT"?<div style={card}><p>Please sign in using your existing HIISSA account.</p>
-    <Link href="/talk?signin=1&from=home">Go to Sign in →</Link></div>:null}
+    <Link href="/talk?signin=1&from=home"
+     onClick={()=>markOriginalSupportReturn(window.localStorage)}>Go to Sign in →</Link></div>:null}
    {status==="UNAVAILABLE"?<p role="alert">Secure support access is unavailable. No request was sent.</p>:null}
    {status==="READY"?<>
     <form onSubmit={submit} style={card}>
