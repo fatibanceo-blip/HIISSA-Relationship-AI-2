@@ -1,0 +1,41 @@
+# HIISSA R242 — 15 October 2026 — Founder raises high-risk existing name and proposes controlled development pause (DISCUSSION / NO REBRAND APPROVAL)
+
+## SOURCE / ORIGINAL FOUNDER WORDING
+Founder, 15 October 2026, original conversation text verbatim:
+"I wanted to discuss this with you, just for you to know what is going on. The name Hisa, at the moment, I think is being used by somebody who has already registered it for their business, and then I tried to contact a solicitor who is saying we are at a high risk. So I am trying to change the name, but I have not yet come up with any name. So I wanted to ask you, when we finally find a name, would it be easier for us to change the name across the project, the app, or that is why I don't want us to carry on working when we have not yet found the name and done the needful. So what are your recommendations? What would you say? What would you advise me to do now?"
+
+Note: Founder said "Hisa" in this message. Historical controlled project name and many source identifiers use "HIISSA"; preserve the difference exactly, do not silently rewrite her words. Founder reported a solicitor's high-risk warning; **this checkpoint does not independently substantiate any specific trademark owner, mark status, classes, jurisdictions or infringement conclusion.** No replacement brand has been approved or verified.
+
+## WHAT
+Material strategic discussion: current brand potentially conflicts with an existing registered commercial name, solicitor has reportedly advised high risk, Founder is searching for a replacement and explicitly does not want further feature construction while the new name and legal necessities remain unresolved. Assistant recommendation: temporary **pause on new HIISSA feature development**, preservation of current verified Staging and unfinished Customer Communication & Service-Level Centre, conduct controlled name ideation and free preliminary trademark/business/app/domain screening, obtain appropriate limited-scope professional legal clearance for short-listed name(s), and only then propose the rebrand implementation separately for Founder approval.
+
+## WHY
+Prevent compounding logo, navigation and branded feature naming costs or risking use of the current disputed mark. Protect all founder-approved app architecture and previously working features. Avoid an ungoverned find-and-replace affecting auth callbacks, Supabase identity, source-of-truth Experience Registry, historical records, account persistence, original signed-in Support and Founder Control Room.
+
+## HOW
+No rebranding implementation now. Candidate names must be clearly separated between preliminary public screening and professional legal assessment. For a name ultimately approved by the Founder, first make a versioned inventory of visible text/logo/navigation/notifications/emails/share links/domains/app metadata/legal content and invisible registry IDs/schema/routes/config/auth redirects/dependencies; map old to proposed new; prefer a central brand display configuration and preserve stable internal IDs and historical audit where safe and lawful; implement in original protected Staging in bounded batches with rollback and old+new regression test gates; subsequently obtain distinct Founder practical PASS and separate authorisation for any Production deployment and activation. No implicit permission to modify protected Documents 11–13, Production, or existing login system. A rebrand is not a new app or clean-slate rebuild.
+
+## PROCESS
+Founder raises concern and seeks strategy before choosing/approving name. Assistant recommends stopping NEW feature work now, freezing current verified technical checkpoint, doing name/legal due diligence first, design approval and technical inventory before any code, controlled Staging change/QA if later authorised, then separate release gates. Current discussion is **not** approval of any specific candidate, code migration, repository rename, domain transfer or deployment.
+
+## WHERE
+Original existing repo `fatibanceo-blip/HIISSA-Relationship-AI-2`; branch `feature/founder-control-room-staging`; R241 last documented source-only evidence checkpoint `7be96f6397e68f4a71bdb8cb365f7204e4124ab1`; Staging deployed APPLICATION SHA `9075c6326e9ea02f3028a78154ed4ef7e7dc98b7`; Vercel original READY deployment `dpl_E5xg4LxmKDGi8GaB4zZokrsSY4xM` and alias `hiissa-relationship-ai-2-env-staging-hiissa-relationship-ai.vercel.app`; original Staging Supabase project `upcssfmilewwshyxyvdf`; original canonical Registry identity `customer-communication-service-level-centre`. Future rebrand inventory must also review product UI tier/feature names, Founder dashboard, branding assets, authenticated routes, transactional and marketing channels, translations, subscriptions and legal materials. This Git markdown is documentation only.
+
+## WHO
+Founder: decision-maker, name selection, solicitor liaison and separate change/release authority. Assistant: advise, independently screen prospective name candidates when requested, prepare a precise risk/impact inventory before any protected code change, preserve Document12/13 records. Solicitor: independently assess legal risk and clearance for intended markets/classes. Customers/staff: no changes initiated, no exposure of private data.
+
+## EVIDENCE
+Founder first-hand statement in current conversation (not proof of legal registration); original authoritative 13-doc R216 and R217–R239 supplement; prior R241 live evidence showing original Staging case preserved and deployment READY. UKIPO trademark-search register, official Companies House and EUIPO/TMview remain external due diligence targets but no candidate has been formally cleared during this discussion. This checkpoint establishes **risk reported and pause discussed**, not legal conclusion.
+
+## STATUS
+**STRATEGIC BRAND RISK / FOUNDER EXPRESSED DESIRE TO PAUSE DEVELOPMENT / ASSISTANT RECOMMENDS TEMPORARY NEW-FEATURE FREEZE / NAME NOT SELECTED / LEGAL CLEARANCE NOT VERIFIED / REBRAND NOT APPROVED / IMPLEMENTATION NOT STARTED.**
+Current Feature One Customer Communication & Service-Level Centre remains unfinished and retains priority upon resumption, subject to later Founder change approval. Founder practical same-browser original Support read still pending. Two-feature development count is not satisfied; no new completed feature is claimed.
+
+## FAILURES AND CORRECTIONS
+Potential business/legal conflict not yet independently corroborated; prior technical risk that blindly renaming canonical technical IDs, auth URLs and provider configuration could regress working functions. Preventive correction: avoid introducing more brand-coupled work or mass renames before cleared name and approved tested plan. This is a precaution, not an assertion of existing legal breach or app defect.
+
+## NON-EFFECT
+No application code, tests, protected Auth/SaveSync/Account/Founder Control Room route, source-of-truth Registry, data/schema, credentials, deployed Staging app, Production, logo, email templates, domains, external messages, registered company names or trademarks were changed or activated. Protected Word Documents 11, 12 and 13 have NOT been modified. No final name chosen or certified. This checkpoint's own repository commit may be documentation-only; do not confuse docs HEAD with deployed app SHA.
+
+## NEXT
+Treat new product feature implementation as paused while founder considers names and professional trademark advice. Where requested, propose attractive fresh naming candidates only **after** a preliminary check of exact/similar/confusable marks in intended territories (UK/EU and relevant international jurisdictions), companies, existing apps/software and relevant domains; clearly mark residual uncertainty and request solicitor clearance before public adoption. Once name and legal direction are Founder-approved, prepare explicit rebrand impact/rollback/test plan, map existing HIISSA-branded features to new display names without silently overwriting historic documents or canonical identifiers, and seek Founder separate Staging implementation approval. Unfinished Feature One remains recorded as not completed. Ask legal counsel whether the existing publicly accessible Staging branded site requires interim restrictions; make no restriction/redirect change without Founder permission.
